@@ -1,10 +1,10 @@
 {
-  "name": "@a-novel/platform-template",
+  "name": "@a-novel/platform-studio",
   "version": "0.0.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a-novel/platform-template.git"
+    "url": "git+https://github.com/a-novel/platform-studio.git"
   },
   "license": "AGPL-3.0",
   "sideEffects": [
@@ -109,7 +109,7 @@
     "$schema": "https://docs.tolgee.io/cli-schema.json",
     "projectId": 1,
     "format": "JSON_ICU",
-    "defaultNamespace": "template",
+    "defaultNamespace": "studio",
     "patterns": [
       "./src/**/*.ts",
       "./src/**/*.svelte"

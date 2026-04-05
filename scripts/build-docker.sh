@@ -7,4 +7,4 @@ set -e
 podman build --format docker \
   --secret id=npmrc,src="${NPMRC_PATH:-$HOME/.npmrc}" \
   -f ./builds/platform.Dockerfile \
-  -t ghcr.io/a-novel/platform-template/platform:local .
+  -t ghcr.io/a-novel/platform-studio/platform:local .

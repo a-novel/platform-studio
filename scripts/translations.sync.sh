@@ -23,7 +23,7 @@ while test $# -gt 0; do
   esac
 done
 
-APP_NAME="template-translations"
+APP_NAME="studio-translations"
 
 # Retrieve tolgee port from running pods.
 TOLGEE_PORT="$(podman port "${APP_NAME}_tolgee-app_1" 8080 | sed -e 's/^[^:]*://g')"

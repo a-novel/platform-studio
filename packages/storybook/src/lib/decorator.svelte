@@ -2,7 +2,7 @@
   import type { Snippet } from "svelte";
 
   import { loadTranslations as loadPackageTranslations } from "@a-novel/package-authentication/locales";
-  import { loadTranslations as loadPlatformTranslations } from "@a-novel/platform-template/locales";
+  import { loadTranslations as loadPlatformTranslations } from "@a-novel/platform-studio/locales";
 
   import { getTolgee } from "@tolgee/svelte";
 

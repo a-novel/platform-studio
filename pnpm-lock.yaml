@@ -15,7 +15,7 @@ catalogs:
     '@a-novel/package-authentication':
       specifier: ^0.1.2
       version: 0.1.2
-    '@a-novel/platform-template':
+    '@a-novel/platform-studio':
       specifier: '*'
       version: 0.0.0
     '@a-novel/service-authentication-rest':
@@ -361,7 +361,7 @@ importers:
       '@a-novel/package-authentication':
         specifier: 'catalog:'
         version: 0.1.2(@a-novel-kit/nodelib-browser@1.3.28(zod@4.3.6))(@a-novel/service-authentication-rest@2.4.2(@a-novel-kit/nodelib-browser@1.3.28(zod@4.3.6))(zod@4.3.6))(@a-novel/uikit@0.13.0(90dfa853b2ac56078d7686aeca5ddc39))(@iconify/svelte@5.2.1(svelte@5.55.1))(@sveltejs/kit@2.56.1(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(yaml@2.8.3)))(@tolgee/core@7.0.0)(@tolgee/format-icu@7.0.0)(@tolgee/svelte@7.0.0(svelte@5.55.1))(@tolgee/web@7.0.0)(svelte@5.55.1)(zod@4.3.6)
-      '@a-novel/platform-template':
+      '@a-novel/platform-studio':
         specifier: 'catalog:'
         version: link:../platform
       '@a-novel/service-authentication-rest':

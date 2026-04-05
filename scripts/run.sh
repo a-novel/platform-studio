@@ -2,7 +2,7 @@
 
 set -e
 
-APP_NAME="platform-template-local"
+APP_NAME="platform-studio-local"
 PODMAN_FILE="$PWD/builds/podman-compose.yaml"
 
 # Ensure containers are properly shut down when the program exits abnormally.

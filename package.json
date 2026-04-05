@@ -1,10 +1,10 @@
 {
-  "name": "platform-template-project",
+  "name": "platform-studio-project",
   "version": "0.0.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a-novel/platform-template.git"
+    "url": "git+https://github.com/a-novel/platform-studio.git"
   },
   "license": "AGPL-3.0",
   "type": "module",
@@ -84,8 +84,9 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "@a-novel/package-authentication",
-      "esbuild"
+      "@a-novel/uikit",
+      "esbuild",
+      "sharp"
     ],
     "overrides": {
       "brace-expansion@<5.0.5": ">=5.0.5",

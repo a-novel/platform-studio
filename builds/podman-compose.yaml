@@ -77,7 +77,7 @@ services:
     networks:
       - api
 
-  platform-template:
+  platform-studio:
     build:
       context: ..
       dockerfile: ./builds/platform.Dockerfile

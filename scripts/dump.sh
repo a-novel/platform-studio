@@ -2,7 +2,7 @@
 
 set -e
 
-APP_NAME="template-translations"
+APP_NAME="studio-translations"
 
 EXEC_CMD=""
 

@@ -1,10 +1,10 @@
 {
-  "name": "platform-template-stories",
+  "name": "platform-studio-stories",
   "version": "0.0.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a-novel/platform-template.git"
+    "url": "git+https://github.com/a-novel/platform-studio.git"
   },
   "license": "AGPL-3.0",
   "sideEffects": [
@@ -31,7 +31,7 @@
   "dependencies": {
     "@a-novel-kit/nodelib-browser": "catalog:",
     "@a-novel/package-authentication": "catalog:",
-    "@a-novel/platform-template": "catalog:",
+    "@a-novel/platform-studio": "catalog:",
     "@a-novel/service-authentication-rest": "catalog:",
     "@a-novel/uikit": "catalog:",
     "@iconify/svelte": "^5.1.0",

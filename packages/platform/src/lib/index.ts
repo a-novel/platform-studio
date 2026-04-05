@@ -1,9 +1,6 @@
 export * from "./init";
 
-/**
- * TODO: app title goes there.
- */
-const AGORA_TITLE = "Agora";
+const AGORA_TITLE = "Agora Studio";
 
 export function pageTitle(...titles: string[]): string {
   return [...titles, AGORA_TITLE].join(" | ");
