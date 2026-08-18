@@ -36,7 +36,7 @@ The image runs as a non-root user and listens on port `3000`. Pin deployments to
 | `HOST`                       | No       | Listen address. The image sets `0.0.0.0`.                       |
 | `PORT`                       | No       | Listen port. The image sets `3000`.                             |
 
-Client-visible variables use the `VITE_` prefix. The build rejects names that look like credentials so private values stay in the server environment.
+Client-visible configuration is public. Keep private values in the server environment.
 
 ## Operational endpoints
 
