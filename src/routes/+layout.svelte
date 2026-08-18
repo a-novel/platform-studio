@@ -7,9 +7,18 @@
   let { children, data } = $props();
 </script>
 
-<StudioShellController copy={data.shellCopy} activeNavigation={data.activeNavigation === "home" ? "home" : null}>
+{#if data.standalone}
   {@render children()}
-</StudioShellController>
+{:else}
+  <StudioShellController
+    authCopy={data.authCopy}
+    copy={data.shellCopy}
+    activeNavigation={data.activeNavigation === "home" ? "home" : null}
+    session={data.session}
+  >
+    {@render children()}
+  </StudioShellController>
+{/if}
 
 <style>
   :global(html) {

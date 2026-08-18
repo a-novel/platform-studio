@@ -1,4 +1,29 @@
 {
+  "authFlow":
+    {
+      "accountName": "Compte {{id}}",
+      "expiryUnavailable": "Non indiqué par ce jeton",
+      "feedback":
+        {
+          "emailUpdated": "Votre adresse e-mail a été mise à jour.",
+          "invalidCredentials": "L’adresse e-mail ou le mot de passe est incorrect.",
+          "invalidCurrentPassword": "Le mot de passe actuel est incorrect.",
+          "passwordChanged": "Votre mot de passe a été modifié.",
+          "passwordReset": "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.",
+          "registrationCompleted": "Votre compte Studio est prêt.",
+          "serviceUnavailable": "Le service d’authentification est temporairement indisponible. Réessayez.",
+          "sessionUnavailable": "Studio n’a pas pu vérifier la session actuelle. Réessayez.",
+        },
+      "validation":
+        {
+          "confirmPassword": "Confirmez le nouveau mot de passe.",
+          "currentPassword": "Saisissez le mot de passe actuel.",
+          "email": "Saisissez une adresse e-mail valide.",
+          "newPassword": "Choisissez un nouveau mot de passe valide.",
+          "password": "Saisissez votre mot de passe.",
+          "passwordMismatch": "Les mots de passe ne correspondent pas.",
+        },
+    },
   "authUi":
     {
       "account":

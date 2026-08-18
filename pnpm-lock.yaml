@@ -7,6 +7,9 @@ settings:
 importers:
   .:
     dependencies:
+      "@a-novel-kit/nodelib-browser":
+        specifier: 1.6.2
+        version: 1.6.2(zod@4.4.3)
       "@a-novel-kit/nodelib-i18n":
         specifier: 1.6.2
         version: 1.6.2(i18next@26.3.6(typescript@6.0.3))
@@ -22,12 +25,18 @@ importers:
       "@a-novel-kit/uikit-tokens":
         specifier: 0.2.1
         version: 0.2.1
+      "@a-novel/service-authentication-rest":
+        specifier: 2.5.0
+        version: 2.5.0(@a-novel-kit/nodelib-browser@1.6.2(zod@4.4.3))(zod@4.4.3)
       "@lucide/svelte":
         specifier: 1.31.0
         version: 1.31.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       i18next:
         specifier: 26.3.6
         version: 26.3.6(typescript@6.0.3)
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       "@a-novel-kit/nodelib-config":
         specifier: 1.6.2
@@ -160,6 +169,16 @@ importers:
         version: 3.0.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vitest@4.1.10)
 
 packages:
+  "@a-novel-kit/nodelib-browser@1.6.2":
+    resolution:
+      {
+        integrity: sha512-e9u2QoznigMavgexYresWHb0vIff09cFtcSRWzE0p0PqTkCP708Uj1B7/fAr3XDX+7hNTKaPOT/gw7jIymomEQ==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-browser/1.6.2/bc7f70468f1378413903f1fcfe8f4b114222640a,
+      }
+    engines: { node: ">=24.0.0", npm: ">=10.9.2" }
+    peerDependencies:
+      zod: ^4.4.3
+
   "@a-novel-kit/nodelib-config@1.6.2":
     resolution:
       {
@@ -246,6 +265,17 @@ packages:
       }
     peerDependencies:
       svelte: ^5
+
+  "@a-novel/service-authentication-rest@2.5.0":
+    resolution:
+      {
+        integrity: sha512-EB3prHLRJvCsxY15fnj8ojGoRM5YibFXihVCG16nCuE1pnYn+PEGhm+V8xKPcO8ZuPP7ECROUdgkAzHTreX8LA==,
+        tarball: https://npm.pkg.github.com/download/@a-novel/service-authentication-rest/2.5.0/e40c5c7fc92c67a220e12800ed354b604d6f7421,
+      }
+    engines: { node: ">=23.11.0", npm: ">=10.9.2" }
+    peerDependencies:
+      "@a-novel-kit/nodelib-browser": ^1.3.21
+      zod: ^4.3.6
 
   "@adobe/css-tools@4.5.0":
     resolution:
@@ -4203,11 +4233,19 @@ packages:
     resolution:
       { integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ== }
 
+  zod@4.4.3:
+    resolution:
+      { integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ== }
+
   zwitch@2.0.4:
     resolution:
       { integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A== }
 
 snapshots:
+  "@a-novel-kit/nodelib-browser@1.6.2(zod@4.4.3)":
+    dependencies:
+      zod: 4.4.3
+
   "@a-novel-kit/nodelib-config@1.6.2(884dfe224e38c62ea138c9c622eb381d)":
     dependencies:
       "@eslint/compat": 2.1.0(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))
@@ -4284,6 +4322,11 @@ snapshots:
       "@a-novel-kit/uikit-tokens": 0.2.1
       "@lucide/svelte": 1.31.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       svelte: 5.56.9(@typescript-eslint/types@8.67.0)
+
+  "@a-novel/service-authentication-rest@2.5.0(@a-novel-kit/nodelib-browser@1.6.2(zod@4.4.3))(zod@4.4.3)":
+    dependencies:
+      "@a-novel-kit/nodelib-browser": 1.6.2(zod@4.4.3)
+      zod: 4.4.3
 
   "@adobe/css-tools@4.5.0": {}
 
@@ -7417,5 +7460,7 @@ snapshots:
   zimmerframe@1.1.2: {}
 
   zimmerframe@1.1.4: {}
+
+  zod@4.4.3: {}
 
   zwitch@2.0.4: {}

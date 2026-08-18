@@ -39,13 +39,16 @@
     "test:unit": "vitest run --project=unit"
   },
   "dependencies": {
+    "@a-novel-kit/nodelib-browser": "1.6.2",
     "@a-novel-kit/nodelib-i18n": "1.6.2",
     "@a-novel-kit/nodelib-server": "1.6.2",
     "@a-novel-kit/uikit": "0.2.1",
     "@a-novel-kit/uikit-fonts": "0.2.1",
     "@a-novel-kit/uikit-tokens": "0.2.1",
+    "@a-novel/service-authentication-rest": "2.5.0",
     "@lucide/svelte": "1.31.0",
-    "i18next": "26.3.6"
+    "i18next": "26.3.6",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@a-novel-kit/nodelib-config": "1.6.2",
