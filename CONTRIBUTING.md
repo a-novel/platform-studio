@@ -14,7 +14,7 @@ Keep reusable controls in UIKit. Studio owns screen composition and product-spec
 
 Messages live in the locale JSON files under `src/lib/i18n/locales`. Call the typed translation function with static keys so extraction can keep source and locale files aligned.
 
-Run `pnpm i18n:extract` after adding or removing messages. Review both languages, then run `pnpm i18n:check` before committing. The check covers extraction drift, generated types, missing translations, unused translations, and the local Inlang project.
+Run `pnpm i18n:extract` after adding or removing messages. Review both languages, then run `pnpm i18n:check` before committing. The check covers extraction drift, generated types, missing translations, and unused translations.
 
 ## Reviewing the application
 

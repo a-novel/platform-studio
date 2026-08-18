@@ -51,7 +51,7 @@ The container probe calls `/ping`. An orchestrator can call `/healthcheck` when 
 
 English and French messages live under `src/lib/i18n/locales`. The static JSON files are the message source for the runtime, Storybook, extraction, generated key types, and offline validation.
 
-Extraction and unused-key checks report source/locale drift. Inlang validates the complete offline project.
+The `i18next-cli` extraction and unused-key checks report source and locale drift.
 
 ## Running locally
 
