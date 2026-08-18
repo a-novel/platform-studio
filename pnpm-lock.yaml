@@ -22,6 +22,9 @@ importers:
       "@a-novel-kit/uikit-tokens":
         specifier: 0.2.1
         version: 0.2.1
+      "@lucide/svelte":
+        specifier: 1.31.0
+        version: 1.31.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       i18next:
         specifier: 26.3.6
         version: 26.3.6(typescript@6.0.3)
