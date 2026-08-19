@@ -15,7 +15,7 @@ vite.config.ts.timestamp-*
 # Local environment
 .env
 .env.*
-!.env.example
+!.env.local
 !.env.test
 
 # Editors and operating systems

@@ -1,4 +1,4 @@
-import { aggregateHealth, unavailablePlatformHealth } from "./health";
+import { aggregateHealth } from "./health";
 import type { RuntimeConfig } from "./runtime-config";
 
 import { describe, expect, it, vi } from "vitest";
@@ -24,7 +24,7 @@ describe("aggregateHealth", () => {
     };
     const fetchImplementation = vi.fn<typeof globalThis.fetch>(async () => response(dependencies));
 
-    const health = await aggregateHealth(fetchImplementation, config);
+    const health = await aggregateHealth(fetchImplementation, () => config);
 
     expect(health).toEqual({
       services: {
@@ -52,7 +52,7 @@ describe("aggregateHealth", () => {
     };
     const fetchImplementation = vi.fn<typeof globalThis.fetch>(async () => response(dependencies));
 
-    const health = await aggregateHealth(fetchImplementation, config);
+    const health = await aggregateHealth(fetchImplementation, () => config);
 
     expect(health).toEqual({
       services: {
@@ -70,7 +70,7 @@ describe("aggregateHealth", () => {
       throw new Error("connection details");
     });
 
-    await expect(aggregateHealth(fetchImplementation, config)).resolves.toEqual({
+    await expect(aggregateHealth(fetchImplementation, () => config)).resolves.toEqual({
       services: {
         authentication: {
           status: "down",
@@ -79,11 +79,15 @@ describe("aggregateHealth", () => {
       status: "down",
     });
   });
-});
 
-describe("unavailablePlatformHealth", () => {
-  it("reports the configured service as unreachable without fabricated dependencies", () => {
-    expect(unavailablePlatformHealth()).toEqual({
+  it("derives the unavailable service from the registry when runtime configuration fails", async () => {
+    const fetchImplementation = vi.fn<typeof globalThis.fetch>();
+
+    await expect(
+      aggregateHealth(fetchImplementation, () => {
+        throw new Error("private configuration detail");
+      })
+    ).resolves.toEqual({
       services: {
         authentication: {
           status: "down",
@@ -91,5 +95,6 @@ describe("unavailablePlatformHealth", () => {
       },
       status: "down",
     });
+    expect(fetchImplementation).not.toHaveBeenCalled();
   });
 });

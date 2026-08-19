@@ -55,14 +55,16 @@ The `i18next-cli` extraction and unused-key checks report source and locale drif
 
 ## Running locally
 
-Configure pnpm for GitHub Packages with a token that can read packages, then install dependencies and start the development server.
+Configure pnpm for GitHub Packages with a token that can read packages. Start the authentication service, export its allocated local port, then install dependencies and start Studio.
 
 ```bash
+a-novel run start service-authentication/rest
+eval "$(a-novel run env service-authentication)"
 pnpm install
 pnpm dev
 ```
 
-Run `pnpm storybook` to review pure screen states at `http://localhost:6006`.
+The committed `.env.local` expands `SERVICE_AUTHENTICATION_REST_PORT`, so no URL needs to be copied by hand. Run `pnpm storybook` to review pure screen states at `http://localhost:6006`.
 
 ## Contributing
 
