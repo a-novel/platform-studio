@@ -1,4 +1,4 @@
-import type { StudioShellCopy } from "./types";
+import type { StudioShellCopy } from "$lib/application/shell/types";
 
 import type { TFunction } from "i18next";
 

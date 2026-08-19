@@ -1,5 +1,5 @@
 <script lang="ts">
-  import StudioShellController from "$lib/ui/shell/StudioShellController.svelte";
+  import StudioShellController from "$lib/client/shell/StudioShellController.svelte";
 
   import "@a-novel-kit/uikit-fonts/fonts.css";
   import "@a-novel-kit/uikit-tokens/tokens.css";

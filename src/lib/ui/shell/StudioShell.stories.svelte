@@ -1,9 +1,10 @@
 <script module lang="ts">
+  import type { StudioShellViewModel } from "$lib/application/shell/types";
+  import { getStudioShellCopy } from "$lib/i18n/shell-copy";
+
   import english from "../../i18n/locales/en/common.yaml";
   import french from "../../i18n/locales/fr/common.yaml";
   import StudioShellStory from "./StudioShellStory.svelte";
-  import { getStudioShellCopy } from "./messages";
-  import type { StudioShellViewModel } from "./types";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { type TFunction, createInstance } from "i18next";

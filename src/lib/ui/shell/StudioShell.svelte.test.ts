@@ -1,7 +1,8 @@
-import { createRequestI18n } from "../../i18n/instance";
+import type { StudioShellViewModel } from "$lib/application/shell/types";
+import { createRequestI18n } from "$lib/i18n/instance";
+import { getStudioShellCopy } from "$lib/i18n/shell-copy";
+
 import StudioShell from "./StudioShell.svelte";
-import { getStudioShellCopy } from "./messages";
-import type { StudioShellViewModel } from "./types";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";

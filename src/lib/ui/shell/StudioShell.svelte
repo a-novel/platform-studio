@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { AuthDialogView, StudioShellCopy, StudioShellViewModel } from "./types";
+  import type { AuthDialogView, StudioShellCopy, StudioShellViewModel } from "$lib/application/shell/types";
 
   import type { Snippet } from "svelte";
 

@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { StudioShellCopy, StudioShellViewModel } from "./types";
+  import type { StudioShellCopy, StudioShellViewModel } from "$lib/application/shell/types";
 
   import type { Snippet } from "svelte";
 
@@ -14,10 +14,11 @@
 <script lang="ts">
   import { afterNavigate, pushState, replaceState } from "$app/navigation";
   import { page } from "$app/state";
+  import { normalizeAuthUrl, readAuthView, withAuthView } from "$lib/application/shell/auth-dialog-state";
+  import type { AuthDialogView } from "$lib/application/shell/types";
+  import StudioShell from "$lib/ui/shell/StudioShell.svelte";
 
-  import StudioShell from "./StudioShell.svelte";
-  import { normalizeAuthUrl, readAuthView, readRailCollapsed, withAuthView, writeRailCollapsed } from "./state";
-  import type { AuthDialogView } from "./types";
+  import { readRailCollapsed, writeRailCollapsed } from "./rail-preference";
 
   import { onMount } from "svelte";
 

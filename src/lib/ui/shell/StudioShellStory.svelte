@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { StudioShellCopy, StudioShellViewModel } from "./types";
+  import type { StudioShellCopy, StudioShellViewModel } from "$lib/application/shell/types";
 
   /** Controllable Storybook harness around the pure shell. */
   export interface StudioShellStoryProps {

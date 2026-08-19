@@ -1,4 +1,4 @@
-import { getStudioShellCopy } from "$lib/ui/shell/messages";
+import { getStudioShellCopy } from "$lib/i18n/shell-copy";
 
 import type { LayoutServerLoad } from "./$types";
 
