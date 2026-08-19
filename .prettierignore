@@ -1,0 +1,8 @@
+/.svelte-kit/
+/build/
+/coverage/
+/node_modules/
+/src/lib/i18n/generated/
+/storybook-static/
+/project.inlang/*
+!/project.inlang/settings.json
