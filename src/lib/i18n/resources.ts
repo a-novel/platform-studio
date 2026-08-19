@@ -10,10 +10,10 @@ type ResourceLoader = () => Promise<ResourceModule>;
 
 const resourceLoaders = {
   en: {
-    common: () => import("./locales/en/common.json"),
+    common: () => import("./locales/en/common.yaml"),
   },
   fr: {
-    common: () => import("./locales/fr/common.json"),
+    common: () => import("./locales/fr/common.yaml"),
   },
 } satisfies Record<Locale, Record<Namespace, ResourceLoader>>;
 

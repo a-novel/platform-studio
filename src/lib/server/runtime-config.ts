@@ -1,43 +1,24 @@
-import * as v from "valibot";
+import {
+  type EnvironmentOutput,
+  type EnvironmentSource,
+  environmentHttpUrl,
+  environmentInteger,
+  parseEnvironment,
+} from "@a-novel-kit/nodelib-server";
 
-const runtimeEnvironmentSchema = v.object({
-  AUTHENTICATION_SERVICE_URL: v.pipe(v.string(), v.nonEmpty(), v.url()),
-  HEALTHCHECK_TIMEOUT_MS: v.optional(
-    v.pipe(v.string(), v.regex(/^\d+$/), v.transform(Number), v.integer(), v.minValue(100), v.maxValue(10_000)),
-    "2000"
-  ),
-});
+const runtimeEnvironmentSchema = {
+  authenticationServiceUrl: environmentHttpUrl("AUTHENTICATION_SERVICE_URL"),
+  healthcheckTimeoutMs: environmentInteger("HEALTHCHECK_TIMEOUT_MS", {
+    defaultValue: 2000,
+    maximum: 10_000,
+    minimum: 100,
+  }),
+} as const;
 
-export interface RuntimeConfig {
-  authenticationServiceUrl: string;
-  healthcheckTimeoutMs: number;
-}
+/** RuntimeConfig contains Studio's private server settings. */
+export type RuntimeConfig = EnvironmentOutput<typeof runtimeEnvironmentSchema>;
 
-export function parseRuntimeConfig(environment: Record<string, string | undefined>): RuntimeConfig {
-  const result = v.safeParse(runtimeEnvironmentSchema, environment);
-
-  if (!result.success) {
-    const invalidFields = [
-      ...new Set(
-        result.issues.flatMap((issue) => {
-          const field = issue.path?.map((segment) => String(segment.key)).join(".");
-          return field ? [field] : [];
-        })
-      ),
-    ].sort();
-
-    throw new Error(
-      `Invalid server environment: ${invalidFields.length > 0 ? invalidFields.join(", ") : "unknown field"}`
-    );
-  }
-
-  const authenticationServiceUrl = new URL(result.output.AUTHENTICATION_SERVICE_URL);
-  if (!["http:", "https:"].includes(authenticationServiceUrl.protocol)) {
-    throw new Error("Invalid server environment: AUTHENTICATION_SERVICE_URL");
-  }
-
-  return {
-    authenticationServiceUrl: authenticationServiceUrl.toString().replace(/\/+$/, ""),
-    healthcheckTimeoutMs: result.output.HEALTHCHECK_TIMEOUT_MS,
-  };
+/** Parses Studio's environment variables without retaining invalid values. */
+export function parseRuntimeConfig(environment: EnvironmentSource): RuntimeConfig {
+  return parseEnvironment(environment, runtimeEnvironmentSchema);
 }

@@ -1,4 +1,4 @@
-import { aggregateHealth } from "./health";
+import { aggregateHealth, unavailablePlatformHealth } from "./health";
 import type { RuntimeConfig } from "./runtime-config";
 
 import { describe, expect, it, vi } from "vitest";
@@ -16,26 +16,20 @@ function response(body: unknown, status = 200): Response {
 }
 
 describe("aggregateHealth", () => {
-  it("reports the authentication service up only when every known check is up", async () => {
-    const fetchImplementation = vi.fn<typeof globalThis.fetch>(async () =>
-      response({
-        "api:jsonKeys": { status: "up" },
-        "client:postgres": { status: "up" },
-        "client:smtp": { status: "up" },
-        internal: { detail: "must not escape" },
-      })
-    );
+  it("reports service reachability and preserves its dependency map", async () => {
+    const dependencies = {
+      "api:jsonKeys": { status: "up" as const },
+      "client:postgres": { latencyMs: 7, status: "up" as const },
+      "client:smtp": { status: "up" as const },
+    };
+    const fetchImplementation = vi.fn<typeof globalThis.fetch>(async () => response(dependencies));
 
     const health = await aggregateHealth(fetchImplementation, config);
 
     expect(health).toEqual({
       services: {
         authentication: {
-          checks: {
-            "api:jsonKeys": { status: "up" },
-            "client:postgres": { status: "up" },
-            "client:smtp": { status: "up" },
-          },
+          dependencies,
           status: "up",
         },
       },
@@ -48,30 +42,30 @@ describe("aggregateHealth", () => {
         signal: expect.any(AbortSignal),
       })
     );
-    expect(JSON.stringify(health)).not.toContain("must not escape");
   });
 
-  it("preserves sanitized partial failures", async () => {
-    const fetchImplementation = vi.fn<typeof globalThis.fetch>(async () =>
-      response({
-        "api:jsonKeys": { status: "up" },
-        "client:postgres": { status: "down", error: "private database detail" },
-        "client:smtp": { status: "up" },
-      })
-    );
+  it("keeps a reachable service up while a reported dependency makes Studio unavailable", async () => {
+    const dependencies = {
+      "api:jsonKeys": { status: "up" as const },
+      "client:postgres": { detail: "connection refused", status: "down" as const },
+      "client:smtp": { status: "up" as const },
+    };
+    const fetchImplementation = vi.fn<typeof globalThis.fetch>(async () => response(dependencies));
 
     const health = await aggregateHealth(fetchImplementation, config);
 
-    expect(health.status).toBe("down");
-    expect(health.services.authentication.checks).toEqual({
-      "api:jsonKeys": { status: "up" },
-      "client:postgres": { status: "down" },
-      "client:smtp": { status: "up" },
+    expect(health).toEqual({
+      services: {
+        authentication: {
+          dependencies,
+          status: "up",
+        },
+      },
+      status: "down",
     });
-    expect(JSON.stringify(health)).not.toContain("private database detail");
   });
 
-  it("returns a stable all-down map when the dependency is unavailable", async () => {
+  it("reports an unavailable service without fabricating dependency checks", async () => {
     const fetchImplementation = vi.fn<typeof globalThis.fetch>(async () => {
       throw new Error("connection details");
     });
@@ -79,11 +73,19 @@ describe("aggregateHealth", () => {
     await expect(aggregateHealth(fetchImplementation, config)).resolves.toEqual({
       services: {
         authentication: {
-          checks: {
-            "api:jsonKeys": { status: "down" },
-            "client:postgres": { status: "down" },
-            "client:smtp": { status: "down" },
-          },
+          status: "down",
+        },
+      },
+      status: "down",
+    });
+  });
+});
+
+describe("unavailablePlatformHealth", () => {
+  it("reports the configured service as unreachable without fabricated dependencies", () => {
+    expect(unavailablePlatformHealth()).toEqual({
+      services: {
+        authentication: {
           status: "down",
         },
       },

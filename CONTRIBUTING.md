@@ -11,7 +11,7 @@ Studio uses feature folders inside explicit runtime layers. Create only the fold
 - `src/lib/application` contains framework-independent types, state codecs, and use-case logic. It does not import SvelteKit, browser APIs, UI, client, or server modules.
 - `src/lib/client` contains browser-only controllers and adapters for navigation, URL state, and local persistence. It may compose application and UI modules, but never imports server code.
 - `src/lib/server` contains private configuration and service-facing adapters. It may use application types, but never imports client or UI code.
-- `src/lib/i18n` contains locale policy, static catalogs, generated key types, and request-localization wiring.
+- `src/lib/i18n` contains locale policy, static YAML catalogs, generated key types, and request-localization wiring.
 
 Dependencies point inward: routes compose the runtime layers; client and server depend on application contracts; application stays framework-independent. Code that is generic across products belongs in UIKit or nodelib instead of Studio.
 
@@ -25,7 +25,7 @@ Keep reusable controls in UIKit. Studio owns screen composition and product-spec
 
 ## Working with translations
 
-Messages live in the locale catalogs under `src/lib/i18n/locales`. Call the typed translation function with static keys so extraction can keep source and locale files aligned.
+Messages live in the YAML locale catalogs under `src/lib/i18n/locales`. Call the typed translation function with static keys so extraction can keep source and locale files aligned.
 
 Run `pnpm i18n:extract` after adding or removing messages. Review both languages, then run `pnpm i18n:check` before committing. The check covers extraction drift, generated types, missing translations, and unused translations.
 

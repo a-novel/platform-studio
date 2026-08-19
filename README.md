@@ -40,16 +40,16 @@ Client-visible configuration is public. Keep private values in the server enviro
 
 ## Operational endpoints
 
-| Path           | Success | Purpose                                                                    |
-| -------------- | ------- | -------------------------------------------------------------------------- |
-| `/ping`        | `200`   | Confirms that the Studio process can serve traffic without a downstream.   |
-| `/healthcheck` | `200`   | Reports the sanitized authentication health map. Partial failure is `503`. |
+| Path           | Success | Purpose                                                                                                 |
+| -------------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `/ping`        | `200`   | Confirms that the Studio process can serve traffic without a downstream.                                |
+| `/healthcheck` | `200`   | Reports authentication reachability and proxies its dependency map. Any down result makes Studio `503`. |
 
 The container probe calls `/ping`. An orchestrator can call `/healthcheck` when downstream readiness matters.
 
 ## Localization
 
-English and French messages live under `src/lib/i18n/locales`. The static JSON files are the message source for the runtime, Storybook, extraction, generated key types, and offline validation.
+English and French messages live under `src/lib/i18n/locales`. The static YAML files are the message source for the runtime, Storybook, extraction, generated key types, and offline validation.
 
 The `i18next-cli` extraction and unused-key checks report source and locale drift.
 
