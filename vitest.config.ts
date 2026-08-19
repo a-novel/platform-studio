@@ -1,3 +1,7 @@
 import { SvelteKitVitest } from "@a-novel-kit/nodelib-config/vitest-sveltekit";
+import { Yaml } from "@a-novel-kit/nodelib-config/yaml";
 
-export default SvelteKitVitest({ rootUrl: import.meta.url });
+export default SvelteKitVitest({
+  rootUrl: import.meta.url,
+  vitePlugins: () => [Yaml()],
+});
