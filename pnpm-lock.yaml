@@ -7,6 +7,9 @@ settings:
 importers:
   .:
     dependencies:
+      "@a-novel-kit/nodelib-i18n":
+        specifier: 1.5.0
+        version: 1.5.0(i18next@26.3.6(typescript@6.0.3))
       "@a-novel-kit/uikit":
         specifier: 0.2.1
         version: 0.2.1(svelte@5.56.9(@typescript-eslint/types@8.67.0))
@@ -27,8 +30,8 @@ importers:
         version: 1.4.2(typescript@6.0.3)
     devDependencies:
       "@a-novel-kit/nodelib-config":
-        specifier: 1.4.0
-        version: 1.4.0(5945c258872328314711a6fd3a81d57e)
+        specifier: 1.5.0
+        version: 1.5.0(9b7fe110f85cd5c5ddf17fa8bea4fb64)
       "@a-novel-kit/uikit-storybook":
         specifier: 0.2.1
         version: 0.2.1(@storybook/svelte@10.5.4(storybook@10.5.4(prettier@3.9.6)(react@19.2.8))(svelte@5.56.9(@typescript-eslint/types@8.67.0)))(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(@vitest/browser-playwright@4.1.10)(@vitest/browser@4.1.10)(@vitest/runner@4.1.10)(esbuild@0.28.2)(react@19.2.8)(rollup@4.62.4)(storybook@10.5.4(prettier@3.9.6)(react@19.2.8))(supports-color@7.2.0)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.10)
@@ -163,33 +166,52 @@ importers:
         version: 3.0.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vitest@4.1.10)
 
 packages:
-  "@a-novel-kit/nodelib-config@1.4.0":
+  "@a-novel-kit/nodelib-config@1.5.0":
     resolution:
       {
-        integrity: sha512-H1e0wWnP3xhBIKVb6yCreh3dDYdagB65OX1iqlgI2lpFARaw1TWqO5AH7zYDXrn8YE4fsGCcdyYNzIc0LSzL4g==,
-        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/1.4.0/8f1ea003800413be08b0590dfb6afe4e5efef6fb,
+        integrity: sha512-kaeVxFyzMWuhx/zr2vkWamJRI4XwSyZaGCWHPmeAI7DSGvO06yCA0NeqOUWQrpYip0HH/rb34kKwOSEMDKyiTg==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/1.5.0/6f94f949bc8622857173741e5cb5981faca00327,
       }
     engines: { node: ">=24.0.0", npm: ">=10.9.2" }
     peerDependencies:
       "@eslint/compat": ^2.1.0
+      "@eslint/config-helpers": ^0.7.0
       "@eslint/js": ^10.0.1
-      "@sveltejs/kit": ^2.70.1
+      "@storybook/addon-vitest": ^10.5.4
+      "@sveltejs/adapter-node": ^5.5.7
+      "@sveltejs/kit": ^2.70.2
       "@trivago/prettier-plugin-sort-imports": ^6.0.2
       "@types/node": ^24.13.3
-      eslint: ^10.7.0
+      "@vitest/browser-playwright": ^4.1.10
+      eslint: ^10.8.1
       eslint-config-prettier: ^10.1.8
-      eslint-plugin-prettier: ^5.5.6
-      eslint-plugin-storybook: ^10.5.3
-      eslint-plugin-svelte: ^3.22.0
-      prettier: ^3.9.5
+      eslint-plugin-storybook: ^10.5.4
+      eslint-plugin-svelte: ^3.23.0
+      estree-walker: ^3.0.3
+      globals: ^17.0.0
+      i18next-cli: ^1.69.2
+      i18next-cli-plugin-svelte: ^2.4.1
+      prettier: ^3.9.6
       prettier-plugin-css-order: ^2.2.0
       prettier-plugin-packagejson: ^2.5.20 || ^3.0.0
       prettier-plugin-sql: ^0.20.0
       prettier-plugin-svelte: ^4.1.1
-      storybook: ^10.5.3
-      svelte: ^5.56.6
+      storybook: ^10.5.4
+      svelte: ^5.56.9
       typescript: ^6.0.3
-      typescript-eslint: ^8.64.0
+      typescript-eslint: ^8.67.0
+      vite: ^8.0.0
+      vitest: ^4.1.10
+
+  "@a-novel-kit/nodelib-i18n@1.5.0":
+    resolution:
+      {
+        integrity: sha512-TY22oUpJ1eHY0G2wHLl07sd9wC8vxCzmklolkIfZAcvs3M/OEkl7J4zTpo/LC3hyPNdtSg8288b/Y1CEKrJshg==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-i18n/1.5.0/4b56eeb197372d08c99048cbb97d1bc2f4ec252b,
+      }
+    engines: { node: ">=24.0.0", npm: ">=10.9.2" }
+    peerDependencies:
+      i18next: ^26.3.6
 
   "@a-novel-kit/uikit-fonts@0.2.1":
     resolution:
@@ -4348,18 +4370,25 @@ packages:
       { integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A== }
 
 snapshots:
-  "@a-novel-kit/nodelib-config@1.4.0(5945c258872328314711a6fd3a81d57e)":
+  "@a-novel-kit/nodelib-config@1.5.0(9b7fe110f85cd5c5ddf17fa8bea4fb64)":
     dependencies:
       "@eslint/compat": 2.1.0(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))
+      "@eslint/config-helpers": 0.7.0
       "@eslint/js": 10.0.1(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))
+      "@storybook/addon-vitest": 10.5.4(@vitest/browser-playwright@4.1.10)(@vitest/browser@4.1.10)(@vitest/runner@4.1.10)(react@19.2.8)(storybook@10.5.4(prettier@3.9.6)(react@19.2.8))(vitest@4.1.10)
+      "@sveltejs/adapter-node": 5.5.7(@sveltejs/kit@2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))
       "@sveltejs/kit": 2.70.2(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(svelte@5.56.9(@typescript-eslint/types@8.67.0))(typescript@6.0.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
       "@trivago/prettier-plugin-sort-imports": 6.0.2(prettier-plugin-svelte@4.1.1(prettier@3.9.6)(svelte@5.56.9(@typescript-eslint/types@8.67.0)))(prettier@3.9.6)(supports-color@7.2.0)(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       "@types/node": 24.13.3
+      "@vitest/browser-playwright": 4.1.10(playwright@1.62.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.10)
       eslint: 10.8.1(jiti@2.7.0)(supports-color@7.2.0)
       eslint-config-prettier: 10.1.8(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))
-      eslint-plugin-prettier: 5.5.6(eslint-config-prettier@10.1.8(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0)))(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))(prettier@3.9.6)
       eslint-plugin-storybook: 10.5.4(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))(storybook@10.5.4(prettier@3.9.6)(react@19.2.8))(supports-color@7.2.0)(typescript@6.0.3)
       eslint-plugin-svelte: 3.23.0(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.56.9(@typescript-eslint/types@8.67.0))
+      estree-walker: 3.0.3
+      globals: 17.11.0
+      i18next-cli: 1.69.2(@types/node@24.13.3)(react-dom@19.2.8(react@19.2.8))(typescript@6.0.3)
+      i18next-cli-plugin-svelte: 2.4.1(estree-walker@3.0.3)(i18next-cli@1.69.2(@types/node@24.13.3)(react-dom@19.2.8(react@19.2.8))(typescript@6.0.3))(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       prettier: 3.9.6
       prettier-plugin-css-order: 2.2.0(postcss@8.5.26)(prettier@3.9.6)
       prettier-plugin-packagejson: 3.0.2(prettier@3.9.6)
@@ -4368,6 +4397,12 @@ snapshots:
       svelte: 5.56.9(@typescript-eslint/types@8.67.0)
       typescript: 6.0.3
       typescript-eslint: 8.67.0(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
+      vite: 8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
+      vitest: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
+
+  "@a-novel-kit/nodelib-i18n@1.5.0(i18next@26.3.6(typescript@6.0.3))":
+    dependencies:
+      i18next: 26.3.6(typescript@6.0.3)
 
   "@a-novel-kit/uikit-fonts@0.2.1": {}
 

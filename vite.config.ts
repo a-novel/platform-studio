@@ -1,7 +1,3 @@
-import { defineConfig } from "vite";
+import { SvelteKitVite } from "@a-novel-kit/nodelib-config/sveltekit";
 
-import { sveltekit } from "@sveltejs/kit/vite";
-
-export default defineConfig({
-  plugins: [sveltekit()],
-});
+export default SvelteKitVite();

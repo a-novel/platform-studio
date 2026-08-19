@@ -1,10 +1,3 @@
-import adapter from "@sveltejs/adapter-node";
+import { SvelteKit } from "@a-novel-kit/nodelib-config/sveltekit";
 
-/** @type {import("@sveltejs/kit").Config} */
-const config = {
-  kit: {
-    adapter: adapter(),
-  },
-};
-
-export default config;
+export default SvelteKit();

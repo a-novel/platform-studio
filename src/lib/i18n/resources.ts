@@ -1,6 +1,6 @@
 import type { Locale, Namespace } from "./config";
 
-export type TranslationResource = Record<string, unknown>;
+import type { TranslationResource } from "@a-novel-kit/nodelib-i18n";
 
 type ResourceModule = {
   default: TranslationResource;

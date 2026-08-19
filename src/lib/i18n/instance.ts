@@ -7,41 +7,19 @@ import {
 } from "./config";
 import { loadNamespace } from "./resources";
 
-import { type Resource, createInstance, type i18n } from "i18next";
+import { createRequestI18n as createI18n } from "@a-novel-kit/nodelib-i18n";
 
-async function loadLanguage(locale: Locale, namespaces: readonly Namespace[]): Promise<Resource[string]> {
-  const entries = await Promise.all(
-    namespaces.map(async (namespace) => [namespace, await loadNamespace(locale, namespace)] as const)
-  );
-
-  return Object.fromEntries(entries);
-}
+import type { i18n } from "i18next";
 
 export async function createRequestI18n(
   locale: Locale,
   namespaces: readonly Namespace[] = defaultNamespaces
 ): Promise<i18n> {
-  const resources: Resource = {
-    [locale]: await loadLanguage(locale, namespaces),
-  };
-
-  if (locale !== defaultLocale) {
-    resources[defaultLocale] = await loadLanguage(defaultLocale, namespaces);
-  }
-
-  const instance = createInstance();
-  await instance.init({
-    compatibilityJSON: "v4",
-    defaultNS: defaultNamespace,
-    fallbackLng: defaultLocale,
-    interpolation: {
-      escapeValue: false,
-    },
-    lng: locale,
-    ns: [...namespaces],
-    resources,
-    returnNull: false,
+  return createI18n({
+    defaultLocale,
+    defaultNamespace,
+    loadNamespace,
+    locale,
+    namespaces,
   });
-
-  return instance;
 }
