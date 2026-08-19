@@ -5,19 +5,11 @@ import type {
   ShortCodeJourney,
   ShortCodePasswordField,
 } from "$lib/application/auth/types";
+import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
 
 import { EmailSchema, PasswordSchema, ShortCodeSchema } from "@a-novel/service-authentication-rest";
 
 import { z } from "zod";
-
-export interface AuthValidationMessages {
-  confirmPassword: string;
-  currentPassword: string;
-  email: string;
-  newPassword: string;
-  password: string;
-  passwordMismatch: string;
-}
 
 export type ValidationResult<Value, Field extends string> =
   { success: true; value: Value } | { success: false; issues: readonly FormIssue<Field>[] };

@@ -1,6 +1,7 @@
 import type { ShortCodeJourney, ShortCodeScreenModel, ShortCodeState } from "$lib/application/auth/types";
+import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
 
-import { type AuthValidationMessages, parseShortCodeLink, validateNewPassword } from "./forms";
+import { parseShortCodeLink, validateNewPassword } from "./forms";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {

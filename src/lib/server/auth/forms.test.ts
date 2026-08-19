@@ -1,5 +1,6 @@
+import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
+
 import {
-  type AuthValidationMessages,
   maskEmail,
   parseShortCodeLink,
   safeReturnTo,

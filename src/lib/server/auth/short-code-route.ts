@@ -1,9 +1,9 @@
 import type { ShortCodePageData } from "$lib/application/auth/short-code-route";
 import type { ShortCodeJourney } from "$lib/application/auth/types";
 import { getAuthUiCopy } from "$lib/i18n/auth-copy";
+import { getAuthFlowCopy } from "$lib/i18n/auth-flow-copy";
 
 import { createAuthenticationContext } from "./context";
-import { getAuthFlowCopy } from "./messages";
 import { completeShortCode, createShortCodeClient, readShortCodeModel } from "./short-code";
 
 import type { RequestEvent } from "@sveltejs/kit";

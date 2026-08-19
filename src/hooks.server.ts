@@ -1,6 +1,6 @@
 import { resolveLocale } from "$lib/i18n/config";
 import { createRequestI18n } from "$lib/i18n/instance";
-import { secureShortCodeResponse } from "$lib/server/response-security";
+import { secureShortCodeResponse } from "$lib/server/auth/short-code-response";
 
 import type { Handle } from "@sveltejs/kit";
 

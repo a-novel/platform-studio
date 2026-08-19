@@ -1,4 +1,4 @@
-import type { AuthValidationMessages } from "./forms";
+import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
 
 import type { TFunction } from "i18next";
 

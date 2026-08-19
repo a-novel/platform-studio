@@ -1,4 +1,5 @@
-import type { AuthValidationMessages } from "./forms";
+import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
+
 import {
   type ShortCodeClient,
   type ShortCodeCompletionContext,

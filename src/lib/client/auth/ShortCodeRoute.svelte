@@ -8,7 +8,7 @@
 </script>
 
 <script lang="ts">
-  import ShortCodeScreen from "./ShortCodeScreen.svelte";
+  import ShortCodeScreen from "$lib/ui/auth/ShortCodeScreen.svelte";
 
   let { data, form }: ShortCodeRouteProps = $props();
 

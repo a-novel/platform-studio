@@ -1,4 +1,4 @@
-import { secureShortCodeResponse } from "./response-security";
+import { secureShortCodeResponse } from "./short-code-response";
 
 import { describe, expect, it } from "vitest";
 
