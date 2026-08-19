@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/a-novel/platform-studio.git"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "type": "module",
   "scripts": {
     "audit": "pnpm audit --audit-level high",
