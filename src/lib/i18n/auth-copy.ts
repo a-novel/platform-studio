@@ -1,4 +1,4 @@
-import type { AuthUiCopy } from "./copy";
+import type { AuthUiCopy } from "$lib/application/auth/copy";
 
 import type { TFunction } from "i18next";
 

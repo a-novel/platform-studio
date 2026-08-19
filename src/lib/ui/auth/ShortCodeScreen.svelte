@@ -1,6 +1,6 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "./copy";
-  import type { FormIssue, ShortCodePasswordField, ShortCodeScreenModel } from "./types";
+  import type { AuthUiCopy } from "$lib/application/auth/copy";
+  import type { FormIssue, ShortCodePasswordField, ShortCodeScreenModel } from "$lib/application/auth/types";
 
   /** Props for a pure standalone email-link completion screen. */
   export interface ShortCodeScreenProps {

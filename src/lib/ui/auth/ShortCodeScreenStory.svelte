@@ -1,6 +1,6 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "./copy";
-  import type { ShortCodeScreenModel } from "./types";
+  import type { AuthUiCopy } from "$lib/application/auth/copy";
+  import type { ShortCodeScreenModel } from "$lib/application/auth/types";
 
   /** Controllable Storybook harness around the pure secure-link screen. */
   export interface ShortCodeScreenStoryProps {

@@ -1,7 +1,8 @@
 <script module lang="ts">
+  import type { AuthenticationPanelModel } from "$lib/application/auth/types";
+  import { getAuthStoryCopy } from "$lib/i18n/auth-story-copy";
+
   import AuthenticationDialogStory from "./AuthenticationDialogStory.svelte";
-  import { getAuthStoryCopy } from "./story-copy";
-  import type { AuthenticationPanelModel } from "./types";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";

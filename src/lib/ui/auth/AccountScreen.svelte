@@ -1,6 +1,11 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "./copy";
-  import type { AccountFormActions, AccountPasswordField, AccountScreenModel, FormIssue } from "./types";
+  import type { AuthUiCopy } from "$lib/application/auth/copy";
+  import type {
+    AccountFormActions,
+    AccountPasswordField,
+    AccountScreenModel,
+    FormIssue,
+  } from "$lib/application/auth/types";
 
   /** Props for the pure protected account-management screen. */
   export interface AccountScreenProps {

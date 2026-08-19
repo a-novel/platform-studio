@@ -1,7 +1,7 @@
-import english from "../i18n/locales/en/common.json";
-import french from "../i18n/locales/fr/common.json";
-import { getStudioShellCopy } from "../shell/messages";
-import { getAuthUiCopy } from "./messages";
+import { getAuthUiCopy } from "./auth-copy";
+import english from "./locales/en/common.yaml";
+import french from "./locales/fr/common.yaml";
+import { getStudioShellCopy } from "./shell-copy";
 
 import { type TFunction, createInstance } from "i18next";
 

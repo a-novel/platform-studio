@@ -1,6 +1,6 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "./copy";
-  import type { AccountScreenModel, ReadyAccountScreenModel } from "./types";
+  import type { AuthUiCopy } from "$lib/application/auth/copy";
+  import type { AccountScreenModel, ReadyAccountScreenModel } from "$lib/application/auth/types";
 
   /** Controllable Storybook harness around the pure account screen. */
   export interface AccountScreenStoryProps {

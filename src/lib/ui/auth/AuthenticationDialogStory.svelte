@@ -1,7 +1,7 @@
 <script module lang="ts">
-  import type { StudioShellCopy } from "../shell/types";
-  import type { AuthUiCopy } from "./copy";
-  import type { AuthenticationJourney, AuthenticationPanelModel } from "./types";
+  import type { AuthUiCopy } from "$lib/application/auth/copy";
+  import type { AuthenticationJourney, AuthenticationPanelModel } from "$lib/application/auth/types";
+  import type { StudioShellCopy } from "$lib/application/shell/types";
 
   /** Controllable Storybook composition of auth UI inside the real shell dialog. */
   export interface AuthenticationDialogStoryProps {
@@ -13,9 +13,10 @@
 </script>
 
 <script lang="ts">
-  import HomeScreen from "../shell/HomeScreen.svelte";
-  import StudioShell from "../shell/StudioShell.svelte";
-  import type { AuthDialogView, StudioShellViewModel } from "../shell/types";
+  import type { AuthDialogView, StudioShellViewModel } from "$lib/application/shell/types";
+  import HomeScreen from "$lib/ui/shell/HomeScreen.svelte";
+  import StudioShell from "$lib/ui/shell/StudioShell.svelte";
+
   import AuthenticationPanel from "./AuthenticationPanel.svelte";
 
   import { untrack } from "svelte";

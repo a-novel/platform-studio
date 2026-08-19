@@ -1,6 +1,7 @@
 <script module lang="ts">
+  import { getAuthStoryCopy } from "$lib/i18n/auth-story-copy";
+
   import ShortCodeScreenStory from "./ShortCodeScreenStory.svelte";
-  import { getAuthStoryCopy } from "./story-copy";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, within } from "storybook/test";

@@ -1,6 +1,6 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "./copy";
-  import type { AuthenticationField, AuthenticationPanelModel } from "./types";
+  import type { AuthUiCopy } from "$lib/application/auth/copy";
+  import type { AuthenticationField, AuthenticationPanelModel } from "$lib/application/auth/types";
 
   /** Props for the pure form rendered inside the shell authentication dialog. */
   export interface AuthenticationPanelProps {
