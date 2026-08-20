@@ -1,13 +1,8 @@
 <script module lang="ts">
-  import { getAuthStoryCopy } from "$lib/i18n/auth-story-copy";
-
   import ShortCodeScreenStory from "./ShortCodeScreenStory.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, within } from "storybook/test";
-
-  const english = getAuthStoryCopy("en");
-  const french = getAuthStoryCopy("fr");
 
   const { Story } = defineMeta({
     title: "Authentication/Secure email links",
@@ -51,56 +46,38 @@
 
 <Story name="Complete registration" asChild play={verifyRegistrationForm}>
   <ShortCodeScreenStory
-    copy={english.auth.shortCode}
     initialModel={{ journey: "register", state: { status: "ready" }, targetHint: "m•••@example.test" }}
   />
 </Story>
 
 <Story name="Confirm email update" asChild play={verifyEmailConfirmation}>
   <ShortCodeScreenStory
-    copy={english.auth.shortCode}
     initialModel={{ journey: "email-update", state: { status: "ready" }, targetHint: "n••••••@example.test" }}
   />
 </Story>
 
 <Story name="Complete password reset" asChild>
-  <ShortCodeScreenStory
-    copy={english.auth.shortCode}
-    initialModel={{ journey: "password-reset", state: { status: "ready" } }}
-  />
+  <ShortCodeScreenStory initialModel={{ journey: "password-reset", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Missing link details" asChild>
-  <ShortCodeScreenStory
-    copy={english.auth.shortCode}
-    initialModel={{ journey: "register", state: { status: "missing" } }}
-  />
+  <ShortCodeScreenStory initialModel={{ journey: "register", state: { status: "missing" } }} />
 </Story>
 
 <Story name="Invalid link" asChild>
-  <ShortCodeScreenStory
-    copy={english.auth.shortCode}
-    initialModel={{ journey: "email-update", state: { status: "invalid" } }}
-  />
+  <ShortCodeScreenStory initialModel={{ journey: "email-update", state: { status: "invalid" } }} />
 </Story>
 
 <Story name="Expired link" asChild>
-  <ShortCodeScreenStory
-    copy={english.auth.shortCode}
-    initialModel={{ journey: "password-reset", state: { status: "expired" } }}
-  />
+  <ShortCodeScreenStory initialModel={{ journey: "password-reset", state: { status: "expired" } }} />
 </Story>
 
 <Story name="Submitting once" asChild play={verifySubmittingLocked}>
-  <ShortCodeScreenStory
-    copy={english.auth.shortCode}
-    initialModel={{ journey: "password-reset", state: { status: "submitting" } }}
-  />
+  <ShortCodeScreenStory initialModel={{ journey: "password-reset", state: { status: "submitting" } }} />
 </Story>
 
 <Story name="Validation error" asChild play={verifyValidationLink}>
   <ShortCodeScreenStory
-    copy={english.auth.shortCode}
     initialModel={{
       journey: "register",
       state: {
@@ -117,7 +94,6 @@
 
 <Story name="Service error" asChild>
   <ShortCodeScreenStory
-    copy={english.auth.shortCode}
     initialModel={{
       journey: "password-reset",
       state: {
@@ -130,7 +106,6 @@
 
 <Story name="Success" asChild>
   <ShortCodeScreenStory
-    copy={english.auth.shortCode}
     initialModel={{
       journey: "register",
       state: { status: "success", message: "Your account and protected Studio session are ready." },
@@ -139,9 +114,8 @@
   />
 </Story>
 
-<Story name="Narrow French long error" asChild>
+<Story name="Narrow French long error" asChild parameters={{ locale: "fr" }}>
   <ShortCodeScreenStory
-    copy={french.auth.shortCode}
     frameWidth="22rem"
     initialModel={{
       journey: "email-update",

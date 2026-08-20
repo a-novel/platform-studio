@@ -1,5 +1,5 @@
 import type { ReadyAccountScreenModel } from "$lib/application/auth/types";
-import { getAuthStoryCopy } from "$lib/i18n/auth-story-copy";
+import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
 import AccountScreen from "./AccountScreen.svelte";
 import AuthenticationPanel from "./AuthenticationPanel.svelte";
@@ -11,8 +11,6 @@ import { page } from "vitest/browser";
 
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
-
-const copy = getAuthStoryCopy("en").auth;
 
 const readyAccount: ReadyAccountScreenModel = {
   status: "ready",
@@ -27,6 +25,13 @@ const readyAccount: ReadyAccountScreenModel = {
   logoutState: "ready",
 };
 
+function withLocale(locale: "en" | "fr" = "en") {
+  return {
+    wrapper: StudioI18nProvider,
+    wrapperProps: { locale },
+  };
+}
+
 function submitForm(buttonName: string): HTMLFormElement {
   const button = page.getByRole("button", { name: buttonName }).element() as HTMLButtonElement;
   const form = button.form;
@@ -40,12 +45,15 @@ describe("pure authentication screens", () => {
   it("delegates login submission without owning credential state", async () => {
     const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
 
-    render(AuthenticationPanel, {
-      copy: copy.authentication,
-      model: { journey: "login", state: { status: "ready" } },
-      action: "/auth?/login",
-      onSubmit,
-    });
+    render(
+      AuthenticationPanel,
+      {
+        model: { journey: "login", state: { status: "ready" } },
+        action: "/auth?/login",
+        onSubmit,
+      },
+      withLocale()
+    );
 
     const form = submitForm("Sign in");
 
@@ -60,12 +68,15 @@ describe("pure authentication screens", () => {
   it("locks an in-flight login at the pure view boundary", async () => {
     const onSubmit = vi.fn();
 
-    render(AuthenticationPanel, {
-      copy: copy.authentication,
-      model: { journey: "login", state: { status: "submitting" } },
-      action: "/auth?/login",
-      onSubmit,
-    });
+    render(
+      AuthenticationPanel,
+      {
+        model: { journey: "login", state: { status: "submitting" } },
+        action: "/auth?/login",
+        onSubmit,
+      },
+      withLocale()
+    );
 
     await expect.element(page.getByRole("button")).toBeDisabled();
     await expect.element(page.getByLabelText(/Email address/)).toBeDisabled();
@@ -78,18 +89,21 @@ describe("pure authentication screens", () => {
     const onEmailSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
     const onLogoutSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
 
-    render(AccountScreen, {
-      copy: copy.account,
-      model: readyAccount,
-      actions: {
-        password: "/account?/password",
-        email: "/account?/email",
-        logout: "/account?/logout",
+    render(
+      AccountScreen,
+      {
+        model: readyAccount,
+        actions: {
+          password: "/account?/password",
+          email: "/account?/email",
+          logout: "/account?/logout",
+        },
+        onPasswordSubmit,
+        onEmailSubmit,
+        onLogoutSubmit,
       },
-      onPasswordSubmit,
-      onEmailSubmit,
-      onLogoutSubmit,
-    });
+      withLocale()
+    );
 
     expect(submitForm("Change password").getAttribute("action")).toBe("/account?/password");
     expect(submitForm("Send confirmation link").getAttribute("action")).toBe("/account?/email");
@@ -102,19 +116,22 @@ describe("pure authentication screens", () => {
   it("never renders secure-link material and locks completion while submitting", async () => {
     const onSubmit = vi.fn();
 
-    render(ShortCodeScreen, {
-      copy: copy.shortCode,
-      model: {
-        journey: "password-reset",
-        state: { status: "submitting" },
-        targetHint: "m•••@example.test",
+    render(
+      ShortCodeScreen,
+      {
+        model: {
+          journey: "password-reset",
+          state: { status: "submitting" },
+          targetHint: "m•••@example.test",
+        },
+        action: "/ext/password/reset",
+        homeHref: "/",
+        restartHref: "/?auth=reset",
+        continueHref: "/",
+        onSubmit,
       },
-      action: "/ext/password/reset",
-      homeHref: "/",
-      restartHref: "/?auth=reset",
-      continueHref: "/",
-      onSubmit,
-    });
+      withLocale()
+    );
 
     await expect.element(page.getByRole("button")).toBeDisabled();
     await expect.element(page.getByLabelText(/New password/)).toBeDisabled();
@@ -127,15 +144,18 @@ describe("pure authentication screens", () => {
   it("renders email confirmation without password controls", () => {
     const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
 
-    render(ShortCodeScreen, {
-      copy: copy.shortCode,
-      model: { journey: "email-update", state: { status: "ready" } },
-      action: "/ext/email/validate",
-      homeHref: "/",
-      restartHref: "/account",
-      continueHref: "/account",
-      onSubmit,
-    });
+    render(
+      ShortCodeScreen,
+      {
+        model: { journey: "email-update", state: { status: "ready" } },
+        action: "/ext/email/validate",
+        homeHref: "/",
+        restartHref: "/account",
+        continueHref: "/account",
+        onSubmit,
+      },
+      withLocale()
+    );
 
     const form = submitForm("Confirm email change");
 

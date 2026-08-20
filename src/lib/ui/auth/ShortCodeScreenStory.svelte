@@ -1,10 +1,8 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "$lib/application/auth/copy";
   import type { ShortCodeScreenModel } from "$lib/application/auth/types";
 
   /** Controllable Storybook harness around the pure secure-link screen. */
   export interface ShortCodeScreenStoryProps {
-    copy: AuthUiCopy["shortCode"];
     initialModel: ShortCodeScreenModel;
     frameWidth?: string;
   }
@@ -15,7 +13,7 @@
 
   import { untrack } from "svelte";
 
-  let { copy, initialModel, frameWidth }: ShortCodeScreenStoryProps = $props();
+  let { initialModel, frameWidth }: ShortCodeScreenStoryProps = $props();
 
   let model = $state<ShortCodeScreenModel>(untrack(() => structuredClone(initialModel)));
 
@@ -28,7 +26,6 @@
 
 <div class="story-frame" style:--story-frame-width={frameWidth}>
   <ShortCodeScreen
-    {copy}
     {model}
     action="/storybook/complete"
     homeHref="/"

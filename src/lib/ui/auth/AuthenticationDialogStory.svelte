@@ -1,12 +1,8 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "$lib/application/auth/copy";
   import type { AuthenticationJourney, AuthenticationPanelModel } from "$lib/application/auth/types";
-  import type { StudioShellCopy } from "$lib/application/shell/types";
 
   /** Controllable Storybook composition of auth UI inside the real shell dialog. */
   export interface AuthenticationDialogStoryProps {
-    authCopy: AuthUiCopy["authentication"];
-    shellCopy: StudioShellCopy;
     initialModel: AuthenticationPanelModel;
     frameWidth?: string;
   }
@@ -21,7 +17,7 @@
 
   import { untrack } from "svelte";
 
-  let { authCopy, shellCopy, initialModel, frameWidth }: AuthenticationDialogStoryProps = $props();
+  let { initialModel, frameWidth }: AuthenticationDialogStoryProps = $props();
 
   let panelModel = $state<AuthenticationPanelModel>(untrack(() => structuredClone(initialModel)));
   let authView = $state<AuthDialogView | null>(untrack(() => journeyToView(initialModel.journey)));
@@ -64,11 +60,11 @@
 </script>
 
 <div class="story-frame" style:--story-frame-width={frameWidth}>
-  <StudioShell copy={shellCopy} model={shellModel} onAuthViewChange={changeAuthView}>
-    <HomeScreen title={shellCopy.homeTitle} />
+  <StudioShell model={shellModel} onAuthViewChange={changeAuthView}>
+    <HomeScreen />
 
     {#snippet authContent()}
-      <AuthenticationPanel copy={authCopy} model={panelModel} action="/storybook/auth" onSubmit={submit} />
+      <AuthenticationPanel model={panelModel} action="/storybook/auth" onSubmit={submit} />
     {/snippet}
   </StudioShell>
 </div>

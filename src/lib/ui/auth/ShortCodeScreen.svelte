@@ -1,10 +1,8 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "$lib/application/auth/copy";
   import type { FormIssue, ShortCodePasswordField, ShortCodeScreenModel } from "$lib/application/auth/types";
 
   /** Props for a pure standalone email-link completion screen. */
   export interface ShortCodeScreenProps {
-    copy: AuthUiCopy["shortCode"];
     model: ShortCodeScreenModel;
     action: string;
     homeHref: string;
@@ -15,6 +13,9 @@
 </script>
 
 <script lang="ts">
+  import type { ShortCodeJourney } from "$lib/application/auth/types";
+
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
     Alert,
     Button,
@@ -30,8 +31,9 @@
 
   import { CircleCheck, KeyRound } from "@lucide/svelte";
 
-  let { copy, model, action, homeHref, restartHref, continueHref, onSubmit }: ShortCodeScreenProps = $props();
+  let { model, action, homeHref, restartHref, continueHref, onSubmit }: ShortCodeScreenProps = $props();
 
+  const { t } = getI18nContext();
   const componentId = $props.id();
   const newPasswordId = `${componentId}-new-password`;
   const confirmPasswordId = `${componentId}-confirm-password`;
@@ -44,16 +46,12 @@
       message: issue.message,
     }))
   );
-  const journeyCopy = $derived(
-    model.journey === "register"
-      ? copy.journeys.register
-      : model.journey === "email-update"
-        ? copy.journeys.emailUpdate
-        : copy.journeys.passwordReset
-  );
-  const unavailableCopy = $derived(
+  const journeyTitle = $derived(getJourneyTitle(model.journey));
+  const journeyDescription = $derived(getJourneyDescription(model.journey));
+  const journeySubmit = $derived(getJourneySubmit(model.journey));
+  const unavailableStatus = $derived(
     model.state.status === "missing" || model.state.status === "invalid" || model.state.status === "expired"
-      ? copy.states[model.state.status]
+      ? model.state.status
       : null
   );
 
@@ -63,6 +61,66 @@
   ): string | undefined {
     return currentIssues.find((issue) => issue.field === field)?.message;
   }
+
+  function getJourneyTitle(journey: ShortCodeJourney): string {
+    switch (journey) {
+      case "email-update":
+        return t("authUi.shortCode.journeys.emailUpdate.title");
+      case "password-reset":
+        return t("authUi.shortCode.journeys.passwordReset.title");
+      case "register":
+      default:
+        return t("authUi.shortCode.journeys.register.title");
+    }
+  }
+
+  function getJourneyDescription(journey: ShortCodeJourney): string {
+    switch (journey) {
+      case "email-update":
+        return t("authUi.shortCode.journeys.emailUpdate.description");
+      case "password-reset":
+        return t("authUi.shortCode.journeys.passwordReset.description");
+      case "register":
+      default:
+        return t("authUi.shortCode.journeys.register.description");
+    }
+  }
+
+  function getJourneySubmit(journey: ShortCodeJourney): string {
+    switch (journey) {
+      case "email-update":
+        return t("authUi.shortCode.journeys.emailUpdate.submit");
+      case "password-reset":
+        return t("authUi.shortCode.journeys.passwordReset.submit");
+      case "register":
+      default:
+        return t("authUi.shortCode.journeys.register.submit");
+    }
+  }
+
+  function getUnavailableTitle(status: "missing" | "invalid" | "expired"): string {
+    switch (status) {
+      case "invalid":
+        return t("authUi.shortCode.states.invalid.title");
+      case "expired":
+        return t("authUi.shortCode.states.expired.title");
+      case "missing":
+      default:
+        return t("authUi.shortCode.states.missing.title");
+    }
+  }
+
+  function getUnavailableDescription(status: "missing" | "invalid" | "expired"): string {
+    switch (status) {
+      case "invalid":
+        return t("authUi.shortCode.states.invalid.description");
+      case "expired":
+        return t("authUi.shortCode.states.expired.description");
+      case "missing":
+      default:
+        return t("authUi.shortCode.states.missing.description");
+    }
+  }
 </script>
 
 {#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
@@ -70,9 +128,9 @@
 <div class="standalone-viewport">
   <header class="standalone-header">
     <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-    <a class="brand" href={homeHref} aria-label={copy.home}>
+    <a class="brand" href={homeHref} aria-label={t("authUi.shortCode.home")}>
       <span class="brand-mark" aria-hidden="true">A</span>
-      <span>{copy.brand}</span>
+      <span>{t("authUi.shortCode.brand")}</span>
     </a>
   </header>
 
@@ -80,43 +138,43 @@
     <Container size="readable">
       <Card surface="raised" padding="lg">
         <div class="completion-card">
-          <PageHeader eyebrow={copy.eyebrow} title={journeyCopy.title} description={journeyCopy.description} />
+          <PageHeader eyebrow={t("authUi.shortCode.eyebrow")} title={journeyTitle} description={journeyDescription} />
 
           {#if model.targetHint}
             <dl class="target">
-              <dt>{copy.targetLabel}</dt>
+              <dt>{t("authUi.shortCode.targetLabel")}</dt>
               <dd>{model.targetHint}</dd>
             </dl>
           {/if}
 
-          {#if unavailableCopy}
-            <Alert tone="error" title={unavailableCopy.title}>
+          {#if unavailableStatus}
+            <Alert tone="error" title={getUnavailableTitle(unavailableStatus)}>
               <div class="status-copy">
-                <p>{unavailableCopy.description}</p>
+                <p>{getUnavailableDescription(unavailableStatus)}</p>
                 <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-                <Link href={restartHref}>{copy.restart}</Link>
+                <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
               </div>
             </Alert>
           {:else if model.state.status === "success"}
-            <Alert tone="success" title={copy.successTitle} icon={successIcon}>
+            <Alert tone="success" title={t("authUi.shortCode.successTitle")} icon={successIcon}>
               <div class="status-copy">
                 <p>{model.state.message}</p>
                 <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-                <Link href={continueHref}>{copy.continue}</Link>
+                <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
               </div>
             </Alert>
           {:else}
             <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
               {#if model.state.status === "validation-error"}
                 <ErrorSummary
-                  title={copy.validationTitle}
-                  description={copy.validationDescription}
+                  title={t("authUi.shortCode.validationTitle")}
+                  description={t("authUi.shortCode.validationDescription")}
                   errors={summaryErrors}
                   headingLevel={2}
                   focusOnMount
                 />
               {:else if model.state.status === "service-error"}
-                <Alert tone="error" title={copy.serviceErrorTitle}>
+                <Alert tone="error" title={t("authUi.shortCode.serviceErrorTitle")}>
                   <p class="feedback-message">{model.state.message}</p>
                 </Alert>
               {/if}
@@ -124,8 +182,8 @@
               {#if model.journey !== "email-update"}
                 <Field
                   controlId={newPasswordId}
-                  label={copy.newPasswordLabel}
-                  hint={copy.passwordHint}
+                  label={t("authUi.shortCode.newPasswordLabel")}
+                  hint={t("authUi.shortCode.passwordHint")}
                   error={issueMessage(issues, "newPassword")}
                   required
                 >
@@ -142,7 +200,7 @@
                 </Field>
                 <Field
                   controlId={confirmPasswordId}
-                  label={copy.confirmPasswordLabel}
+                  label={t("authUi.shortCode.confirmPasswordLabel")}
                   error={issueMessage(issues, "confirmPassword")}
                   required
                 >
@@ -161,11 +219,11 @@
 
               <Button type="submit" disabled={submitting}>
                 {#if submitting}
-                  <Spinner label={copy.submitting} size="sm" />
-                  <span aria-hidden="true">{copy.submitting}</span>
+                  <Spinner label={t("authUi.shortCode.submitting")} size="sm" />
+                  <span aria-hidden="true">{t("authUi.shortCode.submitting")}</span>
                 {:else}
                   <KeyRound size="var(--icon-size-sm)" aria-hidden="true" />
-                  {journeyCopy.submit}
+                  {journeySubmit}
                 {/if}
               </Button>
             </form>
