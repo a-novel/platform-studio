@@ -11,25 +11,15 @@
 </script>
 
 <script lang="ts">
-  import { defaultLocale, defaultNamespace, namespaces } from "./config";
-  import { resources } from "./resources";
+  import { createStudioI18n } from "./instance";
 
   import { untrack } from "svelte";
 
-  import { createStaticI18n } from "@a-novel-kit/nodelib-i18n";
   import { setI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
 
   let { children, locale }: StudioI18nProviderProps = $props();
 
-  setI18nContext(
-    createStaticI18n({
-      defaultLocale,
-      defaultNamespace,
-      locale: untrack(() => locale),
-      namespaces,
-      resources,
-    })
-  );
+  setI18nContext(createStudioI18n(untrack(() => locale)));
 </script>
 
 {@render children()}

@@ -12,6 +12,7 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - "@a-novel-kit/nodelib-config@1.6.3"
+  - "@a-novel-kit/nodelib-browser@1.6.3"
   - "@a-novel-kit/nodelib-i18n@1.6.3"
   - "@a-novel-kit/nodelib-server@1.6.3"
   - "@a-novel-kit/uikit-fonts@0.2.1"
