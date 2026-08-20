@@ -228,8 +228,10 @@ describe("pure authentication screens", () => {
     );
 
     const form = await submitForm("Confirm email change");
+    const submit = page.getByRole("button", { name: "Confirm email change" }).element();
 
     expect(form.querySelector('input[type="password"]')).toBeNull();
+    expect(getComputedStyle(submit).marginBlockStart).toBe("8px");
     expect(onSubmit).toHaveBeenCalledOnce();
   });
 });

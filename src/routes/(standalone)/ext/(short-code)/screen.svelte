@@ -237,6 +237,7 @@
 
   form > :global(button) {
     justify-content: center;
+    margin-block-start: var(--space-2);
     inline-size: 100%;
   }
 
