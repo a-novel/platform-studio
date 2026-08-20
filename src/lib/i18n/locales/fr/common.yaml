@@ -1,1 +1,33 @@
-{}
+shell:
+  accountMenu: Menu du compte
+  auth:
+    backToSignIn: Revenir à la connexion
+    createAccount: Créer un compte
+    forgotPassword: Mot de passe oublié ?
+    formPlaceholder: Zone du formulaire d’authentification
+    login:
+      description: Utilisez votre compte Studio pour continuer.
+      title: Se connecter
+    register:
+      description: Créez le compte que vous utiliserez dans tout Studio.
+      title: Créer votre compte
+    reset:
+      description: Demandez un lien sécurisé pour choisir un nouveau mot de passe.
+      title: Réinitialiser votre mot de passe
+    signInInstead: Se connecter à la place
+  brand: Studio
+  closeAuthentication: Fermer l’authentification
+  closeNavigation: Fermer la navigation
+  collapseNavigation: Réduire la navigation
+  expandNavigation: Développer la navigation
+  home: Accueil
+  homeTitle: Accueil
+  logout: Se déconnecter
+  manageAccount: Gérer le compte
+  navigation: Navigation de Studio
+  openNavigation: Ouvrir la navigation
+  retrySession: Réessayer de charger le compte
+  sessionLoading: Chargement de l’état du compte
+  sessionUnavailable: L’état du compte est temporairement indisponible.
+  signIn: Se connecter
+  skipToContent: Aller au contenu

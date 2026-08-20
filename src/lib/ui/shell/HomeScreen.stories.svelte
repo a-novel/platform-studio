@@ -19,4 +19,4 @@
   });
 </script>
 
-<Story name="Default" args={{ title: "Home" }} />
+<Story name="Default" />
