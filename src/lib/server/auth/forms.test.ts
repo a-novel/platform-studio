@@ -109,6 +109,7 @@ describe("parseShortCodeLink", () => {
     expect(parseShortCodeLink("email-update", url)).toEqual({
       status: "ready",
       journey: "email-update",
+      email: "new@example.com",
       shortCode: "code-123",
       targetHint: "n•••@example.com",
       userId,

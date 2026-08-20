@@ -5,7 +5,6 @@
   export interface ShortCodeScreenProps {
     model: ShortCodeScreenModel;
     action: string;
-    homeHref: string;
     restartHref: string;
     continueHref: string;
     onSubmit?: (event: SubmitEvent) => void;
@@ -16,22 +15,11 @@
   import type { ShortCodeJourney } from "$lib/application/auth/types";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import {
-    Alert,
-    Button,
-    Card,
-    Container,
-    ErrorSummary,
-    Field,
-    Input,
-    Link,
-    PageHeader,
-    Spinner,
-  } from "@a-novel-kit/uikit";
+  import { Alert, Button, ErrorSummary, Field, Input, Link, Spinner } from "@a-novel-kit/uikit";
 
-  import { CircleCheck, KeyRound } from "@lucide/svelte";
+  import { CircleCheck } from "@lucide/svelte";
 
-  let { model, action, homeHref, restartHref, continueHref, onSubmit }: ShortCodeScreenProps = $props();
+  let { model, action, restartHref, continueHref, onSubmit }: ShortCodeScreenProps = $props();
 
   const { t } = getI18nContext();
   const componentId = $props.id();
@@ -125,167 +113,113 @@
 
 {#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
 
-<div class="standalone-viewport">
-  <header class="standalone-header">
-    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-    <a class="brand" href={homeHref} aria-label={t("authUi.shortCode.home")}>
-      <span class="brand-mark" aria-hidden="true">A</span>
-      <span>{t("authUi.shortCode.brand")}</span>
-    </a>
-  </header>
+<main class="standalone-page">
+  <section class="secure-action" aria-labelledby={`${componentId}-title`}>
+    <header class="page-heading">
+      <h1 id={`${componentId}-title`}>{journeyTitle}</h1>
+      <p>{journeyDescription}</p>
+    </header>
 
-  <main>
-    <Container size="readable">
-      <Card surface="raised" padding="lg">
-        <div class="completion-card">
-          <PageHeader eyebrow={t("authUi.shortCode.eyebrow")} title={journeyTitle} description={journeyDescription} />
+    {#if model.targetHint}
+      <dl class="target">
+        <dt>{t("authUi.shortCode.targetLabel")}</dt>
+        <dd>{model.targetHint}</dd>
+      </dl>
+    {/if}
 
-          {#if model.targetHint}
-            <dl class="target">
-              <dt>{t("authUi.shortCode.targetLabel")}</dt>
-              <dd>{model.targetHint}</dd>
-            </dl>
-          {/if}
-
-          {#if unavailableStatus}
-            <Alert tone="error" title={getUnavailableTitle(unavailableStatus)}>
-              <div class="status-copy">
-                <p>{getUnavailableDescription(unavailableStatus)}</p>
-                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-                <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
-              </div>
-            </Alert>
-          {:else if model.state.status === "success"}
-            <Alert tone="success" title={t("authUi.shortCode.successTitle")} icon={successIcon}>
-              <div class="status-copy">
-                <p>{model.state.message}</p>
-                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-                <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
-              </div>
-            </Alert>
-          {:else}
-            <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
-              {#if model.state.status === "validation-error"}
-                <ErrorSummary
-                  title={t("authUi.shortCode.validationTitle")}
-                  description={t("authUi.shortCode.validationDescription")}
-                  errors={summaryErrors}
-                  headingLevel={2}
-                  focusOnMount
-                />
-              {:else if model.state.status === "service-error"}
-                <Alert tone="error" title={t("authUi.shortCode.serviceErrorTitle")}>
-                  <p class="feedback-message">{model.state.message}</p>
-                </Alert>
-              {/if}
-
-              {#if model.journey !== "email-update"}
-                <Field
-                  controlId={newPasswordId}
-                  label={t("authUi.shortCode.newPasswordLabel")}
-                  hint={t("authUi.shortCode.passwordHint")}
-                  error={issueMessage(issues, "newPassword")}
-                  required
-                >
-                  {#snippet children(control)}
-                    <Input
-                      {...control}
-                      name="password"
-                      type="password"
-                      autocomplete="new-password"
-                      disabled={submitting}
-                      invalid={Boolean(issueMessage(issues, "newPassword"))}
-                    />
-                  {/snippet}
-                </Field>
-                <Field
-                  controlId={confirmPasswordId}
-                  label={t("authUi.shortCode.confirmPasswordLabel")}
-                  error={issueMessage(issues, "confirmPassword")}
-                  required
-                >
-                  {#snippet children(control)}
-                    <Input
-                      {...control}
-                      name="confirmPassword"
-                      type="password"
-                      autocomplete="new-password"
-                      disabled={submitting}
-                      invalid={Boolean(issueMessage(issues, "confirmPassword"))}
-                    />
-                  {/snippet}
-                </Field>
-              {/if}
-
-              <Button type="submit" disabled={submitting}>
-                {#if submitting}
-                  <Spinner label={t("authUi.shortCode.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.shortCode.submitting")}</span>
-                {:else}
-                  <KeyRound size="var(--icon-size-sm)" aria-hidden="true" />
-                  {journeySubmit}
-                {/if}
-              </Button>
-            </form>
-          {/if}
+    {#if unavailableStatus}
+      <Alert tone="error" title={getUnavailableTitle(unavailableStatus)}>
+        <div class="status-copy">
+          <p>{getUnavailableDescription(unavailableStatus)}</p>
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
+          <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
         </div>
-      </Card>
-    </Container>
-  </main>
-</div>
+      </Alert>
+    {:else if model.state.status === "success"}
+      <Alert tone="success" title={t("authUi.shortCode.successTitle")} icon={successIcon}>
+        <div class="status-copy">
+          <p>{model.state.message}</p>
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
+          <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
+        </div>
+      </Alert>
+    {:else}
+      <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
+        {#if model.state.status === "validation-error"}
+          <ErrorSummary
+            title={t("authUi.shortCode.validationTitle")}
+            description={t("authUi.shortCode.validationDescription")}
+            errors={summaryErrors}
+            headingLevel={2}
+            focusOnMount
+          />
+        {:else if model.state.status === "service-error"}
+          <Alert tone="error" title={t("authUi.shortCode.serviceErrorTitle")}>
+            <p class="feedback-message">{model.state.message}</p>
+          </Alert>
+        {/if}
+
+        {#if model.journey !== "email-update"}
+          <Field
+            controlId={newPasswordId}
+            label={t("authUi.shortCode.newPasswordLabel")}
+            hint={t("authUi.shortCode.passwordHint")}
+            error={issueMessage(issues, "newPassword")}
+            required
+          >
+            {#snippet children(control)}
+              <Input
+                {...control}
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                disabled={submitting}
+                invalid={Boolean(issueMessage(issues, "newPassword"))}
+              />
+            {/snippet}
+          </Field>
+          <Field
+            controlId={confirmPasswordId}
+            label={t("authUi.shortCode.confirmPasswordLabel")}
+            error={issueMessage(issues, "confirmPassword")}
+            required
+          >
+            {#snippet children(control)}
+              <Input
+                {...control}
+                name="confirmPassword"
+                type="password"
+                autocomplete="new-password"
+                disabled={submitting}
+                invalid={Boolean(issueMessage(issues, "confirmPassword"))}
+              />
+            {/snippet}
+          </Field>
+        {/if}
+
+        <Button type="submit" disabled={submitting}>
+          {#if submitting}
+            <Spinner label={t("authUi.shortCode.submitting")} size="sm" />
+            <span aria-hidden="true">{t("authUi.shortCode.submitting")}</span>
+          {:else}
+            {journeySubmit}
+          {/if}
+        </Button>
+      </form>
+    {/if}
+  </section>
+</main>
 
 <style>
-  .standalone-viewport {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    background:
-      radial-gradient(circle at 80% 10%, var(--color-surface-selected), transparent 30rem), var(--color-surface-canvas);
+  .standalone-page {
+    box-sizing: border-box;
+    background: var(--color-surface-canvas);
+    padding: clamp(var(--space-4), 5vi, var(--space-12));
     min-block-size: 100dvb;
     color: var(--color-text-primary);
   }
 
-  .standalone-header {
-    display: flex;
-    align-items: center;
-    border-block-end: var(--border-width-thin) solid var(--color-border-subtle);
-    background: var(--color-surface-sunken);
-    padding: var(--space-2) var(--layout-gutter);
-  }
-
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    border-radius: var(--radius-md);
-    color: var(--color-text-primary);
-    font-weight: var(--font-weight-bold);
-    font-family: var(--font-family-display);
-    text-decoration: none;
-  }
-
-  .brand:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus-ring);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  .brand-mark {
-    display: inline-grid;
-    place-items: center;
-    border: var(--border-width-thin) solid var(--color-border-selected);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-selected);
-    inline-size: var(--control-height-sm);
-    block-size: var(--control-height-sm);
-    color: var(--color-text-accent);
-  }
-
-  main {
-    display: grid;
-    align-items: center;
-    padding-block: var(--space-8);
-  }
-
-  .completion-card,
+  .secure-action,
   form,
   .status-copy {
     display: grid;
@@ -293,17 +227,48 @@
     min-inline-size: 0;
   }
 
+  .secure-action {
+    margin-inline: auto;
+    max-inline-size: var(--layout-readable-measure);
+  }
+
+  .page-heading {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .page-heading h1,
+  .page-heading p,
+  .status-copy p,
+  .feedback-message {
+    margin: 0;
+  }
+
+  .page-heading h1 {
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    font-family: var(--font-family-display);
+  }
+
+  .page-heading p,
+  .status-copy p,
+  .feedback-message {
+    line-height: var(--line-height-normal);
+  }
+
+  .page-heading p {
+    color: var(--color-text-muted);
+  }
+
   form > :global(button) {
-    justify-self: start;
+    justify-content: center;
+    inline-size: 100%;
   }
 
   .target {
     display: grid;
     gap: var(--space-1);
     margin: 0;
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-3);
   }
 
   .target dt {
@@ -317,25 +282,5 @@
     margin: 0;
     font-family: var(--font-family-mono);
     overflow-wrap: anywhere;
-  }
-
-  .status-copy p,
-  .feedback-message {
-    margin: 0;
-    line-height: var(--line-height-normal);
-  }
-
-  @media (max-width: 35rem) {
-    main {
-      align-items: start;
-      padding-block: var(--space-3);
-    }
-  }
-
-  @media (forced-colors: active) {
-    .standalone-header,
-    .brand-mark {
-      border-color: CanvasText;
-    }
   }
 </style>

@@ -37,7 +37,6 @@ export function loadShortCodeRoute(
   return {
     links: {
       continueHref: routeDetails[journey].continueHref,
-      homeHref: "/",
       restartHref: routeDetails[journey].restartHref,
     },
     model: readShortCodeModel(journey, event.url, successMessage(journey, t)),
@@ -55,9 +54,10 @@ export async function submitShortCodeRoute(journey: ShortCodeJourney, event: Req
     t("authFlow.feedback.serviceUnavailable"),
     successMessage(journey, t),
     {
-      accept: (token) => authentication.session.accept(token),
+      accept: (token, identityEmail) => authentication.session.accept(token, identityEmail),
       accessToken: async () => await authentication.session.anonymousAccessToken(),
       client: createShortCodeClient(authentication.api),
+      rememberIdentity: (identityEmail) => authentication.session.rememberIdentity(identityEmail),
     }
   );
 

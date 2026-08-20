@@ -158,7 +158,8 @@
   }
 
   form > :global(button) {
-    justify-self: start;
+    justify-content: center;
+    inline-size: 100%;
   }
 
   .feedback-copy p,

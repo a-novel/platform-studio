@@ -2,7 +2,6 @@
 export default interface Resources {
   "common": {
     "authFlow": {
-      "accountName": "Account {{id}}",
       "expiryUnavailable": "Not reported by this token",
       "feedback": {
         "emailUpdated": "Your email address was updated.",
@@ -110,8 +109,6 @@ export default interface Resources {
         "brand": "Studio",
         "confirmPasswordLabel": "Confirm new password",
         "continue": "Continue to Studio",
-        "eyebrow": "Secure email link",
-        "home": "Return to Studio home",
         "journeys": {
           "emailUpdate": {
             "description": "Apply the verified address to the account that requested this change.",
@@ -155,12 +152,11 @@ export default interface Resources {
       }
     },
     "shell": {
-      "accountMenu": "Account menu",
+      "accountFallback": "Account",
       "auth": {
         "backToSignIn": "Back to sign in",
         "createAccount": "Create an account",
         "forgotPassword": "Forgot password?",
-        "formPlaceholder": "Authentication form area",
         "login": {
           "description": "Use your Studio account to continue.",
           "title": "Sign in"
@@ -184,9 +180,9 @@ export default interface Resources {
       "homeTitle": "Home",
       "logout": "Log out",
       "manageAccount": "Manage account",
+      "manageAccountFor": "Manage account for {{name}}",
       "navigation": "Studio navigation",
       "openNavigation": "Open navigation",
-      "retrySession": "Retry account status",
       "sessionLoading": "Loading account status",
       "sessionUnavailable": "Account status is temporarily unavailable.",
       "signIn": "Sign in",

@@ -1,5 +1,4 @@
 authFlow:
-  accountName: Compte {{id}}
   expiryUnavailable: Non indiqué par ce jeton
   feedback:
     emailUpdated: Votre adresse e-mail a été mise à jour.
@@ -94,8 +93,6 @@ authUi:
     brand: Studio
     confirmPasswordLabel: Confirmer le nouveau mot de passe
     continue: Continuer vers Studio
-    eyebrow: Lien sécurisé envoyé par e-mail
-    home: Revenir à l’accueil de Studio
     journeys:
       emailUpdate:
         description: Appliquez l’adresse vérifiée au compte qui a demandé cette modification.
@@ -129,12 +126,11 @@ authUi:
     validationDescription: Corrigez les informations ci-dessous puis renvoyez le formulaire.
     validationTitle: Vérifiez les champs du mot de passe
 shell:
-  accountMenu: Menu du compte
+  accountFallback: Compte
   auth:
     backToSignIn: Revenir à la connexion
     createAccount: Créer un compte
     forgotPassword: Mot de passe oublié ?
-    formPlaceholder: Zone du formulaire d’authentification
     login:
       description: Utilisez votre compte Studio pour continuer.
       title: Se connecter
@@ -154,9 +150,9 @@ shell:
   homeTitle: Accueil
   logout: Se déconnecter
   manageAccount: Gérer le compte
+  manageAccountFor: Gérer le compte de {{name}}
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
-  retrySession: Réessayer de charger le compte
   sessionLoading: Chargement de l’état du compte
   sessionUnavailable: L’état du compte est temporairement indisponible.
   signIn: Se connecter

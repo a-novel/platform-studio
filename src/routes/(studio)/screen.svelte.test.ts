@@ -5,7 +5,7 @@ import Screen from "./screen.svelte";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
-import { page, userEvent } from "vitest/browser";
+import { page } from "vitest/browser";
 
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
@@ -66,7 +66,7 @@ describe("studio shell screen", () => {
       .toHaveAttribute("aria-expanded", "false");
   });
 
-  it("supports keyboard account-menu focus and logout", async () => {
+  it("links the account name directly and keeps logout visible", async () => {
     const onLogout = vi.fn();
     render(
       Screen,
@@ -78,18 +78,16 @@ describe("studio shell screen", () => {
             initials: "MC",
           },
         }),
+        accountHref: "/account",
         onLogout,
       },
       withLocale()
     );
 
-    const trigger = page.getByRole("button", { name: "Account menu" });
-    await expect.element(trigger).toBeVisible();
-    trigger.element().focus();
-    await userEvent.keyboard("{ArrowDown}");
-    await expect.element(page.getByRole("menuitem", { name: "Manage account" })).toHaveFocus();
+    await expect.element(page.getByRole("link", { name: "Maya Chen" })).toHaveAttribute("href", "/account");
+    await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
 
-    await page.getByRole("menuitem", { name: "Log out" }).click();
+    await page.getByRole("button", { name: "Log out" }).click();
     expect(onLogout).toHaveBeenCalledOnce();
   });
 
@@ -110,22 +108,18 @@ describe("studio shell screen", () => {
     expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("login");
   });
 
-  it("surfaces session errors and delegates a retry without leaking state into the component", async () => {
-    const onRetrySession = vi.fn();
+  it("presents session errors as a compact status without a retry action", async () => {
     render(
       Screen,
       {
         model: model({
           session: { status: "error" },
         }),
-        onRetrySession,
       },
       withLocale()
     );
 
     await expect.element(page.getByRole("alert")).toHaveTextContent("Account status is temporarily unavailable.");
-    await page.getByRole("button", { name: "Retry account status" }).click();
-
-    expect(onRetrySession).toHaveBeenCalledOnce();
+    await expect.element(page.getByRole("button", { name: /Retry account status/i })).not.toBeInTheDocument();
   });
 });

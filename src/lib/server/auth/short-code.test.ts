@@ -38,12 +38,13 @@ function createContext() {
   };
   const accessToken = vi.fn<ShortCodeCompletionContext["accessToken"]>();
   const accept = vi.fn<ShortCodeCompletionContext["accept"]>();
+  const rememberIdentity = vi.fn<ShortCodeCompletionContext["rememberIdentity"]>();
 
   accessToken.mockResolvedValue("anonymous-access");
 
   return {
-    context: { accept, accessToken, client } satisfies ShortCodeCompletionContext,
-    mocks: { accept, accessToken, ...client },
+    context: { accept, accessToken, client, rememberIdentity } satisfies ShortCodeCompletionContext,
+    mocks: { accept, accessToken, rememberIdentity, ...client },
   };
 }
 
@@ -119,10 +120,13 @@ describe("completeShortCode", () => {
       password: "replacement-password",
       shortCode: "code-123",
     });
-    expect(setup.mocks.accept).toHaveBeenCalledWith({
-      accessToken: "new-access",
-      refreshToken: "new-refresh",
-    });
+    expect(setup.mocks.accept).toHaveBeenCalledWith(
+      {
+        accessToken: "new-access",
+        refreshToken: "new-refresh",
+      },
+      "creator@example.com"
+    );
     expect(JSON.stringify(result.model)).not.toContain("code-123");
     expect(JSON.stringify(result.model)).not.toContain("replacement-password");
   });
@@ -150,6 +154,7 @@ describe("completeShortCode", () => {
       shortCode: "code-123",
       userID: userId,
     });
+    expect(setup.mocks.rememberIdentity).toHaveBeenCalledWith("new@example.com");
   });
 
   it("resets a password with the parsed account target", async () => {

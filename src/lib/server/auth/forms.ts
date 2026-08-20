@@ -27,6 +27,7 @@ export type ParsedShortCodeLink =
   | {
       status: "ready";
       journey: "email-update";
+      email: string;
       shortCode: string;
       targetHint: string;
       userId: string;
@@ -184,6 +185,7 @@ export function parseShortCodeLink(journey: ShortCodeJourney, url: URL): ParsedS
     ? {
         status: "ready",
         journey,
+        email,
         shortCode: code.value,
         targetHint: maskEmail(email),
         userId: target.value,

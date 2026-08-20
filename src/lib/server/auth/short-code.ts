@@ -20,9 +20,10 @@ export interface ShortCodeClient {
 }
 
 export interface ShortCodeCompletionContext {
-  accept(token: Token): void;
+  accept(token: Token, identityEmail?: string): void;
   accessToken(): Promise<string>;
   client: ShortCodeClient;
+  rememberIdentity(identityEmail: string): void;
 }
 
 export type ShortCodeCompletionOutcome = "success" | "invalid" | "validation-error" | "service-error";
@@ -88,6 +89,7 @@ export async function completeShortCode(
         shortCode: parsed.shortCode,
         userID: parsed.userId,
       });
+      context.rememberIdentity(parsed.email);
     };
   } else {
     const validation = validateNewPassword(form, t);
@@ -106,7 +108,7 @@ export async function completeShortCode(
           password,
           shortCode: parsed.shortCode,
         });
-        context.accept(token);
+        context.accept(token, parsed.email);
       };
     } else {
       operation = async (accessToken) => {

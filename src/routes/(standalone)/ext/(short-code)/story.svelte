@@ -25,14 +25,7 @@
 </script>
 
 <div class="story-frame" style:--story-frame-width={frameWidth}>
-  <ShortCodeScreen
-    {model}
-    action="/storybook/complete"
-    homeHref="/"
-    restartHref="/?auth=reset"
-    continueHref="/"
-    onSubmit={submit}
-  />
+  <ShortCodeScreen {model} action="/storybook/complete" restartHref="/?auth=reset" continueHref="/" onSubmit={submit} />
 </div>
 
 <style>

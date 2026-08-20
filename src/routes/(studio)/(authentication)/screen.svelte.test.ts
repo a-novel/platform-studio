@@ -127,7 +127,6 @@ describe("pure authentication screens", () => {
           targetHint: "m•••@example.test",
         },
         action: "/ext/password/reset",
-        homeHref: "/",
         restartHref: "/?auth=reset",
         continueHref: "/",
         onSubmit,
@@ -151,7 +150,6 @@ describe("pure authentication screens", () => {
       {
         model: { journey: "email-update", state: { status: "ready" } },
         action: "/ext/email/validate",
-        homeHref: "/",
         restartHref: "/account",
         continueHref: "/account",
         onSubmit,

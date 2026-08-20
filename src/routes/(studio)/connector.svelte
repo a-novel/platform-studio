@@ -12,7 +12,7 @@
 </script>
 
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll, pushState, replaceState } from "$app/navigation";
+  import { afterNavigate, pushState, replaceState } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
   import { readAuthenticationActionModel } from "$lib/application/auth/action-data";
@@ -107,14 +107,6 @@
     writeRailCollapsed(window.localStorage, railCollapsed);
   }
 
-  function manageAccount() {
-    void goto(resolve("/account"));
-  }
-
-  function retrySession() {
-    void invalidateAll();
-  }
-
   function logout() {
     logoutForm.requestSubmit();
   }
@@ -131,11 +123,10 @@
 <Screen
   {authContent}
   {model}
+  accountHref={resolve("/account")}
   onAuthViewChange={changeAuthView}
   onDrawerOpenChange={(open) => (drawerOpen = open)}
   onLogout={logout}
-  onManageAccount={manageAccount}
-  onRetrySession={retrySession}
   onToggleRail={toggleRail}
 >
   {@render children?.()}

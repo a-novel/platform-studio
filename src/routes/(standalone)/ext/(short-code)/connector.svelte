@@ -24,7 +24,6 @@
 <Screen
   {model}
   action=""
-  homeHref={data.links.homeHref}
   restartHref={data.links.restartHref}
   continueHref={data.links.continueHref}
   onSubmit={handleSubmit}

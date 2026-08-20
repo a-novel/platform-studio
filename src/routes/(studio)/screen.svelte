@@ -7,55 +7,31 @@
   export interface StudioShellProps {
     model: StudioShellViewModel;
     homeHref?: string;
+    accountHref?: string;
     children?: Snippet;
     authContent?: Snippet<[AuthDialogView]>;
     onAuthViewChange?: (view: AuthDialogView | null) => void;
     onDrawerOpenChange?: (open: boolean) => void;
     onLogout?: () => void;
-    onManageAccount?: () => void;
-    onRetrySession?: () => void;
     onToggleRail?: () => void;
   }
 </script>
 
 <script lang="ts">
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import {
-    ActionMenu,
-    type ActionMenuTriggerAttributes,
-    Avatar,
-    Button,
-    Dialog,
-    IconButton,
-    InlineMessage,
-    NavList,
-    SkipLink,
-    Spinner,
-  } from "@a-novel-kit/uikit";
+  import { Avatar, Button, Dialog, IconButton, NavList, SkipLink, Spinner } from "@a-novel-kit/uikit";
 
-  import {
-    ChevronDown,
-    CircleAlert,
-    House,
-    LogIn,
-    LogOut,
-    Menu,
-    PanelLeftClose,
-    PanelLeftOpen,
-    Settings,
-    X,
-  } from "@lucide/svelte";
+  import { CircleAlert, House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 
   let {
     model,
     homeHref = "/",
+    accountHref = "/account",
     children,
     authContent,
     onAuthViewChange,
     onDrawerOpenChange,
     onLogout,
-    onManageAccount,
-    onRetrySession,
     onToggleRail,
   }: StudioShellProps = $props();
 
@@ -99,15 +75,9 @@
 </script>
 
 {#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
-{#snippet settingsIcon()}<Settings size="var(--icon-size-sm)" />{/snippet}
-{#snippet logoutIcon()}<LogOut size="var(--icon-size-sm)" />{/snippet}
 
-{#snippet brand(compact: boolean)}
-  <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure shell receives an app-resolved URL. -->
-  <a class="brand-link" class:compact href={homeHref} aria-label={compact ? t("shell.brand") : undefined}>
-    <span class="brand-mark" aria-hidden="true">A</span>
-    {#if !compact}<span class="brand-name">{t("shell.brand")}</span>{/if}
-  </a>
+{#snippet brand()}
+  <span class="brand-name">{t("shell.brand")}</span>
 {/snippet}
 
 {#snippet primaryNavigation(onNavigate?: (event: MouseEvent) => void)}
@@ -130,76 +100,58 @@
 {#snippet accountWidget(compact: boolean, surface: "rail" | "drawer")}
   <div class="account-widget" data-session={model.session.status}>
     {#if model.session.status === "loading"}
-      <Button
-        class="shell-account-button {compact ? 'compact-control' : ''}"
-        variant="ghost"
-        tone="neutral"
-        size="sm"
-        square={compact}
-        disabled
+      <div
+        class="account-status"
+        class:compact
+        role="status"
+        aria-label={compact ? t("shell.sessionLoading") : undefined}
+        title={compact ? t("shell.sessionLoading") : undefined}
       >
         <Spinner label={t("shell.sessionLoading")} size="sm" />
-        <span class="control-label">{t("shell.sessionLoading")}</span>
-      </Button>
+        {#if !compact}<span>{t("shell.sessionLoading")}</span>{/if}
+      </div>
     {:else if model.session.status === "error"}
+      <div
+        id={`${componentId}-${surface}-session-error`}
+        class="account-status error"
+        class:compact
+        role="alert"
+        aria-label={compact ? t("shell.sessionUnavailable") : undefined}
+        title={compact ? t("shell.sessionUnavailable") : undefined}
+      >
+        <CircleAlert size="var(--icon-size-sm)" aria-hidden="true" />
+        {#if !compact}<span>{t("shell.sessionUnavailable")}</span>{/if}
+      </div>
+    {:else if authenticatedSession}
+      <!-- eslint-disable svelte/no-navigation-without-resolve -- The pure shell receives an app-resolved URL. -->
+      <a
+        class="account-link"
+        class:compact
+        href={accountHref}
+        aria-label={compact
+          ? t("shell.manageAccountFor", { name: authenticatedSession.displayName })
+          : authenticatedSession.displayName}
+        title={compact ? authenticatedSession.displayName : t("shell.manageAccount")}
+      >
+        <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
+        {#if !compact}
+          <span class="account-name">{authenticatedSession.displayName}</span>
+        {/if}
+      </a>
+      <!-- eslint-enable svelte/no-navigation-without-resolve -->
       <Button
         class="shell-account-button {compact ? 'compact-control' : ''}"
         variant="ghost"
-        tone="neutral"
+        tone="danger"
         size="sm"
         square={compact}
-        aria-describedby={compact ? undefined : `${componentId}-${surface}-session-error`}
-        aria-label={compact ? `${t("shell.retrySession")}: ${t("shell.sessionUnavailable")}` : undefined}
-        title={compact ? t("shell.sessionUnavailable") : undefined}
-        onclick={() => onRetrySession?.()}
+        aria-label={compact ? t("shell.logout") : undefined}
+        title={compact ? t("shell.logout") : undefined}
+        onclick={() => onLogout?.()}
       >
-        <CircleAlert size="var(--icon-size-sm)" aria-hidden="true" />
-        <span class="control-label">{t("shell.retrySession")}</span>
+        <LogOut size="var(--icon-size-sm)" aria-hidden="true" />
+        {#if !compact}<span>{t("shell.logout")}</span>{/if}
       </Button>
-      {#if !compact}
-        <InlineMessage id={`${componentId}-${surface}-session-error`} tone="error">
-          {t("shell.sessionUnavailable")}
-        </InlineMessage>
-      {/if}
-    {:else if authenticatedSession}
-      {#snippet accountTrigger(attributes: ActionMenuTriggerAttributes)}
-        <Button
-          class="shell-account-button account-trigger {compact ? 'compact-control' : ''}"
-          variant="ghost"
-          tone="neutral"
-          size="sm"
-          square={compact}
-          {...attributes}
-        >
-          <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
-          {#if !compact}
-            <span class="account-name">{authenticatedSession.displayName}</span>
-            <ChevronDown class="account-chevron" size="var(--icon-size-sm)" aria-hidden="true" />
-          {/if}
-        </Button>
-      {/snippet}
-
-      <ActionMenu
-        label={t("shell.accountMenu")}
-        align="start"
-        trigger={accountTrigger}
-        items={[
-          {
-            id: "manage-account",
-            label: t("shell.manageAccount"),
-            icon: settingsIcon,
-            onSelect: onManageAccount,
-          },
-          { id: "account-separator", kind: "separator" },
-          {
-            id: "logout",
-            label: t("shell.logout"),
-            tone: "danger",
-            icon: logoutIcon,
-            onSelect: onLogout,
-          },
-        ]}
-      />
     {:else}
       <Button
         class="shell-account-button {compact ? 'compact-control' : ''}"
@@ -219,22 +171,19 @@
 {/snippet}
 
 {#snippet authActions()}
-  <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.(null)}>
-    {t("shell.closeAuthentication")}
-  </Button>
   {#if model.authView === "login"}
-    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("reset")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("reset")}>
       {t("shell.auth.forgotPassword")}
     </Button>
-    <Button variant="solid" size="sm" onclick={() => onAuthViewChange?.("register")}>
+    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("register")}>
       {t("shell.auth.createAccount")}
     </Button>
   {:else if model.authView === "register"}
-    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
       {t("shell.auth.signInInstead")}
     </Button>
   {:else if model.authView === "reset"}
-    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
       {t("shell.auth.backToSignIn")}
     </Button>
   {/if}
@@ -246,7 +195,7 @@
   <div class="shell" data-rail={model.rail}>
     <aside class="rail" class:collapsed={compactRail} aria-label={t("shell.navigation")}>
       <div class="rail-header">
-        {@render brand(compactRail)}
+        {#if !compactRail}{@render brand()}{/if}
         <IconButton
           label={compactRail ? t("shell.expandNavigation") : t("shell.collapseNavigation")}
           variant="ghost"
@@ -286,7 +235,7 @@
         >
           <Menu size="var(--icon-size-sm)" aria-hidden="true" />
         </IconButton>
-        {@render brand(false)}
+        {@render brand()}
       </header>
 
       <main id="main-content" class="main-content" tabindex="-1">
@@ -322,6 +271,7 @@
 
   <Dialog
     id={authenticationId}
+    class="authentication-dialog"
     open={model.authView !== null}
     title={authDialogTitle}
     description={authDialogDescription}
@@ -331,12 +281,17 @@
   >
     {#if model.authView && authContent}
       {@render authContent(model.authView)}
-    {:else}
-      <div class="auth-placeholder" aria-label={t("shell.auth.formPlaceholder")}>
-        <LogIn size="var(--icon-size-lg)" aria-hidden="true" />
-        <span>{t("shell.auth.formPlaceholder")}</span>
-      </div>
     {/if}
+    <IconButton
+      class="authentication-dialog-close"
+      label={t("shell.closeAuthentication")}
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => onAuthViewChange?.(null)}
+    >
+      <X size="var(--icon-size-sm)" aria-hidden="true" />
+    </IconButton>
   </Dialog>
 </div>
 
@@ -368,7 +323,6 @@
     z-index: var(--layer-sticky);
     box-sizing: border-box;
     inset-block-start: 0;
-    border-inline-end: var(--border-width-thin) solid var(--color-border-subtle);
     background: var(--color-surface-sunken);
     padding: var(--space-2);
     inline-size: var(--studio-rail-width);
@@ -385,40 +339,19 @@
   }
 
   .collapsed .rail-header {
-    flex-direction: column;
+    justify-content: center;
   }
 
-  .brand-link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
+  .brand-name {
     min-inline-size: 0;
+    overflow: hidden;
     color: var(--color-text-primary);
     font-weight: var(--font-weight-bold);
     font-family: var(--font-family-display);
-    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .brand-link:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus-ring);
-    outline-offset: var(--focus-ring-offset);
-    border-radius: var(--radius-md);
-  }
-
-  .brand-mark {
-    display: inline-grid;
-    flex: none;
-    place-items: center;
-    border: var(--border-width-thin) solid var(--color-border-selected);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-selected);
-    inline-size: var(--control-height-sm);
-    block-size: var(--control-height-sm);
-    color: var(--color-text-accent);
-    font-family: var(--font-family-display);
-  }
-
-  .brand-name,
   .account-name {
     min-inline-size: 0;
     overflow: hidden;
@@ -465,6 +398,56 @@
     min-inline-size: 0;
   }
 
+  .account-status,
+  .account-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    box-sizing: border-box;
+    border: var(--border-width-thin) solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-island-subtle);
+    padding: var(--space-2);
+    min-inline-size: 0;
+    min-block-size: var(--control-height-sm);
+  }
+
+  .account-status {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-tight);
+  }
+
+  .account-status.error {
+    border-color: var(--color-feedback-error-border);
+    background: var(--color-feedback-error-surface);
+    color: var(--color-feedback-error-text);
+  }
+
+  .account-status.compact,
+  .account-link.compact {
+    justify-content: center;
+    padding: 0;
+    inline-size: var(--control-height-sm);
+    block-size: var(--control-height-sm);
+  }
+
+  .account-link {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+  }
+
+  .account-link:hover {
+    background: var(--color-surface-hover);
+  }
+
+  .account-link:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
   :global(.shell-account-button) {
     max-inline-size: 100%;
   }
@@ -482,11 +465,6 @@
     block-size: var(--border-width-thin);
     overflow: hidden;
     white-space: nowrap;
-  }
-
-  :global(.shell-account-button .account-chevron) {
-    flex: none;
-    margin-inline-start: auto;
   }
 
   .workspace {
@@ -522,22 +500,15 @@
 
   .drawer-account {
     margin-block-start: var(--space-6);
-    border-block-start: var(--border-width-thin) solid var(--color-border-subtle);
-    padding-block-start: var(--space-3);
+    background: var(--color-surface-sunken);
+    padding: var(--space-3);
   }
 
-  .auth-placeholder {
-    display: grid;
-    place-items: center;
-    gap: var(--space-2);
-    border: var(--border-width-thin) dashed var(--color-border-default);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-sunken);
-    padding: var(--space-8);
-    min-block-size: var(--space-24);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    text-align: center;
+  :global(.authentication-dialog-close) {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: var(--space-3);
+    inset-inline-end: var(--space-3);
   }
 
   :global(dialog.studio-navigation-dialog.studio-navigation-dialog) {
@@ -570,7 +541,6 @@
       gap: var(--space-2);
       z-index: var(--layer-sticky);
       inset-block-start: 0;
-      border-block-end: var(--border-width-thin) solid var(--color-border-subtle);
       background: var(--color-surface-sunken);
       padding: var(--space-2);
     }
@@ -585,11 +555,7 @@
   @media (forced-colors: active) {
     .rail,
     .mobile-header {
-      border-color: CanvasText;
-    }
-
-    .brand-mark {
-      border-color: CanvasText;
+      border: var(--border-width-thin) solid CanvasText;
     }
   }
 </style>
