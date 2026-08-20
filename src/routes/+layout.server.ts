@@ -1,5 +1,3 @@
-import { getStudioShellCopy } from "$lib/i18n/shell-copy";
-
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = ({ locals, url }) => {
@@ -8,6 +6,5 @@ export const load: LayoutServerLoad = ({ locals, url }) => {
   return {
     activeNavigation,
     locale: locals.locale,
-    shellCopy: getStudioShellCopy(locals.i18n.getFixedT(locals.locale, "common")),
   };
 };

@@ -1,6 +1,5 @@
 import type { StudioShellViewModel } from "$lib/application/shell/types";
-import { createRequestI18n } from "$lib/i18n/instance";
-import { getStudioShellCopy } from "$lib/i18n/shell-copy";
+import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
 import StudioShell from "./StudioShell.svelte";
 
@@ -10,11 +9,6 @@ import { page, userEvent } from "vitest/browser";
 
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
-
-async function shellCopy(locale: "en" | "fr" = "en") {
-  const i18n = await createRequestI18n(locale);
-  return getStudioShellCopy(i18n.getFixedT(locale, "common"));
-}
 
 function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel {
   return {
@@ -27,6 +21,13 @@ function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel 
   };
 }
 
+function withLocale(locale: "en" | "fr" = "en") {
+  return {
+    wrapper: StudioI18nProvider,
+    wrapperProps: { locale },
+  };
+}
+
 describe("StudioShell", () => {
   beforeEach(async () => {
     await page.viewport(1280, 800);
@@ -34,11 +35,14 @@ describe("StudioShell", () => {
 
   it("exposes the empty workspace, current Home destination, and anonymous authentication action", async () => {
     const onAuthViewChange = vi.fn();
-    render(StudioShell, {
-      copy: await shellCopy(),
-      model: model(),
-      onAuthViewChange,
-    });
+    render(
+      StudioShell,
+      {
+        model: model(),
+        onAuthViewChange,
+      },
+      withLocale()
+    );
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
@@ -48,10 +52,13 @@ describe("StudioShell", () => {
   });
 
   it("keeps the collapsed Home destination accessible by name", async () => {
-    render(StudioShell, {
-      copy: await shellCopy("fr"),
-      model: model({ rail: "collapsed" }),
-    });
+    render(
+      StudioShell,
+      {
+        model: model({ rail: "collapsed" }),
+      },
+      withLocale("fr")
+    );
 
     await expect.element(page.getByRole("link", { name: "Accueil" })).toBeVisible();
     await expect
@@ -61,17 +68,20 @@ describe("StudioShell", () => {
 
   it("supports keyboard account-menu focus and logout", async () => {
     const onLogout = vi.fn();
-    render(StudioShell, {
-      copy: await shellCopy(),
-      model: model({
-        session: {
-          status: "authenticated",
-          displayName: "Maya Chen",
-          initials: "MC",
-        },
-      }),
-      onLogout,
-    });
+    render(
+      StudioShell,
+      {
+        model: model({
+          session: {
+            status: "authenticated",
+            displayName: "Maya Chen",
+            initials: "MC",
+          },
+        }),
+        onLogout,
+      },
+      withLocale()
+    );
 
     const trigger = page.getByRole("button", { name: "Account menu" });
     trigger.element().focus();
@@ -84,11 +94,14 @@ describe("StudioShell", () => {
 
   it("renders URL-controlled auth views and delegates view changes", async () => {
     const onAuthViewChange = vi.fn();
-    render(StudioShell, {
-      copy: await shellCopy(),
-      model: model({ authView: "register" }),
-      onAuthViewChange,
-    });
+    render(
+      StudioShell,
+      {
+        model: model({ authView: "register" }),
+        onAuthViewChange,
+      },
+      withLocale()
+    );
 
     await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
     await page.getByRole("button", { name: "Sign in instead" }).click();
@@ -98,16 +111,16 @@ describe("StudioShell", () => {
 
   it("surfaces session errors and delegates a retry without leaking state into the component", async () => {
     const onRetrySession = vi.fn();
-    render(StudioShell, {
-      copy: await shellCopy(),
-      model: model({
-        session: {
-          status: "error",
-          message: "Account status is temporarily unavailable.",
-        },
-      }),
-      onRetrySession,
-    });
+    render(
+      StudioShell,
+      {
+        model: model({
+          session: { status: "error" },
+        }),
+        onRetrySession,
+      },
+      withLocale()
+    );
 
     await expect.element(page.getByRole("alert")).toHaveTextContent("Account status is temporarily unavailable.");
     await page.getByRole("button", { name: "Retry account status" }).click();

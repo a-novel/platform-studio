@@ -5,7 +5,7 @@ export type AuthDialogView = "login" | "register" | "reset";
 export type ShellSession =
   | { status: "anonymous" }
   | { status: "loading" }
-  | { status: "error"; message: string }
+  | { status: "error" }
   | { status: "authenticated"; displayName: string; initials?: string };
 
 /** Serializable state consumed by the pure Studio shell. */
@@ -15,36 +15,4 @@ export interface StudioShellViewModel {
   drawerOpen: boolean;
   authView: AuthDialogView | null;
   session: ShellSession;
-}
-
-/** Localized copy consumed by the pure Studio shell. */
-export interface StudioShellCopy {
-  accountMenu: string;
-  auth: Record<
-    AuthDialogView,
-    {
-      title: string;
-      description: string;
-    }
-  >;
-  backToSignIn: string;
-  brand: string;
-  closeAuthentication: string;
-  closeNavigation: string;
-  collapseNavigation: string;
-  createAccount: string;
-  expandNavigation: string;
-  forgotPassword: string;
-  formPlaceholder: string;
-  home: string;
-  homeTitle: string;
-  logout: string;
-  manageAccount: string;
-  navigation: string;
-  openNavigation: string;
-  retrySession: string;
-  sessionLoading: string;
-  signIn: string;
-  signInInstead: string;
-  skipToContent: string;
 }
