@@ -1,33 +1,10 @@
 <script module lang="ts">
   import type { StudioShellViewModel } from "$lib/application/shell/types";
-  import { getStudioShellCopy } from "$lib/i18n/shell-copy";
 
-  import english from "../../i18n/locales/en/common.yaml";
-  import french from "../../i18n/locales/fr/common.yaml";
   import StudioShellStory from "./StudioShellStory.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
-  import { type TFunction, createInstance } from "i18next";
   import { expect, userEvent, within } from "storybook/test";
-
-  function createTranslator(locale: "en" | "fr", common: Record<string, unknown>): TFunction<"common"> {
-    const instance = createInstance();
-    void instance.init({
-      defaultNS: "common",
-      fallbackLng: "en",
-      initAsync: false,
-      lng: locale,
-      ns: ["common"],
-      resources: {
-        [locale]: { common },
-      },
-    });
-
-    return instance.getFixedT(locale, "common");
-  }
-
-  const englishCopy = getStudioShellCopy(createTranslator("en", english));
-  const frenchCopy = getStudioShellCopy(createTranslator("fr", french));
 
   const anonymous: StudioShellViewModel = {
     activeNavigation: "home",
@@ -108,16 +85,15 @@
 </script>
 
 <Story name="Expanded anonymous" asChild play={verifyAnonymousAuthentication}>
-  <StudioShellStory copy={englishCopy} initialModel={anonymous} />
+  <StudioShellStory initialModel={anonymous} />
 </Story>
 
 <Story name="Collapsed anonymous" asChild play={verifyRailToggle}>
-  <StudioShellStory copy={englishCopy} initialModel={{ ...anonymous, rail: "collapsed" }} />
+  <StudioShellStory initialModel={{ ...anonymous, rail: "collapsed" }} />
 </Story>
 
 <Story name="Authenticated" asChild play={verifyAccountMenu}>
   <StudioShellStory
-    copy={englishCopy}
     initialModel={{
       ...anonymous,
       session: {
@@ -130,41 +106,36 @@
 </Story>
 
 <Story name="Loading account" asChild>
-  <StudioShellStory copy={englishCopy} initialModel={{ ...anonymous, session: { status: "loading" } }} />
+  <StudioShellStory initialModel={{ ...anonymous, session: { status: "loading" } }} />
 </Story>
 
 <Story name="Account error" asChild>
   <StudioShellStory
-    copy={englishCopy}
     initialModel={{
       ...anonymous,
-      session: {
-        status: "error",
-        message: "Studio could not load the account status.",
-      },
+      session: { status: "error" },
     }}
   />
 </Story>
 
 <Story name="Login modal" asChild>
-  <StudioShellStory copy={englishCopy} initialModel={{ ...anonymous, authView: "login" }} />
+  <StudioShellStory initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
 <Story name="Registration modal" asChild>
-  <StudioShellStory copy={englishCopy} initialModel={{ ...anonymous, authView: "register" }} />
+  <StudioShellStory initialModel={{ ...anonymous, authView: "register" }} />
 </Story>
 
 <Story name="Password reset modal" asChild>
-  <StudioShellStory copy={englishCopy} initialModel={{ ...anonymous, authView: "reset" }} />
+  <StudioShellStory initialModel={{ ...anonymous, authView: "reset" }} />
 </Story>
 
 <Story name="Narrow drawer" asChild play={verifyDrawer}>
-  <StudioShellStory copy={englishCopy} frameWidth="24rem" initialModel={{ ...anonymous, drawerOpen: true }} />
+  <StudioShellStory frameWidth="24rem" initialModel={{ ...anonymous, drawerOpen: true }} />
 </Story>
 
-<Story name="French long copy" asChild>
+<Story name="French long copy" asChild parameters={{ locale: "fr" }}>
   <StudioShellStory
-    copy={frenchCopy}
     initialModel={{
       ...anonymous,
       session: {

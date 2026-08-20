@@ -1,12 +1,11 @@
 <script module lang="ts">
-  import type { StudioShellCopy, StudioShellViewModel } from "$lib/application/shell/types";
+  import type { StudioShellViewModel } from "$lib/application/shell/types";
 
   import type { Snippet } from "svelte";
 
   /** SvelteKit wiring around the pure Studio shell. */
   export interface StudioShellControllerProps {
     activeNavigation: StudioShellViewModel["activeNavigation"];
-    copy: StudioShellCopy;
     children?: Snippet;
   }
 </script>
@@ -22,7 +21,7 @@
 
   import { onMount } from "svelte";
 
-  let { activeNavigation, copy, children }: StudioShellControllerProps = $props();
+  let { activeNavigation, children }: StudioShellControllerProps = $props();
 
   let drawerOpen = $state(false);
   let rail = $state<StudioShellViewModel["rail"]>("expanded");
@@ -79,7 +78,6 @@
 </script>
 
 <StudioShell
-  {copy}
   {model}
   onAuthViewChange={changeAuthView}
   onDrawerOpenChange={(open) => (drawerOpen = open)}

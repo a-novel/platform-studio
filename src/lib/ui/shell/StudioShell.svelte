@@ -1,11 +1,10 @@
 <script module lang="ts">
-  import type { AuthDialogView, StudioShellCopy, StudioShellViewModel } from "$lib/application/shell/types";
+  import type { AuthDialogView, StudioShellViewModel } from "$lib/application/shell/types";
 
   import type { Snippet } from "svelte";
 
   /** Props for the pure, application-agnostic Studio shell surface. */
   export interface StudioShellProps {
-    copy: StudioShellCopy;
     model: StudioShellViewModel;
     homeHref?: string;
     children?: Snippet;
@@ -20,6 +19,7 @@
 </script>
 
 <script lang="ts">
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
     ActionMenu,
     type ActionMenuTriggerAttributes,
@@ -47,7 +47,6 @@
   } from "@lucide/svelte";
 
   let {
-    copy,
     model,
     homeHref = "/",
     children,
@@ -65,11 +64,37 @@
   const drawerId = `${componentId}-navigation-drawer`;
   const authenticationId = `${componentId}-authentication`;
   const compactRail = $derived(model.rail === "collapsed");
+  const { t } = getI18nContext();
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
-  const authDialogCopy = $derived(model.authView ? copy.auth[model.authView] : copy.auth.login);
+  const authDialogTitle = $derived(getAuthDialogTitle(model.authView));
+  const authDialogDescription = $derived(getAuthDialogDescription(model.authView));
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
     if (event.target instanceof Element && event.target.closest("a")) onDrawerOpenChange?.(false);
+  }
+
+  function getAuthDialogTitle(view: AuthDialogView | null): string {
+    switch (view) {
+      case "register":
+        return t("shell.auth.register.title");
+      case "reset":
+        return t("shell.auth.reset.title");
+      case "login":
+      default:
+        return t("shell.auth.login.title");
+    }
+  }
+
+  function getAuthDialogDescription(view: AuthDialogView | null): string {
+    switch (view) {
+      case "register":
+        return t("shell.auth.register.description");
+      case "reset":
+        return t("shell.auth.reset.description");
+      case "login":
+      default:
+        return t("shell.auth.login.description");
+    }
   }
 </script>
 
@@ -79,21 +104,21 @@
 
 {#snippet brand(compact: boolean)}
   <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure shell receives an app-resolved URL. -->
-  <a class="brand-link" class:compact href={homeHref} aria-label={compact ? copy.brand : undefined}>
+  <a class="brand-link" class:compact href={homeHref} aria-label={compact ? t("shell.brand") : undefined}>
     <span class="brand-mark" aria-hidden="true">A</span>
-    {#if !compact}<span class="brand-name">{copy.brand}</span>{/if}
+    {#if !compact}<span class="brand-name">{t("shell.brand")}</span>{/if}
   </a>
 {/snippet}
 
 {#snippet primaryNavigation(onNavigate?: (event: MouseEvent) => void)}
-  <nav aria-label={copy.navigation}>
+  <nav aria-label={t("shell.navigation")}>
     <NavList
       class="shell-navigation"
       onclick={onNavigate}
       items={[
         {
           href: homeHref,
-          label: copy.home,
+          label: t("shell.home"),
           current: model.activeNavigation === "home",
           icon: homeIcon,
         },
@@ -113,8 +138,8 @@
         square={compact}
         disabled
       >
-        <Spinner label={copy.sessionLoading} size="sm" />
-        <span class="control-label">{copy.sessionLoading}</span>
+        <Spinner label={t("shell.sessionLoading")} size="sm" />
+        <span class="control-label">{t("shell.sessionLoading")}</span>
       </Button>
     {:else if model.session.status === "error"}
       <Button
@@ -124,16 +149,16 @@
         size="sm"
         square={compact}
         aria-describedby={compact ? undefined : `${componentId}-${surface}-session-error`}
-        aria-label={compact ? `${copy.retrySession}: ${model.session.message}` : undefined}
-        title={compact ? model.session.message : undefined}
+        aria-label={compact ? `${t("shell.retrySession")}: ${t("shell.sessionUnavailable")}` : undefined}
+        title={compact ? t("shell.sessionUnavailable") : undefined}
         onclick={() => onRetrySession?.()}
       >
         <CircleAlert size="var(--icon-size-sm)" aria-hidden="true" />
-        <span class="control-label">{copy.retrySession}</span>
+        <span class="control-label">{t("shell.retrySession")}</span>
       </Button>
       {#if !compact}
         <InlineMessage id={`${componentId}-${surface}-session-error`} tone="error">
-          {model.session.message}
+          {t("shell.sessionUnavailable")}
         </InlineMessage>
       {/if}
     {:else if authenticatedSession}
@@ -155,20 +180,20 @@
       {/snippet}
 
       <ActionMenu
-        label={copy.accountMenu}
+        label={t("shell.accountMenu")}
         align="start"
         trigger={accountTrigger}
         items={[
           {
             id: "manage-account",
-            label: copy.manageAccount,
+            label: t("shell.manageAccount"),
             icon: settingsIcon,
             onSelect: onManageAccount,
           },
           { id: "account-separator", kind: "separator" },
           {
             id: "logout",
-            label: copy.logout,
+            label: t("shell.logout"),
             tone: "danger",
             icon: logoutIcon,
             onSelect: onLogout,
@@ -182,12 +207,12 @@
         tone="neutral"
         size="sm"
         square={compact}
-        aria-label={compact ? copy.signIn : undefined}
-        title={compact ? copy.signIn : undefined}
+        aria-label={compact ? t("shell.signIn") : undefined}
+        title={compact ? t("shell.signIn") : undefined}
         onclick={() => onAuthViewChange?.("login")}
       >
         <LogIn size="var(--icon-size-sm)" aria-hidden="true" />
-        <span class="control-label">{copy.signIn}</span>
+        <span class="control-label">{t("shell.signIn")}</span>
       </Button>
     {/if}
   </div>
@@ -195,35 +220,35 @@
 
 {#snippet authActions()}
   <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.(null)}>
-    {copy.closeAuthentication}
+    {t("shell.closeAuthentication")}
   </Button>
   {#if model.authView === "login"}
     <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("reset")}>
-      {copy.forgotPassword}
+      {t("shell.auth.forgotPassword")}
     </Button>
     <Button variant="solid" size="sm" onclick={() => onAuthViewChange?.("register")}>
-      {copy.createAccount}
+      {t("shell.auth.createAccount")}
     </Button>
   {:else if model.authView === "register"}
     <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
-      {copy.signInInstead}
+      {t("shell.auth.signInInstead")}
     </Button>
   {:else if model.authView === "reset"}
     <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
-      {copy.backToSignIn}
+      {t("shell.auth.backToSignIn")}
     </Button>
   {/if}
 {/snippet}
 
 <div class="shell-viewport">
-  <SkipLink href="#main-content">{copy.skipToContent}</SkipLink>
+  <SkipLink href="#main-content">{t("shell.skipToContent")}</SkipLink>
 
   <div class="shell" data-rail={model.rail}>
-    <aside class="rail" class:collapsed={compactRail} aria-label={copy.navigation}>
+    <aside class="rail" class:collapsed={compactRail} aria-label={t("shell.navigation")}>
       <div class="rail-header">
         {@render brand(compactRail)}
         <IconButton
-          label={compactRail ? copy.expandNavigation : copy.collapseNavigation}
+          label={compactRail ? t("shell.expandNavigation") : t("shell.collapseNavigation")}
           variant="ghost"
           tone="neutral"
           size="sm"
@@ -251,7 +276,7 @@
     <div class="workspace">
       <header class="mobile-header">
         <IconButton
-          label={copy.openNavigation}
+          label={t("shell.openNavigation")}
           variant="ghost"
           tone="neutral"
           size="sm"
@@ -274,13 +299,13 @@
     id={drawerId}
     class="studio-navigation-dialog"
     open={model.drawerOpen}
-    title={copy.navigation}
+    title={t("shell.navigation")}
     closeOnBackdrop
     onClose={() => onDrawerOpenChange?.(false)}
   >
     <div class="drawer-toolbar">
       <IconButton
-        label={copy.closeNavigation}
+        label={t("shell.closeNavigation")}
         variant="ghost"
         tone="neutral"
         size="sm"
@@ -298,8 +323,8 @@
   <Dialog
     id={authenticationId}
     open={model.authView !== null}
-    title={authDialogCopy.title}
-    description={authDialogCopy.description}
+    title={authDialogTitle}
+    description={authDialogDescription}
     actions={authActions}
     closeOnBackdrop
     onClose={() => onAuthViewChange?.(null)}
@@ -307,9 +332,9 @@
     {#if model.authView && authContent}
       {@render authContent(model.authView)}
     {:else}
-      <div class="auth-placeholder" aria-label={copy.formPlaceholder}>
+      <div class="auth-placeholder" aria-label={t("shell.auth.formPlaceholder")}>
         <LogIn size="var(--icon-size-lg)" aria-hidden="true" />
-        <span>{copy.formPlaceholder}</span>
+        <span>{t("shell.auth.formPlaceholder")}</span>
       </div>
     {/if}
   </Dialog>

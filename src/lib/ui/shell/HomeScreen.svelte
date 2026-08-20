@@ -1,15 +1,10 @@
-<script module lang="ts">
-  /** Props for the intentionally empty Studio home surface. */
-  export interface HomeScreenProps {
-    title: string;
-  }
-</script>
-
 <script lang="ts">
-  let { title }: HomeScreenProps = $props();
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
+
+  const { t } = getI18nContext();
 </script>
 
-<h1>{title}</h1>
+<h1>{t("shell.homeTitle")}</h1>
 
 <style>
   h1 {
