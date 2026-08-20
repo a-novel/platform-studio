@@ -42,6 +42,8 @@
     rail,
     session,
   });
+  const authenticationState = $derived(authView ? authenticationModel(authView).state.status : null);
+  const authActionsVisible = $derived(authenticationState !== "pending-email" && authenticationState !== "success");
 
   afterNavigate(() => {
     currentHref = window.location.href;
@@ -121,6 +123,7 @@
 {/snippet}
 
 <Screen
+  {authActionsVisible}
   {authContent}
   {model}
   accountHref={resolve("/account")}

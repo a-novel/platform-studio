@@ -143,6 +143,9 @@ describe("pure authentication screens", () => {
       withLocale()
     );
 
+    const status = page.getByRole("status");
+    await expect.element(status).toBeVisible();
+    expect(getComputedStyle(status.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     await expect.element(page.getByText("maya.chen@example.test")).toBeVisible();
     await expect.element(page.getByText("Delivery address")).not.toBeInTheDocument();
     expect(
@@ -190,7 +193,6 @@ describe("pure authentication screens", () => {
         model: {
           journey: "password-reset",
           state: { status: "submitting" },
-          targetHint: "m•••@example.test",
         },
         action: "/ext/password/reset",
         restartHref: "/?auth=reset",

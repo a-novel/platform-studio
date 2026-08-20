@@ -84,22 +84,21 @@ authUi:
     continue: Continuer vers Studio
     journeys:
       emailUpdate:
-        description: Appliquez l’adresse vérifiée au compte qui a demandé cette modification.
+        description: Confirmez le changement d’adresse demandé pour votre compte Studio.
         submit: Confirmer le changement d’adresse
         submitting: Confirmation du changement d’adresse…
         title: Confirmer votre nouvelle adresse e-mail
       passwordReset:
-        description: Remplacez le mot de passe du compte protégé par ce lien sécurisé.
+        description: Définissez un nouveau mot de passe pour retrouver l’accès à votre compte Studio.
         submit: Réinitialiser le mot de passe
         submitting: Réinitialisation du mot de passe…
         title: Choisir un nouveau mot de passe
       register:
-        description: Choisissez le mot de passe qui protégera l’adresse e-mail confirmée par ce lien sécurisé.
+        description: Définissez un mot de passe pour accéder à votre compte Studio.
         submit: Créer le compte
         submitting: Création du compte…
         title: Terminer la création de votre compte Studio
     newPasswordLabel: Nouveau mot de passe
-    passwordHint: Utilisez une phrase secrète unique que vous ne réutilisez pas ailleurs.
     restart: Demander un nouveau lien sécurisé
     states:
       expired:
@@ -111,8 +110,6 @@ authUi:
       missing:
         description: Cette page nécessite le lien complet reçu par e-mail. Demandez un nouveau lien et ouvrez-le sans modifier son adresse.
         title: Des informations du lien sécurisé sont manquantes
-    successTitle: Action sécurisée terminée
-    targetLabel: Destination protégée
 shell:
   accountFallback: Compte
   auth:

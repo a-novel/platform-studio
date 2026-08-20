@@ -15,8 +15,6 @@
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input } from "@a-novel-kit/uikit";
 
-  import { CircleCheck, Mail } from "@lucide/svelte";
-
   let { model, action, onSubmit }: AuthenticationPanelProps = $props();
 
   const { t } = getI18nContext();
@@ -69,17 +67,16 @@
   }
 </script>
 
-{#snippet mailIcon()}<Mail size="var(--icon-size-md)" />{/snippet}
-{#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
-
 {#if model.state.status === "pending-email"}
-  <Alert tone="success" title={t("authUi.authentication.pendingTitle")} icon={mailIcon}>
+  <section class="completion-state" role="status">
+    <p class="completion-title">{t("authUi.authentication.pendingTitle")}</p>
     <p class="pending-copy">{pendingDescription} <strong>{model.state.targetHint}</strong></p>
-  </Alert>
+  </section>
 {:else if model.state.status === "success"}
-  <Alert tone="success" title={t("authUi.authentication.successTitle")} icon={successIcon}>
+  <section class="completion-state" role="status">
+    <p class="completion-title">{t("authUi.authentication.successTitle")}</p>
     <p class="feedback-message">{model.state.message}</p>
-  </Alert>
+  </section>
 {:else}
   <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
     <Field controlId={emailId} label={t("authUi.authentication.emailLabel")} error={fieldError("email")} required>
@@ -136,7 +133,20 @@
 
   form > :global(button) {
     justify-content: center;
+    margin-block-start: var(--space-2);
     inline-size: 100%;
+  }
+
+  .completion-state {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .completion-title {
+    margin: 0;
+    color: var(--color-feedback-success-text);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
   }
 
   .pending-copy,

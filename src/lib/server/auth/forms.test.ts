@@ -1,13 +1,6 @@
 import { createStudioI18n } from "$lib/i18n/instance";
 
-import {
-  maskEmail,
-  parseShortCodeLink,
-  safeReturnTo,
-  validateLogin,
-  validateNewPassword,
-  validatePasswordChange,
-} from "./forms";
+import { parseShortCodeLink, safeReturnTo, validateLogin, validateNewPassword, validatePasswordChange } from "./forms";
 
 import { describe, expect, it } from "vitest";
 
@@ -71,10 +64,6 @@ describe("auth form validation", () => {
 });
 
 describe("safe URL helpers", () => {
-  it("masks the local part without hiding the destination domain", () => {
-    expect(maskEmail("creator@example.com")).toBe("c•••@example.com");
-  });
-
   it.each([
     ["/account?panel=password#change", "/account?panel=password#change"],
     ["https://attacker.invalid/account", "/"],
@@ -96,7 +85,6 @@ describe("parseShortCodeLink", () => {
       journey: "register",
       email: "creator@example.com",
       shortCode: "code-123",
-      targetHint: "c•••@example.com",
     });
   });
 
@@ -111,7 +99,6 @@ describe("parseShortCodeLink", () => {
       journey: "email-update",
       email: "new@example.com",
       shortCode: "code-123",
-      targetHint: "n•••@example.com",
       userId,
     });
   });

@@ -22,14 +22,12 @@ export type ParsedShortCodeLink =
       journey: "register";
       email: string;
       shortCode: string;
-      targetHint: string;
     }
   | {
       status: "ready";
       journey: "email-update";
       email: string;
       shortCode: string;
-      targetHint: string;
       userId: string;
     }
   | {
@@ -123,15 +121,6 @@ export function validateNewPassword(
   return issues.length > 0 ? { success: false, issues } : { success: true, value: { password } };
 }
 
-export function maskEmail(email: string): string {
-  const separator = email.lastIndexOf("@");
-  if (separator <= 0 || separator === email.length - 1) return "•••";
-
-  const local = email.slice(0, separator);
-  const domain = email.slice(separator + 1);
-  return `${local.slice(0, 1)}•••@${domain}`;
-}
-
 export function safeReturnTo(value: string | null | undefined): string {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
 
@@ -160,7 +149,6 @@ export function parseShortCodeLink(journey: ShortCodeJourney, url: URL): ParsedS
           journey,
           email,
           shortCode: code.value,
-          targetHint: maskEmail(email),
         }
       : { status: "invalid" };
   }
@@ -187,7 +175,6 @@ export function parseShortCodeLink(journey: ShortCodeJourney, url: URL): ParsedS
         journey,
         email,
         shortCode: code.value,
-        targetHint: maskEmail(email),
         userId: target.value,
       }
     : { status: "invalid" };

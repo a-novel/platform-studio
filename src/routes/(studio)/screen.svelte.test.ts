@@ -86,7 +86,10 @@ describe("studio shell screen", () => {
       withLocale()
     );
 
-    await expect.element(page.getByRole("link", { name: "Maya Chen" })).toHaveAttribute("href", "/account");
+    const accountLink = page.getByRole("link", { name: "Maya Chen" });
+    await expect.element(accountLink).toHaveAttribute("href", "/account");
+    expect(getComputedStyle(accountLink.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    expect(getComputedStyle(accountLink.element()).borderTopStyle).toBe("none");
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
     await expect.element(page.getByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
 
@@ -109,6 +112,20 @@ describe("studio shell screen", () => {
     await page.getByRole("button", { name: "Sign in instead" }).click();
 
     expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("login");
+  });
+
+  it("omits journey actions from completed authentication dialogs", async () => {
+    render(
+      Screen,
+      {
+        model: model({ authView: "register" }),
+        authActionsVisible: false,
+      },
+      withLocale()
+    );
+
+    await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
+    await expect.element(page.getByRole("button", { name: "Sign in instead" })).not.toBeInTheDocument();
   });
 
   it("presents session errors as a compact status without a retry action", async () => {

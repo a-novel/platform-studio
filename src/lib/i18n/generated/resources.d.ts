@@ -100,26 +100,25 @@ export default interface Resources {
         "continue": "Continue to Studio",
         "journeys": {
           "emailUpdate": {
-            "description": "Apply the verified address to the account that requested this change.",
+            "description": "Confirm the email change requested for your Studio account.",
             "submit": "Confirm email change",
             "submitting": "Confirming email change…",
             "title": "Confirm your new email"
           },
           "passwordReset": {
-            "description": "Replace the password for the account protected by this secure link.",
+            "description": "Set a new password to regain access to your Studio account.",
             "submit": "Reset password",
             "submitting": "Resetting password…",
             "title": "Choose a new password"
           },
           "register": {
-            "description": "Choose the password that will protect the email address confirmed by this secure link.",
+            "description": "Set a password to access your Studio account.",
             "submit": "Create account",
             "submitting": "Creating account…",
             "title": "Complete your Studio account"
           }
         },
         "newPasswordLabel": "New password",
-        "passwordHint": "Use a unique passphrase that you do not reuse elsewhere.",
         "restart": "Request a new secure link",
         "states": {
           "expired": {
@@ -134,9 +133,7 @@ export default interface Resources {
             "description": "This page needs the complete link from the email. Request a new link and open it without editing the address.",
             "title": "Secure link details are missing"
           }
-        },
-        "successTitle": "Secure action complete",
-        "targetLabel": "Protected destination"
+        }
       }
     },
     "shell": {

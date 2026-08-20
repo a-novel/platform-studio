@@ -25,6 +25,9 @@
   let panelModel = $state<AuthenticationPanelModel>(
     untrack(() => structuredClone(initialAuthenticationModel ?? readyModel(initialModel.authView ?? "login")))
   );
+  const authActionsVisible = $derived(
+    panelModel.state.status !== "pending-email" && panelModel.state.status !== "success"
+  );
 
   function updateModel(patch: Partial<StudioShellViewModel>) {
     model = { ...model, ...patch };
@@ -51,6 +54,7 @@
 
 <div class="story-frame" style:--story-frame-width={frameWidth}>
   <Screen
+    {authActionsVisible}
     {authContent}
     {model}
     accountHref="/storybook/account"

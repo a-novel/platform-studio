@@ -17,8 +17,6 @@
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input, Link } from "@a-novel-kit/uikit";
 
-  import { CircleCheck } from "@lucide/svelte";
-
   let { model, action, restartHref, continueHref, onSubmit }: ShortCodeScreenProps = $props();
 
   const { t } = getI18nContext();
@@ -117,21 +115,12 @@
   }
 </script>
 
-{#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
-
 <main class="standalone-page">
   <section class="secure-action" aria-labelledby={`${componentId}-title`}>
     <header class="page-heading">
       <h1 id={`${componentId}-title`}>{journeyTitle}</h1>
-      <p>{journeyDescription}</p>
+      {#if !unavailableStatus && model.state.status !== "success"}<p>{journeyDescription}</p>{/if}
     </header>
-
-    {#if model.targetHint}
-      <dl class="target">
-        <dt>{t("authUi.shortCode.targetLabel")}</dt>
-        <dd>{model.targetHint}</dd>
-      </dl>
-    {/if}
 
     {#if unavailableStatus}
       <Alert tone="error" title={getUnavailableTitle(unavailableStatus)}>
@@ -142,20 +131,17 @@
         </div>
       </Alert>
     {:else if model.state.status === "success"}
-      <Alert tone="success" title={t("authUi.shortCode.successTitle")} icon={successIcon}>
-        <div class="status-copy">
-          <p>{model.state.message}</p>
-          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-          <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
-        </div>
-      </Alert>
+      <div class="status-copy successful-action" role="status">
+        <p>{model.state.message}</p>
+        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
+        <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
+      </div>
     {:else}
       <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
         {#if model.journey !== "email-update"}
           <Field
             controlId={newPasswordId}
             label={t("authUi.shortCode.newPasswordLabel")}
-            hint={t("authUi.shortCode.passwordHint")}
             error={issueMessage(issues, "newPassword")}
             required
           >
@@ -254,23 +240,9 @@
     inline-size: 100%;
   }
 
-  .target {
-    display: grid;
-    gap: var(--space-1);
-    margin: 0;
-  }
-
-  .target dt {
-    color: var(--color-text-muted);
+  .successful-action p {
+    color: var(--color-feedback-success-text);
     font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-  }
-
-  .target dd {
-    margin: 0;
-    font-family: var(--font-family-mono);
-    overflow-wrap: anywhere;
   }
 
   :global(.alert.compact-form-error.compact-form-error) {

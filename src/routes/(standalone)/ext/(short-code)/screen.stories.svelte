@@ -17,6 +17,9 @@
     await expect(canvas.getByRole("heading", { name: "Complete your Studio account", level: 1 })).toBeVisible();
     await expect(canvas.getByLabelText(/New password/)).toBeVisible();
     await expect(canvas.getByLabelText(/Confirm new password/)).toBeVisible();
+    await expect(canvas.getByText("Set a password to access your Studio account.")).toBeVisible();
+    await expect(canvas.queryByText(/Use a unique passphrase/)).not.toBeInTheDocument();
+    expect(canvasElement.textContent).not.toContain("@");
   }
 
   async function verifyEmailConfirmation({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -40,13 +43,11 @@
 </script>
 
 <Story name="Complete registration" asChild play={verifyRegistrationForm}>
-  <StoryHarness initialModel={{ journey: "register", state: { status: "ready" }, targetHint: "m•••@example.test" }} />
+  <StoryHarness initialModel={{ journey: "register", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Confirm email update" asChild play={verifyEmailConfirmation}>
-  <StoryHarness
-    initialModel={{ journey: "email-update", state: { status: "ready" }, targetHint: "n••••••@example.test" }}
-  />
+  <StoryHarness initialModel={{ journey: "email-update", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Complete password reset" asChild>
@@ -80,7 +81,6 @@
           { field: "confirmPassword", message: "The passwords do not match." },
         ],
       },
-      targetHint: "m•••@example.test",
     }}
   />
 </Story>
@@ -102,7 +102,6 @@
     initialModel={{
       journey: "register",
       state: { status: "success", message: "Your account and protected Studio session are ready." },
-      targetHint: "m•••@example.test",
     }}
   />
 </Story>
@@ -117,7 +116,6 @@
         message:
           "Studio could not verify this secure request. The current account address remains unchanged, and the link contents were not displayed.",
       },
-      targetHint: "n••••••••••••@example.test",
     }}
   />
 </Story>

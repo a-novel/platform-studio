@@ -55,7 +55,6 @@ describe("readShortCodeModel", () => {
     expect(model).toEqual({
       journey: "register",
       state: { status: "ready" },
-      targetHint: "c•••@example.com",
     });
     expect(JSON.stringify(model)).not.toContain("code-123");
     expect(JSON.stringify(model)).not.toContain("creator@example.com");

@@ -81,6 +81,14 @@
     await expect(canvas.getByRole("button", { name: "Signing in…" })).toBeDisabled();
     await expect(canvas.getByRole("textbox", { name: "Email address" })).toBeDisabled();
   }
+
+  async function verifyPendingAuthentication({ canvasElement }: { canvasElement: HTMLElement }) {
+    const canvas = within(canvasElement);
+    const status = canvas.getByRole("status");
+    await expect(status).toBeVisible();
+    expect(getComputedStyle(status).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    await expect(canvas.queryByRole("button", { name: "Sign in instead" })).not.toBeInTheDocument();
+  }
 </script>
 
 <Story name="Expanded anonymous" asChild play={verifyAnonymousAuthentication}>
@@ -161,7 +169,7 @@
   <StoryHarness initialModel={{ ...anonymous, authView: "register" }} />
 </Story>
 
-<Story name="Registration email pending" asChild>
+<Story name="Registration email pending" asChild play={verifyPendingAuthentication}>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "register" }}
     initialAuthenticationModel={{

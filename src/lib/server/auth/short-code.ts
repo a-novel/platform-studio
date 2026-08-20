@@ -60,7 +60,7 @@ export function readShortCodeModel(journey: ShortCodeJourney, url: URL, successM
     return screenModel(journey, { status: parsed.status });
   }
 
-  return screenModel(journey, { status: "ready" }, "targetHint" in parsed ? parsed.targetHint : undefined);
+  return screenModel(journey, { status: "ready" });
 }
 
 export async function completeShortCode(
@@ -80,7 +80,6 @@ export async function completeShortCode(
     };
   }
 
-  const hint = "targetHint" in parsed ? parsed.targetHint : undefined;
   let operation: (accessToken: string) => Promise<void>;
 
   if (parsed.journey === "email-update") {
@@ -96,7 +95,7 @@ export async function completeShortCode(
     if (!validation.success) {
       return {
         outcome: "validation-error",
-        model: screenModel(journey, { status: "validation-error", issues: validation.issues }, hint),
+        model: screenModel(journey, { status: "validation-error", issues: validation.issues }),
       };
     }
 
@@ -133,16 +132,16 @@ export async function completeShortCode(
 
     return {
       outcome: "service-error",
-      model: screenModel(journey, { status: "service-error", message: serviceErrorMessage }, hint),
+      model: screenModel(journey, { status: "service-error", message: serviceErrorMessage }),
     };
   }
 
   return {
     outcome: "success",
-    model: screenModel(journey, { status: "success", message: successMessage }, hint),
+    model: screenModel(journey, { status: "success", message: successMessage }),
   };
 }
 
-function screenModel(journey: ShortCodeJourney, state: ShortCodeState, targetHint?: string): ShortCodeScreenModel {
-  return targetHint ? { journey, state, targetHint } : { journey, state };
+function screenModel(journey: ShortCodeJourney, state: ShortCodeState): ShortCodeScreenModel {
+  return { journey, state };
 }

@@ -8,6 +8,7 @@
     model: StudioShellViewModel;
     homeHref?: string;
     accountHref?: string;
+    authActionsVisible?: boolean;
     children?: Snippet;
     authContent?: Snippet<[AuthDialogView]>;
     onAuthViewChange?: (view: AuthDialogView | null) => void;
@@ -27,6 +28,7 @@
     model,
     homeHref = "/",
     accountHref = "/account",
+    authActionsVisible = true,
     children,
     authContent,
     onAuthViewChange,
@@ -261,7 +263,7 @@
     class="authentication-dialog"
     open={model.authView !== null}
     title={authDialogTitle}
-    actions={authActions}
+    actions={authActionsVisible ? authActions : undefined}
     closeOnBackdrop
     onClose={() => onAuthViewChange?.(null)}
   >
@@ -390,15 +392,15 @@
     align-items: center;
     gap: var(--space-2);
     box-sizing: border-box;
-    border: var(--border-width-thin) solid var(--color-border-subtle);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-2);
     min-inline-size: 0;
     min-block-size: var(--control-height-sm);
   }
 
   .account-status {
+    border: var(--border-width-thin) solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-island-subtle);
+    padding: var(--space-2);
     color: var(--color-text-muted);
     font-size: var(--font-size-xs);
     line-height: var(--line-height-tight);
@@ -419,6 +421,10 @@
   }
 
   .account-link {
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    padding: var(--space-2);
     color: var(--color-text-primary);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-sm);
@@ -496,6 +502,14 @@
     z-index: 1;
     inset-block-start: var(--space-3);
     inset-inline-end: var(--space-3);
+  }
+
+  :global(dialog.authentication-dialog > .panel > .content) {
+    padding-block-end: var(--space-2);
+  }
+
+  :global(dialog.authentication-dialog > .panel > footer) {
+    padding-block-start: 0;
   }
 
   :global(dialog.studio-navigation-dialog.studio-navigation-dialog) {

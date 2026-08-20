@@ -77,5 +77,4 @@ export type ShortCodeState =
 export interface ShortCodeScreenModel {
   journey: ShortCodeJourney;
   state: ShortCodeState;
-  targetHint?: string;
 }
