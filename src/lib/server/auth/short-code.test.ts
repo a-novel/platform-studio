@@ -1,4 +1,4 @@
-import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
+import { createStudioI18n } from "$lib/i18n/instance";
 
 import {
   type ShortCodeClient,
@@ -11,14 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "@a-novel-kit/nodelib-browser/http";
 
-const messages: AuthValidationMessages = {
-  confirmPassword: "confirm",
-  currentPassword: "current",
-  email: "email",
-  newPassword: "new",
-  password: "password",
-  passwordMismatch: "mismatch",
-};
+const t = createStudioI18n("en").getFixedT("en", "common");
 
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
 
@@ -56,7 +49,7 @@ function createContext() {
 
 describe("readShortCodeModel", () => {
   it("returns display-only state without raw link credentials", () => {
-    const model = readShortCodeModel("register", registrationUrl(), "registration complete");
+    const model = readShortCodeModel("register", registrationUrl(), t("authFlow.feedback.registrationCompleted"));
 
     expect(model).toEqual({
       journey: "register",
@@ -72,11 +65,11 @@ describe("readShortCodeModel", () => {
       readShortCodeModel(
         "password-reset",
         new URL("https://studio.test/ext/password/reset?result=success"),
-        "password reset"
+        t("authFlow.feedback.passwordReset")
       )
     ).toEqual({
       journey: "password-reset",
-      state: { status: "success", message: "password reset" },
+      state: { status: "success", message: t("authFlow.feedback.passwordReset") },
     });
   });
 });
@@ -93,9 +86,9 @@ describe("completeShortCode", () => {
       "register",
       registrationUrl(),
       passwordForm(""),
-      messages,
-      "service unavailable",
-      "registration complete",
+      t,
+      t("authFlow.feedback.serviceUnavailable"),
+      t("authFlow.feedback.registrationCompleted"),
       setup.context
     );
 
@@ -114,9 +107,9 @@ describe("completeShortCode", () => {
       "register",
       registrationUrl(),
       passwordForm(),
-      messages,
-      "service unavailable",
-      "registration complete",
+      t,
+      t("authFlow.feedback.serviceUnavailable"),
+      t("authFlow.feedback.registrationCompleted"),
       setup.context
     );
 
@@ -146,9 +139,9 @@ describe("completeShortCode", () => {
       "email-update",
       url,
       new FormData(),
-      messages,
-      "service unavailable",
-      "email updated",
+      t,
+      t("authFlow.feedback.serviceUnavailable"),
+      t("authFlow.feedback.emailUpdated"),
       setup.context
     );
 
@@ -166,9 +159,9 @@ describe("completeShortCode", () => {
       "password-reset",
       url,
       passwordForm(),
-      messages,
-      "service unavailable",
-      "password reset",
+      t,
+      t("authFlow.feedback.serviceUnavailable"),
+      t("authFlow.feedback.passwordReset"),
       setup.context
     );
 
@@ -187,9 +180,9 @@ describe("completeShortCode", () => {
       "register",
       registrationUrl(),
       passwordForm(),
-      messages,
-      "service unavailable",
-      "registration complete",
+      t,
+      t("authFlow.feedback.serviceUnavailable"),
+      t("authFlow.feedback.registrationCompleted"),
       setup.context
     );
 
@@ -206,9 +199,9 @@ describe("completeShortCode", () => {
       "register",
       registrationUrl(),
       passwordForm(),
-      messages,
-      "service unavailable",
-      "registration complete",
+      t,
+      t("authFlow.feedback.serviceUnavailable"),
+      t("authFlow.feedback.registrationCompleted"),
       setup.context
     );
 
@@ -216,7 +209,7 @@ describe("completeShortCode", () => {
       outcome: "service-error",
       model: {
         journey: "register",
-        state: { status: "service-error", message: "service unavailable" },
+        state: { status: "service-error", message: t("authFlow.feedback.serviceUnavailable") },
       },
     });
     expect(JSON.stringify(result.model)).not.toContain("code-123");

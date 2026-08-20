@@ -1,14 +1,11 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "$lib/application/auth/copy";
-  import type { ShellSession, StudioShellCopy, StudioShellViewModel } from "$lib/application/shell/types";
+  import type { ShellSession, StudioShellViewModel } from "$lib/application/shell/types";
 
   import type { Snippet } from "svelte";
 
   /** SvelteKit wiring around the pure Studio shell. */
   export interface StudioShellControllerProps {
     activeNavigation: StudioShellViewModel["activeNavigation"];
-    authCopy: AuthUiCopy["authentication"];
-    copy: StudioShellCopy;
     session: ShellSession;
     children?: Snippet;
   }
@@ -29,7 +26,7 @@
 
   import { onMount } from "svelte";
 
-  let { activeNavigation, authCopy, copy, session, children }: StudioShellControllerProps = $props();
+  let { activeNavigation, session, children }: StudioShellControllerProps = $props();
 
   let drawerOpen = $state(false);
   let logoutForm: HTMLFormElement;
@@ -125,7 +122,6 @@
 
 {#snippet authContent(view: AuthDialogView)}
   <AuthenticationPanel
-    copy={authCopy}
     model={authenticationModel(view)}
     action={authenticationAction(view)}
     onSubmit={() => (submittingView = view)}
@@ -134,7 +130,6 @@
 
 <StudioShell
   {authContent}
-  {copy}
   {model}
   onAuthViewChange={changeAuthView}
   onDrawerOpenChange={(open) => (drawerOpen = open)}

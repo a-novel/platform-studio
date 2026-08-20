@@ -1,10 +1,8 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "$lib/application/auth/copy";
-  import type { AuthenticationField, AuthenticationPanelModel } from "$lib/application/auth/types";
+  import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 
   /** Props for the pure form rendered inside the shell authentication dialog. */
   export interface AuthenticationPanelProps {
-    copy: AuthUiCopy["authentication"];
     model: AuthenticationPanelModel;
     action: string;
     onSubmit?: (event: SubmitEvent) => void;
@@ -12,12 +10,16 @@
 </script>
 
 <script lang="ts">
+  import type { AuthenticationField, AuthenticationJourney } from "$lib/application/auth/types";
+
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, ErrorSummary, Field, Input, Spinner } from "@a-novel-kit/uikit";
 
   import { CircleCheck, Mail } from "@lucide/svelte";
 
-  let { copy, model, action, onSubmit }: AuthenticationPanelProps = $props();
+  let { model, action, onSubmit }: AuthenticationPanelProps = $props();
 
+  const { t } = getI18nContext();
   const componentId = $props.id();
   const emailId = `${componentId}-email`;
   const passwordId = `${componentId}-password`;
@@ -30,10 +32,31 @@
       message: issue.message,
     }))
   );
-  const journeyCopy = $derived(copy.journeys[model.journey]);
-  const pendingDescription = $derived(
-    model.journey === "register" ? copy.journeys.register.pendingDescription : copy.journeys.reset.pendingDescription
-  );
+  const submitLabel = $derived(getSubmitLabel(model.journey));
+  const pendingDescription = $derived(getPendingDescription(model.journey));
+
+  function getSubmitLabel(journey: AuthenticationJourney): string {
+    switch (journey) {
+      case "register":
+        return t("authUi.authentication.journeys.register.submit");
+      case "reset":
+        return t("authUi.authentication.journeys.reset.submit");
+      case "login":
+      default:
+        return t("authUi.authentication.journeys.login.submit");
+    }
+  }
+
+  function getPendingDescription(journey: AuthenticationJourney): string {
+    switch (journey) {
+      case "register":
+        return t("authUi.authentication.journeys.register.pendingDescription");
+      case "reset":
+      case "login":
+      default:
+        return t("authUi.authentication.journeys.reset.pendingDescription");
+    }
+  }
 
   function fieldError(field: AuthenticationField): string | undefined {
     return issues.find((issue) => issue.field === field)?.message;
@@ -44,37 +67,43 @@
 {#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
 
 {#if model.state.status === "pending-email"}
-  <Alert tone="success" title={copy.pendingTitle} icon={mailIcon}>
+  <Alert tone="success" title={t("authUi.authentication.pendingTitle")} icon={mailIcon}>
     <div class="feedback-copy">
       <p>{pendingDescription}</p>
       <dl>
-        <dt>{copy.pendingTargetLabel}</dt>
+        <dt>{t("authUi.authentication.pendingTargetLabel")}</dt>
         <dd>{model.state.targetHint}</dd>
       </dl>
-      <p>{copy.pendingPrivacy}</p>
+      <p>{t("authUi.authentication.pendingPrivacy")}</p>
     </div>
   </Alert>
 {:else if model.state.status === "success"}
-  <Alert tone="success" title={copy.successTitle} icon={successIcon}>
+  <Alert tone="success" title={t("authUi.authentication.successTitle")} icon={successIcon}>
     <p class="feedback-message">{model.state.message}</p>
   </Alert>
 {:else}
   <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
     {#if model.state.status === "validation-error"}
       <ErrorSummary
-        title={copy.validationTitle}
-        description={copy.validationDescription}
+        title={t("authUi.authentication.validationTitle")}
+        description={t("authUi.authentication.validationDescription")}
         errors={summaryErrors}
         headingLevel={3}
         focusOnMount
       />
     {:else if model.state.status === "service-error"}
-      <Alert tone="error" title={copy.serviceErrorTitle}>
+      <Alert tone="error" title={t("authUi.authentication.serviceErrorTitle")}>
         <p class="feedback-message">{model.state.message}</p>
       </Alert>
     {/if}
 
-    <Field controlId={emailId} label={copy.emailLabel} hint={copy.emailHint} error={fieldError("email")} required>
+    <Field
+      controlId={emailId}
+      label={t("authUi.authentication.emailLabel")}
+      hint={t("authUi.authentication.emailHint")}
+      error={fieldError("email")}
+      required
+    >
       {#snippet children(control)}
         <Input
           {...control}
@@ -90,7 +119,12 @@
     </Field>
 
     {#if model.journey === "login"}
-      <Field controlId={passwordId} label={copy.passwordLabel} error={fieldError("password")} required>
+      <Field
+        controlId={passwordId}
+        label={t("authUi.authentication.passwordLabel")}
+        error={fieldError("password")}
+        required
+      >
         {#snippet children(control)}
           <Input
             {...control}
@@ -106,10 +140,10 @@
 
     <Button type="submit" disabled={submitting}>
       {#if submitting}
-        <Spinner label={copy.submitting} size="sm" />
-        <span aria-hidden="true">{copy.submitting}</span>
+        <Spinner label={t("authUi.authentication.submitting")} size="sm" />
+        <span aria-hidden="true">{t("authUi.authentication.submitting")}</span>
       {:else}
-        {journeyCopy.submit}
+        {submitLabel}
       {/if}
     </Button>
   </form>

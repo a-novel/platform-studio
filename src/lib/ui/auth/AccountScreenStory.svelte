@@ -1,10 +1,8 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "$lib/application/auth/copy";
   import type { AccountScreenModel, ReadyAccountScreenModel } from "$lib/application/auth/types";
 
   /** Controllable Storybook harness around the pure account screen. */
   export interface AccountScreenStoryProps {
-    copy: AuthUiCopy["account"];
     initialModel: AccountScreenModel;
     frameWidth?: string;
   }
@@ -15,7 +13,7 @@
 
   import { untrack } from "svelte";
 
-  let { copy, initialModel, frameWidth }: AccountScreenStoryProps = $props();
+  let { initialModel, frameWidth }: AccountScreenStoryProps = $props();
 
   let model = $state<AccountScreenModel>(untrack(() => structuredClone(initialModel)));
 
@@ -54,7 +52,6 @@
 
 <div class="story-frame" style:--story-frame-width={frameWidth}>
   <AccountScreen
-    {copy}
     {model}
     {actions}
     onRetry={retry}

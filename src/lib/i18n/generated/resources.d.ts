@@ -188,6 +188,7 @@ export default interface Resources {
       "openNavigation": "Open navigation",
       "retrySession": "Retry account status",
       "sessionLoading": "Loading account status",
+      "sessionUnavailable": "Account status is temporarily unavailable.",
       "signIn": "Sign in",
       "skipToContent": "Skip to content"
     }

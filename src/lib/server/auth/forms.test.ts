@@ -1,4 +1,4 @@
-import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
+import { createStudioI18n } from "$lib/i18n/instance";
 
 import {
   maskEmail,
@@ -11,14 +11,7 @@ import {
 
 import { describe, expect, it } from "vitest";
 
-const messages: AuthValidationMessages = {
-  confirmPassword: "confirm",
-  currentPassword: "current",
-  email: "email",
-  newPassword: "new",
-  password: "password",
-  passwordMismatch: "mismatch",
-};
+const t = createStudioI18n("en").getFixedT("en", "common");
 
 function encoded(value: string): string {
   return Buffer.from(value).toString("base64url");
@@ -30,7 +23,7 @@ describe("auth form validation", () => {
     form.set("email", "  Creator@Example.com ");
     form.set("password", "a-secure-password");
 
-    expect(validateLogin(form, messages)).toEqual({
+    expect(validateLogin(form, t)).toEqual({
       success: true,
       value: {
         email: "creator@example.com",
@@ -44,11 +37,11 @@ describe("auth form validation", () => {
     form.set("email", "not an email");
     form.set("password", "");
 
-    expect(validateLogin(form, messages)).toEqual({
+    expect(validateLogin(form, t)).toEqual({
       success: false,
       issues: [
-        { field: "email", message: "email" },
-        { field: "password", message: "password" },
+        { field: "email", message: "Enter a valid email address." },
+        { field: "password", message: "Enter your password." },
       ],
     });
   });
@@ -59,9 +52,9 @@ describe("auth form validation", () => {
     form.set("password", "replacement-password");
     form.set("confirmPassword", "different-password");
 
-    expect(validatePasswordChange(form, messages)).toEqual({
+    expect(validatePasswordChange(form, t)).toEqual({
       success: false,
-      issues: [{ field: "confirmPassword", message: "mismatch" }],
+      issues: [{ field: "confirmPassword", message: "The passwords do not match." }],
     });
   });
 
@@ -70,7 +63,7 @@ describe("auth form validation", () => {
     form.set("password", "replacement-password");
     form.set("confirmPassword", "replacement-password");
 
-    expect(validateNewPassword(form, messages)).toEqual({
+    expect(validateNewPassword(form, t)).toEqual({
       success: true,
       value: { password: "replacement-password" },
     });

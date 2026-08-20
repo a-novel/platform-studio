@@ -1,13 +1,12 @@
 import type { ShortCodePageData } from "$lib/application/auth/short-code-route";
 import type { ShortCodeJourney } from "$lib/application/auth/types";
-import { getAuthUiCopy } from "$lib/i18n/auth-copy";
-import { getAuthFlowCopy } from "$lib/i18n/auth-flow-copy";
 
 import { createAuthenticationContext } from "./context";
 import { completeShortCode, createShortCodeClient, readShortCodeModel } from "./short-code";
 
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, redirect } from "@sveltejs/kit";
+import type { TFunction } from "i18next";
 
 interface RouteDetails {
   continueHref: string;
@@ -34,32 +33,27 @@ export function loadShortCodeRoute(
   event: Pick<RequestEvent, "locals" | "url">
 ): ShortCodePageData {
   const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const copy = getAuthUiCopy(t).shortCode;
-  const flowCopy = getAuthFlowCopy(t);
 
   return {
-    copy,
     links: {
       continueHref: routeDetails[journey].continueHref,
       homeHref: "/",
       restartHref: routeDetails[journey].restartHref,
     },
-    model: readShortCodeModel(journey, event.url, successMessage(journey, flowCopy.feedback)),
-    pageTitle: journeyTitle(journey, copy),
+    model: readShortCodeModel(journey, event.url, successMessage(journey, t)),
   };
 }
 
 export async function submitShortCodeRoute(journey: ShortCodeJourney, event: RequestEvent) {
   const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const flowCopy = getAuthFlowCopy(t);
   const authentication = createAuthenticationContext(event.cookies, event.url);
   const result = await completeShortCode(
     journey,
     event.url,
     await event.request.formData(),
-    flowCopy.validation,
-    flowCopy.feedback.serviceUnavailable,
-    successMessage(journey, flowCopy.feedback),
+    t,
+    t("authFlow.feedback.serviceUnavailable"),
+    successMessage(journey, t),
     {
       accept: (token) => authentication.session.accept(token),
       accessToken: async () => await authentication.session.anonymousAccessToken(),
@@ -79,14 +73,12 @@ export async function submitShortCodeRoute(journey: ShortCodeJourney, event: Req
   });
 }
 
-function journeyTitle(journey: ShortCodeJourney, copy: ReturnType<typeof getAuthUiCopy>["shortCode"]): string {
-  if (journey === "register") return copy.journeys.register.title;
-  if (journey === "email-update") return copy.journeys.emailUpdate.title;
-  return copy.journeys.passwordReset.title;
-}
-
-function successMessage(journey: ShortCodeJourney, feedback: ReturnType<typeof getAuthFlowCopy>["feedback"]): string {
-  if (journey === "register") return feedback.registrationCompleted;
-  if (journey === "email-update") return feedback.emailUpdated;
-  return feedback.passwordReset;
+function successMessage(journey: ShortCodeJourney, t: TFunction<"common">): string {
+  if (journey === "register") {
+    return t("authFlow.feedback.registrationCompleted");
+  }
+  if (journey === "email-update") {
+    return t("authFlow.feedback.emailUpdated");
+  }
+  return t("authFlow.feedback.passwordReset");
 }

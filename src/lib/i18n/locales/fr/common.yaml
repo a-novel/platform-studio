@@ -204,6 +204,7 @@
       "openNavigation": "Ouvrir la navigation",
       "retrySession": "Réessayer de charger le compte",
       "sessionLoading": "Chargement de l’état du compte",
+      "sessionUnavailable": "L’état du compte est temporairement indisponible.",
       "signIn": "Se connecter",
       "skipToContent": "Aller au contenu",
     },

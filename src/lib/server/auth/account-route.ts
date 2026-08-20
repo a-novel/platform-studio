@@ -1,6 +1,4 @@
 import type { AccountScreenModel } from "$lib/application/auth/types";
-import { getAuthUiCopy } from "$lib/i18n/auth-copy";
-import { getAuthFlowCopy } from "$lib/i18n/auth-flow-copy";
 import { createAuthenticationContext } from "$lib/server/auth/context";
 import { maskEmail, validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
 import { logoutAuthentication } from "$lib/server/auth/logout";
@@ -33,8 +31,6 @@ async function authenticated(event: RequestEvent) {
 
 export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "cookies" | "locals" | "url">) => {
   const t = locals.i18n.getFixedT(locals.locale, "common");
-  const accountCopy = getAuthUiCopy(t).account;
-  const flowCopy = getAuthFlowCopy(t);
 
   try {
     const authentication = createAuthenticationContext(cookies, url);
@@ -42,14 +38,13 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
     if (!session) redirect(303, loginRedirect);
 
     return {
-      accountCopy,
       accountModel: {
         status: "ready",
         claims: {
           userId: session.claims.userID,
           roles: session.claims.roles ?? [],
-          accessExpiresAt: formatExpiry(session.accessToken, locals.locale, flowCopy.expiryUnavailable),
-          refreshExpiresAt: formatExpiry(session.refreshToken, locals.locale, flowCopy.expiryUnavailable),
+          accessExpiresAt: formatExpiry(session.accessToken, locals.locale, t("authFlow.expiryUnavailable")),
+          refreshExpiresAt: formatExpiry(session.refreshToken, locals.locale, t("authFlow.expiryUnavailable")),
         },
         passwordState: { status: "ready" },
         emailState: { status: "ready" },
@@ -60,10 +55,9 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
     if (isRedirect(error)) throw error;
 
     return {
-      accountCopy,
       accountModel: {
         status: "error",
-        message: flowCopy.feedback.sessionUnavailable,
+        message: t("authFlow.feedback.sessionUnavailable"),
       } satisfies AccountScreenModel,
     };
   }
@@ -71,8 +65,8 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
 
 export const accountActions = {
   password: async (event: RequestEvent) => {
-    const copy = getAuthFlowCopy(event.locals.i18n.getFixedT(event.locals.locale, "common"));
-    const input = validatePasswordChange(await event.request.formData(), copy.validation);
+    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
+    const input = validatePasswordChange(await event.request.formData(), t);
 
     if (!input.success) {
       return fail(400, {
@@ -95,8 +89,8 @@ export const accountActions = {
           state: {
             status: "service-error" as const,
             message: isHttpStatusError(error, 403)
-              ? copy.feedback.invalidCurrentPassword
-              : copy.feedback.serviceUnavailable,
+              ? t("authFlow.feedback.invalidCurrentPassword")
+              : t("authFlow.feedback.serviceUnavailable"),
           },
         },
       });
@@ -105,14 +99,14 @@ export const accountActions = {
     return {
       accountAction: {
         kind: "password" as const,
-        state: { status: "success" as const, message: copy.feedback.passwordChanged },
+        state: { status: "success" as const, message: t("authFlow.feedback.passwordChanged") },
       },
     };
   },
 
   email: async (event: RequestEvent) => {
-    const copy = getAuthFlowCopy(event.locals.i18n.getFixedT(event.locals.locale, "common"));
-    const input = validateEmailRequest(await event.request.formData(), copy.validation);
+    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
+    const input = validateEmailRequest(await event.request.formData(), t);
 
     if (!input.success) {
       return fail(400, {
@@ -137,7 +131,7 @@ export const accountActions = {
           kind: "email" as const,
           state: {
             status: "service-error" as const,
-            message: copy.feedback.serviceUnavailable,
+            message: t("authFlow.feedback.serviceUnavailable"),
           },
         },
       });

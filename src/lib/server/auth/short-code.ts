@@ -1,5 +1,4 @@
 import type { ShortCodeJourney, ShortCodeScreenModel, ShortCodeState } from "$lib/application/auth/types";
-import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
 
 import { parseShortCodeLink, validateNewPassword } from "./forms";
 
@@ -11,6 +10,8 @@ import {
   credentialsResetPassword,
   credentialsUpdateEmail,
 } from "@a-novel/service-authentication-rest";
+
+import type { TFunction } from "i18next";
 
 export interface ShortCodeClient {
   register(accessToken: string, input: { email: string; password: string; shortCode: string }): Promise<Token>;
@@ -65,7 +66,7 @@ export async function completeShortCode(
   journey: ShortCodeJourney,
   url: URL,
   form: FormData,
-  messages: AuthValidationMessages,
+  t: TFunction<"common">,
   serviceErrorMessage: string,
   successMessage: string,
   context: ShortCodeCompletionContext
@@ -89,7 +90,7 @@ export async function completeShortCode(
       });
     };
   } else {
-    const validation = validateNewPassword(form, messages);
+    const validation = validateNewPassword(form, t);
     if (!validation.success) {
       return {
         outcome: "validation-error",

@@ -39,9 +39,9 @@
     "test:unit": "vitest run --project=unit"
   },
   "dependencies": {
-    "@a-novel-kit/nodelib-browser": "1.6.2",
-    "@a-novel-kit/nodelib-i18n": "1.6.2",
-    "@a-novel-kit/nodelib-server": "1.6.2",
+    "@a-novel-kit/nodelib-browser": "1.6.3",
+    "@a-novel-kit/nodelib-i18n": "1.6.3",
+    "@a-novel-kit/nodelib-server": "1.6.3",
     "@a-novel-kit/uikit": "0.2.1",
     "@a-novel-kit/uikit-fonts": "0.2.1",
     "@a-novel-kit/uikit-tokens": "0.2.1",
@@ -51,7 +51,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@a-novel-kit/nodelib-config": "1.6.2",
+    "@a-novel-kit/nodelib-config": "1.6.3",
     "@a-novel-kit/uikit-storybook": "0.2.1",
     "@eslint/compat": "2.1.0",
     "@eslint/config-helpers": "0.7.0",

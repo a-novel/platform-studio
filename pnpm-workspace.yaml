@@ -11,11 +11,11 @@ allowBuilds:
   esbuild: true
 
 minimumReleaseAgeExclude:
-  - "@a-novel-kit/nodelib-config@1.6.2"
-  - "@a-novel-kit/nodelib-i18n@1.6.2"
-  - "@a-novel-kit/nodelib-server@1.6.2"
+  - "@a-novel-kit/nodelib-config@1.6.3"
+  - "@a-novel-kit/nodelib-browser@1.6.3"
+  - "@a-novel-kit/nodelib-i18n@1.6.3"
+  - "@a-novel-kit/nodelib-server@1.6.3"
   - "@a-novel-kit/uikit-fonts@0.2.1"
   - "@a-novel-kit/uikit-storybook@0.2.1"
   - "@a-novel-kit/uikit-tokens@0.2.1"
   - "@a-novel-kit/uikit@0.2.1"
-  - "@a-novel-kit/nodelib-browser@1.6.2"

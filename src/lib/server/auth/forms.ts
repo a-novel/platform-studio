@@ -5,10 +5,10 @@ import type {
   ShortCodeJourney,
   ShortCodePasswordField,
 } from "$lib/application/auth/types";
-import type { AuthValidationMessages } from "$lib/application/auth/validation-copy";
 
 import { EmailSchema, PasswordSchema, ShortCodeSchema } from "@a-novel/service-authentication-rest";
 
+import type { TFunction } from "i18next";
 import { z } from "zod";
 
 export type ValidationResult<Value, Field extends string> =
@@ -55,32 +55,32 @@ function issue<Field extends string>(field: Field, message: string): FormIssue<F
 
 export function validateLogin(
   form: FormData,
-  messages: AuthValidationMessages
+  t: TFunction<"common">
 ): ValidationResult<{ email: string; password: string }, AuthenticationField> {
   const email = normalizeEmail(readText(form, "email"));
   const password = readText(form, "password");
   const issues: FormIssue<AuthenticationField>[] = [];
 
-  if (!EmailSchema.safeParse(email).success) issues.push(issue("email", messages.email));
-  if (!PasswordSchema.safeParse(password).success) issues.push(issue("password", messages.password));
+  if (!EmailSchema.safeParse(email).success) issues.push(issue("email", t("authFlow.validation.email")));
+  if (!PasswordSchema.safeParse(password).success) issues.push(issue("password", t("authFlow.validation.password")));
 
   return issues.length > 0 ? { success: false, issues } : { success: true, value: { email, password } };
 }
 
 export function validateEmailRequest(
   form: FormData,
-  messages: AuthValidationMessages
+  t: TFunction<"common">
 ): ValidationResult<{ email: string }, "email"> {
   const email = normalizeEmail(readText(form, "email"));
 
   return EmailSchema.safeParse(email).success
     ? { success: true, value: { email } }
-    : { success: false, issues: [issue("email", messages.email)] };
+    : { success: false, issues: [issue("email", t("authFlow.validation.email"))] };
 }
 
 export function validatePasswordChange(
   form: FormData,
-  messages: AuthValidationMessages
+  t: TFunction<"common">
 ): ValidationResult<{ currentPassword: string; password: string }, AccountPasswordField> {
   const currentPassword = readText(form, "currentPassword");
   const password = readText(form, "password");
@@ -88,15 +88,15 @@ export function validatePasswordChange(
   const issues: FormIssue<AccountPasswordField>[] = [];
 
   if (!PasswordSchema.safeParse(currentPassword).success) {
-    issues.push(issue("currentPassword", messages.currentPassword));
+    issues.push(issue("currentPassword", t("authFlow.validation.currentPassword")));
   }
   if (!PasswordSchema.safeParse(password).success) {
-    issues.push(issue("newPassword", messages.newPassword));
+    issues.push(issue("newPassword", t("authFlow.validation.newPassword")));
   }
   if (!PasswordSchema.safeParse(confirmPassword).success) {
-    issues.push(issue("confirmPassword", messages.confirmPassword));
+    issues.push(issue("confirmPassword", t("authFlow.validation.confirmPassword")));
   } else if (password !== confirmPassword) {
-    issues.push(issue("confirmPassword", messages.passwordMismatch));
+    issues.push(issue("confirmPassword", t("authFlow.validation.passwordMismatch")));
   }
 
   return issues.length > 0 ? { success: false, issues } : { success: true, value: { currentPassword, password } };
@@ -104,19 +104,19 @@ export function validatePasswordChange(
 
 export function validateNewPassword(
   form: FormData,
-  messages: AuthValidationMessages
+  t: TFunction<"common">
 ): ValidationResult<{ password: string }, ShortCodePasswordField> {
   const password = readText(form, "password");
   const confirmPassword = readText(form, "confirmPassword");
   const issues: FormIssue<ShortCodePasswordField>[] = [];
 
   if (!PasswordSchema.safeParse(password).success) {
-    issues.push(issue("newPassword", messages.newPassword));
+    issues.push(issue("newPassword", t("authFlow.validation.newPassword")));
   }
   if (!PasswordSchema.safeParse(confirmPassword).success) {
-    issues.push(issue("confirmPassword", messages.confirmPassword));
+    issues.push(issue("confirmPassword", t("authFlow.validation.confirmPassword")));
   } else if (password !== confirmPassword) {
-    issues.push(issue("confirmPassword", messages.passwordMismatch));
+    issues.push(issue("confirmPassword", t("authFlow.validation.passwordMismatch")));
   }
 
   return issues.length > 0 ? { success: false, issues } : { success: true, value: { password } };

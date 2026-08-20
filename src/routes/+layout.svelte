@@ -1,5 +1,6 @@
 <script lang="ts">
   import StudioShellController from "$lib/client/shell/StudioShellController.svelte";
+  import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
   import "@a-novel-kit/uikit-fonts/fonts.css";
   import "@a-novel-kit/uikit-tokens/tokens.css";
@@ -7,18 +8,15 @@
   let { children, data } = $props();
 </script>
 
-{#if data.standalone}
-  {@render children()}
-{:else}
-  <StudioShellController
-    authCopy={data.authCopy}
-    copy={data.shellCopy}
-    activeNavigation={data.activeNavigation === "home" ? "home" : null}
-    session={data.session}
-  >
+<StudioI18nProvider locale={data.locale}>
+  {#if data.standalone}
     {@render children()}
-  </StudioShellController>
-{/if}
+  {:else}
+    <StudioShellController activeNavigation={data.activeNavigation === "home" ? "home" : null} session={data.session}>
+      {@render children()}
+    </StudioShellController>
+  {/if}
+</StudioI18nProvider>
 
 <style>
   :global(html) {

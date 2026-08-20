@@ -8,14 +8,14 @@ importers:
   .:
     dependencies:
       "@a-novel-kit/nodelib-browser":
-        specifier: 1.6.2
-        version: 1.6.2(zod@4.4.3)
+        specifier: 1.6.3
+        version: 1.6.3(zod@4.4.3)
       "@a-novel-kit/nodelib-i18n":
-        specifier: 1.6.2
-        version: 1.6.2(i18next@26.3.6(typescript@6.0.3))
+        specifier: 1.6.3
+        version: 1.6.3(i18next@26.3.6(typescript@6.0.3))(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       "@a-novel-kit/nodelib-server":
-        specifier: 1.6.2
-        version: 1.6.2
+        specifier: 1.6.3
+        version: 1.6.3
       "@a-novel-kit/uikit":
         specifier: 0.2.1
         version: 0.2.1(svelte@5.56.9(@typescript-eslint/types@8.67.0))
@@ -27,7 +27,7 @@ importers:
         version: 0.2.1
       "@a-novel/service-authentication-rest":
         specifier: 2.5.0
-        version: 2.5.0(@a-novel-kit/nodelib-browser@1.6.2(zod@4.4.3))(zod@4.4.3)
+        version: 2.5.0(@a-novel-kit/nodelib-browser@1.6.3(zod@4.4.3))(zod@4.4.3)
       "@lucide/svelte":
         specifier: 1.31.0
         version: 1.31.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
@@ -39,8 +39,8 @@ importers:
         version: 4.4.3
     devDependencies:
       "@a-novel-kit/nodelib-config":
-        specifier: 1.6.2
-        version: 1.6.2(884dfe224e38c62ea138c9c622eb381d)
+        specifier: 1.6.3
+        version: 1.6.3(884dfe224e38c62ea138c9c622eb381d)
       "@a-novel-kit/uikit-storybook":
         specifier: 0.2.1
         version: 0.2.1(@storybook/svelte@10.5.8(storybook@10.5.8(prettier@3.9.6)(react@19.2.8))(svelte@5.56.9(@typescript-eslint/types@8.67.0)))(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(@vitest/browser-playwright@4.1.10)(@vitest/browser@4.1.10)(@vitest/runner@4.1.10)(esbuild@0.28.2)(react@19.2.8)(rollup@4.62.4)(storybook@10.5.8(prettier@3.9.6)(react@19.2.8))(supports-color@7.2.0)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.10)
@@ -169,21 +169,21 @@ importers:
         version: 3.0.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vitest@4.1.10)
 
 packages:
-  "@a-novel-kit/nodelib-browser@1.6.2":
+  "@a-novel-kit/nodelib-browser@1.6.3":
     resolution:
       {
-        integrity: sha512-e9u2QoznigMavgexYresWHb0vIff09cFtcSRWzE0p0PqTkCP708Uj1B7/fAr3XDX+7hNTKaPOT/gw7jIymomEQ==,
-        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-browser/1.6.2/bc7f70468f1378413903f1fcfe8f4b114222640a,
+        integrity: sha512-xmYVpTnCQpX96zvOPub4hU2GFqVKDmCg9WjnmI2AgTdMH7+jlfZavukFOwcRrCRrsW4oQcxTA4z3pztvM/C1Ug==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-browser/1.6.3/7b15a1c0eea38fee35f95555398e8f51a7926142,
       }
     engines: { node: ">=24.0.0", npm: ">=10.9.2" }
     peerDependencies:
       zod: ^4.4.3
 
-  "@a-novel-kit/nodelib-config@1.6.2":
+  "@a-novel-kit/nodelib-config@1.6.3":
     resolution:
       {
-        integrity: sha512-broTslvWIvHllp50kYtwQlSrOsEksKl5M1CCTvXpSL0lY+2iGjseGNe3sBoryjIGe1s5IurxFD0ELWoAG8hmAA==,
-        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/1.6.2/d264b320f1f7729d052b7a434b95b70c8f21f3fc,
+        integrity: sha512-Z9XnF7EILezBP9QY2zVXYmBu+0KREbd5Il93x1pavF4qPMZcprO9/q5DB7+kZiYytCj3q62/cmn+GmrMNHE84A==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/1.6.3/fdf451ccc62198c2396a5e49d4ccae588e721309,
       }
     engines: { node: ">=24.0.0", npm: ">=10.9.2" }
     peerDependencies:
@@ -216,21 +216,22 @@ packages:
       vite: ^8.2.1
       vitest: ^4.1.10
 
-  "@a-novel-kit/nodelib-i18n@1.6.2":
+  "@a-novel-kit/nodelib-i18n@1.6.3":
     resolution:
       {
-        integrity: sha512-n1OtGjUfR/lTIAkBb4bHiLCZvWTSFzNhTB448egXlq7lx6MTmhS10w1C/I+QD7vLeYVFORIleXxoco8JSRG9kQ==,
-        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-i18n/1.6.2/19d400d5178899795b6441b10e1f4061e017c4d8,
+        integrity: sha512-gibUsM4xB3i+TGDtqLsmoveVOs6+0ZJLGhbB/jasPvCB6UNNg4PQa7DjWLwjdk5ksq21g0tL48h4YbhOflG7oQ==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-i18n/1.6.3/fe75b248812d28ef3e8cdf453a7b7e033b0c1eea,
       }
     engines: { node: ">=24.0.0", npm: ">=10.9.2" }
     peerDependencies:
       i18next: ^26.3.6
+      svelte: ^5.56.9
 
-  "@a-novel-kit/nodelib-server@1.6.2":
+  "@a-novel-kit/nodelib-server@1.6.3":
     resolution:
       {
-        integrity: sha512-RYScpQgkQWf1ymj001QTw2QsYZgIfXmvRc83d0XDOSPeWL4rZdpHTlcdm7+XIWyejgrw4RlCa3TqPjNo9KfM9g==,
-        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-server/1.6.2/e2195253a87806697d44a41c16f881e7356e7830,
+        integrity: sha512-A+CfNOUQJIzGR24xbCOJZVp3nPf0Y1AcDbpjLL4JoSsmyKKrZwNuBv57M1vL37/egSQo4qsyg2EVzjJip3OTEw==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-server/1.6.3/070a638b6eb983d6533fc1135786f28e57b1d2cf,
       }
     engines: { node: ">=24.0.0", npm: ">=10.9.2" }
 
@@ -1878,9 +1879,9 @@ packages:
       vitest:
         optional: true
 
-  "@testing-library/user-event@14.6.4":
+  "@testing-library/user-event@14.6.5":
     resolution:
-      { integrity: sha512-QCGwP6QrjypBLwyj5cuyfVamkaIEy/XGY+1VDehbtbQqOggYmTFpFOdWR5mPz14vX8vXLMVjDHlRNBcClyO9ew== }
+      { integrity: sha512-FhqjldLTpteueBaKflhNFlMT3+PM0O5fiBUivht6b9CZ1eesJyy7+g3Jr7XwJzt/Hip3ZG5hWwK1MX1FuDiE4w== }
     engines: { node: ">=12", npm: ">=6" }
     peerDependencies:
       "@testing-library/dom": ">=7.21.4"
@@ -2572,9 +2573,9 @@ packages:
     resolution:
       { integrity: sha512-3OMlcd0a03UGuZpPeUC1HxR3nA23l+HEyCiZw3b3FumJIN9KphoGzDJKMXI1S72jVS1dsenDyQC0kJlO1U9E1g== }
 
-  esrap@2.3.4:
+  esrap@2.3.5:
     resolution:
-      { integrity: sha512-CHnJXZDfBeOAjLIGNy/0BEsmDu5+irHgUXRW9pGptxCbO3uyjJ98crilzFgiBqizW94UodjX3GAPLg/dhEnUfA== }
+      { integrity: sha512-KciPkeZZX8srrh6xELzLR2cBaWOzgBQ4CwggO6Dh/KMlrfOcIcfyXCVy/Vvc3/OlS5gvFOd5tcxUYuaGM8o45A== }
     peerDependencies:
       "@typescript-eslint/types": ^8.2.0
     peerDependenciesMeta:
@@ -4242,11 +4243,11 @@ packages:
       { integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A== }
 
 snapshots:
-  "@a-novel-kit/nodelib-browser@1.6.2(zod@4.4.3)":
+  "@a-novel-kit/nodelib-browser@1.6.3(zod@4.4.3)":
     dependencies:
       zod: 4.4.3
 
-  "@a-novel-kit/nodelib-config@1.6.2(884dfe224e38c62ea138c9c622eb381d)":
+  "@a-novel-kit/nodelib-config@1.6.3(884dfe224e38c62ea138c9c622eb381d)":
     dependencies:
       "@eslint/compat": 2.1.0(eslint@10.8.1(jiti@2.7.0)(supports-color@7.2.0))
       "@eslint/config-helpers": 0.7.0
@@ -4277,11 +4278,12 @@ snapshots:
       vitest: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
       yaml: 2.9.0
 
-  "@a-novel-kit/nodelib-i18n@1.6.2(i18next@26.3.6(typescript@6.0.3))":
+  "@a-novel-kit/nodelib-i18n@1.6.3(i18next@26.3.6(typescript@6.0.3))(svelte@5.56.9(@typescript-eslint/types@8.67.0))":
     dependencies:
       i18next: 26.3.6(typescript@6.0.3)
+      svelte: 5.56.9(@typescript-eslint/types@8.67.0)
 
-  "@a-novel-kit/nodelib-server@1.6.2": {}
+  "@a-novel-kit/nodelib-server@1.6.3": {}
 
   "@a-novel-kit/uikit-fonts@0.2.1": {}
 
@@ -4323,9 +4325,9 @@ snapshots:
       "@lucide/svelte": 1.31.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))
       svelte: 5.56.9(@typescript-eslint/types@8.67.0)
 
-  "@a-novel/service-authentication-rest@2.5.0(@a-novel-kit/nodelib-browser@1.6.2(zod@4.4.3))(zod@4.4.3)":
+  "@a-novel/service-authentication-rest@2.5.0(@a-novel-kit/nodelib-browser@1.6.3(zod@4.4.3))(zod@4.4.3)":
     dependencies:
-      "@a-novel-kit/nodelib-browser": 1.6.2(zod@4.4.3)
+      "@a-novel-kit/nodelib-browser": 1.6.3(zod@4.4.3)
       zod: 4.4.3
 
   "@adobe/css-tools@4.5.0": {}
@@ -5362,7 +5364,7 @@ snapshots:
       vite: 8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
       vitest: 4.1.10(@types/node@24.13.3)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
 
-  "@testing-library/user-event@14.6.4(@testing-library/dom@10.4.1)":
+  "@testing-library/user-event@14.6.5(@testing-library/dom@10.4.1)":
     dependencies:
       "@testing-library/dom": 10.4.1
 
@@ -5983,7 +5985,7 @@ snapshots:
     dependencies:
       "@jridgewell/sourcemap-codec": 1.5.5
 
-  esrap@2.3.4(@typescript-eslint/types@8.67.0):
+  esrap@2.3.5(@typescript-eslint/types@8.67.0):
     dependencies:
       "@jridgewell/sourcemap-codec": 1.5.5
     optionalDependencies:
@@ -7108,7 +7110,7 @@ snapshots:
       "@storybook/icons": 2.1.0(react@19.2.8)
       "@testing-library/dom": 10.4.1
       "@testing-library/jest-dom": 6.9.1
-      "@testing-library/user-event": 14.6.4(@testing-library/dom@10.4.1)
+      "@testing-library/user-event": 14.6.5(@testing-library/dom@10.4.1)
       "@vitest/expect": 3.2.4
       "@vitest/spy": 3.2.4
       "@webcontainer/env": 1.1.1
@@ -7200,7 +7202,7 @@ snapshots:
       clsx: 2.1.1
       devalue: 5.9.0
       esm-env: 1.2.2
-      esrap: 2.3.4(@typescript-eslint/types@8.67.0)
+      esrap: 2.3.5(@typescript-eslint/types@8.67.0)
       is-reference: 3.0.3
       locate-character: 3.0.0
       magic-string: 0.30.21

@@ -1,5 +1,4 @@
 <script module lang="ts">
-  import type { AuthUiCopy } from "$lib/application/auth/copy";
   import type {
     AccountFormActions,
     AccountPasswordField,
@@ -9,7 +8,6 @@
 
   /** Props for the pure protected account-management screen. */
   export interface AccountScreenProps {
-    copy: AuthUiCopy["account"];
     model: AccountScreenModel;
     actions: AccountFormActions;
     onRetry?: () => void;
@@ -20,6 +18,7 @@
 </script>
 
 <script lang="ts">
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
     Alert,
     Badge,
@@ -38,9 +37,10 @@
 
   import { CircleCheck, Info, ShieldCheck } from "@lucide/svelte";
 
-  let { copy, model, actions, onRetry, onPasswordSubmit, onEmailSubmit, onLogoutSubmit }: AccountScreenProps = $props();
+  let { model, actions, onRetry, onPasswordSubmit, onEmailSubmit, onLogoutSubmit }: AccountScreenProps = $props();
 
   const componentId = $props.id();
+  const { t } = getI18nContext();
   const currentPasswordId = `${componentId}-current-password`;
   const newPasswordId = `${componentId}-new-password`;
   const confirmPasswordId = `${componentId}-confirm-password`;
@@ -81,22 +81,26 @@
 {#snippet infoIcon()}<Info size="var(--icon-size-md)" />{/snippet}
 {#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
 {#snippet retryAction()}
-  <Button variant="outline" tone="neutral" size="sm" onclick={() => onRetry?.()}>{copy.retry}</Button>
+  <Button variant="outline" tone="neutral" size="sm" onclick={() => onRetry?.()}>{t("authUi.account.retry")}</Button>
 {/snippet}
 
 <Container size="lg">
   <Stack gap="6">
-    <PageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+    <PageHeader
+      eyebrow={t("authUi.account.eyebrow")}
+      title={t("authUi.account.title")}
+      description={t("authUi.account.description")}
+    />
 
     {#if model.status === "loading"}
-      <Alert tone="info" title={copy.loadingTitle}>
+      <Alert tone="info" title={t("authUi.account.loadingTitle")}>
         <div class="loading-message">
-          <Spinner label={copy.loadingTitle} size="sm" />
-          <span>{copy.loadingDescription}</span>
+          <Spinner label={t("authUi.account.loadingTitle")} size="sm" />
+          <span>{t("authUi.account.loadingDescription")}</span>
         </div>
       </Alert>
     {:else if model.status === "error"}
-      <Alert tone="error" title={copy.loadErrorTitle} actions={retryAction}>
+      <Alert tone="error" title={t("authUi.account.loadErrorTitle")} actions={retryAction}>
         <p class="feedback-message">{model.message}</p>
       </Alert>
     {:else}
@@ -106,40 +110,40 @@
             <div class="section-heading">
               <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
               <div>
-                <h2 id={`${componentId}-claims-title`}>{copy.claims.title}</h2>
-                <p>{copy.claims.description}</p>
+                <h2 id={`${componentId}-claims-title`}>{t("authUi.account.claims.title")}</h2>
+                <p>{t("authUi.account.claims.description")}</p>
               </div>
             </div>
 
             <DescriptionList columns={2} density="compact">
               <div>
-                <dt>{copy.claims.userId}</dt>
+                <dt>{t("authUi.account.claims.userId")}</dt>
                 <dd class="monospace">{model.claims.userId}</dd>
               </div>
               <div>
-                <dt>{copy.claims.roles}</dt>
+                <dt>{t("authUi.account.claims.roles")}</dt>
                 <dd>
                   <div class="roles">
                     {#each model.claims.roles as role (role)}
                       <Badge tone="brand">{role}</Badge>
                     {:else}
-                      <span>{copy.claims.noRoles}</span>
+                      <span>{t("authUi.account.claims.noRoles")}</span>
                     {/each}
                   </div>
                 </dd>
               </div>
               <div>
-                <dt>{copy.claims.accessExpiresAt}</dt>
+                <dt>{t("authUi.account.claims.accessExpiresAt")}</dt>
                 <dd>{model.claims.accessExpiresAt}</dd>
               </div>
               <div>
-                <dt>{copy.claims.refreshExpiresAt}</dt>
+                <dt>{t("authUi.account.claims.refreshExpiresAt")}</dt>
                 <dd>{model.claims.refreshExpiresAt}</dd>
               </div>
             </DescriptionList>
 
-            <Alert tone="info" title={copy.claims.privacyTitle} icon={infoIcon}>
-              <p class="feedback-message">{copy.claims.privacyDescription}</p>
+            <Alert tone="info" title={t("authUi.account.claims.privacyTitle")} icon={infoIcon}>
+              <p class="feedback-message">{t("authUi.account.claims.privacyDescription")}</p>
             </Alert>
           </section>
         </Card>
@@ -148,24 +152,24 @@
           <section class="card-section" aria-labelledby={`${componentId}-password-title`}>
             <div class="section-heading">
               <div>
-                <h2 id={`${componentId}-password-title`}>{copy.password.title}</h2>
-                <p>{copy.password.description}</p>
+                <h2 id={`${componentId}-password-title`}>{t("authUi.account.password.title")}</h2>
+                <p>{t("authUi.account.password.description")}</p>
               </div>
             </div>
 
             {#if model.passwordState.status === "validation-error"}
               <ErrorSummary
-                title={copy.password.validationTitle}
+                title={t("authUi.account.password.validationTitle")}
                 errors={passwordSummary}
                 headingLevel={3}
                 focusOnMount
               />
             {:else if model.passwordState.status === "service-error"}
-              <Alert tone="error" title={copy.password.serviceErrorTitle}>
+              <Alert tone="error" title={t("authUi.account.password.serviceErrorTitle")}>
                 <p class="feedback-message">{model.passwordState.message}</p>
               </Alert>
             {:else if model.passwordState.status === "success"}
-              <Alert tone="success" title={copy.password.successTitle} icon={successIcon}>
+              <Alert tone="success" title={t("authUi.account.password.successTitle")} icon={successIcon}>
                 <p class="feedback-message">{model.passwordState.message}</p>
               </Alert>
             {/if}
@@ -178,7 +182,7 @@
             >
               <Field
                 controlId={currentPasswordId}
-                label={copy.password.currentLabel}
+                label={t("authUi.account.password.currentLabel")}
                 error={issueMessage(passwordIssues, "currentPassword")}
                 required
               >
@@ -195,8 +199,8 @@
               </Field>
               <Field
                 controlId={newPasswordId}
-                label={copy.password.newLabel}
-                hint={copy.password.hint}
+                label={t("authUi.account.password.newLabel")}
+                hint={t("authUi.account.password.hint")}
                 error={issueMessage(passwordIssues, "newPassword")}
                 required
               >
@@ -213,7 +217,7 @@
               </Field>
               <Field
                 controlId={confirmPasswordId}
-                label={copy.password.confirmLabel}
+                label={t("authUi.account.password.confirmLabel")}
                 error={issueMessage(passwordIssues, "confirmPassword")}
                 required
               >
@@ -230,10 +234,10 @@
               </Field>
               <Button type="submit" disabled={model.passwordState.status === "submitting"}>
                 {#if model.passwordState.status === "submitting"}
-                  <Spinner label={copy.password.submitting} size="sm" />
-                  <span aria-hidden="true">{copy.password.submitting}</span>
+                  <Spinner label={t("authUi.account.password.submitting")} size="sm" />
+                  <span aria-hidden="true">{t("authUi.account.password.submitting")}</span>
                 {:else}
-                  {copy.password.submit}
+                  {t("authUi.account.password.submit")}
                 {/if}
               </Button>
             </form>
@@ -244,30 +248,35 @@
           <section class="card-section" aria-labelledby={`${componentId}-email-title`}>
             <div class="section-heading">
               <div>
-                <h2 id={`${componentId}-email-title`}>{copy.email.title}</h2>
-                <p>{copy.email.description}</p>
+                <h2 id={`${componentId}-email-title`}>{t("authUi.account.email.title")}</h2>
+                <p>{t("authUi.account.email.description")}</p>
               </div>
             </div>
 
             {#if model.emailState.status === "validation-error"}
-              <ErrorSummary title={copy.email.validationTitle} errors={emailSummary} headingLevel={3} focusOnMount />
+              <ErrorSummary
+                title={t("authUi.account.email.validationTitle")}
+                errors={emailSummary}
+                headingLevel={3}
+                focusOnMount
+              />
             {:else if model.emailState.status === "service-error"}
-              <Alert tone="error" title={copy.email.serviceErrorTitle}>
+              <Alert tone="error" title={t("authUi.account.email.serviceErrorTitle")}>
                 <p class="feedback-message">{model.emailState.message}</p>
               </Alert>
             {:else if model.emailState.status === "success"}
-              <Alert tone="success" title={copy.email.successTitle} icon={successIcon}>
+              <Alert tone="success" title={t("authUi.account.email.successTitle")} icon={successIcon}>
                 <p class="feedback-message">{model.emailState.message}</p>
               </Alert>
             {:else if model.emailState.status === "pending-email"}
-              <Alert tone="success" title={copy.email.pendingTitle}>
+              <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
                 <div class="pending-copy">
-                  <p>{copy.email.pendingDescription}</p>
+                  <p>{t("authUi.account.email.pendingDescription")}</p>
                   <dl class="pending-target">
-                    <dt>{copy.email.pendingTargetLabel}</dt>
+                    <dt>{t("authUi.account.email.pendingTargetLabel")}</dt>
                     <dd>{model.emailState.targetHint}</dd>
                   </dl>
-                  <p>{copy.email.pendingPrivacy}</p>
+                  <p>{t("authUi.account.email.pendingPrivacy")}</p>
                 </div>
               </Alert>
             {/if}
@@ -280,8 +289,8 @@
             >
               <Field
                 controlId={newEmailId}
-                label={copy.email.label}
-                hint={copy.email.hint}
+                label={t("authUi.account.email.label")}
+                hint={t("authUi.account.email.hint")}
                 error={issueMessage(emailIssues, "newEmail")}
                 required
               >
@@ -300,12 +309,12 @@
               </Field>
               <Button type="submit" disabled={model.emailState.status === "submitting"}>
                 {#if model.emailState.status === "submitting"}
-                  <Spinner label={copy.email.submitting} size="sm" />
-                  <span aria-hidden="true">{copy.email.submitting}</span>
+                  <Spinner label={t("authUi.account.email.submitting")} size="sm" />
+                  <span aria-hidden="true">{t("authUi.account.email.submitting")}</span>
                 {:else if model.emailState.status === "pending-email"}
-                  {copy.email.resend}
+                  {t("authUi.account.email.resend")}
                 {:else}
-                  {copy.email.submit}
+                  {t("authUi.account.email.submit")}
                 {/if}
               </Button>
             </form>
@@ -316,12 +325,12 @@
           <section class="logout-section" aria-labelledby={`${componentId}-logout-title`}>
             <div class="section-heading">
               <div>
-                <h2 id={`${componentId}-logout-title`}>{copy.logout.title}</h2>
-                <p>{copy.logout.description}</p>
+                <h2 id={`${componentId}-logout-title`}>{t("authUi.account.logout.title")}</h2>
+                <p>{t("authUi.account.logout.description")}</p>
               </div>
             </div>
             {#if typeof model.logoutState === "object"}
-              <Alert tone="error" title={copy.logout.serviceErrorTitle}>
+              <Alert tone="error" title={t("authUi.account.logout.serviceErrorTitle")}>
                 <p class="feedback-message">{model.logoutState.message}</p>
               </Alert>
             {/if}
@@ -333,10 +342,10 @@
             >
               <Button type="submit" variant="outline" tone="danger" disabled={model.logoutState === "submitting"}>
                 {#if model.logoutState === "submitting"}
-                  <Spinner label={copy.logout.submitting} size="sm" />
-                  <span aria-hidden="true">{copy.logout.submitting}</span>
+                  <Spinner label={t("authUi.account.logout.submitting")} size="sm" />
+                  <span aria-hidden="true">{t("authUi.account.logout.submitting")}</span>
                 {:else}
-                  {copy.logout.submit}
+                  {t("authUi.account.logout.submit")}
                 {/if}
               </Button>
             </form>

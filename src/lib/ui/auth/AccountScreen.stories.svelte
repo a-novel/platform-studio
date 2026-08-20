@@ -1,14 +1,10 @@
 <script module lang="ts">
   import type { ReadyAccountScreenModel } from "$lib/application/auth/types";
-  import { getAuthStoryCopy } from "$lib/i18n/auth-story-copy";
 
   import AccountScreenStory from "./AccountScreenStory.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
-
-  const english = getAuthStoryCopy("en");
-  const french = getAuthStoryCopy("fr");
 
   const ready: ReadyAccountScreenModel = {
     status: "ready",
@@ -64,23 +60,19 @@
 </script>
 
 <Story name="Ready" asChild play={verifyReadyAccount}>
-  <AccountScreenStory copy={english.auth.account} initialModel={ready} />
+  <AccountScreenStory initialModel={ready} />
 </Story>
 
 <Story name="Loading" asChild>
-  <AccountScreenStory copy={english.auth.account} initialModel={{ status: "loading" }} />
+  <AccountScreenStory initialModel={{ status: "loading" }} />
 </Story>
 
 <Story name="Load error" asChild play={verifyLoadRetry}>
-  <AccountScreenStory
-    copy={english.auth.account}
-    initialModel={{ status: "error", message: "Studio could not verify the current session." }}
-  />
+  <AccountScreenStory initialModel={{ status: "error", message: "Studio could not verify the current session." }} />
 </Story>
 
 <Story name="Password validation error" asChild play={verifyPasswordValidation}>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       passwordState: {
@@ -95,15 +87,11 @@
 </Story>
 
 <Story name="Password submitting" asChild play={verifyPasswordLocked}>
-  <AccountScreenStory
-    copy={english.auth.account}
-    initialModel={{ ...ready, passwordState: { status: "submitting" } }}
-  />
+  <AccountScreenStory initialModel={{ ...ready, passwordState: { status: "submitting" } }} />
 </Story>
 
 <Story name="Password service error" asChild>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       passwordState: {
@@ -116,7 +104,6 @@
 
 <Story name="Password success" asChild>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       passwordState: { status: "success", message: "Use the new password the next time you sign in." },
@@ -126,7 +113,6 @@
 
 <Story name="Email validation error" asChild>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       emailState: {
@@ -138,12 +124,11 @@
 </Story>
 
 <Story name="Email submitting" asChild>
-  <AccountScreenStory copy={english.auth.account} initialModel={{ ...ready, emailState: { status: "submitting" } }} />
+  <AccountScreenStory initialModel={{ ...ready, emailState: { status: "submitting" } }} />
 </Story>
 
 <Story name="Email service error" asChild>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       emailState: {
@@ -156,7 +141,6 @@
 
 <Story name="Email confirmation pending" asChild>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       emailState: { status: "pending-email", targetHint: "n••••••@example.test" },
@@ -166,7 +150,6 @@
 
 <Story name="Email success" asChild>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       emailState: { status: "success", message: "The verified address now applies to this account." },
@@ -175,12 +158,11 @@
 </Story>
 
 <Story name="Logout submitting" asChild>
-  <AccountScreenStory copy={english.auth.account} initialModel={{ ...ready, logoutState: "submitting" }} />
+  <AccountScreenStory initialModel={{ ...ready, logoutState: "submitting" }} />
 </Story>
 
 <Story name="Logout error" asChild>
   <AccountScreenStory
-    copy={english.auth.account}
     initialModel={{
       ...ready,
       logoutState: { status: "service-error", message: "Studio could not clear the local session." },
@@ -188,9 +170,8 @@
   />
 </Story>
 
-<Story name="Narrow French long copy" asChild>
+<Story name="Narrow French long copy" asChild parameters={{ locale: "fr" }}>
   <AccountScreenStory
-    copy={french.auth.account}
     frameWidth="24rem"
     initialModel={{
       ...ready,

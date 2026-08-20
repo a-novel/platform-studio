@@ -1,14 +1,10 @@
 <script module lang="ts">
   import type { AuthenticationPanelModel } from "$lib/application/auth/types";
-  import { getAuthStoryCopy } from "$lib/i18n/auth-story-copy";
 
   import AuthenticationDialogStory from "./AuthenticationDialogStory.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
-
-  const english = getAuthStoryCopy("en");
-  const french = getAuthStoryCopy("fr");
 
   const login: AuthenticationPanelModel = {
     journey: "login",
@@ -59,21 +55,15 @@
 </script>
 
 <Story name="Login ready" asChild play={verifyDialogFocusAndRestoration}>
-  <AuthenticationDialogStory authCopy={english.auth.authentication} shellCopy={english.shell} initialModel={login} />
+  <AuthenticationDialogStory initialModel={login} />
 </Story>
 
 <Story name="Login submitting" asChild play={verifySubmittingIsLocked}>
-  <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
-    initialModel={{ journey: "login", state: { status: "submitting" } }}
-  />
+  <AuthenticationDialogStory initialModel={{ journey: "login", state: { status: "submitting" } }} />
 </Story>
 
 <Story name="Login validation error" asChild play={verifyValidationLinks}>
   <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
     initialModel={{
       journey: "login",
       state: {
@@ -89,8 +79,6 @@
 
 <Story name="Login service error" asChild>
   <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
     initialModel={{
       journey: "login",
       state: {
@@ -103,8 +91,6 @@
 
 <Story name="Login success" asChild>
   <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
     initialModel={{
       journey: "login",
       state: { status: "success", message: "Your verified Studio session is ready." },
@@ -113,17 +99,11 @@
 </Story>
 
 <Story name="Registration request" asChild>
-  <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
-    initialModel={{ journey: "register", state: { status: "ready" } }}
-  />
+  <AuthenticationDialogStory initialModel={{ journey: "register", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Registration email pending" asChild>
   <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
     initialModel={{
       journey: "register",
       state: { status: "pending-email", targetHint: "m•••@example.test" },
@@ -132,17 +112,11 @@
 </Story>
 
 <Story name="Password recovery request" asChild>
-  <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
-    initialModel={{ journey: "reset", state: { status: "ready" } }}
-  />
+  <AuthenticationDialogStory initialModel={{ journey: "reset", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Password recovery email pending" asChild>
   <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
     initialModel={{
       journey: "reset",
       state: { status: "pending-email", targetHint: "m•••@example.test" },
@@ -151,18 +125,11 @@
 </Story>
 
 <Story name="Narrow login" asChild>
-  <AuthenticationDialogStory
-    authCopy={english.auth.authentication}
-    shellCopy={english.shell}
-    initialModel={login}
-    frameWidth="22rem"
-  />
+  <AuthenticationDialogStory initialModel={login} frameWidth="22rem" />
 </Story>
 
-<Story name="French long service error" asChild>
+<Story name="French long service error" asChild parameters={{ locale: "fr" }}>
   <AuthenticationDialogStory
-    authCopy={french.auth.authentication}
-    shellCopy={french.shell}
     initialModel={{
       journey: "login",
       state: {

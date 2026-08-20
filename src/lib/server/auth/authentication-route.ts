@@ -1,6 +1,5 @@
 import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 import { readAuthView } from "$lib/application/shell/auth-dialog-state";
-import { getAuthFlowCopy } from "$lib/i18n/auth-flow-copy";
 import { createAuthenticationContext } from "$lib/server/auth/context";
 import { maskEmail, safeReturnTo, validateEmailRequest, validateLogin } from "$lib/server/auth/forms";
 
@@ -19,8 +18,7 @@ function serviceError(journey: AuthenticationPanelModel["journey"], message: str
 
 async function login(event: RequestEvent, form: FormData) {
   const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const copy = getAuthFlowCopy(t);
-  const input = validateLogin(form, copy.validation);
+  const input = validateLogin(form, t);
 
   if (!input.success) {
     return fail(400, {
@@ -34,7 +32,9 @@ async function login(event: RequestEvent, form: FormData) {
   try {
     await createAuthenticationContext(event.cookies, event.url).session.login(input.value.email, input.value.password);
   } catch (error) {
-    const message = isHttpStatusError(error, 401) ? copy.feedback.invalidCredentials : copy.feedback.serviceUnavailable;
+    const message = isHttpStatusError(error, 401)
+      ? t("authFlow.feedback.invalidCredentials")
+      : t("authFlow.feedback.serviceUnavailable");
     return fail(isHttpStatusError(error, 401) ? 401 : 503, {
       authentication: serviceError("login", message),
     });
@@ -45,8 +45,7 @@ async function login(event: RequestEvent, form: FormData) {
 
 async function requestRegistration(event: RequestEvent, form: FormData) {
   const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const copy = getAuthFlowCopy(t);
-  const input = validateEmailRequest(form, copy.validation);
+  const input = validateEmailRequest(form, t);
 
   if (!input.success) {
     return fail(400, {
@@ -66,7 +65,7 @@ async function requestRegistration(event: RequestEvent, form: FormData) {
     });
   } catch {
     return fail(503, {
-      authentication: serviceError("register", copy.feedback.serviceUnavailable),
+      authentication: serviceError("register", t("authFlow.feedback.serviceUnavailable")),
     });
   }
 
@@ -83,8 +82,7 @@ async function requestRegistration(event: RequestEvent, form: FormData) {
 
 async function requestPasswordReset(event: RequestEvent, form: FormData) {
   const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const copy = getAuthFlowCopy(t);
-  const input = validateEmailRequest(form, copy.validation);
+  const input = validateEmailRequest(form, t);
 
   if (!input.success) {
     return fail(400, {
@@ -104,7 +102,7 @@ async function requestPasswordReset(event: RequestEvent, form: FormData) {
     });
   } catch {
     return fail(503, {
-      authentication: serviceError("reset", copy.feedback.serviceUnavailable),
+      authentication: serviceError("reset", t("authFlow.feedback.serviceUnavailable")),
     });
   }
 
@@ -128,9 +126,9 @@ export const authenticationActions = {
     if (journey === "register") return await requestRegistration(event, form);
     if (journey === "reset") return await requestPasswordReset(event, form);
 
-    const copy = getAuthFlowCopy(event.locals.i18n.getFixedT(event.locals.locale, "common"));
+    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
     return fail(400, {
-      authentication: serviceError("login", copy.feedback.serviceUnavailable),
+      authentication: serviceError("login", t("authFlow.feedback.serviceUnavailable")),
     });
   },
 };

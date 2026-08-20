@@ -2,16 +2,18 @@
   import { mergeAccountAction } from "$lib/application/auth/account-action";
   import AccountScreen from "$lib/ui/auth/AccountScreen.svelte";
 
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
+
   let { data, form } = $props();
+  const { t } = getI18nContext();
   const model = $derived(mergeAccountAction(data.accountModel, form));
 </script>
 
 <svelte:head>
-  <title>{data.accountCopy.title} — {data.shellCopy.brand}</title>
+  <title>{t("authUi.account.title")} — {t("shell.brand")}</title>
 </svelte:head>
 
 <AccountScreen
-  copy={data.accountCopy}
   {model}
   actions={{
     password: "?/password",
