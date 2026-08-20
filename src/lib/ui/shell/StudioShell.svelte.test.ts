@@ -84,6 +84,7 @@ describe("StudioShell", () => {
     );
 
     const trigger = page.getByRole("button", { name: "Account menu" });
+    await expect.element(trigger).toBeVisible();
     trigger.element().focus();
     await userEvent.keyboard("{ArrowDown}");
     await expect.element(page.getByRole("menuitem", { name: "Manage account" })).toHaveFocus();
