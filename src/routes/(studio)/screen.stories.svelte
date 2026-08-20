@@ -33,14 +33,15 @@
     const signIn = canvas.getByRole("button", { name: "Sign in" });
     await userEvent.click(signIn);
     await expect(canvas.getByRole("dialog", { name: "Sign in" })).toBeVisible();
-    await expect(canvas.getByRole("textbox", { name: "Email address" })).toBeVisible();
-    await expect(canvas.getByRole("textbox", { name: "Email address" })).toHaveFocus();
+    const email = await canvas.findByRole("textbox", { name: "Email address" });
+    await expect(email).toBeVisible();
+    await expect(email).toHaveFocus();
 
     await userEvent.click(canvas.getByRole("button", { name: "Close authentication" }));
     await expect(canvas.queryByRole("dialog", { name: "Sign in" })).not.toBeInTheDocument();
 
     await userEvent.click(signIn);
-    await expect(canvas.getByRole("textbox", { name: "Email address" })).toHaveFocus();
+    await expect(await canvas.findByRole("textbox", { name: "Email address" })).toHaveFocus();
     await userEvent.click(canvas.getByRole("button", { name: "Close authentication" }));
     await expect(signIn).toHaveFocus();
     clearFocus();
