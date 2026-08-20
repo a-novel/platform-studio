@@ -32,8 +32,10 @@ function withLocale(locale: "en" | "fr" = "en") {
   };
 }
 
-function submitForm(buttonName: string): HTMLFormElement {
-  const button = page.getByRole("button", { name: buttonName }).element() as HTMLButtonElement;
+async function submitForm(buttonName: string): Promise<HTMLFormElement> {
+  const buttonLocator = page.getByRole("button", { name: buttonName });
+  await expect.element(buttonLocator).toBeVisible();
+  const button = buttonLocator.element() as HTMLButtonElement;
   const form = button.form;
   expect(form).not.toBeNull();
 
@@ -55,7 +57,7 @@ describe("pure authentication screens", () => {
       withLocale()
     );
 
-    const form = submitForm("Sign in");
+    const form = await submitForm("Sign in");
 
     expect(onSubmit).toHaveBeenCalledOnce();
     expect(onSubmit.mock.calls[0]?.[0]).toBeInstanceOf(SubmitEvent);
@@ -84,7 +86,7 @@ describe("pure authentication screens", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it("keeps account actions independently mockable", () => {
+  it("keeps account actions independently mockable", async () => {
     const onPasswordSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
     const onEmailSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
     const onLogoutSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
@@ -105,9 +107,9 @@ describe("pure authentication screens", () => {
       withLocale()
     );
 
-    expect(submitForm("Change password").getAttribute("action")).toBe("/account?/password");
-    expect(submitForm("Send confirmation link").getAttribute("action")).toBe("/account?/email");
-    expect(submitForm("Sign out").getAttribute("action")).toBe("/account?/logout");
+    expect((await submitForm("Change password")).getAttribute("action")).toBe("/account?/password");
+    expect((await submitForm("Send confirmation link")).getAttribute("action")).toBe("/account?/email");
+    expect((await submitForm("Sign out")).getAttribute("action")).toBe("/account?/logout");
     expect(onPasswordSubmit).toHaveBeenCalledOnce();
     expect(onEmailSubmit).toHaveBeenCalledOnce();
     expect(onLogoutSubmit).toHaveBeenCalledOnce();
@@ -141,7 +143,7 @@ describe("pure authentication screens", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it("renders email confirmation without password controls", () => {
+  it("renders email confirmation without password controls", async () => {
     const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
 
     render(
@@ -157,7 +159,7 @@ describe("pure authentication screens", () => {
       withLocale()
     );
 
-    const form = submitForm("Confirm email change");
+    const form = await submitForm("Confirm email change");
 
     expect(form.querySelector('input[type="password"]')).toBeNull();
     expect(onSubmit).toHaveBeenCalledOnce();
