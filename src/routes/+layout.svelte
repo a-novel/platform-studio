@@ -1,5 +1,4 @@
 <script lang="ts">
-  import StudioShellController from "$lib/client/shell/StudioShellController.svelte";
   import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
   import "@a-novel-kit/uikit-fonts/fonts.css";
@@ -9,9 +8,7 @@
 </script>
 
 <StudioI18nProvider locale={data.locale}>
-  <StudioShellController activeNavigation={data.activeNavigation === "home" ? "home" : null}>
-    {@render children()}
-  </StudioShellController>
+  {@render children()}
 </StudioI18nProvider>
 
 <style>

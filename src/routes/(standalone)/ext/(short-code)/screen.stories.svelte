@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import ShortCodeScreenStory from "./ShortCodeScreenStory.svelte";
+  import StoryHarness from "./story.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, within } from "storybook/test";
@@ -45,39 +45,37 @@
 </script>
 
 <Story name="Complete registration" asChild play={verifyRegistrationForm}>
-  <ShortCodeScreenStory
-    initialModel={{ journey: "register", state: { status: "ready" }, targetHint: "m•••@example.test" }}
-  />
+  <StoryHarness initialModel={{ journey: "register", state: { status: "ready" }, targetHint: "m•••@example.test" }} />
 </Story>
 
 <Story name="Confirm email update" asChild play={verifyEmailConfirmation}>
-  <ShortCodeScreenStory
+  <StoryHarness
     initialModel={{ journey: "email-update", state: { status: "ready" }, targetHint: "n••••••@example.test" }}
   />
 </Story>
 
 <Story name="Complete password reset" asChild>
-  <ShortCodeScreenStory initialModel={{ journey: "password-reset", state: { status: "ready" } }} />
+  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Missing link details" asChild>
-  <ShortCodeScreenStory initialModel={{ journey: "register", state: { status: "missing" } }} />
+  <StoryHarness initialModel={{ journey: "register", state: { status: "missing" } }} />
 </Story>
 
 <Story name="Invalid link" asChild>
-  <ShortCodeScreenStory initialModel={{ journey: "email-update", state: { status: "invalid" } }} />
+  <StoryHarness initialModel={{ journey: "email-update", state: { status: "invalid" } }} />
 </Story>
 
 <Story name="Expired link" asChild>
-  <ShortCodeScreenStory initialModel={{ journey: "password-reset", state: { status: "expired" } }} />
+  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "expired" } }} />
 </Story>
 
 <Story name="Submitting once" asChild play={verifySubmittingLocked}>
-  <ShortCodeScreenStory initialModel={{ journey: "password-reset", state: { status: "submitting" } }} />
+  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "submitting" } }} />
 </Story>
 
 <Story name="Validation error" asChild play={verifyValidationLink}>
-  <ShortCodeScreenStory
+  <StoryHarness
     initialModel={{
       journey: "register",
       state: {
@@ -93,7 +91,7 @@
 </Story>
 
 <Story name="Service error" asChild>
-  <ShortCodeScreenStory
+  <StoryHarness
     initialModel={{
       journey: "password-reset",
       state: {
@@ -105,7 +103,7 @@
 </Story>
 
 <Story name="Success" asChild>
-  <ShortCodeScreenStory
+  <StoryHarness
     initialModel={{
       journey: "register",
       state: { status: "success", message: "Your account and protected Studio session are ready." },
@@ -115,7 +113,7 @@
 </Story>
 
 <Story name="Narrow French long error" asChild parameters={{ locale: "fr" }}>
-  <ShortCodeScreenStory
+  <StoryHarness
     frameWidth="22rem"
     initialModel={{
       journey: "email-update",

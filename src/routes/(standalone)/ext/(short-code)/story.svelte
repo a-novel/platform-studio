@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-  import ShortCodeScreen from "./ShortCodeScreen.svelte";
+  import ShortCodeScreen from "./screen.svelte";
 
   import { untrack } from "svelte";
 

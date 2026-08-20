@@ -9,8 +9,8 @@
 </script>
 
 <script lang="ts">
-  import HomeScreen from "./HomeScreen.svelte";
-  import StudioShell from "./StudioShell.svelte";
+  import HomeScreen from "./(home)/screen.svelte";
+  import Screen from "./screen.svelte";
 
   import { untrack } from "svelte";
 
@@ -24,7 +24,7 @@
 </script>
 
 <div class="story-frame" style:--story-frame-width={frameWidth}>
-  <StudioShell
+  <Screen
     {model}
     onAuthViewChange={(authView) => updateModel({ authView })}
     onDrawerOpenChange={(drawerOpen) => updateModel({ drawerOpen })}
@@ -37,7 +37,7 @@
       })}
   >
     <HomeScreen />
-  </StudioShell>
+  </Screen>
 </div>
 
 <style>

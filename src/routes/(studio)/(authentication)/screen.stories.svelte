@@ -1,7 +1,7 @@
 <script module lang="ts">
   import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 
-  import AuthenticationDialogStory from "./AuthenticationDialogStory.svelte";
+  import StoryHarness from "./story.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
@@ -55,15 +55,15 @@
 </script>
 
 <Story name="Login ready" asChild play={verifyDialogFocusAndRestoration}>
-  <AuthenticationDialogStory initialModel={login} />
+  <StoryHarness initialModel={login} />
 </Story>
 
 <Story name="Login submitting" asChild play={verifySubmittingIsLocked}>
-  <AuthenticationDialogStory initialModel={{ journey: "login", state: { status: "submitting" } }} />
+  <StoryHarness initialModel={{ journey: "login", state: { status: "submitting" } }} />
 </Story>
 
 <Story name="Login validation error" asChild play={verifyValidationLinks}>
-  <AuthenticationDialogStory
+  <StoryHarness
     initialModel={{
       journey: "login",
       state: {
@@ -78,7 +78,7 @@
 </Story>
 
 <Story name="Login service error" asChild>
-  <AuthenticationDialogStory
+  <StoryHarness
     initialModel={{
       journey: "login",
       state: {
@@ -90,7 +90,7 @@
 </Story>
 
 <Story name="Login success" asChild>
-  <AuthenticationDialogStory
+  <StoryHarness
     initialModel={{
       journey: "login",
       state: { status: "success", message: "Your verified Studio session is ready." },
@@ -99,11 +99,11 @@
 </Story>
 
 <Story name="Registration request" asChild>
-  <AuthenticationDialogStory initialModel={{ journey: "register", state: { status: "ready" } }} />
+  <StoryHarness initialModel={{ journey: "register", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Registration email pending" asChild>
-  <AuthenticationDialogStory
+  <StoryHarness
     initialModel={{
       journey: "register",
       state: { status: "pending-email", targetHint: "m•••@example.test" },
@@ -112,11 +112,11 @@
 </Story>
 
 <Story name="Password recovery request" asChild>
-  <AuthenticationDialogStory initialModel={{ journey: "reset", state: { status: "ready" } }} />
+  <StoryHarness initialModel={{ journey: "reset", state: { status: "ready" } }} />
 </Story>
 
 <Story name="Password recovery email pending" asChild>
-  <AuthenticationDialogStory
+  <StoryHarness
     initialModel={{
       journey: "reset",
       state: { status: "pending-email", targetHint: "m•••@example.test" },
@@ -125,11 +125,11 @@
 </Story>
 
 <Story name="Narrow login" asChild>
-  <AuthenticationDialogStory initialModel={login} frameWidth="22rem" />
+  <StoryHarness initialModel={login} frameWidth="22rem" />
 </Story>
 
 <Story name="French long service error" asChild parameters={{ locale: "fr" }}>
-  <AuthenticationDialogStory
+  <StoryHarness
     initialModel={{
       journey: "login",
       state: {

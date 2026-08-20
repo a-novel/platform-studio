@@ -1,9 +1,9 @@
 import type { ReadyAccountScreenModel } from "$lib/application/auth/types";
 import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
-import AccountScreen from "./AccountScreen.svelte";
-import AuthenticationPanel from "./AuthenticationPanel.svelte";
-import ShortCodeScreen from "./ShortCodeScreen.svelte";
+import ShortCodeScreen from "../../(standalone)/ext/(short-code)/screen.svelte";
+import AccountScreen from "../account/screen.svelte";
+import AuthenticationPanel from "./screen.svelte";
 
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";

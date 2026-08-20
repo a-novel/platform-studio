@@ -10,10 +10,10 @@
 
 <script lang="ts">
   import type { AuthDialogView, StudioShellViewModel } from "$lib/application/shell/types";
-  import HomeScreen from "$lib/ui/shell/HomeScreen.svelte";
-  import StudioShell from "$lib/ui/shell/StudioShell.svelte";
 
-  import AuthenticationPanel from "./AuthenticationPanel.svelte";
+  import HomeScreen from "../(home)/screen.svelte";
+  import StudioShell from "../screen.svelte";
+  import AuthenticationPanel from "./screen.svelte";
 
   import { untrack } from "svelte";
 

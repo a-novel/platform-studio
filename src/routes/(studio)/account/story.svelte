@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-  import AccountScreen from "./AccountScreen.svelte";
+  import AccountScreen from "./screen.svelte";
 
   import { untrack } from "svelte";
 

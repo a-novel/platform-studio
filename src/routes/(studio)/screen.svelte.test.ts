@@ -1,7 +1,7 @@
 import type { StudioShellViewModel } from "$lib/application/shell/types";
 import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
-import StudioShell from "./StudioShell.svelte";
+import Screen from "./screen.svelte";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
@@ -28,7 +28,7 @@ function withLocale(locale: "en" | "fr" = "en") {
   };
 }
 
-describe("StudioShell", () => {
+describe("studio shell screen", () => {
   beforeEach(async () => {
     await page.viewport(1280, 800);
   });
@@ -36,7 +36,7 @@ describe("StudioShell", () => {
   it("exposes the empty workspace, current Home destination, and anonymous authentication action", async () => {
     const onAuthViewChange = vi.fn();
     render(
-      StudioShell,
+      Screen,
       {
         model: model(),
         onAuthViewChange,
@@ -53,7 +53,7 @@ describe("StudioShell", () => {
 
   it("keeps the collapsed Home destination accessible by name", async () => {
     render(
-      StudioShell,
+      Screen,
       {
         model: model({ rail: "collapsed" }),
       },
@@ -69,7 +69,7 @@ describe("StudioShell", () => {
   it("supports keyboard account-menu focus and logout", async () => {
     const onLogout = vi.fn();
     render(
-      StudioShell,
+      Screen,
       {
         model: model({
           session: {
@@ -96,7 +96,7 @@ describe("StudioShell", () => {
   it("renders URL-controlled auth views and delegates view changes", async () => {
     const onAuthViewChange = vi.fn();
     render(
-      StudioShell,
+      Screen,
       {
         model: model({ authView: "register" }),
         onAuthViewChange,
@@ -113,7 +113,7 @@ describe("StudioShell", () => {
   it("surfaces session errors and delegates a retry without leaking state into the component", async () => {
     const onRetrySession = vi.fn();
     render(
-      StudioShell,
+      Screen,
       {
         model: model({
           session: { status: "error" },

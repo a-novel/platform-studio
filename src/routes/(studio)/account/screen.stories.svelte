@@ -1,7 +1,7 @@
 <script module lang="ts">
   import type { ReadyAccountScreenModel } from "$lib/application/auth/types";
 
-  import AccountScreenStory from "./AccountScreenStory.svelte";
+  import StoryHarness from "./story.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
@@ -60,19 +60,19 @@
 </script>
 
 <Story name="Ready" asChild play={verifyReadyAccount}>
-  <AccountScreenStory initialModel={ready} />
+  <StoryHarness initialModel={ready} />
 </Story>
 
 <Story name="Loading" asChild>
-  <AccountScreenStory initialModel={{ status: "loading" }} />
+  <StoryHarness initialModel={{ status: "loading" }} />
 </Story>
 
 <Story name="Load error" asChild play={verifyLoadRetry}>
-  <AccountScreenStory initialModel={{ status: "error", message: "Studio could not verify the current session." }} />
+  <StoryHarness initialModel={{ status: "error", message: "Studio could not verify the current session." }} />
 </Story>
 
 <Story name="Password validation error" asChild play={verifyPasswordValidation}>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       passwordState: {
@@ -87,11 +87,11 @@
 </Story>
 
 <Story name="Password submitting" asChild play={verifyPasswordLocked}>
-  <AccountScreenStory initialModel={{ ...ready, passwordState: { status: "submitting" } }} />
+  <StoryHarness initialModel={{ ...ready, passwordState: { status: "submitting" } }} />
 </Story>
 
 <Story name="Password service error" asChild>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       passwordState: {
@@ -103,7 +103,7 @@
 </Story>
 
 <Story name="Password success" asChild>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       passwordState: { status: "success", message: "Use the new password the next time you sign in." },
@@ -112,7 +112,7 @@
 </Story>
 
 <Story name="Email validation error" asChild>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       emailState: {
@@ -124,11 +124,11 @@
 </Story>
 
 <Story name="Email submitting" asChild>
-  <AccountScreenStory initialModel={{ ...ready, emailState: { status: "submitting" } }} />
+  <StoryHarness initialModel={{ ...ready, emailState: { status: "submitting" } }} />
 </Story>
 
 <Story name="Email service error" asChild>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       emailState: {
@@ -140,7 +140,7 @@
 </Story>
 
 <Story name="Email confirmation pending" asChild>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       emailState: { status: "pending-email", targetHint: "n••••••@example.test" },
@@ -149,7 +149,7 @@
 </Story>
 
 <Story name="Email success" asChild>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       emailState: { status: "success", message: "The verified address now applies to this account." },
@@ -158,11 +158,11 @@
 </Story>
 
 <Story name="Logout submitting" asChild>
-  <AccountScreenStory initialModel={{ ...ready, logoutState: "submitting" }} />
+  <StoryHarness initialModel={{ ...ready, logoutState: "submitting" }} />
 </Story>
 
 <Story name="Logout error" asChild>
-  <AccountScreenStory
+  <StoryHarness
     initialModel={{
       ...ready,
       logoutState: { status: "service-error", message: "Studio could not clear the local session." },
@@ -171,7 +171,7 @@
 </Story>
 
 <Story name="Narrow French long copy" asChild parameters={{ locale: "fr" }}>
-  <AccountScreenStory
+  <StoryHarness
     frameWidth="24rem"
     initialModel={{
       ...ready,
