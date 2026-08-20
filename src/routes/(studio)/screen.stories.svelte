@@ -1,7 +1,7 @@
 <script module lang="ts">
   import type { StudioShellViewModel } from "$lib/application/shell/types";
 
-  import StudioShellStory from "./StudioShellStory.svelte";
+  import StoryHarness from "./story.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
@@ -85,15 +85,15 @@
 </script>
 
 <Story name="Expanded anonymous" asChild play={verifyAnonymousAuthentication}>
-  <StudioShellStory initialModel={anonymous} />
+  <StoryHarness initialModel={anonymous} />
 </Story>
 
 <Story name="Collapsed anonymous" asChild play={verifyRailToggle}>
-  <StudioShellStory initialModel={{ ...anonymous, rail: "collapsed" }} />
+  <StoryHarness initialModel={{ ...anonymous, rail: "collapsed" }} />
 </Story>
 
 <Story name="Authenticated" asChild play={verifyAccountMenu}>
-  <StudioShellStory
+  <StoryHarness
     initialModel={{
       ...anonymous,
       session: {
@@ -106,11 +106,11 @@
 </Story>
 
 <Story name="Loading account" asChild>
-  <StudioShellStory initialModel={{ ...anonymous, session: { status: "loading" } }} />
+  <StoryHarness initialModel={{ ...anonymous, session: { status: "loading" } }} />
 </Story>
 
 <Story name="Account error" asChild>
-  <StudioShellStory
+  <StoryHarness
     initialModel={{
       ...anonymous,
       session: { status: "error" },
@@ -119,23 +119,23 @@
 </Story>
 
 <Story name="Login modal" asChild>
-  <StudioShellStory initialModel={{ ...anonymous, authView: "login" }} />
+  <StoryHarness initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
 <Story name="Registration modal" asChild>
-  <StudioShellStory initialModel={{ ...anonymous, authView: "register" }} />
+  <StoryHarness initialModel={{ ...anonymous, authView: "register" }} />
 </Story>
 
 <Story name="Password reset modal" asChild>
-  <StudioShellStory initialModel={{ ...anonymous, authView: "reset" }} />
+  <StoryHarness initialModel={{ ...anonymous, authView: "reset" }} />
 </Story>
 
 <Story name="Narrow drawer" asChild play={verifyDrawer}>
-  <StudioShellStory frameWidth="24rem" initialModel={{ ...anonymous, drawerOpen: true }} />
+  <StoryHarness frameWidth="24rem" initialModel={{ ...anonymous, drawerOpen: true }} />
 </Story>
 
 <Story name="French long copy" asChild parameters={{ locale: "fr" }}>
-  <StudioShellStory
+  <StoryHarness
     initialModel={{
       ...anonymous,
       session: {

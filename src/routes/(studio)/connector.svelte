@@ -3,8 +3,8 @@
 
   import type { Snippet } from "svelte";
 
-  /** SvelteKit wiring around the pure Studio shell. */
-  export interface StudioShellControllerProps {
+  /** Live SvelteKit wiring around the pure Studio shell. */
+  export interface ConnectorProps {
     activeNavigation: StudioShellViewModel["activeNavigation"];
     children?: Snippet;
   }
@@ -15,13 +15,13 @@
   import { page } from "$app/state";
   import { normalizeAuthUrl, readAuthView, withAuthView } from "$lib/application/shell/auth-dialog-state";
   import type { AuthDialogView } from "$lib/application/shell/types";
-  import StudioShell from "$lib/ui/shell/StudioShell.svelte";
+  import { readRailCollapsed, writeRailCollapsed } from "$lib/client/shell/rail-preference";
 
-  import { readRailCollapsed, writeRailCollapsed } from "./rail-preference";
+  import Screen from "./screen.svelte";
 
   import { onMount } from "svelte";
 
-  let { activeNavigation, children }: StudioShellControllerProps = $props();
+  let { activeNavigation, children }: ConnectorProps = $props();
 
   let drawerOpen = $state(false);
   let rail = $state<StudioShellViewModel["rail"]>("expanded");
@@ -77,11 +77,11 @@
   }
 </script>
 
-<StudioShell
+<Screen
   {model}
   onAuthViewChange={changeAuthView}
   onDrawerOpenChange={(open) => (drawerOpen = open)}
   onToggleRail={toggleRail}
 >
   {@render children?.()}
-</StudioShell>
+</Screen>

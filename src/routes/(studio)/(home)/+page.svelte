@@ -1,5 +1,5 @@
 <script lang="ts">
-  import HomeScreen from "$lib/ui/shell/HomeScreen.svelte";
+  import Screen from "./screen.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
 
@@ -10,4 +10,4 @@
   <title>{t("shell.homeTitle")} — {t("shell.brand")}</title>
 </svelte:head>
 
-<HomeScreen />
+<Screen />

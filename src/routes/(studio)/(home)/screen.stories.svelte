@@ -1,11 +1,11 @@
 <script module lang="ts">
-  import HomeScreen from "./HomeScreen.svelte";
+  import Screen from "./screen.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
 
   const { Story } = defineMeta({
     title: "Shell/Empty home",
-    component: HomeScreen,
+    component: Screen,
     tags: ["autodocs"],
     parameters: {
       layout: "fullscreen",
