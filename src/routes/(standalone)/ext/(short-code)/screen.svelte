@@ -15,7 +15,7 @@
   import type { ShortCodeJourney } from "$lib/application/auth/types";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, ErrorSummary, Field, Input, Link, Spinner } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, Input, Link } from "@a-novel-kit/uikit";
 
   import { CircleCheck } from "@lucide/svelte";
 
@@ -27,16 +27,10 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const summaryErrors = $derived(
-    issues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${issue.field === "newPassword" ? newPasswordId : confirmPasswordId}`,
-      message: issue.message,
-    }))
-  );
   const journeyTitle = $derived(getJourneyTitle(model.journey));
   const journeyDescription = $derived(getJourneyDescription(model.journey));
   const journeySubmit = $derived(getJourneySubmit(model.journey));
+  const journeySubmitting = $derived(getJourneySubmitting(model.journey));
   const unavailableStatus = $derived(
     model.state.status === "missing" || model.state.status === "invalid" || model.state.status === "expired"
       ? model.state.status
@@ -83,6 +77,18 @@
       case "register":
       default:
         return t("authUi.shortCode.journeys.register.submit");
+    }
+  }
+
+  function getJourneySubmitting(journey: ShortCodeJourney): string {
+    switch (journey) {
+      case "email-update":
+        return t("authUi.shortCode.journeys.emailUpdate.submitting");
+      case "password-reset":
+        return t("authUi.shortCode.journeys.passwordReset.submitting");
+      case "register":
+      default:
+        return t("authUi.shortCode.journeys.register.submitting");
     }
   }
 
@@ -145,20 +151,6 @@
       </Alert>
     {:else}
       <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
-        {#if model.state.status === "validation-error"}
-          <ErrorSummary
-            title={t("authUi.shortCode.validationTitle")}
-            description={t("authUi.shortCode.validationDescription")}
-            errors={summaryErrors}
-            headingLevel={2}
-            focusOnMount
-          />
-        {:else if model.state.status === "service-error"}
-          <Alert tone="error" title={t("authUi.shortCode.serviceErrorTitle")}>
-            <p class="feedback-message">{model.state.message}</p>
-          </Alert>
-        {/if}
-
         {#if model.journey !== "email-update"}
           <Field
             controlId={newPasswordId}
@@ -197,13 +189,12 @@
           </Field>
         {/if}
 
+        {#if model.state.status === "service-error"}
+          <Alert class="compact-form-error" tone="error" title={model.state.message} />
+        {/if}
+
         <Button type="submit" disabled={submitting}>
-          {#if submitting}
-            <Spinner label={t("authUi.shortCode.submitting")} size="sm" />
-            <span aria-hidden="true">{t("authUi.shortCode.submitting")}</span>
-          {:else}
-            {journeySubmit}
-          {/if}
+          {submitting ? journeySubmitting : journeySubmit}
         </Button>
       </form>
     {/if}
@@ -239,8 +230,7 @@
 
   .page-heading h1,
   .page-heading p,
-  .status-copy p,
-  .feedback-message {
+  .status-copy p {
     margin: 0;
   }
 
@@ -251,8 +241,7 @@
   }
 
   .page-heading p,
-  .status-copy p,
-  .feedback-message {
+  .status-copy p {
     line-height: var(--line-height-normal);
   }
 
@@ -282,5 +271,18 @@
     margin: 0;
     font-family: var(--font-family-mono);
     overflow-wrap: anywhere;
+  }
+
+  :global(.alert.compact-form-error.compact-form-error) {
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  :global(.compact-form-error .content) {
+    gap: 0;
+  }
+
+  :global(.compact-form-error .message:empty) {
+    display: none;
   }
 </style>

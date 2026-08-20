@@ -32,12 +32,12 @@ describe("mergeAccountAction", () => {
       mergeAccountAction(ready, {
         accountAction: {
           kind: "email",
-          state: { status: "pending-email", targetHint: "c•••@example.com" },
+          state: { status: "pending-email", targetHint: "creator@example.com" },
         },
       })
     ).toEqual({
       ...ready,
-      emailState: { status: "pending-email", targetHint: "c•••@example.com" },
+      emailState: { status: "pending-email", targetHint: "creator@example.com" },
     });
   });
 

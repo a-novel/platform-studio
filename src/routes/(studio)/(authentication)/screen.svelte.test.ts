@@ -80,10 +80,76 @@ describe("pure authentication screens", () => {
       withLocale()
     );
 
-    await expect.element(page.getByRole("button")).toBeDisabled();
+    const button = page.getByRole("button", { name: /Signing in/ });
+    await expect.element(button).toBeDisabled();
+    expect(button.element().querySelector('[role="status"]')).toBeNull();
     await expect.element(page.getByLabelText(/Email address/)).toBeDisabled();
     await expect.element(page.getByLabelText(/Password/)).toBeDisabled();
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("keeps validation feedback beside fields and places service failures before submit", async () => {
+    const validation = await render(
+      AuthenticationPanel,
+      {
+        model: {
+          journey: "login",
+          state: {
+            status: "validation-error",
+            issues: [
+              { field: "email", message: "Enter a valid email address." },
+              { field: "password", message: "Enter your password." },
+            ],
+          },
+        },
+        action: "/auth?/login",
+      },
+      withLocale()
+    );
+
+    await expect.element(page.getByText("Enter a valid email address.")).toBeVisible();
+    await expect.element(page.getByText("Enter your password.")).toBeVisible();
+    expect(document.querySelector('a[href$="-email"]')).toBeNull();
+    validation.unmount();
+
+    await render(
+      AuthenticationPanel,
+      {
+        model: {
+          journey: "login",
+          state: { status: "service-error", message: "Authentication is temporarily unavailable." },
+        },
+        action: "/auth?/login",
+      },
+      withLocale()
+    );
+
+    const alert = page.getByRole("alert").element();
+    const submit = page.getByRole("button", { name: "Sign in" }).element();
+    expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    expect(alert.textContent?.trim()).toBe("Authentication is temporarily unavailable.");
+  });
+
+  it("shows the complete address the user just submitted without a redundant label", async () => {
+    render(
+      AuthenticationPanel,
+      {
+        model: {
+          journey: "register",
+          state: { status: "pending-email", targetHint: "maya.chen@example.test" },
+        },
+        action: "/auth?/register",
+      },
+      withLocale()
+    );
+
+    await expect.element(page.getByText("maya.chen@example.test")).toBeVisible();
+    await expect.element(page.getByText("Delivery address")).not.toBeInTheDocument();
+    expect(
+      Array.from(document.querySelectorAll("strong")).some(
+        (element) => element.textContent === "maya.chen@example.test"
+      )
+    ).toBe(true);
   });
 
   it("keeps account actions independently mockable", async () => {
@@ -134,7 +200,9 @@ describe("pure authentication screens", () => {
       withLocale()
     );
 
-    await expect.element(page.getByRole("button")).toBeDisabled();
+    const button = page.getByRole("button", { name: /Resetting password/ });
+    await expect.element(button).toBeDisabled();
+    expect(button.element().querySelector('[role="status"]')).toBeNull();
     await expect.element(page.getByLabelText(/New password/)).toBeDisabled();
     await expect.element(page.getByLabelText(/Confirm new password/)).toBeDisabled();
     expect(document.querySelector('[name="shortCode"]')).toBeNull();

@@ -40,17 +40,13 @@ export default interface Resources {
           "description": "Send a one-time confirmation link to the new address.",
           "hint": "The address changes only after its secure link is confirmed.",
           "label": "New email address",
-          "pendingDescription": "If this address is available, Studio sent a one-time confirmation link.",
-          "pendingPrivacy": "For privacy, Studio uses the same response when an address cannot be used.",
-          "pendingTargetLabel": "New address",
+          "pendingDescription": "Confirmation link sent to",
           "pendingTitle": "Confirmation pending",
           "resend": "Send another link",
-          "serviceErrorTitle": "Confirmation was not sent",
           "submit": "Send confirmation link",
-          "submitting": "Sending confirmation…",
+          "submitting": "Sending confirmation link…",
           "successTitle": "Email updated",
-          "title": "Change email",
-          "validationTitle": "Check the email address"
+          "title": "Change email"
         },
         "eyebrow": "Account",
         "loadErrorTitle": "Account details are unavailable",
@@ -58,7 +54,6 @@ export default interface Resources {
         "loadingTitle": "Loading account",
         "logout": {
           "description": "This clears the local Studio session on this device.",
-          "serviceErrorTitle": "Studio could not sign out",
           "submit": "Sign out",
           "submitting": "Signing out…",
           "title": "Sign out of Studio"
@@ -69,41 +64,35 @@ export default interface Resources {
           "description": "Confirm your current password before choosing a replacement.",
           "hint": "Use a unique passphrase that you do not reuse elsewhere.",
           "newLabel": "New password",
-          "serviceErrorTitle": "Password was not changed",
           "submit": "Change password",
           "submitting": "Changing password…",
           "successTitle": "Password changed",
-          "title": "Change password",
-          "validationTitle": "Check the password fields"
+          "title": "Change password"
         },
         "retry": "Try again",
         "title": "Manage account"
       },
       "authentication": {
-        "emailHint": "Use the address connected to your Studio account.",
         "emailLabel": "Email address",
         "journeys": {
           "login": {
-            "submit": "Sign in"
+            "submit": "Sign in",
+            "submitting": "Signing in…"
           },
           "register": {
-            "pendingDescription": "If this address can be registered, we sent a secure link to finish creating the account.",
-            "submit": "Send registration link"
+            "pendingDescription": "Finish creating your account from the link sent to",
+            "submit": "Send registration link",
+            "submitting": "Sending registration link…"
           },
           "reset": {
-            "pendingDescription": "If an account uses this address, we sent a secure link to choose a new password.",
-            "submit": "Send password reset link"
+            "pendingDescription": "If an account uses this address, a password reset link was sent to",
+            "submit": "Send password reset link",
+            "submitting": "Sending password reset link…"
           }
         },
         "passwordLabel": "Password",
-        "pendingPrivacy": "For privacy, this message is the same whether or not an account already exists.",
-        "pendingTargetLabel": "Delivery address",
         "pendingTitle": "Check your email",
-        "serviceErrorTitle": "Studio could not complete this request",
-        "submitting": "Working…",
-        "successTitle": "You’re all set",
-        "validationDescription": "Correct the details below and submit again.",
-        "validationTitle": "Check the highlighted fields"
+        "successTitle": "You’re all set"
       },
       "shortCode": {
         "brand": "Studio",
@@ -113,23 +102,25 @@ export default interface Resources {
           "emailUpdate": {
             "description": "Apply the verified address to the account that requested this change.",
             "submit": "Confirm email change",
+            "submitting": "Confirming email change…",
             "title": "Confirm your new email"
           },
           "passwordReset": {
             "description": "Replace the password for the account protected by this secure link.",
             "submit": "Reset password",
+            "submitting": "Resetting password…",
             "title": "Choose a new password"
           },
           "register": {
             "description": "Choose the password that will protect the email address confirmed by this secure link.",
             "submit": "Create account",
+            "submitting": "Creating account…",
             "title": "Complete your Studio account"
           }
         },
         "newPasswordLabel": "New password",
         "passwordHint": "Use a unique passphrase that you do not reuse elsewhere.",
         "restart": "Request a new secure link",
-        "serviceErrorTitle": "Studio could not complete this secure action",
         "states": {
           "expired": {
             "description": "Secure links work for a limited time. Request a fresh link to continue.",
@@ -144,11 +135,8 @@ export default interface Resources {
             "title": "Secure link details are missing"
           }
         },
-        "submitting": "Securing your account…",
         "successTitle": "Secure action complete",
-        "targetLabel": "Protected destination",
-        "validationDescription": "Correct the details below and submit again.",
-        "validationTitle": "Check the password fields"
+        "targetLabel": "Protected destination"
       }
     },
     "shell": {
@@ -158,15 +146,12 @@ export default interface Resources {
         "createAccount": "Create an account",
         "forgotPassword": "Forgot password?",
         "login": {
-          "description": "Use your Studio account to continue.",
           "title": "Sign in"
         },
         "register": {
-          "description": "Create the account you will use across Studio.",
           "title": "Create your account"
         },
         "reset": {
-          "description": "Request a secure link to choose a new password.",
           "title": "Reset your password"
         },
         "signInInstead": "Sign in instead"

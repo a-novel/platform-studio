@@ -1,6 +1,6 @@
 import type { AccountScreenModel } from "$lib/application/auth/types";
 import { createAuthenticationContext } from "$lib/server/auth/context";
-import { maskEmail, validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
+import { validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
 import { logoutAuthentication } from "$lib/server/auth/logout";
 import { readTokenExpiry } from "$lib/server/auth/session";
 
@@ -142,7 +142,7 @@ export const accountActions = {
         kind: "email" as const,
         state: {
           status: "pending-email" as const,
-          targetHint: maskEmail(input.value.email),
+          targetHint: input.value.email,
         },
       },
     };

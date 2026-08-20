@@ -13,7 +13,7 @@
   import type { AuthenticationField, AuthenticationJourney } from "$lib/application/auth/types";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, ErrorSummary, Field, Input, Spinner } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, Input } from "@a-novel-kit/uikit";
 
   import { CircleCheck, Mail } from "@lucide/svelte";
 
@@ -25,14 +25,8 @@
   const passwordId = `${componentId}-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const summaryErrors = $derived(
-    issues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${issue.field === "email" ? emailId : passwordId}`,
-      message: issue.message,
-    }))
-  );
   const submitLabel = $derived(getSubmitLabel(model.journey));
+  const submittingLabel = $derived(getSubmittingLabel(model.journey));
   const pendingDescription = $derived(getPendingDescription(model.journey));
 
   function getSubmitLabel(journey: AuthenticationJourney): string {
@@ -44,6 +38,18 @@
       case "login":
       default:
         return t("authUi.authentication.journeys.login.submit");
+    }
+  }
+
+  function getSubmittingLabel(journey: AuthenticationJourney): string {
+    switch (journey) {
+      case "register":
+        return t("authUi.authentication.journeys.register.submitting");
+      case "reset":
+        return t("authUi.authentication.journeys.reset.submitting");
+      case "login":
+      default:
+        return t("authUi.authentication.journeys.login.submitting");
     }
   }
 
@@ -68,14 +74,7 @@
 
 {#if model.state.status === "pending-email"}
   <Alert tone="success" title={t("authUi.authentication.pendingTitle")} icon={mailIcon}>
-    <div class="feedback-copy">
-      <p>{pendingDescription}</p>
-      <dl>
-        <dt>{t("authUi.authentication.pendingTargetLabel")}</dt>
-        <dd>{model.state.targetHint}</dd>
-      </dl>
-      <p>{t("authUi.authentication.pendingPrivacy")}</p>
-    </div>
+    <p class="pending-copy">{pendingDescription} <strong>{model.state.targetHint}</strong></p>
   </Alert>
 {:else if model.state.status === "success"}
   <Alert tone="success" title={t("authUi.authentication.successTitle")} icon={successIcon}>
@@ -83,27 +82,7 @@
   </Alert>
 {:else}
   <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
-    {#if model.state.status === "validation-error"}
-      <ErrorSummary
-        title={t("authUi.authentication.validationTitle")}
-        description={t("authUi.authentication.validationDescription")}
-        errors={summaryErrors}
-        headingLevel={3}
-        focusOnMount
-      />
-    {:else if model.state.status === "service-error"}
-      <Alert tone="error" title={t("authUi.authentication.serviceErrorTitle")}>
-        <p class="feedback-message">{model.state.message}</p>
-      </Alert>
-    {/if}
-
-    <Field
-      controlId={emailId}
-      label={t("authUi.authentication.emailLabel")}
-      hint={t("authUi.authentication.emailHint")}
-      error={fieldError("email")}
-      required
-    >
+    <Field controlId={emailId} label={t("authUi.authentication.emailLabel")} error={fieldError("email")} required>
       {#snippet children(control)}
         <Input
           {...control}
@@ -138,20 +117,18 @@
       </Field>
     {/if}
 
+    {#if model.state.status === "service-error"}
+      <Alert class="compact-form-error" tone="error" title={model.state.message} />
+    {/if}
+
     <Button type="submit" disabled={submitting}>
-      {#if submitting}
-        <Spinner label={t("authUi.authentication.submitting")} size="sm" />
-        <span aria-hidden="true">{t("authUi.authentication.submitting")}</span>
-      {:else}
-        {submitLabel}
-      {/if}
+      {submitting ? submittingLabel : submitLabel}
     </Button>
   </form>
 {/if}
 
 <style>
-  form,
-  .feedback-copy {
+  form {
     display: grid;
     gap: var(--space-4);
     min-inline-size: 0;
@@ -162,36 +139,27 @@
     inline-size: 100%;
   }
 
-  .feedback-copy p,
-  .feedback-message,
-  dl {
-    margin: 0;
-  }
-
-  .feedback-copy p,
+  .pending-copy,
   .feedback-message {
+    margin: 0;
     line-height: var(--line-height-normal);
   }
 
-  dl {
-    display: grid;
-    gap: var(--space-1);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-3);
-  }
-
-  dt {
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-  }
-
-  dd {
-    margin: 0;
+  .pending-copy strong {
     color: var(--color-text-primary);
-    font-family: var(--font-family-mono);
     overflow-wrap: anywhere;
+  }
+
+  :global(.alert.compact-form-error.compact-form-error) {
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  :global(.compact-form-error .content) {
+    gap: 0;
+  }
+
+  :global(.compact-form-error .message:empty) {
+    display: none;
   }
 </style>

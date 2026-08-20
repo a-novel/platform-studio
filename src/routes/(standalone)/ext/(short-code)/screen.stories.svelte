@@ -6,15 +6,9 @@
 
   const { Story } = defineMeta({
     title: "Authentication/Secure email links",
-    tags: ["autodocs"],
+    tags: ["!autodocs"],
     parameters: {
       layout: "fullscreen",
-      docs: {
-        description: {
-          component:
-            "Standalone progressive POST surfaces for registration, email update, and password reset. Short codes and raw targets never enter the view model, stories, or rendered form.",
-        },
-      },
     },
   });
 
@@ -33,13 +27,14 @@
 
   async function verifyValidationLink({ canvasElement }: { canvasElement: HTMLElement }) {
     const canvas = within(canvasElement);
-    const link = canvas.getByRole("link", { name: "The passwords do not match." });
-    await expect(link.getAttribute("href")).toMatch(/-confirm-password$/);
+    await expect(canvas.getByText("Choose a new password.")).toBeVisible();
+    await expect(canvas.getByText("The passwords do not match.")).toBeVisible();
+    await expect(canvas.queryByRole("link", { name: "The passwords do not match." })).not.toBeInTheDocument();
   }
 
   async function verifySubmittingLocked({ canvasElement }: { canvasElement: HTMLElement }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("button", { name: "Securing your account…" })).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: "Resetting password…" })).toBeDisabled();
     await expect(canvas.getByLabelText(/New password/)).toBeDisabled();
   }
 </script>
@@ -112,7 +107,7 @@
   />
 </Story>
 
-<Story name="Narrow French long error" asChild parameters={{ locale: "fr" }}>
+<Story name="Narrow long error" asChild>
   <StoryHarness
     frameWidth="22rem"
     initialModel={{
@@ -120,7 +115,7 @@
       state: {
         status: "service-error",
         message:
-          "Studio n’a pas pu vérifier cette demande sécurisée pour le moment. L’adresse actuelle du compte demeure inchangée et le lien n’a pas été affiché.",
+          "Studio could not verify this secure request. The current account address remains unchanged, and the link contents were not displayed.",
       },
       targetHint: "n••••••••••••@example.test",
     }}

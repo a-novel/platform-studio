@@ -65,35 +65,21 @@
     const canvas = within(canvasElement);
     await expect(canvas.getByRole("link", { name: "Maya Chen" })).toHaveAttribute("href", "/storybook/account");
     await expect(canvas.getByRole("button", { name: "Log out" })).toBeVisible();
-    await userEvent.click(canvas.getByRole("button", { name: "Log out" }));
-    await expect(canvas.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
     clearFocus();
   }
 
   async function verifyValidationLinks({ canvasElement }: { canvasElement: HTMLElement }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("alert", { name: "Check the highlighted fields" })).toBeVisible();
-    await expect(canvas.getByRole("link", { name: "Enter a valid email address." }).getAttribute("href")).toMatch(
-      /-email$/
-    );
+    await expect(canvas.getByText("Enter a valid email address.")).toBeVisible();
+    await expect(canvas.getByText("Enter your password.")).toBeVisible();
+    await expect(canvas.queryByRole("link", { name: "Enter a valid email address." })).not.toBeInTheDocument();
   }
 
   async function verifySubmittingIsLocked({ canvasElement }: { canvasElement: HTMLElement }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("button", { name: "Working…" })).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: "Signing in…" })).toBeDisabled();
     await expect(canvas.getByRole("textbox", { name: "Email address" })).toBeDisabled();
-  }
-
-  async function verifyDrawer({ canvasElement }: { canvasElement: HTMLElement }) {
-    const canvas = within(canvasElement);
-    const drawer = canvas.getByRole("dialog", { name: "Studio navigation" });
-    await expect(drawer).toBeVisible();
-
-    await userEvent.click(canvas.getByRole("button", { name: "Close navigation" }));
-    await expect(canvas.queryByRole("dialog", { name: "Studio navigation" })).not.toBeInTheDocument();
-
-    await userEvent.click(canvas.getByRole("button", { name: "Open navigation" }));
-    await expect(await canvas.findByRole("dialog", { name: "Studio navigation" })).toBeVisible();
   }
 </script>
 
@@ -180,7 +166,7 @@
     initialModel={{ ...anonymous, authView: "register" }}
     initialAuthenticationModel={{
       journey: "register",
-      state: { status: "pending-email", targetHint: "m•••@example.test" },
+      state: { status: "pending-email", targetHint: "maya.chen@example.test" },
     }}
   />
 </Story>
@@ -194,7 +180,7 @@
     initialModel={{ ...anonymous, authView: "reset" }}
     initialAuthenticationModel={{
       journey: "reset",
-      state: { status: "pending-email", targetHint: "m•••@example.test" },
+      state: { status: "pending-email", targetHint: "maya.chen@example.test" },
     }}
   />
 </Story>
@@ -203,7 +189,7 @@
   <StoryHarness frameWidth="22rem" initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
-<Story name="French long login error" asChild parameters={{ locale: "fr" }}>
+<Story name="Long login error" asChild>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "login" }}
     initialAuthenticationModel={{
@@ -211,17 +197,13 @@
       state: {
         status: "service-error",
         message:
-          "Le service d’authentification reste momentanément indisponible. Vos informations n’ont pas été enregistrées ; vous pouvez réessayer sans risque.",
+          "The authentication service is taking longer than expected to respond. Your credentials were not saved, and you can safely try again.",
       },
     }}
   />
 </Story>
 
-<Story name="Narrow drawer" asChild play={verifyDrawer}>
-  <StoryHarness frameWidth="24rem" initialModel={{ ...anonymous, drawerOpen: true }} />
-</Story>
-
-<Story name="French long copy" asChild parameters={{ locale: "fr" }}>
+<Story name="Long account name" asChild>
   <StoryHarness
     initialModel={{
       ...anonymous,

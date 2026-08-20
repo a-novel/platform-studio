@@ -1,10 +1,5 @@
 <script module lang="ts">
-  import type {
-    AccountFormActions,
-    AccountPasswordField,
-    AccountScreenModel,
-    FormIssue,
-  } from "$lib/application/auth/types";
+  import type { AccountFormActions, AccountScreenModel, FormIssue } from "$lib/application/auth/types";
 
   /** Props for the pure protected account-management screen. */
   export interface AccountScreenProps {
@@ -26,7 +21,6 @@
     Card,
     Container,
     DescriptionList,
-    ErrorSummary,
     Field,
     Grid,
     Input,
@@ -52,29 +46,8 @@
   const emailIssues = $derived(
     model.status === "ready" && model.emailState.status === "validation-error" ? model.emailState.issues : []
   );
-  const passwordSummary = $derived(
-    passwordIssues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${passwordControlId(issue.field)}`,
-      message: issue.message,
-    }))
-  );
-  const emailSummary = $derived(
-    emailIssues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${newEmailId}`,
-      message: issue.message,
-    }))
-  );
-
   function issueMessage<Field extends string>(issues: readonly FormIssue<Field>[], field: Field): string | undefined {
     return issues.find((issue) => issue.field === field)?.message;
-  }
-
-  function passwordControlId(field: AccountPasswordField): string {
-    if (field === "currentPassword") return currentPasswordId;
-    if (field === "newPassword") return newPasswordId;
-    return confirmPasswordId;
   }
 </script>
 
@@ -157,18 +130,7 @@
               </div>
             </div>
 
-            {#if model.passwordState.status === "validation-error"}
-              <ErrorSummary
-                title={t("authUi.account.password.validationTitle")}
-                errors={passwordSummary}
-                headingLevel={3}
-                focusOnMount
-              />
-            {:else if model.passwordState.status === "service-error"}
-              <Alert tone="error" title={t("authUi.account.password.serviceErrorTitle")}>
-                <p class="feedback-message">{model.passwordState.message}</p>
-              </Alert>
-            {:else if model.passwordState.status === "success"}
+            {#if model.passwordState.status === "success"}
               <Alert tone="success" title={t("authUi.account.password.successTitle")} icon={successIcon}>
                 <p class="feedback-message">{model.passwordState.message}</p>
               </Alert>
@@ -232,13 +194,13 @@
                   />
                 {/snippet}
               </Field>
+              {#if model.passwordState.status === "service-error"}
+                <Alert class="compact-form-error" tone="error" title={model.passwordState.message} />
+              {/if}
               <Button type="submit" disabled={model.passwordState.status === "submitting"}>
-                {#if model.passwordState.status === "submitting"}
-                  <Spinner label={t("authUi.account.password.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.password.submitting")}</span>
-                {:else}
-                  {t("authUi.account.password.submit")}
-                {/if}
+                {model.passwordState.status === "submitting"
+                  ? t("authUi.account.password.submitting")
+                  : t("authUi.account.password.submit")}
               </Button>
             </form>
           </section>
@@ -253,31 +215,15 @@
               </div>
             </div>
 
-            {#if model.emailState.status === "validation-error"}
-              <ErrorSummary
-                title={t("authUi.account.email.validationTitle")}
-                errors={emailSummary}
-                headingLevel={3}
-                focusOnMount
-              />
-            {:else if model.emailState.status === "service-error"}
-              <Alert tone="error" title={t("authUi.account.email.serviceErrorTitle")}>
-                <p class="feedback-message">{model.emailState.message}</p>
-              </Alert>
-            {:else if model.emailState.status === "success"}
+            {#if model.emailState.status === "success"}
               <Alert tone="success" title={t("authUi.account.email.successTitle")} icon={successIcon}>
                 <p class="feedback-message">{model.emailState.message}</p>
               </Alert>
             {:else if model.emailState.status === "pending-email"}
               <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
-                <div class="pending-copy">
-                  <p>{t("authUi.account.email.pendingDescription")}</p>
-                  <dl class="pending-target">
-                    <dt>{t("authUi.account.email.pendingTargetLabel")}</dt>
-                    <dd>{model.emailState.targetHint}</dd>
-                  </dl>
-                  <p>{t("authUi.account.email.pendingPrivacy")}</p>
-                </div>
+                <p class="pending-copy">
+                  {t("authUi.account.email.pendingDescription")} <strong>{model.emailState.targetHint}</strong>
+                </p>
               </Alert>
             {/if}
 
@@ -307,10 +253,12 @@
                   />
                 {/snippet}
               </Field>
+              {#if model.emailState.status === "service-error"}
+                <Alert class="compact-form-error" tone="error" title={model.emailState.message} />
+              {/if}
               <Button type="submit" disabled={model.emailState.status === "submitting"}>
                 {#if model.emailState.status === "submitting"}
-                  <Spinner label={t("authUi.account.email.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.email.submitting")}</span>
+                  {t("authUi.account.email.submitting")}
                 {:else if model.emailState.status === "pending-email"}
                   {t("authUi.account.email.resend")}
                 {:else}
@@ -329,24 +277,19 @@
                 <p>{t("authUi.account.logout.description")}</p>
               </div>
             </div>
-            {#if typeof model.logoutState === "object"}
-              <Alert tone="error" title={t("authUi.account.logout.serviceErrorTitle")}>
-                <p class="feedback-message">{model.logoutState.message}</p>
-              </Alert>
-            {/if}
             <form
               method="POST"
               action={actions.logout}
               aria-busy={model.logoutState === "submitting"}
               onsubmit={onLogoutSubmit}
             >
+              {#if typeof model.logoutState === "object"}
+                <Alert class="compact-form-error" tone="error" title={model.logoutState.message} />
+              {/if}
               <Button type="submit" variant="outline" tone="danger" disabled={model.logoutState === "submitting"}>
-                {#if model.logoutState === "submitting"}
-                  <Spinner label={t("authUi.account.logout.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.logout.submitting")}</span>
-                {:else}
-                  {t("authUi.account.logout.submit")}
-                {/if}
+                {model.logoutState === "submitting"
+                  ? t("authUi.account.logout.submitting")
+                  : t("authUi.account.logout.submit")}
               </Button>
             </form>
           </section>
@@ -368,8 +311,7 @@
 
   .card-section,
   .logout-section,
-  form,
-  .pending-copy {
+  form {
     display: grid;
     gap: var(--space-4);
     min-inline-size: 0;
@@ -389,8 +331,7 @@
   h2,
   .section-heading p,
   .feedback-message,
-  .pending-copy p,
-  .pending-target {
+  .pending-copy {
     margin: 0;
   }
 
@@ -402,7 +343,7 @@
 
   .section-heading p,
   .feedback-message,
-  .pending-copy p {
+  .pending-copy {
     color: var(--color-text-secondary);
     line-height: var(--line-height-normal);
   }
@@ -417,29 +358,26 @@
     gap: var(--space-1);
   }
 
-  .monospace,
-  .pending-target dd {
+  .monospace {
     font-family: var(--font-family-mono);
   }
 
-  .pending-target {
-    display: grid;
-    gap: var(--space-1);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-3);
-  }
-
-  .pending-target dt {
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-  }
-
-  .pending-target dd {
-    margin: 0;
+  .pending-copy strong {
+    color: var(--color-text-primary);
     overflow-wrap: anywhere;
+  }
+
+  :global(.alert.compact-form-error.compact-form-error) {
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  :global(.compact-form-error .content) {
+    gap: 0;
+  }
+
+  :global(.compact-form-error .message:empty) {
+    display: none;
   }
 
   .loading-message {

@@ -46,7 +46,9 @@ describe("studio shell screen", () => {
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    const signIn = page.getByRole("button", { name: "Sign in" });
+    expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
+    await signIn.click();
 
     expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("login");
   });
@@ -86,6 +88,7 @@ describe("studio shell screen", () => {
 
     await expect.element(page.getByRole("link", { name: "Maya Chen" })).toHaveAttribute("href", "/account");
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    await expect.element(page.getByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
 
     await page.getByRole("button", { name: "Log out" }).click();
     expect(onLogout).toHaveBeenCalledOnce();

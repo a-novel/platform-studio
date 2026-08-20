@@ -1,7 +1,7 @@
 import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 import { readAuthView } from "$lib/application/shell/auth-dialog-state";
 import { createAuthenticationContext } from "$lib/server/auth/context";
-import { maskEmail, safeReturnTo, validateEmailRequest, validateLogin } from "$lib/server/auth/forms";
+import { safeReturnTo, validateEmailRequest, validateLogin } from "$lib/server/auth/forms";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import { Lang, shortCodeCreatePasswordReset, shortCodeCreateRegister } from "@a-novel/service-authentication-rest";
@@ -74,7 +74,7 @@ async function requestRegistration(event: RequestEvent, form: FormData) {
       journey: "register",
       state: {
         status: "pending-email",
-        targetHint: maskEmail(input.value.email),
+        targetHint: input.value.email,
       },
     } satisfies AuthenticationPanelModel,
   };
@@ -111,7 +111,7 @@ async function requestPasswordReset(event: RequestEvent, form: FormData) {
       journey: "reset",
       state: {
         status: "pending-email",
-        targetHint: maskEmail(input.value.email),
+        targetHint: input.value.email,
       },
     } satisfies AuthenticationPanelModel,
   };

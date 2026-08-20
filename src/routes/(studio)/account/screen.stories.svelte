@@ -21,15 +21,9 @@
 
   const { Story } = defineMeta({
     title: "Authentication/Account screen",
-    tags: ["autodocs"],
+    tags: ["!autodocs"],
     parameters: {
       layout: "fullscreen",
-      docs: {
-        description: {
-          component:
-            "Pure account management. Verified claims are shown without fabricating an authoritative email, and every credential action owns an independent serializable state.",
-        },
-      },
     },
   });
 
@@ -48,8 +42,9 @@
 
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {
     const canvas = within(canvasElement);
-    const link = canvas.getByRole("link", { name: "The passwords do not match." });
-    await expect(link.getAttribute("href")).toMatch(/-confirm-password$/);
+    await expect(canvas.getByText("Enter the current password.")).toBeVisible();
+    await expect(canvas.getByText("The passwords do not match.")).toBeVisible();
+    await expect(canvas.queryByRole("link", { name: "The passwords do not match." })).not.toBeInTheDocument();
   }
 
   async function verifyPasswordLocked({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -143,7 +138,7 @@
   <StoryHarness
     initialModel={{
       ...ready,
-      emailState: { status: "pending-email", targetHint: "n••••••@example.test" },
+      emailState: { status: "pending-email", targetHint: "new.address@example.test" },
     }}
   />
 </Story>
@@ -170,21 +165,21 @@
   />
 </Story>
 
-<Story name="Narrow French long copy" asChild parameters={{ locale: "fr" }}>
+<Story name="Narrow long content" asChild>
   <StoryHarness
     frameWidth="24rem"
     initialModel={{
       ...ready,
       claims: {
         ...ready.claims,
-        roles: ["auth:utilisateur", "studio:créateur-de-récits-collaboratifs"],
-        accessExpiresAt: "18 août 2026 à 19:30",
-        refreshExpiresAt: "25 août 2026 à 18:30",
+        roles: ["auth:user", "studio:collaborative-story-creator"],
+        accessExpiresAt: "18 September 2026, 19:30",
+        refreshExpiresAt: "25 September 2026, 18:30",
       },
       emailState: {
         status: "service-error",
         message:
-          "Le service d’authentification reste momentanément indisponible. L’adresse actuelle demeure inchangée et aucune information sensible n’a été conservée.",
+          "The authentication service is temporarily unavailable. The current address remains unchanged, and no sensitive information was retained.",
       },
     }}
   />

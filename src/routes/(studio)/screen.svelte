@@ -43,7 +43,6 @@
   const { t } = getI18nContext();
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
   const authDialogTitle = $derived(getAuthDialogTitle(model.authView));
-  const authDialogDescription = $derived(getAuthDialogDescription(model.authView));
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
     if (event.target instanceof Element && event.target.closest("a")) onDrawerOpenChange?.(false);
@@ -58,18 +57,6 @@
       case "login":
       default:
         return t("shell.auth.login.title");
-    }
-  }
-
-  function getAuthDialogDescription(view: AuthDialogView | null): string {
-    switch (view) {
-      case "register":
-        return t("shell.auth.register.description");
-      case "reset":
-        return t("shell.auth.reset.description");
-      case "login":
-      default:
-        return t("shell.auth.login.description");
     }
   }
 </script>
@@ -175,7 +162,7 @@
     <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("reset")}>
       {t("shell.auth.forgotPassword")}
     </Button>
-    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("register")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("register")}>
       {t("shell.auth.createAccount")}
     </Button>
   {:else if model.authView === "register"}
@@ -274,7 +261,6 @@
     class="authentication-dialog"
     open={model.authView !== null}
     title={authDialogTitle}
-    description={authDialogDescription}
     actions={authActions}
     closeOnBackdrop
     onClose={() => onAuthViewChange?.(null)}
@@ -452,10 +438,11 @@
     max-inline-size: 100%;
   }
 
-  :global(.shell-account-button:not(.compact-control)) {
+  :global(button.shell-account-button:not(.compact-control)) {
     justify-content: flex-start;
     inline-size: 100%;
     overflow: hidden;
+    text-align: start;
   }
 
   :global(.shell-account-button.compact-control .control-label) {
