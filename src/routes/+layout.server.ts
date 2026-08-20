@@ -1,5 +1,5 @@
-import { loadStudioShell } from "$lib/server/auth/shell-layout";
-
 import type { LayoutServerLoad } from "./$types";
 
-export const load: LayoutServerLoad = loadStudioShell;
+export const load: LayoutServerLoad = ({ locals }) => ({
+  locale: locals.locale,
+});
