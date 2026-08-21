@@ -39,7 +39,7 @@
   const authDialogTitle = $derived(getAuthDialogTitle(model.authView));
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
-    if (event.target instanceof Element && event.target.closest("a")) controller.closeDrawer();
+    if (event.target instanceof Element && event.target.closest("a")) controller.navigationDialog.close();
   }
 
   function submitLogout(event: SubmitEvent) {
@@ -217,8 +217,8 @@
           tone="neutral"
           size="sm"
           aria-controls={drawerId}
-          aria-expanded={model.drawerOpen}
-          onclick={() => controller.openDrawer()}
+          aria-expanded={controller.navigationDialog.state.open}
+          onclick={() => controller.navigationDialog.open()}
         >
           <Menu size="var(--icon-size-sm)" aria-hidden="true" />
         </IconButton>
@@ -234,10 +234,9 @@
   <Dialog
     id={drawerId}
     class="studio-navigation-dialog"
-    open={model.drawerOpen}
+    controller={controller.navigationDialog}
     title={t("shell.navigation")}
     closeOnBackdrop
-    onClose={() => controller.closeDrawer()}
   >
     <div class="drawer-toolbar">
       <IconButton
@@ -245,7 +244,7 @@
         variant="ghost"
         tone="neutral"
         size="sm"
-        onclick={() => controller.closeDrawer()}
+        onclick={() => controller.navigationDialog.close()}
       >
         <X size="var(--icon-size-sm)" aria-hidden="true" />
       </IconButton>
@@ -259,11 +258,10 @@
   <Dialog
     id={authenticationId}
     class="authentication-dialog"
-    open={model.authView !== null}
+    controller={controller.authenticationDialog}
     title={authDialogTitle}
     actions={authActionsVisible ? authActions : undefined}
     closeOnBackdrop
-    onClose={() => controller.closeAuthentication()}
   >
     {#if model.authView}
       <AuthenticationPanel controller={controller.authentication} />
@@ -274,7 +272,7 @@
       variant="ghost"
       tone="neutral"
       size="sm"
-      onclick={() => controller.closeAuthentication()}
+      onclick={() => controller.authenticationDialog.close()}
     >
       <X size="var(--icon-size-sm)" aria-hidden="true" />
     </IconButton>

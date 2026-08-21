@@ -132,16 +132,18 @@ describe("platform controllers", () => {
       onRailChange,
     });
 
-    controller.closeAuthentication();
+    controller.authenticationDialog.close();
     expect(controller.state.model.authView).toBe("login");
+    expect(controller.authenticationDialog.state.open).toBe(true);
     expect(onAuthViewChange).not.toHaveBeenCalled();
 
-    controller.openDrawer();
+    controller.navigationDialog.open();
     controller.toggleRail();
     expect(controller.state.model).toMatchObject({ drawerOpen: true, rail: "collapsed" });
+    expect(controller.navigationDialog.state.open).toBe(true);
     expect(onRailChange).toHaveBeenCalledExactlyOnceWith("collapsed");
 
-    controller.closeDrawer();
+    controller.navigationDialog.close();
     expect(controller.state.model.drawerOpen).toBe(false);
   });
 
@@ -181,7 +183,7 @@ describe("platform controllers", () => {
     expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("register");
 
     controller.openAuthentication("register");
-    controller.closeAuthentication();
+    controller.authenticationDialog.close();
     expect(onAuthViewChange).toHaveBeenLastCalledWith(null);
 
     controller.synchronizeRail("collapsed");

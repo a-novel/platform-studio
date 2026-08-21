@@ -6,6 +6,8 @@ import type {
   AuthenticationPanelControllerState,
 } from "./(authentication)/controller.svelte";
 
+import type { OpenController } from "@a-novel-kit/uikit";
+
 /** State rendered by the Studio shell component. */
 export interface StudioShellControllerState {
   model: StudioShellViewModel;
@@ -26,14 +28,10 @@ export interface StudioShellRouteState {
 export interface StudioShellController {
   readonly state: StudioShellControllerState;
   readonly authentication: AuthenticationPanelController;
+  readonly navigationDialog: OpenController;
+  readonly authenticationDialog: OpenController;
   /** Shows one authentication journey. */
   openAuthentication(view: AuthDialogView): void;
-  /** Dismisses the current authentication journey. */
-  closeAuthentication(): void;
-  /** Shows the narrow-screen navigation drawer. */
-  openDrawer(): void;
-  /** Dismisses the narrow-screen navigation drawer. */
-  closeDrawer(): void;
   /** Switches between the expanded and collapsed navigation rail. */
   toggleRail(): void;
   /** Requests logout and reports whether native form submission should continue. */
@@ -86,19 +84,36 @@ export function createStudioShellController({
     onAuthViewChange?.(view);
   }
 
+  function setDrawerOpen(open: boolean) {
+    if (model.drawerOpen !== open) model = { ...model, drawerOpen: open };
+  }
+
+  const navigationDialog: OpenController = {
+    get state() {
+      return { open: model.drawerOpen };
+    },
+    open: () => setDrawerOpen(true),
+    close: () => setDrawerOpen(false),
+    toggle: () => setDrawerOpen(!model.drawerOpen),
+  };
+
+  const authenticationDialog: OpenController = {
+    get state() {
+      return { open: model.authView !== null };
+    },
+    open: () => setAuthentication(model.authView ?? "login"),
+    close: () => setAuthentication(null),
+    toggle: () => setAuthentication(model.authView === null ? "login" : null),
+  };
+
   return {
     get state() {
       return { model, homeHref, accountHref, logoutAction };
     },
     authentication,
+    navigationDialog,
+    authenticationDialog,
     openAuthentication: setAuthentication,
-    closeAuthentication: () => setAuthentication(null),
-    openDrawer() {
-      if (!model.drawerOpen) model = { ...model, drawerOpen: true };
-    },
-    closeDrawer() {
-      if (model.drawerOpen) model = { ...model, drawerOpen: false };
-    },
     toggleRail() {
       const rail = model.rail === "expanded" ? "collapsed" : "expanded";
       model = { ...model, rail };
