@@ -13,6 +13,7 @@
 
 <script lang="ts">
   import type { ShortCodeJourney } from "$lib/application/auth/types";
+  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input, Link } from "@a-novel-kit/uikit";
@@ -39,7 +40,8 @@
     currentIssues: readonly FormIssue<ShortCodePasswordField>[],
     field: ShortCodePasswordField
   ): string | undefined {
-    return currentIssues.find((issue) => issue.field === field)?.message;
+    const issue = currentIssues.find((candidate) => candidate.field === field);
+    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
   }
 
   function getJourneyTitle(journey: ShortCodeJourney): string {
@@ -132,7 +134,7 @@
       </Alert>
     {:else if model.state.status === "success"}
       <div class="status-copy successful-action" role="status">
-        <p>{model.state.message}</p>
+        <p>{translateAuthenticationFeedback(t, model.state.feedback)}</p>
         <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
         <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
       </div>
@@ -176,7 +178,11 @@
         {/if}
 
         {#if model.state.status === "service-error"}
-          <Alert class="compact-form-error" tone="error" title={model.state.message} />
+          <Alert
+            class="compact-form-error"
+            tone="error"
+            title={translateAuthenticationFeedback(t, model.state.feedback)}
+          />
         {/if}
 
         <Button type="submit" disabled={submitting}>

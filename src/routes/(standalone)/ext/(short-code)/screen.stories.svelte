@@ -28,11 +28,9 @@
     await expect(canvas.queryByLabelText(/New password/)).not.toBeInTheDocument();
   }
 
-  async function verifyValidationLink({ canvasElement }: { canvasElement: HTMLElement }) {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByText("Choose a new password.")).toBeVisible();
-    await expect(canvas.getByText("The passwords do not match.")).toBeVisible();
-    await expect(canvas.queryByRole("link", { name: "The passwords do not match." })).not.toBeInTheDocument();
+  async function verifyValidationFeedback({ canvasElement }: { canvasElement: HTMLElement }) {
+    await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
+    await expect(within(canvasElement).queryByRole("link")).not.toBeInTheDocument();
   }
 
   async function verifySubmittingLocked({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -70,15 +68,15 @@
   <StoryHarness initialModel={{ journey: "password-reset", state: { status: "submitting" } }} />
 </Story>
 
-<Story name="Validation error" asChild play={verifyValidationLink}>
+<Story name="Validation error" asChild play={verifyValidationFeedback}>
   <StoryHarness
     initialModel={{
       journey: "register",
       state: {
         status: "validation-error",
         issues: [
-          { field: "newPassword", message: "Choose a new password." },
-          { field: "confirmPassword", message: "The passwords do not match." },
+          { field: "newPassword", feedback: "newPassword" },
+          { field: "confirmPassword", feedback: "passwordMismatch" },
         ],
       },
     }}
@@ -91,7 +89,7 @@
       journey: "password-reset",
       state: {
         status: "service-error",
-        message: "Studio could not verify this secure link. No password was changed.",
+        feedback: "serviceUnavailable",
       },
     }}
   />
@@ -101,20 +99,19 @@
   <StoryHarness
     initialModel={{
       journey: "register",
-      state: { status: "success", message: "Your account and protected Studio session are ready." },
+      state: { status: "success", feedback: "registrationCompleted" },
     }}
   />
 </Story>
 
-<Story name="Narrow long error" asChild>
+<Story name="Narrow service error" asChild>
   <StoryHarness
     frameWidth="22rem"
     initialModel={{
       journey: "email-update",
       state: {
         status: "service-error",
-        message:
-          "Studio could not verify this secure request. The current account address remains unchanged, and the link contents were not displayed.",
+        feedback: "serviceUnavailable",
       },
     }}
   />

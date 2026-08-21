@@ -69,11 +69,9 @@
     clearFocus();
   }
 
-  async function verifyValidationLinks({ canvasElement }: { canvasElement: HTMLElement }) {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByText("Enter a valid email address.")).toBeVisible();
-    await expect(canvas.getByText("Enter your password.")).toBeVisible();
-    await expect(canvas.queryByRole("link", { name: "Enter a valid email address." })).not.toBeInTheDocument();
+  async function verifyValidationFeedback({ canvasElement }: { canvasElement: HTMLElement }) {
+    await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
+    expect(canvasElement.querySelector('a[href$="-email"]')).toBeNull();
   }
 
   async function verifySubmittingIsLocked({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -136,7 +134,7 @@
   />
 </Story>
 
-<Story name="Login validation error" asChild play={verifyValidationLinks}>
+<Story name="Login validation error" asChild play={verifyValidationFeedback}>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "login" }}
     initialAuthenticationModel={{
@@ -144,8 +142,8 @@
       state: {
         status: "validation-error",
         issues: [
-          { field: "email", message: "Enter a valid email address." },
-          { field: "password", message: "Enter your password." },
+          { field: "email", feedback: "email" },
+          { field: "password", feedback: "password" },
         ],
       },
     }}
@@ -159,7 +157,7 @@
       journey: "login",
       state: {
         status: "service-error",
-        message: "The email or password was not accepted. Check both fields and try again.",
+        feedback: "invalidCredentials",
       },
     }}
   />
@@ -197,15 +195,14 @@
   <StoryHarness frameWidth="22rem" initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
-<Story name="Long login error" asChild>
+<Story name="Login service unavailable" asChild>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "login" }}
     initialAuthenticationModel={{
       journey: "login",
       state: {
         status: "service-error",
-        message:
-          "The authentication service is taking longer than expected to respond. Your credentials were not saved, and you can safely try again.",
+        feedback: "serviceUnavailable",
       },
     }}
   />

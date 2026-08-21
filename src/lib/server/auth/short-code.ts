@@ -1,4 +1,9 @@
-import type { ShortCodeJourney, ShortCodeScreenModel, ShortCodeState } from "$lib/application/auth/types";
+import type {
+  AuthenticationFeedback,
+  ShortCodeJourney,
+  ShortCodeScreenModel,
+  ShortCodeState,
+} from "$lib/application/auth/types";
 
 import { parseShortCodeLink, validateNewPassword } from "./forms";
 
@@ -10,8 +15,6 @@ import {
   credentialsResetPassword,
   credentialsUpdateEmail,
 } from "@a-novel/service-authentication-rest";
-
-import type { TFunction } from "i18next";
 
 export interface ShortCodeClient {
   register(accessToken: string, input: { email: string; password: string; shortCode: string }): Promise<Token>;
@@ -45,11 +48,11 @@ export function createShortCodeClient(api: AuthenticationApi): ShortCodeClient {
   };
 }
 
-export function readShortCodeModel(journey: ShortCodeJourney, url: URL, successMessage: string): ShortCodeScreenModel {
+export function readShortCodeModel(journey: ShortCodeJourney, url: URL): ShortCodeScreenModel {
   const result = url.searchParams.getAll("result");
 
   if (result.length === 1 && result[0] === "success") {
-    return screenModel(journey, { status: "success", message: successMessage });
+    return screenModel(journey, { status: "success", feedback: successFeedback(journey) });
   }
   if (result.length === 1 && result[0] === "invalid") {
     return screenModel(journey, { status: "invalid" });
@@ -67,9 +70,6 @@ export async function completeShortCode(
   journey: ShortCodeJourney,
   url: URL,
   form: FormData,
-  t: TFunction<"common">,
-  serviceErrorMessage: string,
-  successMessage: string,
   context: ShortCodeCompletionContext
 ): Promise<ShortCodeCompletionResult> {
   const parsed = parseShortCodeLink(journey, url);
@@ -91,7 +91,7 @@ export async function completeShortCode(
       context.rememberIdentity(parsed.email);
     };
   } else {
-    const validation = validateNewPassword(form, t);
+    const validation = validateNewPassword(form);
     if (!validation.success) {
       return {
         outcome: "validation-error",
@@ -132,14 +132,20 @@ export async function completeShortCode(
 
     return {
       outcome: "service-error",
-      model: screenModel(journey, { status: "service-error", message: serviceErrorMessage }),
+      model: screenModel(journey, { status: "service-error", feedback: "serviceUnavailable" }),
     };
   }
 
   return {
     outcome: "success",
-    model: screenModel(journey, { status: "success", message: successMessage }),
+    model: screenModel(journey, { status: "success", feedback: successFeedback(journey) }),
   };
+}
+
+function successFeedback(journey: ShortCodeJourney): AuthenticationFeedback {
+  if (journey === "register") return "registrationCompleted";
+  if (journey === "email-update") return "emailUpdated";
+  return "passwordReset";
 }
 
 function screenModel(journey: ShortCodeJourney, state: ShortCodeState): ShortCodeScreenModel {

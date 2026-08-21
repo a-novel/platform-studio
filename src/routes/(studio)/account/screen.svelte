@@ -13,6 +13,8 @@
 </script>
 
 <script lang="ts">
+  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
     Alert,
@@ -47,7 +49,8 @@
     model.status === "ready" && model.emailState.status === "validation-error" ? model.emailState.issues : []
   );
   function issueMessage<Field extends string>(issues: readonly FormIssue<Field>[], field: Field): string | undefined {
-    return issues.find((issue) => issue.field === field)?.message;
+    const issue = issues.find((candidate) => candidate.field === field);
+    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
   }
 </script>
 
@@ -74,7 +77,7 @@
       </Alert>
     {:else if model.status === "error"}
       <Alert tone="error" title={t("authUi.account.loadErrorTitle")} actions={retryAction}>
-        <p class="feedback-message">{model.message}</p>
+        <p class="feedback-message">{translateAuthenticationFeedback(t, model.feedback)}</p>
       </Alert>
     {:else}
       <Grid minItemWidth="lg" gap="4">
@@ -132,7 +135,9 @@
 
             {#if model.passwordState.status === "success"}
               <Alert tone="success" title={t("authUi.account.password.successTitle")} icon={successIcon}>
-                <p class="feedback-message">{model.passwordState.message}</p>
+                <p class="feedback-message">
+                  {translateAuthenticationFeedback(t, model.passwordState.feedback)}
+                </p>
               </Alert>
             {/if}
 
@@ -195,7 +200,11 @@
                 {/snippet}
               </Field>
               {#if model.passwordState.status === "service-error"}
-                <Alert class="compact-form-error" tone="error" title={model.passwordState.message} />
+                <Alert
+                  class="compact-form-error"
+                  tone="error"
+                  title={translateAuthenticationFeedback(t, model.passwordState.feedback)}
+                />
               {/if}
               <Button type="submit" disabled={model.passwordState.status === "submitting"}>
                 {model.passwordState.status === "submitting"
@@ -217,7 +226,7 @@
 
             {#if model.emailState.status === "success"}
               <Alert tone="success" title={t("authUi.account.email.successTitle")} icon={successIcon}>
-                <p class="feedback-message">{model.emailState.message}</p>
+                <p class="feedback-message">{translateAuthenticationFeedback(t, model.emailState.feedback)}</p>
               </Alert>
             {:else if model.emailState.status === "pending-email"}
               <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
@@ -254,7 +263,11 @@
                 {/snippet}
               </Field>
               {#if model.emailState.status === "service-error"}
-                <Alert class="compact-form-error" tone="error" title={model.emailState.message} />
+                <Alert
+                  class="compact-form-error"
+                  tone="error"
+                  title={translateAuthenticationFeedback(t, model.emailState.feedback)}
+                />
               {/if}
               <Button type="submit" disabled={model.emailState.status === "submitting"}>
                 {#if model.emailState.status === "submitting"}
@@ -284,7 +297,11 @@
               onsubmit={onLogoutSubmit}
             >
               {#if typeof model.logoutState === "object"}
-                <Alert class="compact-form-error" tone="error" title={model.logoutState.message} />
+                <Alert
+                  class="compact-form-error"
+                  tone="error"
+                  title={translateAuthenticationFeedback(t, model.logoutState.feedback)}
+                />
               {/if}
               <Button type="submit" variant="outline" tone="danger" disabled={model.logoutState === "submitting"}>
                 {model.logoutState === "submitting"

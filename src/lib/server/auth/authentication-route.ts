@@ -1,4 +1,4 @@
-import type { AuthenticationPanelModel } from "$lib/application/auth/types";
+import type { AuthenticationFeedback, AuthenticationPanelModel } from "$lib/application/auth/types";
 import { readAuthView } from "$lib/application/shell/auth-dialog-state";
 import { createAuthenticationContext } from "$lib/server/auth/context";
 import { safeReturnTo, validateEmailRequest, validateLogin } from "$lib/server/auth/forms";
@@ -9,16 +9,18 @@ import { Lang, shortCodeCreatePasswordReset, shortCodeCreateRegister } from "@a-
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, redirect } from "@sveltejs/kit";
 
-function serviceError(journey: AuthenticationPanelModel["journey"], message: string): AuthenticationPanelModel {
+function serviceError(
+  journey: AuthenticationPanelModel["journey"],
+  feedback: AuthenticationFeedback
+): AuthenticationPanelModel {
   return {
     journey,
-    state: { status: "service-error", message },
+    state: { status: "service-error", feedback },
   } as AuthenticationPanelModel;
 }
 
 async function login(event: RequestEvent, form: FormData) {
-  const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const input = validateLogin(form, t);
+  const input = validateLogin(form);
 
   if (!input.success) {
     return fail(400, {
@@ -32,11 +34,9 @@ async function login(event: RequestEvent, form: FormData) {
   try {
     await createAuthenticationContext(event.cookies, event.url).session.login(input.value.email, input.value.password);
   } catch (error) {
-    const message = isHttpStatusError(error, 401)
-      ? t("authFlow.feedback.invalidCredentials")
-      : t("authFlow.feedback.serviceUnavailable");
+    const feedback = isHttpStatusError(error, 401) ? "invalidCredentials" : "serviceUnavailable";
     return fail(isHttpStatusError(error, 401) ? 401 : 503, {
-      authentication: serviceError("login", message),
+      authentication: serviceError("login", feedback),
     });
   }
 
@@ -44,8 +44,7 @@ async function login(event: RequestEvent, form: FormData) {
 }
 
 async function requestRegistration(event: RequestEvent, form: FormData) {
-  const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const input = validateEmailRequest(form, t);
+  const input = validateEmailRequest(form);
 
   if (!input.success) {
     return fail(400, {
@@ -65,7 +64,7 @@ async function requestRegistration(event: RequestEvent, form: FormData) {
     });
   } catch {
     return fail(503, {
-      authentication: serviceError("register", t("authFlow.feedback.serviceUnavailable")),
+      authentication: serviceError("register", "serviceUnavailable"),
     });
   }
 
@@ -81,8 +80,7 @@ async function requestRegistration(event: RequestEvent, form: FormData) {
 }
 
 async function requestPasswordReset(event: RequestEvent, form: FormData) {
-  const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-  const input = validateEmailRequest(form, t);
+  const input = validateEmailRequest(form);
 
   if (!input.success) {
     return fail(400, {
@@ -102,7 +100,7 @@ async function requestPasswordReset(event: RequestEvent, form: FormData) {
     });
   } catch {
     return fail(503, {
-      authentication: serviceError("reset", t("authFlow.feedback.serviceUnavailable")),
+      authentication: serviceError("reset", "serviceUnavailable"),
     });
   }
 
@@ -126,9 +124,8 @@ export const authenticationActions = {
     if (journey === "register") return await requestRegistration(event, form);
     if (journey === "reset") return await requestPasswordReset(event, form);
 
-    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
     return fail(400, {
-      authentication: serviceError("login", t("authFlow.feedback.serviceUnavailable")),
+      authentication: serviceError("login", "serviceUnavailable"),
     });
   },
 };

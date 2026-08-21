@@ -97,8 +97,8 @@ describe("pure authentication screens", () => {
           state: {
             status: "validation-error",
             issues: [
-              { field: "email", message: "Enter a valid email address." },
-              { field: "password", message: "Enter your password." },
+              { field: "email", feedback: "email" },
+              { field: "password", feedback: "password" },
             ],
           },
         },
@@ -117,7 +117,7 @@ describe("pure authentication screens", () => {
       {
         model: {
           journey: "login",
-          state: { status: "service-error", message: "Authentication is temporarily unavailable." },
+          state: { status: "service-error", feedback: "serviceUnavailable" },
         },
         action: "/auth?/login",
       },
@@ -127,7 +127,45 @@ describe("pure authentication screens", () => {
     const alert = page.getByRole("alert").element();
     const submit = page.getByRole("button", { name: "Sign in" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
-    expect(alert.textContent?.trim()).toBe("Authentication is temporarily unavailable.");
+    expect(alert.textContent?.trim()).toBe("The authentication service is temporarily unavailable. Try again.");
+  });
+
+  it("translates stable feedback codes through the active locale", async () => {
+    const validation = await render(
+      AuthenticationPanel,
+      {
+        model: {
+          journey: "login",
+          state: {
+            status: "validation-error",
+            issues: [
+              { field: "email", feedback: "email" },
+              { field: "password", feedback: "password" },
+            ],
+          },
+        },
+        action: "/auth?/login",
+      },
+      withLocale("fr")
+    );
+
+    await expect.element(page.getByText("Saisissez une adresse e-mail valide.")).toBeVisible();
+    await expect.element(page.getByText("Saisissez votre mot de passe.")).toBeVisible();
+    validation.unmount();
+
+    render(
+      AuthenticationPanel,
+      {
+        model: {
+          journey: "login",
+          state: { status: "service-error", feedback: "invalidCredentials" },
+        },
+        action: "/auth?/login",
+      },
+      withLocale("fr")
+    );
+
+    await expect.element(page.getByText("L’adresse e-mail ou le mot de passe est incorrect.")).toBeVisible();
   });
 
   it("shows the complete address the user just submitted without a redundant label", async () => {

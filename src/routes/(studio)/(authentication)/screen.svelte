@@ -11,6 +11,7 @@
 
 <script lang="ts">
   import type { AuthenticationField, AuthenticationJourney } from "$lib/application/auth/types";
+  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input } from "@a-novel-kit/uikit";
@@ -63,7 +64,8 @@
   }
 
   function fieldError(field: AuthenticationField): string | undefined {
-    return issues.find((issue) => issue.field === field)?.message;
+    const issue = issues.find((candidate) => candidate.field === field);
+    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
   }
 </script>
 
@@ -75,7 +77,7 @@
 {:else if model.state.status === "success"}
   <section class="completion-state" role="status">
     <p class="completion-title">{t("authUi.authentication.successTitle")}</p>
-    <p class="feedback-message">{model.state.message}</p>
+    <p class="feedback-message">{translateAuthenticationFeedback(t, model.state.feedback)}</p>
   </section>
 {:else}
   <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
@@ -115,7 +117,7 @@
     {/if}
 
     {#if model.state.status === "service-error"}
-      <Alert class="compact-form-error" tone="error" title={model.state.message} />
+      <Alert class="compact-form-error" tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)} />
     {/if}
 
     <Button type="submit" disabled={submitting}>

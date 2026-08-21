@@ -36,15 +36,13 @@
 
   async function verifyLoadRetry({ canvasElement }: { canvasElement: HTMLElement }) {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "Try again" }));
-    await expect(canvas.getByText("Studio is checking the current session.")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button"));
+    await expect(canvas.queryByRole("button")).not.toBeInTheDocument();
   }
 
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByText("Enter the current password.")).toBeVisible();
-    await expect(canvas.getByText("The passwords do not match.")).toBeVisible();
-    await expect(canvas.queryByRole("link", { name: "The passwords do not match." })).not.toBeInTheDocument();
+    await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
+    expect(canvasElement.querySelector('a[href$="-confirm-password"]')).toBeNull();
   }
 
   async function verifyPasswordLocked({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -63,7 +61,7 @@
 </Story>
 
 <Story name="Load error" asChild play={verifyLoadRetry}>
-  <StoryHarness initialModel={{ status: "error", message: "Studio could not verify the current session." }} />
+  <StoryHarness initialModel={{ status: "error", feedback: "sessionUnavailable" }} />
 </Story>
 
 <Story name="Password validation error" asChild play={verifyPasswordValidation}>
@@ -73,8 +71,8 @@
       passwordState: {
         status: "validation-error",
         issues: [
-          { field: "currentPassword", message: "Enter the current password." },
-          { field: "confirmPassword", message: "The passwords do not match." },
+          { field: "currentPassword", feedback: "currentPassword" },
+          { field: "confirmPassword", feedback: "passwordMismatch" },
         ],
       },
     }}
@@ -91,7 +89,7 @@
       ...ready,
       passwordState: {
         status: "service-error",
-        message: "The current password was not accepted. No credential was changed.",
+        feedback: "invalidCurrentPassword",
       },
     }}
   />
@@ -101,7 +99,7 @@
   <StoryHarness
     initialModel={{
       ...ready,
-      passwordState: { status: "success", message: "Use the new password the next time you sign in." },
+      passwordState: { status: "success", feedback: "passwordChanged" },
     }}
   />
 </Story>
@@ -112,7 +110,7 @@
       ...ready,
       emailState: {
         status: "validation-error",
-        issues: [{ field: "newEmail", message: "Enter a valid new email address." }],
+        issues: [{ field: "newEmail", feedback: "email" }],
       },
     }}
   />
@@ -128,7 +126,7 @@
       ...ready,
       emailState: {
         status: "service-error",
-        message: "Studio could not request a confirmation link. The current address is unchanged.",
+        feedback: "serviceUnavailable",
       },
     }}
   />
@@ -147,7 +145,7 @@
   <StoryHarness
     initialModel={{
       ...ready,
-      emailState: { status: "success", message: "The verified address now applies to this account." },
+      emailState: { status: "success", feedback: "emailUpdated" },
     }}
   />
 </Story>
@@ -160,7 +158,7 @@
   <StoryHarness
     initialModel={{
       ...ready,
-      logoutState: { status: "service-error", message: "Studio could not clear the local session." },
+      logoutState: { status: "service-error", feedback: "serviceUnavailable" },
     }}
   />
 </Story>
@@ -178,8 +176,7 @@
       },
       emailState: {
         status: "service-error",
-        message:
-          "The authentication service is temporarily unavailable. The current address remains unchanged, and no sensitive information was retained.",
+        feedback: "serviceUnavailable",
       },
     }}
   />

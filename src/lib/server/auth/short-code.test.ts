@@ -1,5 +1,3 @@
-import { createStudioI18n } from "$lib/i18n/instance";
-
 import {
   type ShortCodeClient,
   type ShortCodeCompletionContext,
@@ -10,8 +8,6 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "@a-novel-kit/nodelib-browser/http";
-
-const t = createStudioI18n("en").getFixedT("en", "common");
 
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
 
@@ -50,7 +46,7 @@ function createContext() {
 
 describe("readShortCodeModel", () => {
   it("returns display-only state without raw link credentials", () => {
-    const model = readShortCodeModel("register", registrationUrl(), t("authFlow.feedback.registrationCompleted"));
+    const model = readShortCodeModel("register", registrationUrl());
 
     expect(model).toEqual({
       journey: "register",
@@ -62,14 +58,10 @@ describe("readShortCodeModel", () => {
 
   it("supports clean shareable result URLs", () => {
     expect(
-      readShortCodeModel(
-        "password-reset",
-        new URL("https://studio.test/ext/password/reset?result=success"),
-        t("authFlow.feedback.passwordReset")
-      )
+      readShortCodeModel("password-reset", new URL("https://studio.test/ext/password/reset?result=success"))
     ).toEqual({
       journey: "password-reset",
-      state: { status: "success", message: t("authFlow.feedback.passwordReset") },
+      state: { status: "success", feedback: "passwordReset" },
     });
   });
 });
@@ -82,15 +74,7 @@ describe("completeShortCode", () => {
   });
 
   it("validates passwords before requesting an anonymous token", async () => {
-    const result = await completeShortCode(
-      "register",
-      registrationUrl(),
-      passwordForm(""),
-      t,
-      t("authFlow.feedback.serviceUnavailable"),
-      t("authFlow.feedback.registrationCompleted"),
-      setup.context
-    );
+    const result = await completeShortCode("register", registrationUrl(), passwordForm(""), setup.context);
 
     expect(result.outcome).toBe("validation-error");
     expect(setup.mocks.accessToken).not.toHaveBeenCalled();
@@ -103,15 +87,7 @@ describe("completeShortCode", () => {
       refreshToken: "new-refresh",
     });
 
-    const result = await completeShortCode(
-      "register",
-      registrationUrl(),
-      passwordForm(),
-      t,
-      t("authFlow.feedback.serviceUnavailable"),
-      t("authFlow.feedback.registrationCompleted"),
-      setup.context
-    );
+    const result = await completeShortCode("register", registrationUrl(), passwordForm(), setup.context);
 
     expect(result.outcome).toBe("success");
     expect(setup.mocks.register).toHaveBeenCalledWith("anonymous-access", {
@@ -138,15 +114,7 @@ describe("completeShortCode", () => {
         encoded("new@example.com")
     );
 
-    const result = await completeShortCode(
-      "email-update",
-      url,
-      new FormData(),
-      t,
-      t("authFlow.feedback.serviceUnavailable"),
-      t("authFlow.feedback.emailUpdated"),
-      setup.context
-    );
+    const result = await completeShortCode("email-update", url, new FormData(), setup.context);
 
     expect(result.outcome).toBe("success");
     expect(setup.mocks.updateEmail).toHaveBeenCalledWith("anonymous-access", {
@@ -159,15 +127,7 @@ describe("completeShortCode", () => {
   it("resets a password with the parsed account target", async () => {
     const url = new URL("https://studio.test/ext/password/reset?shortCode=code-123&target=" + userId);
 
-    const result = await completeShortCode(
-      "password-reset",
-      url,
-      passwordForm(),
-      t,
-      t("authFlow.feedback.serviceUnavailable"),
-      t("authFlow.feedback.passwordReset"),
-      setup.context
-    );
+    const result = await completeShortCode("password-reset", url, passwordForm(), setup.context);
 
     expect(result.outcome).toBe("success");
     expect(setup.mocks.resetPassword).toHaveBeenCalledWith("anonymous-access", {
@@ -180,15 +140,7 @@ describe("completeShortCode", () => {
   it.each([403, 404, 409])("collapses rejected link status %s to one invalid state", async (status) => {
     setup.mocks.register.mockRejectedValue(new HttpError(status, "rejected"));
 
-    const result = await completeShortCode(
-      "register",
-      registrationUrl(),
-      passwordForm(),
-      t,
-      t("authFlow.feedback.serviceUnavailable"),
-      t("authFlow.feedback.registrationCompleted"),
-      setup.context
-    );
+    const result = await completeShortCode("register", registrationUrl(), passwordForm(), setup.context);
 
     expect(result).toMatchObject({
       outcome: "invalid",
@@ -199,21 +151,13 @@ describe("completeShortCode", () => {
   it("keeps service failures retryable without exposing the link", async () => {
     setup.mocks.register.mockRejectedValue(new Error("network unavailable"));
 
-    const result = await completeShortCode(
-      "register",
-      registrationUrl(),
-      passwordForm(),
-      t,
-      t("authFlow.feedback.serviceUnavailable"),
-      t("authFlow.feedback.registrationCompleted"),
-      setup.context
-    );
+    const result = await completeShortCode("register", registrationUrl(), passwordForm(), setup.context);
 
     expect(result).toMatchObject({
       outcome: "service-error",
       model: {
         journey: "register",
-        state: { status: "service-error", message: t("authFlow.feedback.serviceUnavailable") },
+        state: { status: "service-error", feedback: "serviceUnavailable" },
       },
     });
     expect(JSON.stringify(result.model)).not.toContain("code-123");
