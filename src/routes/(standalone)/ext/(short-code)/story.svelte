@@ -9,23 +9,24 @@
 </script>
 
 <script lang="ts">
+  import { createShortCodeScreenController } from "./controller.svelte";
   import ShortCodeScreen from "./screen.svelte";
 
   import { untrack } from "svelte";
 
   let { initialModel, frameWidth }: ShortCodeScreenStoryProps = $props();
 
-  let model = $state<ShortCodeScreenModel>(untrack(() => structuredClone(initialModel)));
-
-  function submit(event: SubmitEvent) {
-    event.preventDefault();
-    if (model.state.status === "submitting") return;
-    model = { ...model, state: { status: "submitting" } };
-  }
+  const controller = createShortCodeScreenController({
+    model: untrack(() => structuredClone(initialModel)),
+    action: "/storybook/complete",
+    restartHref: "/?auth=reset",
+    continueHref: "/",
+    allowNativeSubmission: false,
+  });
 </script>
 
 <div class="story-frame" style:--story-frame-width={frameWidth}>
-  <ShortCodeScreen {model} action="/storybook/complete" restartHref="/?auth=reset" continueHref="/" onSubmit={submit} />
+  <ShortCodeScreen {controller} />
 </div>
 
 <style>

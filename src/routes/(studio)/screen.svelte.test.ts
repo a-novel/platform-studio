@@ -1,9 +1,12 @@
+import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 import type { StudioShellViewModel } from "$lib/application/shell/types";
 import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
+import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
+import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
 import Screen from "./screen.svelte";
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 
@@ -21,6 +24,29 @@ function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel 
   };
 }
 
+function controller(
+  patch: Partial<StudioShellViewModel> = {},
+  options: { authenticationModel?: AuthenticationPanelModel; lockAuthentication?: boolean } = {}
+) {
+  const shellModel = model(patch);
+  const authentication = createAuthenticationPanelController({
+    model: options.authenticationModel ?? readyAuthenticationModel(shellModel.authView ?? "login"),
+    action: "/auth",
+    allowNativeSubmission: false,
+  });
+
+  return createStudioShellController({
+    model: shellModel,
+    homeHref: "/",
+    accountHref: "/account",
+    logoutAction: "/auth/logout",
+    authentication,
+    resolveAuthentication: (view) => ({ model: readyAuthenticationModel(view), action: "/auth" }),
+    lockAuthentication: options.lockAuthentication,
+    allowNativeLogout: false,
+  });
+}
+
 function withLocale(locale: "en" | "fr" = "en") {
   return {
     wrapper: StudioI18nProvider,
@@ -34,15 +60,8 @@ describe("studio shell screen", () => {
   });
 
   it("exposes the empty workspace, current Home destination, and anonymous authentication action", async () => {
-    const onAuthViewChange = vi.fn();
-    render(
-      Screen,
-      {
-        model: model(),
-        onAuthViewChange,
-      },
-      withLocale()
-    );
+    const shell = controller();
+    render(Screen, { controller: shell }, withLocale());
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
@@ -50,14 +69,14 @@ describe("studio shell screen", () => {
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
     await signIn.click();
 
-    expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("login");
+    expect(shell.state.model.authView).toBe("login");
   });
 
   it("keeps the collapsed Home destination accessible by name", async () => {
     render(
       Screen,
       {
-        model: model({ rail: "collapsed" }),
+        controller: controller({ rail: "collapsed" }),
       },
       withLocale("fr")
     );
@@ -69,19 +88,17 @@ describe("studio shell screen", () => {
   });
 
   it("links the account name directly and keeps logout visible", async () => {
-    const onLogout = vi.fn();
+    const shell = controller({
+      session: {
+        status: "authenticated",
+        displayName: "Maya Chen",
+        initials: "MC",
+      },
+    });
     render(
       Screen,
       {
-        model: model({
-          session: {
-            status: "authenticated",
-            displayName: "Maya Chen",
-            initials: "MC",
-          },
-        }),
-        accountHref: "/account",
-        onLogout,
+        controller: shell,
       },
       withLocale()
     );
@@ -94,32 +111,42 @@ describe("studio shell screen", () => {
     await expect.element(page.getByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
 
     await page.getByRole("button", { name: "Log out" }).click();
-    expect(onLogout).toHaveBeenCalledOnce();
+    expect(shell.state.model.session.status).toBe("anonymous");
   });
 
   it("renders URL-controlled auth views and delegates view changes", async () => {
-    const onAuthViewChange = vi.fn();
-    render(
-      Screen,
-      {
-        model: model({ authView: "register" }),
-        onAuthViewChange,
-      },
-      withLocale()
-    );
+    const shell = controller({ authView: "register" });
+    render(Screen, { controller: shell }, withLocale());
 
     await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
     await page.getByRole("button", { name: "Sign in instead" }).click();
 
-    expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("login");
+    expect(shell.state.model.authView).toBe("login");
+  });
+
+  it("keeps a review dialog open when its controller rejects dismissal", async () => {
+    const shell = controller({ authView: "login" }, { lockAuthentication: true });
+    render(Screen, { controller: shell }, withLocale());
+
+    await page.getByRole("button", { name: "Close authentication" }).click();
+
+    expect(shell.state.model.authView).toBe("login");
+    await expect.element(page.getByRole("dialog", { name: "Sign in" })).toBeVisible();
   });
 
   it("omits journey actions from completed authentication dialogs", async () => {
     render(
       Screen,
       {
-        model: model({ authView: "register" }),
-        authActionsVisible: false,
+        controller: controller(
+          { authView: "register" },
+          {
+            authenticationModel: {
+              journey: "register",
+              state: { status: "pending-email", targetHint: "maya.chen@example.test" },
+            },
+          }
+        ),
       },
       withLocale()
     );
@@ -132,7 +159,7 @@ describe("studio shell screen", () => {
     render(
       Screen,
       {
-        model: model({
+        controller: controller({
           session: { status: "error" },
         }),
       },

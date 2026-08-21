@@ -11,61 +11,40 @@
 </script>
 
 <script lang="ts">
-  import type { AuthDialogView } from "$lib/application/shell/types";
-
-  import AuthenticationPanel from "./(authentication)/screen.svelte";
+  import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
   import HomeScreen from "./(home)/screen.svelte";
+  import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
   import { untrack } from "svelte";
 
   let { initialModel, initialAuthenticationModel, frameWidth }: StudioShellStoryProps = $props();
 
-  let model = $state<StudioShellViewModel>(untrack(() => structuredClone(initialModel)));
-  let panelModel = $state<AuthenticationPanelModel>(
-    untrack(() => structuredClone(initialAuthenticationModel ?? readyModel(initialModel.authView ?? "login")))
-  );
-  const authActionsVisible = $derived(
-    panelModel.state.status !== "pending-email" && panelModel.state.status !== "success"
-  );
-
-  function updateModel(patch: Partial<StudioShellViewModel>) {
-    model = { ...model, ...patch };
-  }
-
-  function readyModel(view: AuthDialogView): AuthenticationPanelModel {
-    return { journey: view, state: { status: "ready" } };
-  }
-
-  function changeAuthView(view: AuthDialogView | null) {
-    updateModel({ authView: view });
-    if (view) panelModel = readyModel(view);
-  }
-
-  function submit(event: SubmitEvent) {
-    event.preventDefault();
-    panelModel = { journey: panelModel.journey, state: { status: "submitting" } } as AuthenticationPanelModel;
-  }
+  const storyModel = untrack(() => structuredClone(initialModel));
+  const authentication = createAuthenticationPanelController({
+    model: untrack(() =>
+      structuredClone(initialAuthenticationModel ?? readyAuthenticationModel(initialModel.authView ?? "login"))
+    ),
+    action: "/storybook/auth",
+    allowNativeSubmission: false,
+  });
+  const controller = createStudioShellController({
+    model: storyModel,
+    homeHref: "/",
+    accountHref: "/storybook/account",
+    logoutAction: "/storybook/logout",
+    authentication,
+    resolveAuthentication: (view) => ({
+      model: readyAuthenticationModel(view),
+      action: "/storybook/auth",
+    }),
+    lockAuthentication: storyModel.authView !== null,
+    allowNativeLogout: false,
+  });
 </script>
 
-{#snippet authContent()}
-  <AuthenticationPanel model={panelModel} action="/storybook/auth" onSubmit={submit} />
-{/snippet}
-
 <div class="story-frame" style:--story-frame-width={frameWidth}>
-  <Screen
-    {authActionsVisible}
-    {authContent}
-    {model}
-    accountHref="/storybook/account"
-    onAuthViewChange={changeAuthView}
-    onDrawerOpenChange={(drawerOpen) => updateModel({ drawerOpen })}
-    onLogout={() => updateModel({ session: { status: "anonymous" } })}
-    onToggleRail={() =>
-      updateModel({
-        rail: model.rail === "expanded" ? "collapsed" : "expanded",
-      })}
-  >
+  <Screen {controller}>
     <HomeScreen />
   </Screen>
 </div>

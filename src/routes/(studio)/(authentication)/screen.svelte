@@ -1,11 +1,9 @@
 <script module lang="ts">
-  import type { AuthenticationPanelModel } from "$lib/application/auth/types";
+  import type { AuthenticationPanelController } from "./controller.svelte";
 
   /** Props for the pure form rendered inside the shell authentication dialog. */
   export interface AuthenticationPanelProps {
-    model: AuthenticationPanelModel;
-    action: string;
-    onSubmit?: (event: SubmitEvent) => void;
+    controller: AuthenticationPanelController;
   }
 </script>
 
@@ -16,7 +14,10 @@
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input } from "@a-novel-kit/uikit";
 
-  let { model, action, onSubmit }: AuthenticationPanelProps = $props();
+  let { controller }: AuthenticationPanelProps = $props();
+
+  const model = $derived(controller.state.model);
+  const action = $derived(controller.state.action);
 
   const { t } = getI18nContext();
   const componentId = $props.id();
@@ -67,6 +68,10 @@
     const issue = issues.find((candidate) => candidate.field === field);
     return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
   }
+
+  function submit(event: SubmitEvent) {
+    if (!controller.submit()) event.preventDefault();
+  }
 </script>
 
 {#if model.state.status === "pending-email"}
@@ -80,7 +85,7 @@
     <p class="feedback-message">{translateAuthenticationFeedback(t, model.state.feedback)}</p>
   </section>
 {:else}
-  <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
+  <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
     <Field controlId={emailId} label={t("authUi.authentication.emailLabel")} error={fieldError("email")} required>
       {#snippet children(control)}
         <Input

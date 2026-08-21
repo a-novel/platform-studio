@@ -69,7 +69,6 @@ export default interface Resources {
           "successTitle": "Password changed",
           "title": "Change password"
         },
-        "retry": "Try again",
         "title": "Manage account"
       },
       "authentication": {

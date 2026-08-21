@@ -1,14 +1,11 @@
 <script module lang="ts">
-  import type { AccountFormActions, AccountScreenModel, FormIssue } from "$lib/application/auth/types";
+  import type { FormIssue } from "$lib/application/auth/types";
+
+  import type { AccountScreenController } from "./controller.svelte";
 
   /** Props for the pure protected account-management screen. */
   export interface AccountScreenProps {
-    model: AccountScreenModel;
-    actions: AccountFormActions;
-    onRetry?: () => void;
-    onPasswordSubmit?: (event: SubmitEvent) => void;
-    onEmailSubmit?: (event: SubmitEvent) => void;
-    onLogoutSubmit?: (event: SubmitEvent) => void;
+    controller: AccountScreenController;
   }
 </script>
 
@@ -33,7 +30,10 @@
 
   import { CircleCheck, Info, ShieldCheck } from "@lucide/svelte";
 
-  let { model, actions, onRetry, onPasswordSubmit, onEmailSubmit, onLogoutSubmit }: AccountScreenProps = $props();
+  let { controller }: AccountScreenProps = $props();
+
+  const model = $derived(controller.state.model);
+  const actions = $derived(controller.state.actions);
 
   const componentId = $props.id();
   const { t } = getI18nContext();
@@ -52,14 +52,22 @@
     const issue = issues.find((candidate) => candidate.field === field);
     return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
   }
+
+  function submitPassword(event: SubmitEvent) {
+    if (!controller.submitPassword()) event.preventDefault();
+  }
+
+  function submitEmail(event: SubmitEvent) {
+    if (!controller.submitEmail()) event.preventDefault();
+  }
+
+  function submitLogout(event: SubmitEvent) {
+    if (!controller.submitLogout()) event.preventDefault();
+  }
 </script>
 
 {#snippet infoIcon()}<Info size="var(--icon-size-md)" />{/snippet}
 {#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
-{#snippet retryAction()}
-  <Button variant="outline" tone="neutral" size="sm" onclick={() => onRetry?.()}>{t("authUi.account.retry")}</Button>
-{/snippet}
-
 <Container size="lg">
   <Stack gap="6">
     <PageHeader
@@ -76,7 +84,7 @@
         </div>
       </Alert>
     {:else if model.status === "error"}
-      <Alert tone="error" title={t("authUi.account.loadErrorTitle")} actions={retryAction}>
+      <Alert tone="error" title={t("authUi.account.loadErrorTitle")}>
         <p class="feedback-message">{translateAuthenticationFeedback(t, model.feedback)}</p>
       </Alert>
     {:else}
@@ -145,7 +153,7 @@
               method="POST"
               action={actions.password}
               aria-busy={model.passwordState.status === "submitting"}
-              onsubmit={onPasswordSubmit}
+              onsubmit={submitPassword}
             >
               <Field
                 controlId={currentPasswordId}
@@ -240,7 +248,7 @@
               method="POST"
               action={actions.email}
               aria-busy={model.emailState.status === "submitting"}
-              onsubmit={onEmailSubmit}
+              onsubmit={submitEmail}
             >
               <Field
                 controlId={newEmailId}
@@ -294,7 +302,7 @@
               method="POST"
               action={actions.logout}
               aria-busy={model.logoutState === "submitting"}
-              onsubmit={onLogoutSubmit}
+              onsubmit={submitLogout}
             >
               {#if typeof model.logoutState === "object"}
                 <Alert

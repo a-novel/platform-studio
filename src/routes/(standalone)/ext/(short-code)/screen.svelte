@@ -1,13 +1,11 @@
 <script module lang="ts">
-  import type { FormIssue, ShortCodePasswordField, ShortCodeScreenModel } from "$lib/application/auth/types";
+  import type { FormIssue, ShortCodePasswordField } from "$lib/application/auth/types";
+
+  import type { ShortCodeScreenController } from "./controller.svelte";
 
   /** Props for a pure standalone email-link completion screen. */
   export interface ShortCodeScreenProps {
-    model: ShortCodeScreenModel;
-    action: string;
-    restartHref: string;
-    continueHref: string;
-    onSubmit?: (event: SubmitEvent) => void;
+    controller: ShortCodeScreenController;
   }
 </script>
 
@@ -18,7 +16,12 @@
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input, Link } from "@a-novel-kit/uikit";
 
-  let { model, action, restartHref, continueHref, onSubmit }: ShortCodeScreenProps = $props();
+  let { controller }: ShortCodeScreenProps = $props();
+
+  const model = $derived(controller.state.model);
+  const action = $derived(controller.state.action);
+  const restartHref = $derived(controller.state.restartHref);
+  const continueHref = $derived(controller.state.continueHref);
 
   const { t } = getI18nContext();
   const componentId = $props.id();
@@ -42,6 +45,10 @@
   ): string | undefined {
     const issue = currentIssues.find((candidate) => candidate.field === field);
     return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
+  }
+
+  function submit(event: SubmitEvent) {
+    if (!controller.submit()) event.preventDefault();
   }
 
   function getJourneyTitle(journey: ShortCodeJourney): string {
@@ -139,7 +146,7 @@
         <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
       </div>
     {:else}
-      <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
+      <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
         {#if model.journey !== "email-update"}
           <Field
             controlId={newPasswordId}

@@ -1,41 +1,33 @@
 <script module lang="ts">
-  import type { AuthDialogView, StudioShellViewModel } from "$lib/application/shell/types";
+  import type { AuthDialogView } from "$lib/application/shell/types";
+
+  import type { StudioShellController } from "./controller.svelte";
 
   import type { Snippet } from "svelte";
 
   /** Props for the pure, application-agnostic Studio shell surface. */
   export interface StudioShellProps {
-    model: StudioShellViewModel;
-    homeHref?: string;
-    accountHref?: string;
-    authActionsVisible?: boolean;
+    controller: StudioShellController;
     children?: Snippet;
-    authContent?: Snippet<[AuthDialogView]>;
-    onAuthViewChange?: (view: AuthDialogView | null) => void;
-    onDrawerOpenChange?: (open: boolean) => void;
-    onLogout?: () => void;
-    onToggleRail?: () => void;
   }
 </script>
 
 <script lang="ts">
+  import AuthenticationPanel from "./(authentication)/screen.svelte";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Avatar, Button, Dialog, IconButton, NavList, SkipLink, Spinner } from "@a-novel-kit/uikit";
 
   import { CircleAlert, House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 
-  let {
-    model,
-    homeHref = "/",
-    accountHref = "/account",
-    authActionsVisible = true,
-    children,
-    authContent,
-    onAuthViewChange,
-    onDrawerOpenChange,
-    onLogout,
-    onToggleRail,
-  }: StudioShellProps = $props();
+  let { controller, children }: StudioShellProps = $props();
+
+  const model = $derived(controller.state.model);
+  const homeHref = $derived(controller.state.homeHref);
+  const accountHref = $derived(controller.state.accountHref);
+  const logoutAction = $derived(controller.state.logoutAction);
+  const authenticationState = $derived(controller.authentication.state.model.state.status);
+  const authActionsVisible = $derived(authenticationState !== "pending-email" && authenticationState !== "success");
 
   const componentId = $props.id();
   const desktopNavigationId = `${componentId}-desktop-navigation`;
@@ -47,7 +39,11 @@
   const authDialogTitle = $derived(getAuthDialogTitle(model.authView));
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
-    if (event.target instanceof Element && event.target.closest("a")) onDrawerOpenChange?.(false);
+    if (event.target instanceof Element && event.target.closest("a")) controller.closeDrawer();
+  }
+
+  function submitLogout(event: SubmitEvent) {
+    if (!controller.logout()) event.preventDefault();
   }
 
   function getAuthDialogTitle(view: AuthDialogView | null): string {
@@ -128,19 +124,21 @@
         {/if}
       </a>
       <!-- eslint-enable svelte/no-navigation-without-resolve -->
-      <Button
-        class="shell-account-button {compact ? 'compact-control' : ''}"
-        variant="ghost"
-        tone="danger"
-        size="sm"
-        square={compact}
-        aria-label={compact ? t("shell.logout") : undefined}
-        title={compact ? t("shell.logout") : undefined}
-        onclick={() => onLogout?.()}
-      >
-        <LogOut size="var(--icon-size-sm)" aria-hidden="true" />
-        {#if !compact}<span>{t("shell.logout")}</span>{/if}
-      </Button>
+      <form class="logout-form" method="POST" action={logoutAction} onsubmit={submitLogout}>
+        <Button
+          class="shell-account-button {compact ? 'compact-control' : ''}"
+          type="submit"
+          variant="ghost"
+          tone="danger"
+          size="sm"
+          square={compact}
+          aria-label={compact ? t("shell.logout") : undefined}
+          title={compact ? t("shell.logout") : undefined}
+        >
+          <LogOut size="var(--icon-size-sm)" aria-hidden="true" />
+          {#if !compact}<span>{t("shell.logout")}</span>{/if}
+        </Button>
+      </form>
     {:else}
       <Button
         class="shell-account-button {compact ? 'compact-control' : ''}"
@@ -150,7 +148,7 @@
         square={compact}
         aria-label={compact ? t("shell.signIn") : undefined}
         title={compact ? t("shell.signIn") : undefined}
-        onclick={() => onAuthViewChange?.("login")}
+        onclick={() => controller.openAuthentication("login")}
       >
         <LogIn size="var(--icon-size-sm)" aria-hidden="true" />
         <span class="control-label">{t("shell.signIn")}</span>
@@ -161,18 +159,18 @@
 
 {#snippet authActions()}
   {#if model.authView === "login"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("reset")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("reset")}>
       {t("shell.auth.forgotPassword")}
     </Button>
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("register")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("register")}>
       {t("shell.auth.createAccount")}
     </Button>
   {:else if model.authView === "register"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
       {t("shell.auth.signInInstead")}
     </Button>
   {:else if model.authView === "reset"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
       {t("shell.auth.backToSignIn")}
     </Button>
   {/if}
@@ -192,7 +190,7 @@
           size="sm"
           aria-controls={desktopNavigationId}
           aria-expanded={!compactRail}
-          onclick={() => onToggleRail?.()}
+          onclick={() => controller.toggleRail()}
         >
           {#if compactRail}
             <PanelLeftOpen size="var(--icon-size-sm)" aria-hidden="true" />
@@ -220,7 +218,7 @@
           size="sm"
           aria-controls={drawerId}
           aria-expanded={model.drawerOpen}
-          onclick={() => onDrawerOpenChange?.(true)}
+          onclick={() => controller.openDrawer()}
         >
           <Menu size="var(--icon-size-sm)" aria-hidden="true" />
         </IconButton>
@@ -239,7 +237,7 @@
     open={model.drawerOpen}
     title={t("shell.navigation")}
     closeOnBackdrop
-    onClose={() => onDrawerOpenChange?.(false)}
+    onClose={() => controller.closeDrawer()}
   >
     <div class="drawer-toolbar">
       <IconButton
@@ -247,7 +245,7 @@
         variant="ghost"
         tone="neutral"
         size="sm"
-        onclick={() => onDrawerOpenChange?.(false)}
+        onclick={() => controller.closeDrawer()}
       >
         <X size="var(--icon-size-sm)" aria-hidden="true" />
       </IconButton>
@@ -265,10 +263,10 @@
     title={authDialogTitle}
     actions={authActionsVisible ? authActions : undefined}
     closeOnBackdrop
-    onClose={() => onAuthViewChange?.(null)}
+    onClose={() => controller.closeAuthentication()}
   >
-    {#if model.authView && authContent}
-      {@render authContent(model.authView)}
+    {#if model.authView}
+      <AuthenticationPanel controller={controller.authentication} />
     {/if}
     <IconButton
       class="authentication-dialog-close"
@@ -276,7 +274,7 @@
       variant="ghost"
       tone="neutral"
       size="sm"
-      onclick={() => onAuthViewChange?.(null)}
+      onclick={() => controller.closeAuthentication()}
     >
       <X size="var(--icon-size-sm)" aria-hidden="true" />
     </IconButton>
@@ -383,6 +381,11 @@
   .account-widget {
     display: grid;
     gap: var(--space-2);
+    min-inline-size: 0;
+  }
+
+  .logout-form {
+    margin: 0;
     min-inline-size: 0;
   }
 

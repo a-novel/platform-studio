@@ -59,7 +59,6 @@ authUi:
       submitting: Modification du mot de passe…
       successTitle: Mot de passe modifié
       title: Changer le mot de passe
-    retry: Réessayer
     title: Gérer le compte
   authentication:
     emailLabel: Adresse e-mail
