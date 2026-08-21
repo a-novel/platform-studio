@@ -255,8 +255,8 @@ describe("pure authentication screens", () => {
 
     render(ShortCodeScreen, { controller }, withLocale());
 
-    const form = await submitForm("Confirm email change");
     const submit = page.getByRole("button", { name: "Confirm email change" }).element();
+    const form = await submitForm("Confirm email change");
 
     expect(form.querySelector('input[type="password"]')).toBeNull();
     expect(getComputedStyle(submit).marginBlockStart).toBe("8px");

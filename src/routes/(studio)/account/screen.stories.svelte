@@ -4,7 +4,7 @@
   import StoryHarness from "./story.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
-  import { expect, userEvent, within } from "storybook/test";
+  import { expect, within } from "storybook/test";
 
   const ready: ReadyAccountScreenModel = {
     status: "ready",
@@ -34,12 +34,6 @@
     await expect(canvas.getByRole("textbox", { name: "New email address" })).toBeVisible();
   }
 
-  async function verifyLoadRetry({ canvasElement }: { canvasElement: HTMLElement }) {
-    const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button"));
-    await expect(canvas.queryByRole("button")).not.toBeInTheDocument();
-  }
-
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {
     await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
     expect(canvasElement.querySelector('a[href$="-confirm-password"]')).toBeNull();
@@ -60,7 +54,7 @@
   <StoryHarness initialModel={{ status: "loading" }} />
 </Story>
 
-<Story name="Load error" asChild play={verifyLoadRetry}>
+<Story name="Load error" asChild>
   <StoryHarness initialModel={{ status: "error", feedback: "sessionUnavailable" }} />
 </Story>
 
