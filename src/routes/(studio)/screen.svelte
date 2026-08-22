@@ -310,7 +310,7 @@
     z-index: var(--layer-sticky);
     box-sizing: border-box;
     inset-block-start: 0;
-    background: var(--color-surface-sunken);
+    background: var(--color-surface-island-strong);
     padding: var(--space-2);
     inline-size: var(--studio-rail-width);
     block-size: 100dvb;
