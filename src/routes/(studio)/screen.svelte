@@ -163,19 +163,43 @@
 
 {#snippet authActions()}
   {#if model.authView === "login"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("reset")}>
-      {t("shell.auth.forgotPassword")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("reset")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.forgotPassword")}</span>
     </Button>
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("register")}>
-      {t("shell.auth.createAccount")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("register")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.createAccount")}</span>
     </Button>
   {:else if model.authView === "register"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
-      {t("shell.auth.signInInstead")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("login")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.signInInstead")}</span>
     </Button>
   {:else if model.authView === "reset"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
-      {t("shell.auth.backToSignIn")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("login")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.backToSignIn")}</span>
     </Button>
   {/if}
 {/snippet}
@@ -556,6 +580,17 @@
     padding-block-start: var(--space-2);
   }
 
+  :global(.authentication-secondary-action) {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    white-space: normal;
+  }
+
+  .authentication-secondary-action-label {
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
   :global(dialog.studio-navigation-dialog.studio-navigation-dialog) {
     margin: 0;
     box-shadow: none;
@@ -612,6 +647,15 @@
       padding: var(--space-2);
     }
 
+    :global(dialog.studio-navigation-dialog > .panel > header) {
+      padding: var(--space-3);
+      padding-inline-end: calc(var(--space-3) + var(--control-height-sm));
+    }
+
+    :global(dialog.studio-navigation-dialog > .panel > .content) {
+      padding: var(--space-2);
+    }
+
     :global(dialog.authentication-dialog.authentication-dialog) {
       inline-size: calc(100vi - var(--space-4));
       max-inline-size: calc(100vi - var(--space-4));
@@ -632,8 +676,18 @@
     }
 
     :global(dialog.authentication-dialog > .panel > footer) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-1);
       padding-inline: var(--space-4);
       padding-block-end: var(--space-4);
+    }
+
+    :global(dialog.authentication-dialog > .panel > footer > .authentication-secondary-action) {
+      justify-content: flex-start;
+      padding-inline: var(--space-2);
+      inline-size: 100%;
+      text-align: start;
     }
   }
 

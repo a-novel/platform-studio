@@ -185,6 +185,27 @@
     await expect(Math.max(...labelStarts) - Math.min(...labelStarts)).toBeLessThanOrEqual(1);
   }
 
+  async function verifyMobileAuthenticationActions({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
+    const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
+    const forgotPassword = canvas.getByRole("button", { name: t("shell.auth.forgotPassword") });
+    const createAccount = canvas.getByRole("button", { name: t("shell.auth.createAccount") });
+    const forgotPasswordBounds = forgotPassword.getBoundingClientRect();
+    const createAccountBounds = createAccount.getBoundingClientRect();
+
+    await expect(createAccountBounds.top).toBeGreaterThanOrEqual(forgotPasswordBounds.bottom);
+    await expect(Math.abs(createAccountBounds.left - forgotPasswordBounds.left)).toBeLessThanOrEqual(1);
+    await expect(Math.abs(createAccountBounds.right - forgotPasswordBounds.right)).toBeLessThanOrEqual(1);
+    await expect(forgotPassword.scrollWidth).toBeLessThanOrEqual(forgotPassword.clientWidth);
+    await expect(createAccount.scrollWidth).toBeLessThanOrEqual(createAccount.clientWidth);
+  }
+
   async function verifyValidationFeedback({ canvasElement }: { canvasElement: HTMLElement }) {
     await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
     expect(canvasElement.querySelector('a[href$="-email"]')).toBeNull();
@@ -302,7 +323,13 @@
   <StoryHarness initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
-<Story name="Login modal — mobile" exportName="LoginModalMobile" globals={reviewStoryGlobals.mobile} asChild>
+<Story
+  name="Login modal — mobile"
+  exportName="LoginModalMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyMobileAuthenticationActions}
+>
   <StoryHarness initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
