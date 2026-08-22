@@ -643,7 +643,7 @@
       gap: var(--space-2);
       z-index: var(--layer-sticky);
       inset-block-start: 0;
-      background: var(--color-surface-sunken);
+      background: var(--color-surface-island-strong);
       padding: var(--space-2);
     }
 

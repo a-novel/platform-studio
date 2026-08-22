@@ -136,12 +136,15 @@
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     const openNavigation = canvas.getByRole("button", { name: t("shell.openNavigation") });
+    const mobileHeader = openNavigation.closest("header");
+    if (!mobileHeader) throw new Error("The mobile navigation control must live in the shell header");
     await expect(openNavigation).toHaveAttribute("aria-expanded", "false");
     await expect(canvas.queryByRole("dialog", { name: t("shell.navigation") })).not.toBeInTheDocument();
 
     await userEvent.click(openNavigation);
     const navigation = canvas.getByRole("dialog", { name: t("shell.navigation") });
     await expect(navigation).toBeVisible();
+    await expect(getComputedStyle(mobileHeader).backgroundColor).toBe(getComputedStyle(navigation).backgroundColor);
 
     await userEvent.click(within(navigation).getByRole("button", { name: t("shell.closeNavigation") }));
     await expect(canvas.queryByRole("dialog", { name: t("shell.navigation") })).not.toBeInTheDocument();
