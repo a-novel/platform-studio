@@ -135,7 +135,9 @@
           aria-label={compact ? t("shell.logout") : undefined}
           title={compact ? t("shell.logout") : undefined}
         >
-          <LogOut size="var(--icon-size-sm)" aria-hidden="true" />
+          <span class="account-action-icon" aria-hidden="true">
+            <LogOut size="var(--icon-size-sm)" />
+          </span>
           {#if !compact}<span>{t("shell.logout")}</span>{/if}
         </Button>
       </form>
@@ -150,7 +152,9 @@
         title={compact ? t("shell.signIn") : undefined}
         onclick={() => controller.openAuthentication("login")}
       >
-        <LogIn size="var(--icon-size-sm)" aria-hidden="true" />
+        <span class="account-action-icon" aria-hidden="true">
+          <LogIn size="var(--icon-size-sm)" />
+        </span>
         <span class="control-label">{t("shell.signIn")}</span>
       </Button>
     {/if}
@@ -386,6 +390,14 @@
     min-inline-size: 0;
   }
 
+  .account-action-icon {
+    display: inline-flex;
+    flex: none;
+    justify-content: center;
+    align-items: center;
+    inline-size: var(--icon-size-sm);
+  }
+
   .account-status,
   .account-link {
     display: flex;
@@ -489,6 +501,12 @@
 
   .drawer-account {
     margin-block-start: var(--space-2);
+  }
+
+  .drawer-navigation :global(.shell-navigation .icon),
+  .drawer-account .account-action-icon {
+    justify-content: center;
+    inline-size: var(--control-height-sm);
   }
 
   .drawer-account .account-link,

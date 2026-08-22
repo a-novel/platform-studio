@@ -164,6 +164,27 @@
     clearFocus();
   }
 
+  async function verifyAuthenticatedMobileLayout({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
+    await verifyExpandedMobileNavigation({ canvasElement, globals });
+
+    const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
+    const navigation = canvas.getByRole("dialog", { name: t("shell.navigation") });
+    const labelStarts = [
+      within(navigation).getByText(t("shell.home")).getBoundingClientRect().left,
+      within(navigation).getByText("Maya Chen").getBoundingClientRect().left,
+      within(navigation).getByText(t("shell.logout")).getBoundingClientRect().left,
+    ];
+
+    await expect(Math.max(...labelStarts) - Math.min(...labelStarts)).toBeLessThanOrEqual(1);
+  }
+
   async function verifyValidationFeedback({ canvasElement }: { canvasElement: HTMLElement }) {
     await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
     expect(canvasElement.querySelector('a[href$="-email"]')).toBeNull();
@@ -244,7 +265,7 @@
   exportName="AuthenticatedMobile"
   globals={reviewStoryGlobals.mobile}
   asChild
-  play={verifyExpandedMobileNavigation}
+  play={verifyAuthenticatedMobileLayout}
 >
   <StoryHarness initialModel={withOpenMobileNavigation(authenticated)} />
 </Story>

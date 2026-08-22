@@ -114,6 +114,38 @@ describe("studio shell screen", () => {
     expect(shell.state.model.session.status).toBe("anonymous");
   });
 
+  it("aligns mobile drawer labels and contains a long account name", async () => {
+    await page.viewport(390, 844);
+    const displayName = "Alexandrine de la Bibliothèque des Mondes Imaginaires";
+    render(
+      Screen,
+      {
+        controller: controller({
+          drawerOpen: true,
+          session: {
+            status: "authenticated",
+            displayName,
+            initials: "AB",
+          },
+        }),
+      },
+      withLocale()
+    );
+
+    const navigation = page.getByRole("dialog", { name: "Studio navigation" });
+    await expect.element(navigation).toBeVisible();
+
+    const accountName = navigation.getByText(displayName).element();
+    const labelStarts = [
+      navigation.getByText("Home").element().getBoundingClientRect().left,
+      accountName.getBoundingClientRect().left,
+      navigation.getByText("Log out").element().getBoundingClientRect().left,
+    ];
+
+    expect(Math.max(...labelStarts) - Math.min(...labelStarts)).toBeLessThanOrEqual(1);
+    expect(accountName.scrollWidth).toBeGreaterThan(accountName.clientWidth);
+  });
+
   it("renders URL-controlled auth views and delegates view changes", async () => {
     const shell = controller({ authView: "register" });
     render(Screen, { controller: shell }, withLocale());
