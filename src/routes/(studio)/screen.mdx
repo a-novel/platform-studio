@@ -8,7 +8,8 @@ import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
 
 The shell and each authentication dialog render in isolated desktop and mobile documents. Dialogs
 are locked open in these visual states, so dismissing one preview cannot change the documentation
-around it.
+around it. Every mobile navigation/account preview likewise uses an explicit mobile story with its
+menu locked open.
 
 ## Navigation and account
 
@@ -24,25 +25,37 @@ around it.
 
 <ResponsiveStoryPair
   desktop={ShellStories.CollapsedAnonymous}
-  mobile={ShellStories.CollapsedAnonymous}
+  mobile={ShellStories.CollapsedAnonymousMobile}
   meta={ShellStories}
 />
 
 ### Authenticated
 
-<ResponsiveStoryPair desktop={ShellStories.Authenticated} mobile={ShellStories.Authenticated} meta={ShellStories} />
+<ResponsiveStoryPair
+  desktop={ShellStories.Authenticated}
+  mobile={ShellStories.AuthenticatedMobile}
+  meta={ShellStories}
+/>
 
 ### Loading account
 
-<ResponsiveStoryPair desktop={ShellStories.LoadingAccount} mobile={ShellStories.LoadingAccount} meta={ShellStories} />
+<ResponsiveStoryPair
+  desktop={ShellStories.LoadingAccount}
+  mobile={ShellStories.LoadingAccountMobile}
+  meta={ShellStories}
+/>
 
 ### Account unavailable
 
-<ResponsiveStoryPair desktop={ShellStories.AccountError} mobile={ShellStories.AccountError} meta={ShellStories} />
+<ResponsiveStoryPair desktop={ShellStories.AccountError} mobile={ShellStories.AccountErrorMobile} meta={ShellStories} />
 
 ### Long account name
 
-<ResponsiveStoryPair desktop={ShellStories.LongAccountName} mobile={ShellStories.LongAccountName} meta={ShellStories} />
+<ResponsiveStoryPair
+  desktop={ShellStories.LongAccountName}
+  mobile={ShellStories.LongAccountNameMobile}
+  meta={ShellStories}
+/>
 
 ## Login
 

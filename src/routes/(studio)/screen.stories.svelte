@@ -16,6 +16,34 @@
     rail: "expanded",
     session: { status: "anonymous" },
   };
+  const authenticated: StudioShellViewModel = {
+    ...anonymous,
+    session: {
+      status: "authenticated",
+      displayName: "Maya Chen",
+      initials: "MC",
+    },
+  };
+  const loadingAccount: StudioShellViewModel = {
+    ...anonymous,
+    session: { status: "loading" },
+  };
+  const accountError: StudioShellViewModel = {
+    ...anonymous,
+    session: { status: "error" },
+  };
+  const longAccountName: StudioShellViewModel = {
+    ...anonymous,
+    session: {
+      status: "authenticated",
+      displayName: "Alexandrine de la Bibliothèque des Mondes Imaginaires",
+      initials: "AB",
+    },
+  };
+
+  function withOpenMobileNavigation(model: StudioShellViewModel): StudioShellViewModel {
+    return { ...model, drawerOpen: true };
+  }
 
   const { Story } = defineMeta({
     title: "Shell/Platform shell",
@@ -167,37 +195,63 @@
   asChild
   play={verifyExpandedMobileNavigation}
 >
-  <StoryHarness initialModel={{ ...anonymous, drawerOpen: true }} />
+  <StoryHarness initialModel={withOpenMobileNavigation(anonymous)} />
 </Story>
 
 <Story name="Collapsed anonymous" asChild play={verifyRailToggle}>
   <StoryHarness initialModel={{ ...anonymous, rail: "collapsed" }} />
 </Story>
 
+<Story
+  name="Collapsed anonymous — mobile"
+  exportName="CollapsedAnonymousMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyExpandedMobileNavigation}
+>
+  <StoryHarness initialModel={withOpenMobileNavigation({ ...anonymous, rail: "collapsed" })} />
+</Story>
+
 <Story name="Authenticated" asChild play={verifyAuthenticatedActions}>
-  <StoryHarness
-    initialModel={{
-      ...anonymous,
-      session: {
-        status: "authenticated",
-        displayName: "Maya Chen",
-        initials: "MC",
-      },
-    }}
-  />
+  <StoryHarness initialModel={authenticated} />
+</Story>
+
+<Story
+  name="Authenticated — mobile"
+  exportName="AuthenticatedMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyExpandedMobileNavigation}
+>
+  <StoryHarness initialModel={withOpenMobileNavigation(authenticated)} />
 </Story>
 
 <Story name="Loading account" asChild>
-  <StoryHarness initialModel={{ ...anonymous, session: { status: "loading" } }} />
+  <StoryHarness initialModel={loadingAccount} />
+</Story>
+
+<Story
+  name="Loading account — mobile"
+  exportName="LoadingAccountMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyExpandedMobileNavigation}
+>
+  <StoryHarness initialModel={withOpenMobileNavigation(loadingAccount)} />
 </Story>
 
 <Story name="Account error" asChild>
-  <StoryHarness
-    initialModel={{
-      ...anonymous,
-      session: { status: "error" },
-    }}
-  />
+  <StoryHarness initialModel={accountError} />
+</Story>
+
+<Story
+  name="Account error — mobile"
+  exportName="AccountErrorMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyExpandedMobileNavigation}
+>
+  <StoryHarness initialModel={withOpenMobileNavigation(accountError)} />
 </Story>
 
 <Story name="Login modal — desktop" exportName="LoginModalDesktop" globals={reviewStoryGlobals.desktop} asChild>
@@ -314,14 +368,15 @@
 </Story>
 
 <Story name="Long account name" asChild>
-  <StoryHarness
-    initialModel={{
-      ...anonymous,
-      session: {
-        status: "authenticated",
-        displayName: "Alexandrine de la Bibliothèque des Mondes Imaginaires",
-        initials: "AB",
-      },
-    }}
-  />
+  <StoryHarness initialModel={longAccountName} />
+</Story>
+
+<Story
+  name="Long account name — mobile"
+  exportName="LongAccountNameMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyExpandedMobileNavigation}
+>
+  <StoryHarness initialModel={withOpenMobileNavigation(longAccountName)} />
 </Story>
