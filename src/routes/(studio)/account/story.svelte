@@ -4,7 +4,6 @@
   /** Controllable Storybook harness around the pure account screen. */
   export interface AccountScreenStoryProps {
     initialModel: AccountScreenModel;
-    frameWidth?: string;
   }
 </script>
 
@@ -14,7 +13,7 @@
 
   import { untrack } from "svelte";
 
-  let { initialModel, frameWidth }: AccountScreenStoryProps = $props();
+  let { initialModel }: AccountScreenStoryProps = $props();
 
   const actions = {
     password: "/storybook/account/password",
@@ -28,14 +27,14 @@
   });
 </script>
 
-<div class="story-frame" style:--story-frame-width={frameWidth}>
+<div class="story-frame">
   <AccountScreen {controller} />
 </div>
 
 <style>
   .story-frame {
     background: var(--color-surface-canvas);
-    inline-size: var(--story-frame-width, 100%);
+    inline-size: 100%;
     min-block-size: 100dvb;
   }
 </style>

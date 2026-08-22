@@ -1,7 +1,10 @@
 <script module lang="ts">
   import type { ReadyAccountScreenModel } from "$lib/application/auth/types";
+  import { createStorybookTranslator } from "$lib/i18n/storybook";
 
   import StoryHarness from "./story.svelte";
+
+  import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, within } from "storybook/test";
@@ -27,11 +30,18 @@
     },
   });
 
-  async function verifyReadyAccount({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyReadyAccount({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("heading", { name: "Manage account", level: 1 })).toBeVisible();
+    const t = createStorybookTranslator(globals);
+    await expect(canvas.getByRole("heading", { name: t("authUi.account.title"), level: 1 })).toBeVisible();
     await expect(canvas.getByText("2f798f4a-0694-4f68-9928-42f3e906e871")).toBeVisible();
-    await expect(canvas.getByRole("textbox", { name: "New email address" })).toBeVisible();
+    await expect(canvas.getByRole("textbox", { name: t("authUi.account.email.label") })).toBeVisible();
   }
 
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -39,14 +49,31 @@
     expect(canvasElement.querySelector('a[href$="-confirm-password"]')).toBeNull();
   }
 
-  async function verifyPasswordLocked({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyPasswordLocked({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("button", { name: "Changing password…" })).toBeDisabled();
-    await expect(canvas.getByLabelText(/Current password/)).toBeDisabled();
+    const t = createStorybookTranslator(globals);
+    await expect(canvas.getByRole("button", { name: t("authUi.account.password.submitting") })).toBeDisabled();
+    await expect(canvas.getByLabelText(t("authUi.account.password.currentLabel"))).toBeDisabled();
   }
 </script>
 
-<Story name="Ready" asChild play={verifyReadyAccount}>
+<Story
+  name="Ready — desktop"
+  exportName="ReadyDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifyReadyAccount}
+>
+  <StoryHarness initialModel={ready} />
+</Story>
+
+<Story name="Ready — mobile" exportName="ReadyMobile" globals={reviewStoryGlobals.mobile} asChild>
   <StoryHarness initialModel={ready} />
 </Story>
 
@@ -157,9 +184,8 @@
   />
 </Story>
 
-<Story name="Narrow long content" asChild>
+<Story name="Long content — mobile" globals={reviewStoryGlobals.mobile} asChild>
   <StoryHarness
-    frameWidth="24rem"
     initialModel={{
       ...ready,
       claims: {

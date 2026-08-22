@@ -1,7 +1,10 @@
 <script module lang="ts">
   import type { StudioShellViewModel } from "$lib/application/shell/types";
+  import { createStorybookTranslator } from "$lib/i18n/storybook";
 
   import StoryHarness from "./story.svelte";
+
+  import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
@@ -26,46 +29,70 @@
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   }
 
-  async function verifyAnonymousAuthentication({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyAnonymousAuthentication({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
+    const t = createStorybookTranslator(globals);
+    await expect(canvas.getByRole("link", { name: t("shell.home") })).toHaveAttribute("aria-current", "page");
 
-    const signIn = canvas.getByRole("button", { name: "Sign in" });
+    const signIn = canvas.getByRole("button", { name: t("shell.signIn") });
     await userEvent.click(signIn);
-    await expect(canvas.getByRole("dialog", { name: "Sign in" })).toBeVisible();
-    const email = await canvas.findByRole("textbox", { name: "Email address" });
+    await expect(canvas.getByRole("dialog", { name: t("shell.auth.login.title") })).toBeVisible();
+    const email = await canvas.findByRole("textbox", { name: t("authUi.authentication.emailLabel") });
     await expect(email).toBeVisible();
     await expect(email).toHaveFocus();
 
-    await userEvent.click(canvas.getByRole("button", { name: "Close authentication" }));
-    await expect(canvas.queryByRole("dialog", { name: "Sign in" })).not.toBeInTheDocument();
+    await userEvent.click(canvas.getByRole("button", { name: t("shell.closeAuthentication") }));
+    await expect(canvas.queryByRole("dialog", { name: t("shell.auth.login.title") })).not.toBeInTheDocument();
 
     await userEvent.click(signIn);
-    await expect(await canvas.findByRole("textbox", { name: "Email address" })).toHaveFocus();
-    await userEvent.click(canvas.getByRole("button", { name: "Close authentication" }));
+    await expect(await canvas.findByRole("textbox", { name: t("authUi.authentication.emailLabel") })).toHaveFocus();
+    await userEvent.click(canvas.getByRole("button", { name: t("shell.closeAuthentication") }));
     await expect(signIn).toHaveFocus();
     clearFocus();
   }
 
-  async function verifyRailToggle({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyRailToggle({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    const toggle = canvas.getByRole("button", { name: "Expand navigation" });
+    const t = createStorybookTranslator(globals);
+    const toggle = canvas.getByRole("button", { name: t("shell.expandNavigation") });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
     await userEvent.click(toggle);
-    const collapse = canvas.getByRole("button", { name: "Collapse navigation" });
+    const collapse = canvas.getByRole("button", { name: t("shell.collapseNavigation") });
     await expect(collapse).toHaveAttribute("aria-expanded", "true");
 
     await userEvent.click(collapse);
-    await expect(canvas.getByRole("button", { name: "Expand navigation" })).toHaveAttribute("aria-expanded", "false");
+    await expect(canvas.getByRole("button", { name: t("shell.expandNavigation") })).toHaveAttribute(
+      "aria-expanded",
+      "false"
+    );
     clearFocus();
   }
 
-  async function verifyAuthenticatedActions({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyAuthenticatedActions({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("link", { name: "Maya Chen" })).toHaveAttribute("href", "/storybook/account");
-    await expect(canvas.getByRole("button", { name: "Log out" })).toBeVisible();
-    await expect(canvas.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: t("shell.logout") })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: t("shell.signIn") })).not.toBeInTheDocument();
     clearFocus();
   }
 
@@ -74,22 +101,53 @@
     expect(canvasElement.querySelector('a[href$="-email"]')).toBeNull();
   }
 
-  async function verifySubmittingIsLocked({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifySubmittingIsLocked({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("button", { name: "Signing in…" })).toBeDisabled();
-    await expect(canvas.getByRole("textbox", { name: "Email address" })).toBeDisabled();
+    const t = createStorybookTranslator(globals);
+    await expect(
+      canvas.getByRole("button", { name: t("authUi.authentication.journeys.login.submitting") })
+    ).toBeDisabled();
+    await expect(canvas.getByRole("textbox", { name: t("authUi.authentication.emailLabel") })).toBeDisabled();
   }
 
-  async function verifyPendingAuthentication({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyPendingAuthentication({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
     const status = canvas.getByRole("status");
     await expect(status).toBeVisible();
     expect(getComputedStyle(status).backgroundColor).toBe("rgba(0, 0, 0, 0)");
-    await expect(canvas.queryByRole("button", { name: "Sign in instead" })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("button", { name: t("shell.auth.signInInstead") })).not.toBeInTheDocument();
   }
 </script>
 
-<Story name="Expanded anonymous" asChild play={verifyAnonymousAuthentication}>
+<Story
+  name="Expanded anonymous — desktop"
+  exportName="ExpandedAnonymousDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifyAnonymousAuthentication}
+>
+  <StoryHarness initialModel={anonymous} />
+</Story>
+
+<Story
+  name="Expanded anonymous — mobile"
+  exportName="ExpandedAnonymousMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+>
   <StoryHarness initialModel={anonymous} />
 </Story>
 
@@ -123,7 +181,11 @@
   />
 </Story>
 
-<Story name="Login modal" asChild>
+<Story name="Login modal — desktop" exportName="LoginModalDesktop" globals={reviewStoryGlobals.desktop} asChild>
+  <StoryHarness initialModel={{ ...anonymous, authView: "login" }} />
+</Story>
+
+<Story name="Login modal — mobile" exportName="LoginModalMobile" globals={reviewStoryGlobals.mobile} asChild>
   <StoryHarness initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
@@ -163,7 +225,21 @@
   />
 </Story>
 
-<Story name="Registration modal" asChild>
+<Story
+  name="Registration modal — desktop"
+  exportName="RegistrationModalDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+>
+  <StoryHarness initialModel={{ ...anonymous, authView: "register" }} />
+</Story>
+
+<Story
+  name="Registration modal — mobile"
+  exportName="RegistrationModalMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+>
   <StoryHarness initialModel={{ ...anonymous, authView: "register" }} />
 </Story>
 
@@ -177,7 +253,21 @@
   />
 </Story>
 
-<Story name="Password reset modal" asChild>
+<Story
+  name="Password reset modal — desktop"
+  exportName="PasswordResetModalDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+>
+  <StoryHarness initialModel={{ ...anonymous, authView: "reset" }} />
+</Story>
+
+<Story
+  name="Password reset modal — mobile"
+  exportName="PasswordResetModalMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+>
   <StoryHarness initialModel={{ ...anonymous, authView: "reset" }} />
 </Story>
 
@@ -189,10 +279,6 @@
       state: { status: "pending-email", targetHint: "maya.chen@example.test" },
     }}
   />
-</Story>
-
-<Story name="Narrow login modal" asChild>
-  <StoryHarness frameWidth="22rem" initialModel={{ ...anonymous, authView: "login" }} />
 </Story>
 
 <Story name="Login service unavailable" asChild>

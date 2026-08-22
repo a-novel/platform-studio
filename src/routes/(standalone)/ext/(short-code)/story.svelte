@@ -4,7 +4,6 @@
   /** Controllable Storybook harness around the pure secure-link screen. */
   export interface ShortCodeScreenStoryProps {
     initialModel: ShortCodeScreenModel;
-    frameWidth?: string;
   }
 </script>
 
@@ -14,7 +13,7 @@
 
   import { untrack } from "svelte";
 
-  let { initialModel, frameWidth }: ShortCodeScreenStoryProps = $props();
+  let { initialModel }: ShortCodeScreenStoryProps = $props();
 
   const controller = createShortCodeScreenController({
     model: untrack(() => structuredClone(initialModel)),
@@ -25,13 +24,13 @@
   });
 </script>
 
-<div class="story-frame" style:--story-frame-width={frameWidth}>
+<div class="story-frame">
   <ShortCodeScreen {controller} />
 </div>
 
 <style>
   .story-frame {
-    inline-size: var(--story-frame-width, 100%);
+    inline-size: 100%;
     min-block-size: 100dvb;
   }
 </style>

@@ -6,7 +6,6 @@
   export interface StudioShellStoryProps {
     initialModel: StudioShellViewModel;
     initialAuthenticationModel?: AuthenticationPanelModel;
-    frameWidth?: string;
   }
 </script>
 
@@ -18,7 +17,7 @@
 
   import { untrack } from "svelte";
 
-  let { initialModel, initialAuthenticationModel, frameWidth }: StudioShellStoryProps = $props();
+  let { initialModel, initialAuthenticationModel }: StudioShellStoryProps = $props();
 
   const storyModel = untrack(() => structuredClone(initialModel));
   const authentication = createAuthenticationPanelController({
@@ -43,7 +42,7 @@
   });
 </script>
 
-<div class="story-frame" style:--story-frame-width={frameWidth}>
+<div class="story-frame">
   <Screen {controller}>
     <HomeScreen />
   </Screen>
@@ -51,7 +50,7 @@
 
 <style>
   .story-frame {
-    inline-size: var(--story-frame-width, 100%);
+    inline-size: 100%;
     min-block-size: 100dvb;
   }
 </style>
