@@ -65,7 +65,7 @@ describe("studio shell screen", () => {
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
-    const signIn = page.getByRole("button", { name: "Sign in" });
+    const signIn = page.getByRole("button", { name: "Login" });
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
     await signIn.click();
 
@@ -108,7 +108,7 @@ describe("studio shell screen", () => {
     expect(getComputedStyle(accountLink.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     expect(getComputedStyle(accountLink.element()).borderTopStyle).toBe("none");
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
 
     await page.getByRole("button", { name: "Log out" }).click();
     expect(shell.state.model.session.status).toBe("anonymous");
@@ -119,7 +119,7 @@ describe("studio shell screen", () => {
     render(Screen, { controller: shell }, withLocale());
 
     await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
-    await page.getByRole("button", { name: "Sign in instead" }).click();
+    await page.getByRole("button", { name: "Login" }).click();
 
     expect(shell.state.model.authView).toBe("login");
   });
@@ -131,7 +131,7 @@ describe("studio shell screen", () => {
     await page.getByRole("button", { name: "Close authentication" }).click();
 
     expect(shell.state.model.authView).toBe("login");
-    await expect.element(page.getByRole("dialog", { name: "Sign in" })).toBeVisible();
+    await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
   });
 
   it("omits journey actions from completed authentication dialogs", async () => {
@@ -152,7 +152,7 @@ describe("studio shell screen", () => {
     );
 
     await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Sign in instead" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
   });
 
   it("presents session errors as a compact status without a retry action", async () => {

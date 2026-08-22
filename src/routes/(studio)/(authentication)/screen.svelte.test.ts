@@ -74,7 +74,7 @@ describe("pure authentication screens", () => {
 
     render(AuthenticationPanel, { controller }, withLocale());
 
-    const form = await submitForm("Sign in");
+    const form = await submitForm("Login");
 
     expect(form.getAttribute("action")).toBe("/auth?/login");
     expect(form.getAttribute("method")).toBe("POST");
@@ -92,7 +92,7 @@ describe("pure authentication screens", () => {
       withLocale()
     );
 
-    const button = page.getByRole("button", { name: /Signing in/ });
+    const button = page.getByRole("button", { name: /Logging in/ });
     await expect.element(button).toBeDisabled();
     expect(button.element().querySelector('[role="status"]')).toBeNull();
     await expect.element(page.getByLabelText(/Email address/)).toBeDisabled();
@@ -134,7 +134,7 @@ describe("pure authentication screens", () => {
     );
 
     const alert = page.getByRole("alert").element();
-    const submit = page.getByRole("button", { name: "Sign in" }).element();
+    const submit = page.getByRole("button", { name: "Login" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(alert.textContent?.trim()).toBe("The authentication service is temporarily unavailable. Try again.");
   });

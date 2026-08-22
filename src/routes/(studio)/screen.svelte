@@ -518,21 +518,24 @@
     position: absolute;
   }
 
-  :global(dialog.authentication-dialog > .panel > .content) {
+  :global(dialog.authentication-dialog > .panel > header) {
+    padding-inline-end: calc(var(--space-5) + var(--control-height-sm));
     padding-block-end: var(--space-2);
   }
 
+  :global(dialog.authentication-dialog > .panel > .content) {
+    padding-block: var(--space-3);
+  }
+
   :global(dialog.authentication-dialog > .panel > footer) {
-    padding-block-start: 0;
+    justify-content: flex-start;
+    padding-block-start: var(--space-2);
   }
 
   :global(dialog.studio-navigation-dialog.studio-navigation-dialog) {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
     margin: 0;
     box-shadow: none;
     border-radius: 0;
-    background: var(--color-surface-sunken);
     inline-size: 100vi;
     max-inline-size: 100vi;
     block-size: 100dvb;
@@ -583,6 +586,30 @@
       inset-block-start: 0;
       background: var(--color-surface-sunken);
       padding: var(--space-2);
+    }
+
+    :global(dialog.authentication-dialog.authentication-dialog) {
+      inline-size: calc(100vi - var(--space-4));
+      max-inline-size: calc(100vi - var(--space-4));
+      max-block-size: calc(100dvb - var(--space-4));
+    }
+
+    :global(dialog.authentication-dialog > .panel) {
+      min-inline-size: 0;
+    }
+
+    :global(dialog.authentication-dialog > .panel > header) {
+      padding-inline: var(--space-4) calc(var(--space-4) + var(--control-height-sm));
+      padding-block-start: var(--space-4);
+    }
+
+    :global(dialog.authentication-dialog > .panel > .content) {
+      padding-inline: var(--space-4);
+    }
+
+    :global(dialog.authentication-dialog > .panel > footer) {
+      padding-inline: var(--space-4);
+      padding-block-end: var(--space-4);
     }
   }
 

@@ -5,7 +5,7 @@ authFlow:
     invalidCredentials: L’adresse e-mail ou le mot de passe est incorrect.
     invalidCurrentPassword: Le mot de passe actuel est incorrect.
     passwordChanged: Votre mot de passe a été modifié.
-    passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.
+    passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant accéder à votre compte.
     registrationCompleted: Votre compte Studio est prêt.
     serviceUnavailable: Le service d’authentification est temporairement indisponible. Réessayez.
     sessionUnavailable: Studio n’a pas pu vérifier la session actuelle. Réessayez.
@@ -64,7 +64,7 @@ authUi:
     emailLabel: Adresse e-mail
     journeys:
       login:
-        submit: Se connecter
+        submit: Connexion
         submitting: Connexion…
       register:
         pendingDescription: Terminez la création de votre compte avec le lien envoyé à
@@ -112,16 +112,16 @@ authUi:
 shell:
   accountFallback: Compte
   auth:
-    backToSignIn: Revenir à la connexion
+    backToSignIn: Connexion
     createAccount: Créer un compte
     forgotPassword: Mot de passe oublié ?
     login:
-      title: Se connecter
+      title: Connexion
     register:
       title: Créer votre compte
     reset:
       title: Réinitialiser votre mot de passe
-    signInInstead: Se connecter à la place
+    signInInstead: Connexion
   brand: Studio
   closeAuthentication: Fermer l’authentification
   closeNavigation: Fermer la navigation
@@ -136,5 +136,5 @@ shell:
   openNavigation: Ouvrir la navigation
   sessionLoading: Chargement de l’état du compte
   sessionUnavailable: L’état du compte est temporairement indisponible.
-  signIn: Se connecter
+  signIn: Connexion
   skipToContent: Aller au contenu

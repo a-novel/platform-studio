@@ -8,7 +8,7 @@ export default interface Resources {
         "invalidCredentials": "The email address or password is incorrect.",
         "invalidCurrentPassword": "The current password is incorrect.",
         "passwordChanged": "Your password was changed.",
-        "passwordReset": "Your password was reset. You can now sign in.",
+        "passwordReset": "Your password was reset. You can now access your account.",
         "registrationCompleted": "Your Studio account is ready.",
         "serviceUnavailable": "The authentication service is temporarily unavailable. Try again.",
         "sessionUnavailable": "Studio could not verify the current session. Try again."
@@ -75,8 +75,8 @@ export default interface Resources {
         "emailLabel": "Email address",
         "journeys": {
           "login": {
-            "submit": "Sign in",
-            "submitting": "Signing in…"
+            "submit": "Login",
+            "submitting": "Logging in…"
           },
           "register": {
             "pendingDescription": "Finish creating your account from the link sent to",
@@ -138,11 +138,11 @@ export default interface Resources {
     "shell": {
       "accountFallback": "Account",
       "auth": {
-        "backToSignIn": "Back to sign in",
+        "backToSignIn": "Login",
         "createAccount": "Create an account",
         "forgotPassword": "Forgot password?",
         "login": {
-          "title": "Sign in"
+          "title": "Login"
         },
         "register": {
           "title": "Create your account"
@@ -150,7 +150,7 @@ export default interface Resources {
         "reset": {
           "title": "Reset your password"
         },
-        "signInInstead": "Sign in instead"
+        "signInInstead": "Login"
       },
       "brand": "Studio",
       "closeAuthentication": "Close authentication",
@@ -166,7 +166,7 @@ export default interface Resources {
       "openNavigation": "Open navigation",
       "sessionLoading": "Loading account status",
       "sessionUnavailable": "Account status is temporarily unavailable.",
-      "signIn": "Sign in",
+      "signIn": "Login",
       "skipToContent": "Skip to content"
     }
   }
