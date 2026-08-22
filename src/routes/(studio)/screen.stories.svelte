@@ -126,6 +126,29 @@
     clearFocus();
   }
 
+  async function verifyCollapsedMobileNavigation({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
+    const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
+    const openNavigation = canvas.getByRole("button", { name: t("shell.openNavigation") });
+    await expect(openNavigation).toHaveAttribute("aria-expanded", "false");
+    await expect(canvas.queryByRole("dialog", { name: t("shell.navigation") })).not.toBeInTheDocument();
+
+    await userEvent.click(openNavigation);
+    const navigation = canvas.getByRole("dialog", { name: t("shell.navigation") });
+    await expect(navigation).toBeVisible();
+
+    await userEvent.click(within(navigation).getByRole("button", { name: t("shell.closeNavigation") }));
+    await expect(canvas.queryByRole("dialog", { name: t("shell.navigation") })).not.toBeInTheDocument();
+    await expect(openNavigation).toHaveAttribute("aria-expanded", "false");
+    clearFocus();
+  }
+
   async function verifyAuthenticatedActions({
     canvasElement,
     globals,
@@ -207,9 +230,9 @@
   exportName="CollapsedAnonymousMobile"
   globals={reviewStoryGlobals.mobile}
   asChild
-  play={verifyExpandedMobileNavigation}
+  play={verifyCollapsedMobileNavigation}
 >
-  <StoryHarness initialModel={withOpenMobileNavigation({ ...anonymous, rail: "collapsed" })} />
+  <StoryHarness initialModel={{ ...anonymous, rail: "collapsed" }} />
 </Story>
 
 <Story name="Authenticated" asChild play={verifyAuthenticatedActions}>
