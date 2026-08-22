@@ -138,10 +138,8 @@
     const openNavigation = canvas.getByRole("button", { name: t("shell.openNavigation") });
     const mobileHeader = openNavigation.closest("header");
     if (!mobileHeader) throw new Error("The mobile navigation control must live in the shell header");
-    const navigationRail = canvas.getByRole("complementary", {
-      name: t("shell.navigation"),
-      hidden: true,
-    });
+    const navigationRail = canvas.getByRole("complementary", { hidden: true });
+    await expect(navigationRail).toHaveAttribute("aria-label", t("shell.navigation"));
     await expect(openNavigation).toHaveAttribute("aria-expanded", "false");
     await expect(canvas.queryByRole("dialog", { name: t("shell.navigation") })).not.toBeInTheDocument();
     await expect(getComputedStyle(mobileHeader).backgroundColor).toBe(getComputedStyle(navigationRail).backgroundColor);
