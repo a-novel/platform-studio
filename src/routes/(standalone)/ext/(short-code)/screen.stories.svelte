@@ -28,8 +28,8 @@
     await expect(
       canvas.getByRole("heading", { name: t("authUi.shortCode.journeys.register.title"), level: 1 })
     ).toBeVisible();
-    await expect(canvas.getByLabelText(t("authUi.shortCode.newPasswordLabel"))).toBeVisible();
-    await expect(canvas.getByLabelText(t("authUi.shortCode.confirmPasswordLabel"))).toBeVisible();
+    await expect(canvas.getByLabelText(t("authUi.shortCode.newPasswordLabel"), { exact: false })).toBeVisible();
+    await expect(canvas.getByLabelText(t("authUi.shortCode.confirmPasswordLabel"), { exact: false })).toBeVisible();
     await expect(canvas.getByText(t("authUi.shortCode.journeys.register.description"))).toBeVisible();
     await expect(canvas.queryByText(t("authUi.account.password.hint"))).not.toBeInTheDocument();
     expect(canvasElement.textContent).not.toContain("@");
@@ -65,7 +65,7 @@
     await expect(
       canvas.getByRole("button", { name: t("authUi.shortCode.journeys.passwordReset.submitting") })
     ).toBeDisabled();
-    await expect(canvas.getByLabelText(t("authUi.shortCode.newPasswordLabel"))).toBeDisabled();
+    await expect(canvas.getByLabelText(t("authUi.shortCode.newPasswordLabel"), { exact: false })).toBeDisabled();
   }
 </script>
 

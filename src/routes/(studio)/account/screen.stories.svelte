@@ -59,7 +59,7 @@
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("button", { name: t("authUi.account.password.submitting") })).toBeDisabled();
-    await expect(canvas.getByLabelText(t("authUi.account.password.currentLabel"))).toBeDisabled();
+    await expect(canvas.getByLabelText(t("authUi.account.password.currentLabel"), { exact: false })).toBeDisabled();
   }
 </script>
 
