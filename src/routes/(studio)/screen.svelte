@@ -238,17 +238,16 @@
     title={t("shell.navigation")}
     closeOnBackdrop
   >
-    <div class="drawer-toolbar">
-      <IconButton
-        label={t("shell.closeNavigation")}
-        variant="ghost"
-        tone="neutral"
-        size="sm"
-        onclick={() => controller.navigationDialog.close()}
-      >
-        <X size="var(--icon-size-sm)" aria-hidden="true" />
-      </IconButton>
-    </div>
+    <IconButton
+      class="navigation-dialog-close"
+      label={t("shell.closeNavigation")}
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.navigationDialog.close()}
+    >
+      <X size="var(--icon-size-sm)" aria-hidden="true" />
+    </IconButton>
     <div class="drawer-navigation">{@render primaryNavigation(closeDrawerAfterNavigation)}</div>
     <div class="drawer-account">
       {@render accountWidget(false, "drawer")}
@@ -482,27 +481,41 @@
     outline-offset: calc(var(--focus-ring-offset) * -1);
   }
 
-  .drawer-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-block-end: var(--space-2);
-  }
-
   .drawer-navigation {
     min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior-block: contain;
   }
 
   .drawer-account {
-    margin-block-start: var(--space-6);
-    background: var(--color-surface-sunken);
-    padding: var(--space-3);
+    margin-block-start: var(--space-2);
+  }
+
+  .drawer-account .account-link,
+  .drawer-account :global(button.shell-account-button:not(.compact-control)) {
+    padding: var(--space-2) var(--space-3);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-compact);
+  }
+
+  .drawer-account .account-link:hover,
+  .drawer-account :global(button.shell-account-button:not(.compact-control):hover:not(:disabled)) {
+    background: var(--color-navigation-hover-surface);
+  }
+
+  :global(.navigation-dialog-close),
+  :global(.authentication-dialog-close) {
+    z-index: 1;
+    inset-block-start: var(--space-3);
+    inset-inline-end: var(--space-3);
+  }
+
+  :global(.navigation-dialog-close) {
+    position: fixed;
   }
 
   :global(.authentication-dialog-close) {
     position: absolute;
-    z-index: 1;
-    inset-block-start: var(--space-3);
-    inset-inline-end: var(--space-3);
   }
 
   :global(dialog.authentication-dialog > .panel > .content) {
@@ -514,12 +527,37 @@
   }
 
   :global(dialog.studio-navigation-dialog.studio-navigation-dialog) {
-    margin: 0 auto 0 0;
-    border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
-    inline-size: 80vi;
-    max-inline-size: 80vi;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+    background: var(--color-surface-sunken);
+    inline-size: 100vi;
+    max-inline-size: 100vi;
     block-size: 100dvb;
     max-block-size: 100dvb;
+    overflow: hidden;
+  }
+
+  :global(dialog.studio-navigation-dialog > .panel) {
+    grid-template-rows: auto minmax(0, 1fr);
+    inline-size: 100%;
+    min-inline-size: 0;
+    block-size: 100%;
+    min-block-size: 100%;
+  }
+
+  :global(dialog.studio-navigation-dialog > .panel > header) {
+    padding-inline-end: calc(var(--space-5) + var(--control-height-sm));
+  }
+
+  :global(dialog.studio-navigation-dialog > .panel > .content) {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    min-block-size: 0;
+    overflow: visible;
   }
 
   @container studio-shell (max-width: 47.999rem) {
