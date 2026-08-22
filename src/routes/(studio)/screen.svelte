@@ -498,6 +498,10 @@
     line-height: var(--line-height-compact);
   }
 
+  .drawer-account :global(button.shell-account-button.danger:not(.compact-control)) {
+    --button-foreground: var(--color-feedback-error-text);
+  }
+
   .drawer-account .account-link:hover,
   .drawer-account :global(button.shell-account-button:not(.compact-control):hover:not(:disabled)) {
     background: var(--color-navigation-hover-surface);
