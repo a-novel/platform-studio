@@ -518,7 +518,8 @@
 
   .rail-account :global(button.shell-account-button.danger:not(.compact-control)),
   .drawer-account :global(button.shell-account-button.danger:not(.compact-control)) {
-    --button-foreground: var(--color-feedback-error-text);
+    --button-foreground: color-mix(in oklab, var(--color-text-primary) var(--color-mix-3), var(--base-pressure));
+    --button-foreground-hover: color-mix(in oklab, var(--color-text-primary) var(--color-mix-7), var(--base-pressure));
   }
 
   .drawer-account .account-link:hover,
