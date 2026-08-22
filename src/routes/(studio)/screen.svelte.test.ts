@@ -118,8 +118,9 @@ describe("studio shell screen", () => {
     const shell = controller({ authView: "register" });
     render(Screen, { controller: shell }, withLocale());
 
-    await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
-    await page.getByRole("button", { name: "Login" }).click();
+    const registrationDialog = page.getByRole("dialog", { name: "Create your account" });
+    await expect.element(registrationDialog).toBeVisible();
+    await registrationDialog.getByRole("button", { name: "Login" }).click();
 
     expect(shell.state.model.authView).toBe("login");
   });
@@ -151,8 +152,9 @@ describe("studio shell screen", () => {
       withLocale()
     );
 
-    await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
+    const registrationDialog = page.getByRole("dialog", { name: "Create your account" });
+    await expect.element(registrationDialog).toBeVisible();
+    await expect.element(registrationDialog.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
   });
 
   it("presents session errors as a compact status without a retry action", async () => {
