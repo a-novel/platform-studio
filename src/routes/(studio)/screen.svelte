@@ -516,6 +516,7 @@
     line-height: var(--line-height-compact);
   }
 
+  .rail-account :global(button.shell-account-button.danger:not(.compact-control)),
   .drawer-account :global(button.shell-account-button.danger:not(.compact-control)) {
     --button-foreground: var(--color-feedback-error-text);
   }
