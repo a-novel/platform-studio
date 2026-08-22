@@ -134,7 +134,7 @@ shell:
   manageAccountFor: Gérer le compte de {{name}}
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
-  sessionLoading: Chargement de l’état du compte
+  sessionLoading: Chargement du compte
   sessionUnavailable: L’état du compte est temporairement indisponible.
   signIn: Connexion
   skipToContent: Aller au contenu

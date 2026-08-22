@@ -164,7 +164,7 @@ export default interface Resources {
       "manageAccountFor": "Manage account for {{name}}",
       "navigation": "Studio navigation",
       "openNavigation": "Open navigation",
-      "sessionLoading": "Loading account status",
+      "sessionLoading": "Loading account",
       "sessionUnavailable": "Account status is temporarily unavailable.",
       "signIn": "Login",
       "skipToContent": "Skip to content"
