@@ -49,6 +49,8 @@ export interface StudioShellControllerOptions extends StudioShellControllerState
   resolveAuthentication?: (view: AuthDialogView) => AuthenticationPanelControllerState;
   /** Keeps the initial authentication journey pinned for deterministic visual review. */
   lockAuthentication?: boolean;
+  /** Keeps the initial navigation-dialog state pinned for deterministic visual review. */
+  lockNavigationDialog?: boolean;
   /** Allows the browser to submit the logout form after the controller accepts it. */
   allowNativeLogout?: boolean;
   /** Observes accepted authentication-view changes. */
@@ -66,6 +68,7 @@ export function createStudioShellController({
   authentication,
   resolveAuthentication,
   lockAuthentication = false,
+  lockNavigationDialog = false,
   allowNativeLogout = true,
   onAuthViewChange,
   onRailChange,
@@ -85,6 +88,7 @@ export function createStudioShellController({
   }
 
   function setDrawerOpen(open: boolean) {
+    if (lockNavigationDialog && open !== model.drawerOpen) return;
     if (model.drawerOpen !== open) model = { ...model, drawerOpen: open };
   }
 

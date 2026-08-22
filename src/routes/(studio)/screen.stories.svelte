@@ -81,6 +81,23 @@
     clearFocus();
   }
 
+  async function verifyExpandedMobileNavigation({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
+    const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
+    const navigation = canvas.getByRole("dialog", { name: t("shell.navigation") });
+    await expect(navigation).toBeVisible();
+
+    await userEvent.click(within(navigation).getByRole("button", { name: t("shell.closeNavigation") }));
+    await expect(navigation).toBeVisible();
+    clearFocus();
+  }
+
   async function verifyAuthenticatedActions({
     canvasElement,
     globals,
@@ -147,8 +164,9 @@
   exportName="ExpandedAnonymousMobile"
   globals={reviewStoryGlobals.mobile}
   asChild
+  play={verifyExpandedMobileNavigation}
 >
-  <StoryHarness initialModel={anonymous} />
+  <StoryHarness initialModel={{ ...anonymous, drawerOpen: true }} />
 </Story>
 
 <Story name="Collapsed anonymous" asChild play={verifyRailToggle}>

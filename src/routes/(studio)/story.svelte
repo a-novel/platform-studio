@@ -38,6 +38,7 @@
       action: "/storybook/auth",
     }),
     lockAuthentication: storyModel.authView !== null,
+    lockNavigationDialog: storyModel.drawerOpen,
     allowNativeLogout: false,
   });
 </script>
