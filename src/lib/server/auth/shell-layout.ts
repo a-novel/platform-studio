@@ -1,3 +1,4 @@
+import { accountDisplayFromHandle } from "$lib/application/shell/account-display";
 import type { ShellSession } from "$lib/application/shell/types";
 import { createAuthenticationContext } from "$lib/server/auth/context";
 
@@ -13,11 +14,10 @@ export const loadStudioShell = async ({ cookies, locals, url }: Pick<RequestEven
   if (resolved.status === "unavailable") {
     session = { status: "error" };
   } else if (resolved.status === "available" && resolved.claims.userID) {
-    session = {
-      status: "authenticated",
-      displayName: t("authFlow.accountName", { id: resolved.claims.userID.slice(0, 8) }),
-      initials: "A",
-    };
+    const account = resolved.identityHandle
+      ? accountDisplayFromHandle(resolved.identityHandle)
+      : { displayName: t("shell.accountFallback"), initials: "A" };
+    session = { status: "authenticated", ...account };
   }
 
   return {

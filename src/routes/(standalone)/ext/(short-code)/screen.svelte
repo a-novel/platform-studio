@@ -1,37 +1,27 @@
 <script module lang="ts">
-  import type { FormIssue, ShortCodePasswordField, ShortCodeScreenModel } from "$lib/application/auth/types";
+  import type { FormIssue, ShortCodePasswordField } from "$lib/application/auth/types";
+
+  import type { ShortCodeScreenController } from "./controller.svelte";
 
   /** Props for a pure standalone email-link completion screen. */
   export interface ShortCodeScreenProps {
-    model: ShortCodeScreenModel;
-    action: string;
-    homeHref: string;
-    restartHref: string;
-    continueHref: string;
-    onSubmit?: (event: SubmitEvent) => void;
+    controller: ShortCodeScreenController;
   }
 </script>
 
 <script lang="ts">
   import type { ShortCodeJourney } from "$lib/application/auth/types";
+  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import {
-    Alert,
-    Button,
-    Card,
-    Container,
-    ErrorSummary,
-    Field,
-    Input,
-    Link,
-    PageHeader,
-    Spinner,
-  } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, Input, Link } from "@a-novel-kit/uikit";
 
-  import { CircleCheck, KeyRound } from "@lucide/svelte";
+  let { controller }: ShortCodeScreenProps = $props();
 
-  let { model, action, homeHref, restartHref, continueHref, onSubmit }: ShortCodeScreenProps = $props();
+  const model = $derived(controller.state.model);
+  const action = $derived(controller.state.action);
+  const restartHref = $derived(controller.state.restartHref);
+  const continueHref = $derived(controller.state.continueHref);
 
   const { t } = getI18nContext();
   const componentId = $props.id();
@@ -39,16 +29,10 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const summaryErrors = $derived(
-    issues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${issue.field === "newPassword" ? newPasswordId : confirmPasswordId}`,
-      message: issue.message,
-    }))
-  );
   const journeyTitle = $derived(getJourneyTitle(model.journey));
   const journeyDescription = $derived(getJourneyDescription(model.journey));
   const journeySubmit = $derived(getJourneySubmit(model.journey));
+  const journeySubmitting = $derived(getJourneySubmitting(model.journey));
   const unavailableStatus = $derived(
     model.state.status === "missing" || model.state.status === "invalid" || model.state.status === "expired"
       ? model.state.status
@@ -59,7 +43,12 @@
     currentIssues: readonly FormIssue<ShortCodePasswordField>[],
     field: ShortCodePasswordField
   ): string | undefined {
-    return currentIssues.find((issue) => issue.field === field)?.message;
+    const issue = currentIssues.find((candidate) => candidate.field === field);
+    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
+  }
+
+  function submit(event: SubmitEvent) {
+    if (!controller.submit()) event.preventDefault();
   }
 
   function getJourneyTitle(journey: ShortCodeJourney): string {
@@ -98,6 +87,18 @@
     }
   }
 
+  function getJourneySubmitting(journey: ShortCodeJourney): string {
+    switch (journey) {
+      case "email-update":
+        return t("authUi.shortCode.journeys.emailUpdate.submitting");
+      case "password-reset":
+        return t("authUi.shortCode.journeys.passwordReset.submitting");
+      case "register":
+      default:
+        return t("authUi.shortCode.journeys.register.submitting");
+    }
+  }
+
   function getUnavailableTitle(status: "missing" | "invalid" | "expired"): string {
     switch (status) {
       case "invalid":
@@ -123,169 +124,92 @@
   }
 </script>
 
-{#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
+<main class="standalone-page">
+  <section class="secure-action" aria-labelledby={`${componentId}-title`}>
+    <header class="page-heading">
+      <h1 id={`${componentId}-title`}>{journeyTitle}</h1>
+      {#if !unavailableStatus && model.state.status !== "success"}<p>{journeyDescription}</p>{/if}
+    </header>
 
-<div class="standalone-viewport">
-  <header class="standalone-header">
-    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-    <a class="brand" href={homeHref} aria-label={t("authUi.shortCode.home")}>
-      <span class="brand-mark" aria-hidden="true">A</span>
-      <span>{t("authUi.shortCode.brand")}</span>
-    </a>
-  </header>
-
-  <main>
-    <Container size="readable">
-      <Card surface="raised" padding="lg">
-        <div class="completion-card">
-          <PageHeader eyebrow={t("authUi.shortCode.eyebrow")} title={journeyTitle} description={journeyDescription} />
-
-          {#if model.targetHint}
-            <dl class="target">
-              <dt>{t("authUi.shortCode.targetLabel")}</dt>
-              <dd>{model.targetHint}</dd>
-            </dl>
-          {/if}
-
-          {#if unavailableStatus}
-            <Alert tone="error" title={getUnavailableTitle(unavailableStatus)}>
-              <div class="status-copy">
-                <p>{getUnavailableDescription(unavailableStatus)}</p>
-                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-                <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
-              </div>
-            </Alert>
-          {:else if model.state.status === "success"}
-            <Alert tone="success" title={t("authUi.shortCode.successTitle")} icon={successIcon}>
-              <div class="status-copy">
-                <p>{model.state.message}</p>
-                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-                <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
-              </div>
-            </Alert>
-          {:else}
-            <form method="POST" {action} aria-busy={submitting} onsubmit={onSubmit}>
-              {#if model.state.status === "validation-error"}
-                <ErrorSummary
-                  title={t("authUi.shortCode.validationTitle")}
-                  description={t("authUi.shortCode.validationDescription")}
-                  errors={summaryErrors}
-                  headingLevel={2}
-                  focusOnMount
-                />
-              {:else if model.state.status === "service-error"}
-                <Alert tone="error" title={t("authUi.shortCode.serviceErrorTitle")}>
-                  <p class="feedback-message">{model.state.message}</p>
-                </Alert>
-              {/if}
-
-              {#if model.journey !== "email-update"}
-                <Field
-                  controlId={newPasswordId}
-                  label={t("authUi.shortCode.newPasswordLabel")}
-                  hint={t("authUi.shortCode.passwordHint")}
-                  error={issueMessage(issues, "newPassword")}
-                  required
-                >
-                  {#snippet children(control)}
-                    <Input
-                      {...control}
-                      name="password"
-                      type="password"
-                      autocomplete="new-password"
-                      disabled={submitting}
-                      invalid={Boolean(issueMessage(issues, "newPassword"))}
-                    />
-                  {/snippet}
-                </Field>
-                <Field
-                  controlId={confirmPasswordId}
-                  label={t("authUi.shortCode.confirmPasswordLabel")}
-                  error={issueMessage(issues, "confirmPassword")}
-                  required
-                >
-                  {#snippet children(control)}
-                    <Input
-                      {...control}
-                      name="confirmPassword"
-                      type="password"
-                      autocomplete="new-password"
-                      disabled={submitting}
-                      invalid={Boolean(issueMessage(issues, "confirmPassword"))}
-                    />
-                  {/snippet}
-                </Field>
-              {/if}
-
-              <Button type="submit" disabled={submitting}>
-                {#if submitting}
-                  <Spinner label={t("authUi.shortCode.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.shortCode.submitting")}</span>
-                {:else}
-                  <KeyRound size="var(--icon-size-sm)" aria-hidden="true" />
-                  {journeySubmit}
-                {/if}
-              </Button>
-            </form>
-          {/if}
+    {#if unavailableStatus}
+      <Alert tone="error" title={getUnavailableTitle(unavailableStatus)}>
+        <div class="status-copy">
+          <p>{getUnavailableDescription(unavailableStatus)}</p>
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
+          <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
         </div>
-      </Card>
-    </Container>
-  </main>
-</div>
+      </Alert>
+    {:else if model.state.status === "success"}
+      <div class="status-copy successful-action" role="status">
+        <p>{translateAuthenticationFeedback(t, model.state.feedback)}</p>
+        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
+        <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
+      </div>
+    {:else}
+      <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
+        {#if model.journey !== "email-update"}
+          <Field
+            controlId={newPasswordId}
+            label={t("authUi.shortCode.newPasswordLabel")}
+            error={issueMessage(issues, "newPassword")}
+            required
+          >
+            {#snippet children(control)}
+              <Input
+                {...control}
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                disabled={submitting}
+                invalid={Boolean(issueMessage(issues, "newPassword"))}
+              />
+            {/snippet}
+          </Field>
+          <Field
+            controlId={confirmPasswordId}
+            label={t("authUi.shortCode.confirmPasswordLabel")}
+            error={issueMessage(issues, "confirmPassword")}
+            required
+          >
+            {#snippet children(control)}
+              <Input
+                {...control}
+                name="confirmPassword"
+                type="password"
+                autocomplete="new-password"
+                disabled={submitting}
+                invalid={Boolean(issueMessage(issues, "confirmPassword"))}
+              />
+            {/snippet}
+          </Field>
+        {/if}
+
+        {#if model.state.status === "service-error"}
+          <Alert
+            class="compact-form-error"
+            tone="error"
+            title={translateAuthenticationFeedback(t, model.state.feedback)}
+          />
+        {/if}
+
+        <Button type="submit" disabled={submitting}>
+          {submitting ? journeySubmitting : journeySubmit}
+        </Button>
+      </form>
+    {/if}
+  </section>
+</main>
 
 <style>
-  .standalone-viewport {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    background:
-      radial-gradient(circle at 80% 10%, var(--color-surface-selected), transparent 30rem), var(--color-surface-canvas);
+  .standalone-page {
+    box-sizing: border-box;
+    background: var(--color-surface-canvas);
+    padding: clamp(var(--space-4), 5vi, var(--space-12));
     min-block-size: 100dvb;
     color: var(--color-text-primary);
   }
 
-  .standalone-header {
-    display: flex;
-    align-items: center;
-    border-block-end: var(--border-width-thin) solid var(--color-border-subtle);
-    background: var(--color-surface-sunken);
-    padding: var(--space-2) var(--layout-gutter);
-  }
-
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    border-radius: var(--radius-md);
-    color: var(--color-text-primary);
-    font-weight: var(--font-weight-bold);
-    font-family: var(--font-family-display);
-    text-decoration: none;
-  }
-
-  .brand:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus-ring);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  .brand-mark {
-    display: inline-grid;
-    place-items: center;
-    border: var(--border-width-thin) solid var(--color-border-selected);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-selected);
-    inline-size: var(--control-height-sm);
-    block-size: var(--control-height-sm);
-    color: var(--color-text-accent);
-  }
-
-  main {
-    display: grid;
-    align-items: center;
-    padding-block: var(--space-8);
-  }
-
-  .completion-card,
+  .secure-action,
   form,
   .status-copy {
     display: grid;
@@ -293,49 +217,58 @@
     min-inline-size: 0;
   }
 
-  form > :global(button) {
-    justify-self: start;
+  .secure-action {
+    margin-inline: auto;
+    max-inline-size: var(--layout-readable-measure);
   }
 
-  .target {
+  .page-heading {
     display: grid;
-    gap: var(--space-1);
-    margin: 0;
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-3);
+    gap: var(--space-2);
   }
 
-  .target dt {
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
+  .page-heading h1,
+  .page-heading p,
+  .status-copy p {
+    margin: 0;
   }
 
-  .target dd {
-    margin: 0;
-    font-family: var(--font-family-mono);
-    overflow-wrap: anywhere;
+  .page-heading h1 {
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-tight);
+    font-family: var(--font-family-display);
   }
 
-  .status-copy p,
-  .feedback-message {
-    margin: 0;
+  .page-heading p,
+  .status-copy p {
     line-height: var(--line-height-normal);
   }
 
-  @media (max-width: 35rem) {
-    main {
-      align-items: start;
-      padding-block: var(--space-3);
-    }
+  .page-heading p {
+    color: var(--color-text-muted);
   }
 
-  @media (forced-colors: active) {
-    .standalone-header,
-    .brand-mark {
-      border-color: CanvasText;
-    }
+  form > :global(button) {
+    justify-content: center;
+    margin-block-start: var(--space-2);
+    inline-size: 100%;
+  }
+
+  .successful-action p {
+    color: var(--color-feedback-success-text);
+    font-weight: var(--font-weight-bold);
+  }
+
+  :global(.alert.compact-form-error.compact-form-error) {
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  :global(.compact-form-error .content) {
+    gap: 0;
+  }
+
+  :global(.compact-form-error .message:empty) {
+    display: none;
   }
 </style>

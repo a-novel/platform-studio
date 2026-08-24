@@ -1,63 +1,33 @@
 <script module lang="ts">
-  import type { AuthDialogView, StudioShellViewModel } from "$lib/application/shell/types";
+  import type { AuthDialogView } from "$lib/application/shell/types";
+
+  import type { StudioShellController } from "./controller.svelte";
 
   import type { Snippet } from "svelte";
 
   /** Props for the pure, application-agnostic Studio shell surface. */
   export interface StudioShellProps {
-    model: StudioShellViewModel;
-    homeHref?: string;
+    controller: StudioShellController;
     children?: Snippet;
-    authContent?: Snippet<[AuthDialogView]>;
-    onAuthViewChange?: (view: AuthDialogView | null) => void;
-    onDrawerOpenChange?: (open: boolean) => void;
-    onLogout?: () => void;
-    onManageAccount?: () => void;
-    onRetrySession?: () => void;
-    onToggleRail?: () => void;
   }
 </script>
 
 <script lang="ts">
+  import AuthenticationPanel from "./(authentication)/screen.svelte";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import {
-    ActionMenu,
-    type ActionMenuTriggerAttributes,
-    Avatar,
-    Button,
-    Dialog,
-    IconButton,
-    InlineMessage,
-    NavList,
-    SkipLink,
-    Spinner,
-  } from "@a-novel-kit/uikit";
+  import { Avatar, Button, Dialog, IconButton, NavList, SkipLink, Spinner } from "@a-novel-kit/uikit";
 
-  import {
-    ChevronDown,
-    CircleAlert,
-    House,
-    LogIn,
-    LogOut,
-    Menu,
-    PanelLeftClose,
-    PanelLeftOpen,
-    Settings,
-    X,
-  } from "@lucide/svelte";
+  import { CircleAlert, House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 
-  let {
-    model,
-    homeHref = "/",
-    children,
-    authContent,
-    onAuthViewChange,
-    onDrawerOpenChange,
-    onLogout,
-    onManageAccount,
-    onRetrySession,
-    onToggleRail,
-  }: StudioShellProps = $props();
+  let { controller, children }: StudioShellProps = $props();
+
+  const model = $derived(controller.state.model);
+  const homeHref = $derived(controller.state.homeHref);
+  const accountHref = $derived(controller.state.accountHref);
+  const logoutAction = $derived(controller.state.logoutAction);
+  const authenticationState = $derived(controller.authentication.state.model.state.status);
+  const authActionsVisible = $derived(authenticationState !== "pending-email" && authenticationState !== "success");
 
   const componentId = $props.id();
   const desktopNavigationId = `${componentId}-desktop-navigation`;
@@ -67,10 +37,13 @@
   const { t } = getI18nContext();
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
   const authDialogTitle = $derived(getAuthDialogTitle(model.authView));
-  const authDialogDescription = $derived(getAuthDialogDescription(model.authView));
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
-    if (event.target instanceof Element && event.target.closest("a")) onDrawerOpenChange?.(false);
+    if (event.target instanceof Element && event.target.closest("a")) controller.navigationDialog.close();
+  }
+
+  function submitLogout(event: SubmitEvent) {
+    if (!controller.logout()) event.preventDefault();
   }
 
   function getAuthDialogTitle(view: AuthDialogView | null): string {
@@ -84,30 +57,12 @@
         return t("shell.auth.login.title");
     }
   }
-
-  function getAuthDialogDescription(view: AuthDialogView | null): string {
-    switch (view) {
-      case "register":
-        return t("shell.auth.register.description");
-      case "reset":
-        return t("shell.auth.reset.description");
-      case "login":
-      default:
-        return t("shell.auth.login.description");
-    }
-  }
 </script>
 
 {#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
-{#snippet settingsIcon()}<Settings size="var(--icon-size-sm)" />{/snippet}
-{#snippet logoutIcon()}<LogOut size="var(--icon-size-sm)" />{/snippet}
 
-{#snippet brand(compact: boolean)}
-  <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure shell receives an app-resolved URL. -->
-  <a class="brand-link" class:compact href={homeHref} aria-label={compact ? t("shell.brand") : undefined}>
-    <span class="brand-mark" aria-hidden="true">A</span>
-    {#if !compact}<span class="brand-name">{t("shell.brand")}</span>{/if}
-  </a>
+{#snippet brand()}
+  <span class="brand-name">{t("shell.brand")}</span>
 {/snippet}
 
 {#snippet primaryNavigation(onNavigate?: (event: MouseEvent) => void)}
@@ -130,76 +85,62 @@
 {#snippet accountWidget(compact: boolean, surface: "rail" | "drawer")}
   <div class="account-widget" data-session={model.session.status}>
     {#if model.session.status === "loading"}
-      <Button
-        class="shell-account-button {compact ? 'compact-control' : ''}"
-        variant="ghost"
-        tone="neutral"
-        size="sm"
-        square={compact}
-        disabled
+      <div
+        class="account-status"
+        class:compact
+        role="status"
+        aria-label={compact ? t("shell.sessionLoading") : undefined}
+        title={compact ? t("shell.sessionLoading") : undefined}
       >
         <Spinner label={t("shell.sessionLoading")} size="sm" />
-        <span class="control-label">{t("shell.sessionLoading")}</span>
-      </Button>
+        {#if !compact}<span>{t("shell.sessionLoading")}</span>{/if}
+      </div>
     {:else if model.session.status === "error"}
-      <Button
-        class="shell-account-button {compact ? 'compact-control' : ''}"
-        variant="ghost"
-        tone="neutral"
-        size="sm"
-        square={compact}
-        aria-describedby={compact ? undefined : `${componentId}-${surface}-session-error`}
-        aria-label={compact ? `${t("shell.retrySession")}: ${t("shell.sessionUnavailable")}` : undefined}
+      <div
+        id={`${componentId}-${surface}-session-error`}
+        class="account-status error"
+        class:compact
+        role="alert"
+        aria-label={compact ? t("shell.sessionUnavailable") : undefined}
         title={compact ? t("shell.sessionUnavailable") : undefined}
-        onclick={() => onRetrySession?.()}
       >
         <CircleAlert size="var(--icon-size-sm)" aria-hidden="true" />
-        <span class="control-label">{t("shell.retrySession")}</span>
-      </Button>
-      {#if !compact}
-        <InlineMessage id={`${componentId}-${surface}-session-error`} tone="error">
-          {t("shell.sessionUnavailable")}
-        </InlineMessage>
-      {/if}
+        {#if !compact}<span>{t("shell.sessionUnavailable")}</span>{/if}
+      </div>
     {:else if authenticatedSession}
-      {#snippet accountTrigger(attributes: ActionMenuTriggerAttributes)}
+      <!-- eslint-disable svelte/no-navigation-without-resolve -- The pure shell receives an app-resolved URL. -->
+      <a
+        class="account-link"
+        class:compact
+        href={accountHref}
+        aria-label={compact
+          ? t("shell.manageAccountFor", { name: authenticatedSession.displayName })
+          : authenticatedSession.displayName}
+        title={compact ? authenticatedSession.displayName : t("shell.manageAccount")}
+      >
+        <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
+        {#if !compact}
+          <span class="account-name">{authenticatedSession.displayName}</span>
+        {/if}
+      </a>
+      <!-- eslint-enable svelte/no-navigation-without-resolve -->
+      <form class="logout-form" method="POST" action={logoutAction} onsubmit={submitLogout}>
         <Button
-          class="shell-account-button account-trigger {compact ? 'compact-control' : ''}"
+          class="shell-account-button {compact ? 'compact-control' : ''}"
+          type="submit"
           variant="ghost"
-          tone="neutral"
+          tone="danger"
           size="sm"
           square={compact}
-          {...attributes}
+          aria-label={compact ? t("shell.logout") : undefined}
+          title={compact ? t("shell.logout") : undefined}
         >
-          <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
-          {#if !compact}
-            <span class="account-name">{authenticatedSession.displayName}</span>
-            <ChevronDown class="account-chevron" size="var(--icon-size-sm)" aria-hidden="true" />
-          {/if}
+          <span class="account-action-icon" aria-hidden="true">
+            <LogOut size="var(--icon-size-sm)" />
+          </span>
+          {#if !compact}<span>{t("shell.logout")}</span>{/if}
         </Button>
-      {/snippet}
-
-      <ActionMenu
-        label={t("shell.accountMenu")}
-        align="start"
-        trigger={accountTrigger}
-        items={[
-          {
-            id: "manage-account",
-            label: t("shell.manageAccount"),
-            icon: settingsIcon,
-            onSelect: onManageAccount,
-          },
-          { id: "account-separator", kind: "separator" },
-          {
-            id: "logout",
-            label: t("shell.logout"),
-            tone: "danger",
-            icon: logoutIcon,
-            onSelect: onLogout,
-          },
-        ]}
-      />
+      </form>
     {:else}
       <Button
         class="shell-account-button {compact ? 'compact-control' : ''}"
@@ -209,9 +150,11 @@
         square={compact}
         aria-label={compact ? t("shell.signIn") : undefined}
         title={compact ? t("shell.signIn") : undefined}
-        onclick={() => onAuthViewChange?.("login")}
+        onclick={() => controller.openAuthentication("login")}
       >
-        <LogIn size="var(--icon-size-sm)" aria-hidden="true" />
+        <span class="account-action-icon" aria-hidden="true">
+          <LogIn size="var(--icon-size-sm)" />
+        </span>
         <span class="control-label">{t("shell.signIn")}</span>
       </Button>
     {/if}
@@ -219,23 +162,44 @@
 {/snippet}
 
 {#snippet authActions()}
-  <Button variant="ghost" tone="neutral" size="sm" onclick={() => onAuthViewChange?.(null)}>
-    {t("shell.closeAuthentication")}
-  </Button>
   {#if model.authView === "login"}
-    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("reset")}>
-      {t("shell.auth.forgotPassword")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("reset")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.forgotPassword")}</span>
     </Button>
-    <Button variant="solid" size="sm" onclick={() => onAuthViewChange?.("register")}>
-      {t("shell.auth.createAccount")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("register")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.createAccount")}</span>
     </Button>
   {:else if model.authView === "register"}
-    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
-      {t("shell.auth.signInInstead")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("login")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.signInInstead")}</span>
     </Button>
   {:else if model.authView === "reset"}
-    <Button variant="outline" tone="neutral" size="sm" onclick={() => onAuthViewChange?.("login")}>
-      {t("shell.auth.backToSignIn")}
+    <Button
+      class="authentication-secondary-action"
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.openAuthentication("login")}
+    >
+      <span class="authentication-secondary-action-label">{t("shell.auth.backToSignIn")}</span>
     </Button>
   {/if}
 {/snippet}
@@ -246,7 +210,7 @@
   <div class="shell" data-rail={model.rail}>
     <aside class="rail" class:collapsed={compactRail} aria-label={t("shell.navigation")}>
       <div class="rail-header">
-        {@render brand(compactRail)}
+        {#if !compactRail}{@render brand()}{/if}
         <IconButton
           label={compactRail ? t("shell.expandNavigation") : t("shell.collapseNavigation")}
           variant="ghost"
@@ -254,7 +218,7 @@
           size="sm"
           aria-controls={desktopNavigationId}
           aria-expanded={!compactRail}
-          onclick={() => onToggleRail?.()}
+          onclick={() => controller.toggleRail()}
         >
           {#if compactRail}
             <PanelLeftOpen size="var(--icon-size-sm)" aria-hidden="true" />
@@ -281,12 +245,12 @@
           tone="neutral"
           size="sm"
           aria-controls={drawerId}
-          aria-expanded={model.drawerOpen}
-          onclick={() => onDrawerOpenChange?.(true)}
+          aria-expanded={controller.navigationDialog.state.open}
+          onclick={() => controller.navigationDialog.open()}
         >
           <Menu size="var(--icon-size-sm)" aria-hidden="true" />
         </IconButton>
-        {@render brand(false)}
+        {@render brand()}
       </header>
 
       <main id="main-content" class="main-content" tabindex="-1">
@@ -298,22 +262,20 @@
   <Dialog
     id={drawerId}
     class="studio-navigation-dialog"
-    open={model.drawerOpen}
+    controller={controller.navigationDialog}
     title={t("shell.navigation")}
     closeOnBackdrop
-    onClose={() => onDrawerOpenChange?.(false)}
   >
-    <div class="drawer-toolbar">
-      <IconButton
-        label={t("shell.closeNavigation")}
-        variant="ghost"
-        tone="neutral"
-        size="sm"
-        onclick={() => onDrawerOpenChange?.(false)}
-      >
-        <X size="var(--icon-size-sm)" aria-hidden="true" />
-      </IconButton>
-    </div>
+    <IconButton
+      class="navigation-dialog-close"
+      label={t("shell.closeNavigation")}
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.navigationDialog.close()}
+    >
+      <X size="var(--icon-size-sm)" aria-hidden="true" />
+    </IconButton>
     <div class="drawer-navigation">{@render primaryNavigation(closeDrawerAfterNavigation)}</div>
     <div class="drawer-account">
       {@render accountWidget(false, "drawer")}
@@ -322,21 +284,25 @@
 
   <Dialog
     id={authenticationId}
-    open={model.authView !== null}
+    class="authentication-dialog"
+    controller={controller.authenticationDialog}
     title={authDialogTitle}
-    description={authDialogDescription}
-    actions={authActions}
+    actions={authActionsVisible ? authActions : undefined}
     closeOnBackdrop
-    onClose={() => onAuthViewChange?.(null)}
   >
-    {#if model.authView && authContent}
-      {@render authContent(model.authView)}
-    {:else}
-      <div class="auth-placeholder" aria-label={t("shell.auth.formPlaceholder")}>
-        <LogIn size="var(--icon-size-lg)" aria-hidden="true" />
-        <span>{t("shell.auth.formPlaceholder")}</span>
-      </div>
+    {#if model.authView}
+      <AuthenticationPanel controller={controller.authentication} />
     {/if}
+    <IconButton
+      class="authentication-dialog-close"
+      label={t("shell.closeAuthentication")}
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      onclick={() => controller.authenticationDialog.close()}
+    >
+      <X size="var(--icon-size-sm)" aria-hidden="true" />
+    </IconButton>
   </Dialog>
 </div>
 
@@ -368,8 +334,7 @@
     z-index: var(--layer-sticky);
     box-sizing: border-box;
     inset-block-start: 0;
-    border-inline-end: var(--border-width-thin) solid var(--color-border-subtle);
-    background: var(--color-surface-sunken);
+    background: var(--color-surface-island-strong);
     padding: var(--space-2);
     inline-size: var(--studio-rail-width);
     block-size: 100dvb;
@@ -385,40 +350,19 @@
   }
 
   .collapsed .rail-header {
-    flex-direction: column;
+    justify-content: center;
   }
 
-  .brand-link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
+  .brand-name {
     min-inline-size: 0;
+    overflow: hidden;
     color: var(--color-text-primary);
     font-weight: var(--font-weight-bold);
     font-family: var(--font-family-display);
-    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .brand-link:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus-ring);
-    outline-offset: var(--focus-ring-offset);
-    border-radius: var(--radius-md);
-  }
-
-  .brand-mark {
-    display: inline-grid;
-    flex: none;
-    place-items: center;
-    border: var(--border-width-thin) solid var(--color-border-selected);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-selected);
-    inline-size: var(--control-height-sm);
-    block-size: var(--control-height-sm);
-    color: var(--color-text-accent);
-    font-family: var(--font-family-display);
-  }
-
-  .brand-name,
   .account-name {
     min-inline-size: 0;
     overflow: hidden;
@@ -465,14 +409,82 @@
     min-inline-size: 0;
   }
 
+  .logout-form {
+    margin: 0;
+    min-inline-size: 0;
+  }
+
+  .account-action-icon {
+    display: inline-flex;
+    flex: none;
+    justify-content: center;
+    align-items: center;
+    inline-size: var(--icon-size-sm);
+  }
+
+  .account-status,
+  .account-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    box-sizing: border-box;
+    min-inline-size: 0;
+    min-block-size: var(--control-height-sm);
+  }
+
+  .account-status {
+    border: var(--border-width-thin) solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-island-subtle);
+    padding: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-tight);
+  }
+
+  .account-status.error {
+    border-color: var(--color-feedback-error-border);
+    background: var(--color-feedback-error-surface);
+    color: var(--color-feedback-error-text);
+  }
+
+  .account-status.compact,
+  .account-link.compact {
+    justify-content: center;
+    padding: 0;
+    inline-size: var(--control-height-sm);
+    block-size: var(--control-height-sm);
+  }
+
+  .account-link {
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    padding: var(--space-2);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+  }
+
+  .account-link:hover {
+    background: var(--color-surface-hover);
+  }
+
+  .account-link:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
   :global(.shell-account-button) {
     max-inline-size: 100%;
   }
 
-  :global(.shell-account-button:not(.compact-control)) {
+  :global(button.shell-account-button:not(.compact-control)) {
     justify-content: flex-start;
     inline-size: 100%;
     overflow: hidden;
+    text-align: start;
   }
 
   :global(.shell-account-button.compact-control .control-label) {
@@ -482,11 +494,6 @@
     block-size: var(--border-width-thin);
     overflow: hidden;
     white-space: nowrap;
-  }
-
-  :global(.shell-account-button .account-chevron) {
-    flex: none;
-    margin-inline-start: auto;
   }
 
   .workspace {
@@ -510,43 +517,109 @@
     outline-offset: calc(var(--focus-ring-offset) * -1);
   }
 
-  .drawer-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-block-end: var(--space-2);
-  }
-
   .drawer-navigation {
     min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior-block: contain;
   }
 
   .drawer-account {
-    margin-block-start: var(--space-6);
-    border-block-start: var(--border-width-thin) solid var(--color-border-subtle);
-    padding-block-start: var(--space-3);
+    margin-block-start: var(--space-2);
   }
 
-  .auth-placeholder {
-    display: grid;
-    place-items: center;
-    gap: var(--space-2);
-    border: var(--border-width-thin) dashed var(--color-border-default);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-sunken);
-    padding: var(--space-8);
-    min-block-size: var(--space-24);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-    text-align: center;
+  .drawer-navigation :global(.shell-navigation .icon),
+  .drawer-account .account-action-icon {
+    justify-content: center;
+    inline-size: var(--control-height-sm);
+  }
+
+  .drawer-account .account-link,
+  .drawer-account :global(button.shell-account-button:not(.compact-control)) {
+    padding: var(--space-2) var(--space-3);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-compact);
+  }
+
+  .rail-account :global(button.shell-account-button.danger:not(.compact-control)),
+  .drawer-account :global(button.shell-account-button.danger:not(.compact-control)) {
+    --button-foreground: color-mix(in oklab, var(--color-text-primary) var(--color-mix-3), var(--base-pressure));
+    --button-foreground-hover: color-mix(in oklab, var(--color-text-primary) var(--color-mix-7), var(--base-pressure));
+  }
+
+  .drawer-account .account-link:hover,
+  .drawer-account :global(button.shell-account-button:not(.compact-control):hover:not(:disabled)) {
+    background: var(--color-navigation-hover-surface);
+  }
+
+  :global(.navigation-dialog-close),
+  :global(.authentication-dialog-close) {
+    z-index: 1;
+    inset-block-start: var(--space-3);
+    inset-inline-end: var(--space-3);
+  }
+
+  :global(.navigation-dialog-close) {
+    position: fixed;
+  }
+
+  :global(.authentication-dialog-close) {
+    position: absolute;
+  }
+
+  :global(dialog.authentication-dialog > .panel > header) {
+    padding-inline-end: calc(var(--space-5) + var(--control-height-sm));
+    padding-block-end: var(--space-2);
+  }
+
+  :global(dialog.authentication-dialog > .panel > .content) {
+    padding-block: var(--space-3);
+  }
+
+  :global(dialog.authentication-dialog > .panel > footer) {
+    justify-content: flex-start;
+    padding-block-start: var(--space-2);
+  }
+
+  :global(.authentication-secondary-action) {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    white-space: normal;
+  }
+
+  .authentication-secondary-action-label {
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
   }
 
   :global(dialog.studio-navigation-dialog.studio-navigation-dialog) {
-    margin: 0 auto 0 0;
-    border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
-    inline-size: 80vi;
-    max-inline-size: 80vi;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+    inline-size: 100vi;
+    max-inline-size: 100vi;
     block-size: 100dvb;
     max-block-size: 100dvb;
+    overflow: hidden;
+  }
+
+  :global(dialog.studio-navigation-dialog > .panel) {
+    grid-template-rows: auto minmax(0, 1fr);
+    inline-size: 100%;
+    min-inline-size: 0;
+    block-size: 100%;
+    min-block-size: 100%;
+  }
+
+  :global(dialog.studio-navigation-dialog > .panel > header) {
+    padding-inline-end: calc(var(--space-5) + var(--control-height-sm));
+  }
+
+  :global(dialog.studio-navigation-dialog > .panel > .content) {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    min-block-size: 0;
+    overflow: visible;
   }
 
   @container studio-shell (max-width: 47.999rem) {
@@ -570,9 +643,51 @@
       gap: var(--space-2);
       z-index: var(--layer-sticky);
       inset-block-start: 0;
-      border-block-end: var(--border-width-thin) solid var(--color-border-subtle);
-      background: var(--color-surface-sunken);
+      background: var(--color-surface-island-strong);
       padding: var(--space-2);
+    }
+
+    :global(dialog.studio-navigation-dialog > .panel > header) {
+      padding: var(--space-3);
+      padding-inline-end: calc(var(--space-3) + var(--control-height-sm));
+    }
+
+    :global(dialog.studio-navigation-dialog > .panel > .content) {
+      padding: var(--space-2);
+    }
+
+    :global(dialog.authentication-dialog.authentication-dialog) {
+      inline-size: calc(100vi - var(--space-4));
+      max-inline-size: calc(100vi - var(--space-4));
+      max-block-size: calc(100dvb - var(--space-4));
+    }
+
+    :global(dialog.authentication-dialog > .panel) {
+      min-inline-size: 0;
+    }
+
+    :global(dialog.authentication-dialog > .panel > header) {
+      padding-inline: var(--space-4) calc(var(--space-4) + var(--control-height-sm));
+      padding-block-start: var(--space-4);
+    }
+
+    :global(dialog.authentication-dialog > .panel > .content) {
+      padding-inline: var(--space-4);
+    }
+
+    :global(dialog.authentication-dialog > .panel > footer) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-1);
+      padding-inline: var(--space-4);
+      padding-block-end: var(--space-4);
+    }
+
+    :global(dialog.authentication-dialog > .panel > footer > .authentication-secondary-action) {
+      justify-content: flex-start;
+      padding-inline: var(--space-2);
+      inline-size: 100%;
+      text-align: start;
     }
   }
 
@@ -585,11 +700,7 @@
   @media (forced-colors: active) {
     .rail,
     .mobile-header {
-      border-color: CanvasText;
-    }
-
-    .brand-mark {
-      border-color: CanvasText;
+      border: var(--border-width-thin) solid CanvasText;
     }
   }
 </style>

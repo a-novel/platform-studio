@@ -18,12 +18,12 @@ describe("mergeAccountAction", () => {
       mergeAccountAction(ready, {
         accountAction: {
           kind: "password",
-          state: { status: "success", message: "Changed" },
+          state: { status: "success", feedback: "passwordChanged" },
         },
       })
     ).toEqual({
       ...ready,
-      passwordState: { status: "success", message: "Changed" },
+      passwordState: { status: "success", feedback: "passwordChanged" },
     });
   });
 
@@ -32,22 +32,22 @@ describe("mergeAccountAction", () => {
       mergeAccountAction(ready, {
         accountAction: {
           kind: "email",
-          state: { status: "pending-email", targetHint: "c•••@example.com" },
+          state: { status: "pending-email", targetHint: "creator@example.com" },
         },
       })
     ).toEqual({
       ...ready,
-      emailState: { status: "pending-email", targetHint: "c•••@example.com" },
+      emailState: { status: "pending-email", targetHint: "creator@example.com" },
     });
   });
 
   it("does not attach action state to an unavailable account model", () => {
-    const unavailable = { status: "error", message: "Unavailable" } as const;
+    const unavailable = { status: "error", feedback: "sessionUnavailable" } as const;
     expect(
       mergeAccountAction(unavailable, {
         accountAction: {
           kind: "password",
-          state: { status: "success", message: "Changed" },
+          state: { status: "success", feedback: "passwordChanged" },
         },
       })
     ).toBe(unavailable);

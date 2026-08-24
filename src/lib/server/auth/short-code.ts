@@ -1,4 +1,9 @@
-import type { ShortCodeJourney, ShortCodeScreenModel, ShortCodeState } from "$lib/application/auth/types";
+import type {
+  AuthenticationFeedback,
+  ShortCodeJourney,
+  ShortCodeScreenModel,
+  ShortCodeState,
+} from "$lib/application/auth/types";
 
 import { parseShortCodeLink, validateNewPassword } from "./forms";
 
@@ -11,8 +16,6 @@ import {
   credentialsUpdateEmail,
 } from "@a-novel/service-authentication-rest";
 
-import type { TFunction } from "i18next";
-
 export interface ShortCodeClient {
   register(accessToken: string, input: { email: string; password: string; shortCode: string }): Promise<Token>;
   resetPassword(accessToken: string, input: { password: string; shortCode: string; userID: string }): Promise<void>;
@@ -20,9 +23,10 @@ export interface ShortCodeClient {
 }
 
 export interface ShortCodeCompletionContext {
-  accept(token: Token): void;
+  accept(token: Token, identityEmail?: string): void;
   accessToken(): Promise<string>;
   client: ShortCodeClient;
+  rememberIdentity(identityEmail: string): void;
 }
 
 export type ShortCodeCompletionOutcome = "success" | "invalid" | "validation-error" | "service-error";
@@ -44,11 +48,11 @@ export function createShortCodeClient(api: AuthenticationApi): ShortCodeClient {
   };
 }
 
-export function readShortCodeModel(journey: ShortCodeJourney, url: URL, successMessage: string): ShortCodeScreenModel {
+export function readShortCodeModel(journey: ShortCodeJourney, url: URL): ShortCodeScreenModel {
   const result = url.searchParams.getAll("result");
 
   if (result.length === 1 && result[0] === "success") {
-    return screenModel(journey, { status: "success", message: successMessage });
+    return screenModel(journey, { status: "success", feedback: successFeedback(journey) });
   }
   if (result.length === 1 && result[0] === "invalid") {
     return screenModel(journey, { status: "invalid" });
@@ -59,16 +63,13 @@ export function readShortCodeModel(journey: ShortCodeJourney, url: URL, successM
     return screenModel(journey, { status: parsed.status });
   }
 
-  return screenModel(journey, { status: "ready" }, "targetHint" in parsed ? parsed.targetHint : undefined);
+  return screenModel(journey, { status: "ready" });
 }
 
 export async function completeShortCode(
   journey: ShortCodeJourney,
   url: URL,
   form: FormData,
-  t: TFunction<"common">,
-  serviceErrorMessage: string,
-  successMessage: string,
   context: ShortCodeCompletionContext
 ): Promise<ShortCodeCompletionResult> {
   const parsed = parseShortCodeLink(journey, url);
@@ -79,7 +80,6 @@ export async function completeShortCode(
     };
   }
 
-  const hint = "targetHint" in parsed ? parsed.targetHint : undefined;
   let operation: (accessToken: string) => Promise<void>;
 
   if (parsed.journey === "email-update") {
@@ -88,13 +88,14 @@ export async function completeShortCode(
         shortCode: parsed.shortCode,
         userID: parsed.userId,
       });
+      context.rememberIdentity(parsed.email);
     };
   } else {
-    const validation = validateNewPassword(form, t);
+    const validation = validateNewPassword(form);
     if (!validation.success) {
       return {
         outcome: "validation-error",
-        model: screenModel(journey, { status: "validation-error", issues: validation.issues }, hint),
+        model: screenModel(journey, { status: "validation-error", issues: validation.issues }),
       };
     }
 
@@ -106,7 +107,7 @@ export async function completeShortCode(
           password,
           shortCode: parsed.shortCode,
         });
-        context.accept(token);
+        context.accept(token, parsed.email);
       };
     } else {
       operation = async (accessToken) => {
@@ -131,16 +132,22 @@ export async function completeShortCode(
 
     return {
       outcome: "service-error",
-      model: screenModel(journey, { status: "service-error", message: serviceErrorMessage }, hint),
+      model: screenModel(journey, { status: "service-error", feedback: "serviceUnavailable" }),
     };
   }
 
   return {
     outcome: "success",
-    model: screenModel(journey, { status: "success", message: successMessage }, hint),
+    model: screenModel(journey, { status: "success", feedback: successFeedback(journey) }),
   };
 }
 
-function screenModel(journey: ShortCodeJourney, state: ShortCodeState, targetHint?: string): ShortCodeScreenModel {
-  return targetHint ? { journey, state, targetHint } : { journey, state };
+function successFeedback(journey: ShortCodeJourney): AuthenticationFeedback {
+  if (journey === "register") return "registrationCompleted";
+  if (journey === "email-update") return "emailUpdated";
+  return "passwordReset";
+}
+
+function screenModel(journey: ShortCodeJourney, state: ShortCodeState): ShortCodeScreenModel {
+  return { journey, state };
 }

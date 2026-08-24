@@ -6,7 +6,6 @@ import { completeShortCode, createShortCodeClient, readShortCodeModel } from "./
 
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, redirect } from "@sveltejs/kit";
-import type { TFunction } from "i18next";
 
 interface RouteDetails {
   continueHref: string;
@@ -32,34 +31,23 @@ export function loadShortCodeRoute(
   journey: ShortCodeJourney,
   event: Pick<RequestEvent, "locals" | "url">
 ): ShortCodePageData {
-  const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-
   return {
     links: {
       continueHref: routeDetails[journey].continueHref,
-      homeHref: "/",
       restartHref: routeDetails[journey].restartHref,
     },
-    model: readShortCodeModel(journey, event.url, successMessage(journey, t)),
+    model: readShortCodeModel(journey, event.url),
   };
 }
 
 export async function submitShortCodeRoute(journey: ShortCodeJourney, event: RequestEvent) {
-  const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
   const authentication = createAuthenticationContext(event.cookies, event.url);
-  const result = await completeShortCode(
-    journey,
-    event.url,
-    await event.request.formData(),
-    t,
-    t("authFlow.feedback.serviceUnavailable"),
-    successMessage(journey, t),
-    {
-      accept: (token) => authentication.session.accept(token),
-      accessToken: async () => await authentication.session.anonymousAccessToken(),
-      client: createShortCodeClient(authentication.api),
-    }
-  );
+  const result = await completeShortCode(journey, event.url, await event.request.formData(), {
+    accept: (token, identityEmail) => authentication.session.accept(token, identityEmail),
+    accessToken: async () => await authentication.session.anonymousAccessToken(),
+    client: createShortCodeClient(authentication.api),
+    rememberIdentity: (identityEmail) => authentication.session.rememberIdentity(identityEmail),
+  });
 
   if (result.outcome === "success") {
     redirect(303, event.url.pathname + "?result=success");
@@ -71,14 +59,4 @@ export async function submitShortCodeRoute(journey: ShortCodeJourney, event: Req
   return fail(result.outcome === "validation-error" ? 400 : 503, {
     shortCode: result.model,
   });
-}
-
-function successMessage(journey: ShortCodeJourney, t: TFunction<"common">): string {
-  if (journey === "register") {
-    return t("authFlow.feedback.registrationCompleted");
-  }
-  if (journey === "email-update") {
-    return t("authFlow.feedback.emailUpdated");
-  }
-  return t("authFlow.feedback.passwordReset");
 }

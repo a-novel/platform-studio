@@ -1,23 +1,17 @@
 <script module lang="ts">
-  import type {
-    AccountFormActions,
-    AccountPasswordField,
-    AccountScreenModel,
-    FormIssue,
-  } from "$lib/application/auth/types";
+  import type { FormIssue } from "$lib/application/auth/types";
+
+  import type { AccountScreenController } from "./controller.svelte";
 
   /** Props for the pure protected account-management screen. */
   export interface AccountScreenProps {
-    model: AccountScreenModel;
-    actions: AccountFormActions;
-    onRetry?: () => void;
-    onPasswordSubmit?: (event: SubmitEvent) => void;
-    onEmailSubmit?: (event: SubmitEvent) => void;
-    onLogoutSubmit?: (event: SubmitEvent) => void;
+    controller: AccountScreenController;
   }
 </script>
 
 <script lang="ts">
+  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
     Alert,
@@ -26,7 +20,6 @@
     Card,
     Container,
     DescriptionList,
-    ErrorSummary,
     Field,
     Grid,
     Input,
@@ -37,7 +30,10 @@
 
   import { CircleCheck, Info, ShieldCheck } from "@lucide/svelte";
 
-  let { model, actions, onRetry, onPasswordSubmit, onEmailSubmit, onLogoutSubmit }: AccountScreenProps = $props();
+  let { controller }: AccountScreenProps = $props();
+
+  const model = $derived(controller.state.model);
+  const actions = $derived(controller.state.actions);
 
   const componentId = $props.id();
   const { t } = getI18nContext();
@@ -52,38 +48,26 @@
   const emailIssues = $derived(
     model.status === "ready" && model.emailState.status === "validation-error" ? model.emailState.issues : []
   );
-  const passwordSummary = $derived(
-    passwordIssues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${passwordControlId(issue.field)}`,
-      message: issue.message,
-    }))
-  );
-  const emailSummary = $derived(
-    emailIssues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${newEmailId}`,
-      message: issue.message,
-    }))
-  );
-
   function issueMessage<Field extends string>(issues: readonly FormIssue<Field>[], field: Field): string | undefined {
-    return issues.find((issue) => issue.field === field)?.message;
+    const issue = issues.find((candidate) => candidate.field === field);
+    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
   }
 
-  function passwordControlId(field: AccountPasswordField): string {
-    if (field === "currentPassword") return currentPasswordId;
-    if (field === "newPassword") return newPasswordId;
-    return confirmPasswordId;
+  function submitPassword(event: SubmitEvent) {
+    if (!controller.submitPassword()) event.preventDefault();
+  }
+
+  function submitEmail(event: SubmitEvent) {
+    if (!controller.submitEmail()) event.preventDefault();
+  }
+
+  function submitLogout(event: SubmitEvent) {
+    if (!controller.submitLogout()) event.preventDefault();
   }
 </script>
 
 {#snippet infoIcon()}<Info size="var(--icon-size-md)" />{/snippet}
 {#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
-{#snippet retryAction()}
-  <Button variant="outline" tone="neutral" size="sm" onclick={() => onRetry?.()}>{t("authUi.account.retry")}</Button>
-{/snippet}
-
 <Container size="lg">
   <Stack gap="6">
     <PageHeader
@@ -100,8 +84,8 @@
         </div>
       </Alert>
     {:else if model.status === "error"}
-      <Alert tone="error" title={t("authUi.account.loadErrorTitle")} actions={retryAction}>
-        <p class="feedback-message">{model.message}</p>
+      <Alert tone="error" title={t("authUi.account.loadErrorTitle")}>
+        <p class="feedback-message">{translateAuthenticationFeedback(t, model.feedback)}</p>
       </Alert>
     {:else}
       <Grid minItemWidth="lg" gap="4">
@@ -157,20 +141,11 @@
               </div>
             </div>
 
-            {#if model.passwordState.status === "validation-error"}
-              <ErrorSummary
-                title={t("authUi.account.password.validationTitle")}
-                errors={passwordSummary}
-                headingLevel={3}
-                focusOnMount
-              />
-            {:else if model.passwordState.status === "service-error"}
-              <Alert tone="error" title={t("authUi.account.password.serviceErrorTitle")}>
-                <p class="feedback-message">{model.passwordState.message}</p>
-              </Alert>
-            {:else if model.passwordState.status === "success"}
+            {#if model.passwordState.status === "success"}
               <Alert tone="success" title={t("authUi.account.password.successTitle")} icon={successIcon}>
-                <p class="feedback-message">{model.passwordState.message}</p>
+                <p class="feedback-message">
+                  {translateAuthenticationFeedback(t, model.passwordState.feedback)}
+                </p>
               </Alert>
             {/if}
 
@@ -178,7 +153,7 @@
               method="POST"
               action={actions.password}
               aria-busy={model.passwordState.status === "submitting"}
-              onsubmit={onPasswordSubmit}
+              onsubmit={submitPassword}
             >
               <Field
                 controlId={currentPasswordId}
@@ -232,13 +207,17 @@
                   />
                 {/snippet}
               </Field>
+              {#if model.passwordState.status === "service-error"}
+                <Alert
+                  class="compact-form-error"
+                  tone="error"
+                  title={translateAuthenticationFeedback(t, model.passwordState.feedback)}
+                />
+              {/if}
               <Button type="submit" disabled={model.passwordState.status === "submitting"}>
-                {#if model.passwordState.status === "submitting"}
-                  <Spinner label={t("authUi.account.password.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.password.submitting")}</span>
-                {:else}
-                  {t("authUi.account.password.submit")}
-                {/if}
+                {model.passwordState.status === "submitting"
+                  ? t("authUi.account.password.submitting")
+                  : t("authUi.account.password.submit")}
               </Button>
             </form>
           </section>
@@ -253,31 +232,15 @@
               </div>
             </div>
 
-            {#if model.emailState.status === "validation-error"}
-              <ErrorSummary
-                title={t("authUi.account.email.validationTitle")}
-                errors={emailSummary}
-                headingLevel={3}
-                focusOnMount
-              />
-            {:else if model.emailState.status === "service-error"}
-              <Alert tone="error" title={t("authUi.account.email.serviceErrorTitle")}>
-                <p class="feedback-message">{model.emailState.message}</p>
-              </Alert>
-            {:else if model.emailState.status === "success"}
+            {#if model.emailState.status === "success"}
               <Alert tone="success" title={t("authUi.account.email.successTitle")} icon={successIcon}>
-                <p class="feedback-message">{model.emailState.message}</p>
+                <p class="feedback-message">{translateAuthenticationFeedback(t, model.emailState.feedback)}</p>
               </Alert>
             {:else if model.emailState.status === "pending-email"}
               <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
-                <div class="pending-copy">
-                  <p>{t("authUi.account.email.pendingDescription")}</p>
-                  <dl class="pending-target">
-                    <dt>{t("authUi.account.email.pendingTargetLabel")}</dt>
-                    <dd>{model.emailState.targetHint}</dd>
-                  </dl>
-                  <p>{t("authUi.account.email.pendingPrivacy")}</p>
-                </div>
+                <p class="pending-copy">
+                  {t("authUi.account.email.pendingDescription")} <strong>{model.emailState.targetHint}</strong>
+                </p>
               </Alert>
             {/if}
 
@@ -285,7 +248,7 @@
               method="POST"
               action={actions.email}
               aria-busy={model.emailState.status === "submitting"}
-              onsubmit={onEmailSubmit}
+              onsubmit={submitEmail}
             >
               <Field
                 controlId={newEmailId}
@@ -307,10 +270,16 @@
                   />
                 {/snippet}
               </Field>
+              {#if model.emailState.status === "service-error"}
+                <Alert
+                  class="compact-form-error"
+                  tone="error"
+                  title={translateAuthenticationFeedback(t, model.emailState.feedback)}
+                />
+              {/if}
               <Button type="submit" disabled={model.emailState.status === "submitting"}>
                 {#if model.emailState.status === "submitting"}
-                  <Spinner label={t("authUi.account.email.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.email.submitting")}</span>
+                  {t("authUi.account.email.submitting")}
                 {:else if model.emailState.status === "pending-email"}
                   {t("authUi.account.email.resend")}
                 {:else}
@@ -329,24 +298,23 @@
                 <p>{t("authUi.account.logout.description")}</p>
               </div>
             </div>
-            {#if typeof model.logoutState === "object"}
-              <Alert tone="error" title={t("authUi.account.logout.serviceErrorTitle")}>
-                <p class="feedback-message">{model.logoutState.message}</p>
-              </Alert>
-            {/if}
             <form
               method="POST"
               action={actions.logout}
               aria-busy={model.logoutState === "submitting"}
-              onsubmit={onLogoutSubmit}
+              onsubmit={submitLogout}
             >
+              {#if typeof model.logoutState === "object"}
+                <Alert
+                  class="compact-form-error"
+                  tone="error"
+                  title={translateAuthenticationFeedback(t, model.logoutState.feedback)}
+                />
+              {/if}
               <Button type="submit" variant="outline" tone="danger" disabled={model.logoutState === "submitting"}>
-                {#if model.logoutState === "submitting"}
-                  <Spinner label={t("authUi.account.logout.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.logout.submitting")}</span>
-                {:else}
-                  {t("authUi.account.logout.submit")}
-                {/if}
+                {model.logoutState === "submitting"
+                  ? t("authUi.account.logout.submitting")
+                  : t("authUi.account.logout.submit")}
               </Button>
             </form>
           </section>
@@ -368,8 +336,7 @@
 
   .card-section,
   .logout-section,
-  form,
-  .pending-copy {
+  form {
     display: grid;
     gap: var(--space-4);
     min-inline-size: 0;
@@ -389,8 +356,7 @@
   h2,
   .section-heading p,
   .feedback-message,
-  .pending-copy p,
-  .pending-target {
+  .pending-copy {
     margin: 0;
   }
 
@@ -402,7 +368,7 @@
 
   .section-heading p,
   .feedback-message,
-  .pending-copy p {
+  .pending-copy {
     color: var(--color-text-secondary);
     line-height: var(--line-height-normal);
   }
@@ -417,29 +383,26 @@
     gap: var(--space-1);
   }
 
-  .monospace,
-  .pending-target dd {
+  .monospace {
     font-family: var(--font-family-mono);
   }
 
-  .pending-target {
-    display: grid;
-    gap: var(--space-1);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-3);
-  }
-
-  .pending-target dt {
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-  }
-
-  .pending-target dd {
-    margin: 0;
+  .pending-copy strong {
+    color: var(--color-text-primary);
     overflow-wrap: anywhere;
+  }
+
+  :global(.alert.compact-form-error.compact-form-error) {
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  :global(.compact-form-error .content) {
+    gap: 0;
+  }
+
+  :global(.compact-form-error .message:empty) {
+    display: none;
   }
 
   .loading-message {

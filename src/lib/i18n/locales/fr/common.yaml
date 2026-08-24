@@ -1,12 +1,11 @@
 authFlow:
-  accountName: Compte {{id}}
   expiryUnavailable: Non indiqué par ce jeton
   feedback:
     emailUpdated: Votre adresse e-mail a été mise à jour.
     invalidCredentials: L’adresse e-mail ou le mot de passe est incorrect.
     invalidCurrentPassword: Le mot de passe actuel est incorrect.
     passwordChanged: Votre mot de passe a été modifié.
-    passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.
+    passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant accéder à votre compte.
     registrationCompleted: Votre compte Studio est prêt.
     serviceUnavailable: Le service d’authentification est temporairement indisponible. Réessayez.
     sessionUnavailable: Studio n’a pas pu vérifier la session actuelle. Réessayez.
@@ -34,24 +33,19 @@ authUi:
       description: Envoyez un lien de confirmation à usage unique à la nouvelle adresse.
       hint: L’adresse ne change qu’après confirmation de son lien sécurisé.
       label: Nouvelle adresse e-mail
-      pendingDescription: Si cette adresse est disponible, Studio a envoyé un lien de confirmation à usage unique.
-      pendingPrivacy: Pour protéger votre vie privée, Studio utilise la même réponse lorsqu’une adresse ne peut pas être utilisée.
-      pendingTargetLabel: Nouvelle adresse
+      pendingDescription: Lien de confirmation envoyé à
       pendingTitle: Confirmation en attente
       resend: Envoyer un autre lien
-      serviceErrorTitle: La confirmation n’a pas été envoyée
       submit: Envoyer le lien de confirmation
-      submitting: Envoi de la confirmation…
+      submitting: Envoi du lien de confirmation…
       successTitle: Adresse e-mail mise à jour
       title: Changer l’adresse e-mail
-      validationTitle: Vérifiez l’adresse e-mail
     eyebrow: Compte
     loadErrorTitle: Les informations du compte sont indisponibles
     loadingDescription: Studio vérifie la session actuelle.
     loadingTitle: Chargement du compte
     logout:
       description: Cette action efface la session Studio locale sur cet appareil.
-      serviceErrorTitle: Studio n’a pas pu vous déconnecter
       submit: Se déconnecter
       submitting: Déconnexion en cours…
       title: Se déconnecter de Studio
@@ -61,58 +55,50 @@ authUi:
       description: Confirmez votre mot de passe actuel avant d’en choisir un nouveau.
       hint: Utilisez une phrase secrète unique que vous ne réutilisez pas ailleurs.
       newLabel: Nouveau mot de passe
-      serviceErrorTitle: Le mot de passe n’a pas été modifié
       submit: Changer le mot de passe
       submitting: Modification du mot de passe…
       successTitle: Mot de passe modifié
       title: Changer le mot de passe
-      validationTitle: Vérifiez les champs du mot de passe
-    retry: Réessayer
     title: Gérer le compte
   authentication:
-    emailHint: Utilisez l’adresse associée à votre compte Studio.
     emailLabel: Adresse e-mail
     journeys:
       login:
-        submit: Se connecter
+        submit: Connexion
+        submitting: Connexion…
       register:
-        pendingDescription: Si cette adresse peut être inscrite, nous avons envoyé un lien sécurisé pour terminer la création du compte.
+        pendingDescription: Terminez la création de votre compte avec le lien envoyé à
         submit: Envoyer le lien d’inscription
+        submitting: Envoi du lien d’inscription…
       reset:
-        pendingDescription: Si un compte utilise cette adresse, nous avons envoyé un lien sécurisé pour choisir un nouveau mot de passe.
+        pendingDescription: Si un compte utilise cette adresse, un lien de réinitialisation a été envoyé à
         submit: Envoyer le lien de réinitialisation
+        submitting: Envoi du lien de réinitialisation…
     passwordLabel: Mot de passe
-    pendingPrivacy: Pour protéger votre vie privée, ce message est identique qu’un compte existe ou non.
-    pendingTargetLabel: Adresse de réception
     pendingTitle: Consultez votre messagerie
-    serviceErrorTitle: Studio n’a pas pu terminer cette demande
-    submitting: Traitement en cours…
     successTitle: Tout est prêt
-    validationDescription: Corrigez les informations ci-dessous puis renvoyez le formulaire.
-    validationTitle: Vérifiez les champs signalés
   shortCode:
     brand: Studio
     confirmPasswordLabel: Confirmer le nouveau mot de passe
     continue: Continuer vers Studio
-    eyebrow: Lien sécurisé envoyé par e-mail
-    home: Revenir à l’accueil de Studio
     journeys:
       emailUpdate:
-        description: Appliquez l’adresse vérifiée au compte qui a demandé cette modification.
+        description: Confirmez le changement d’adresse demandé pour votre compte Studio.
         submit: Confirmer le changement d’adresse
+        submitting: Confirmation du changement d’adresse…
         title: Confirmer votre nouvelle adresse e-mail
       passwordReset:
-        description: Remplacez le mot de passe du compte protégé par ce lien sécurisé.
+        description: Définissez un nouveau mot de passe pour retrouver l’accès à votre compte Studio.
         submit: Réinitialiser le mot de passe
+        submitting: Réinitialisation du mot de passe…
         title: Choisir un nouveau mot de passe
       register:
-        description: Choisissez le mot de passe qui protégera l’adresse e-mail confirmée par ce lien sécurisé.
+        description: Définissez un mot de passe pour accéder à votre compte Studio.
         submit: Créer le compte
+        submitting: Création du compte…
         title: Terminer la création de votre compte Studio
     newPasswordLabel: Nouveau mot de passe
-    passwordHint: Utilisez une phrase secrète unique que vous ne réutilisez pas ailleurs.
     restart: Demander un nouveau lien sécurisé
-    serviceErrorTitle: Studio n’a pas pu terminer cette action sécurisée
     states:
       expired:
         description: Les liens sécurisés fonctionnent pendant une durée limitée. Demandez un nouveau lien pour continuer.
@@ -123,28 +109,19 @@ authUi:
       missing:
         description: Cette page nécessite le lien complet reçu par e-mail. Demandez un nouveau lien et ouvrez-le sans modifier son adresse.
         title: Des informations du lien sécurisé sont manquantes
-    submitting: Sécurisation de votre compte…
-    successTitle: Action sécurisée terminée
-    targetLabel: Destination protégée
-    validationDescription: Corrigez les informations ci-dessous puis renvoyez le formulaire.
-    validationTitle: Vérifiez les champs du mot de passe
 shell:
-  accountMenu: Menu du compte
+  accountFallback: Compte
   auth:
-    backToSignIn: Revenir à la connexion
+    backToSignIn: Connexion
     createAccount: Créer un compte
     forgotPassword: Mot de passe oublié ?
-    formPlaceholder: Zone du formulaire d’authentification
     login:
-      description: Utilisez votre compte Studio pour continuer.
-      title: Se connecter
+      title: Connexion
     register:
-      description: Créez le compte que vous utiliserez dans tout Studio.
       title: Créer votre compte
     reset:
-      description: Demandez un lien sécurisé pour choisir un nouveau mot de passe.
       title: Réinitialiser votre mot de passe
-    signInInstead: Se connecter à la place
+    signInInstead: Connexion
   brand: Studio
   closeAuthentication: Fermer l’authentification
   closeNavigation: Fermer la navigation
@@ -154,10 +131,10 @@ shell:
   homeTitle: Accueil
   logout: Se déconnecter
   manageAccount: Gérer le compte
+  manageAccountFor: Gérer le compte de {{name}}
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
-  retrySession: Réessayer de charger le compte
-  sessionLoading: Chargement de l’état du compte
+  sessionLoading: Chargement du compte
   sessionUnavailable: L’état du compte est temporairement indisponible.
-  signIn: Se connecter
+  signIn: Connexion
   skipToContent: Aller au contenu

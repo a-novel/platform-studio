@@ -1,60 +1,142 @@
 <script module lang="ts">
+  import { createStorybookTranslator } from "$lib/i18n/storybook";
+
   import StoryHarness from "./story.svelte";
+
+  import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, within } from "storybook/test";
 
   const { Story } = defineMeta({
     title: "Authentication/Secure email links",
-    tags: ["autodocs"],
+    tags: ["!autodocs"],
     parameters: {
       layout: "fullscreen",
-      docs: {
-        description: {
-          component:
-            "Standalone progressive POST surfaces for registration, email update, and password reset. Short codes and raw targets never enter the view model, stories, or rendered form.",
-        },
-      },
     },
   });
 
-  async function verifyRegistrationForm({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyRegistrationForm({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("heading", { name: "Complete your Studio account", level: 1 })).toBeVisible();
-    await expect(canvas.getByLabelText(/New password/)).toBeVisible();
-    await expect(canvas.getByLabelText(/Confirm new password/)).toBeVisible();
+    const t = createStorybookTranslator(globals);
+    await expect(
+      canvas.getByRole("heading", { name: t("authUi.shortCode.journeys.register.title"), level: 1 })
+    ).toBeVisible();
+    await expect(
+      canvas.getByLabelText(t("authUi.shortCode.newPasswordLabel"), {
+        exact: false,
+        selector: 'input[name="password"]',
+      })
+    ).toBeVisible();
+    await expect(
+      canvas.getByLabelText(t("authUi.shortCode.confirmPasswordLabel"), {
+        exact: false,
+        selector: 'input[name="confirmPassword"]',
+      })
+    ).toBeVisible();
+    await expect(canvas.getByText(t("authUi.shortCode.journeys.register.description"))).toBeVisible();
+    await expect(canvas.queryByText(t("authUi.account.password.hint"))).not.toBeInTheDocument();
+    expect(canvasElement.textContent).not.toContain("@");
   }
 
-  async function verifyEmailConfirmation({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifyEmailConfirmation({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("button", { name: "Confirm email change" })).toBeVisible();
-    await expect(canvas.queryByLabelText(/New password/)).not.toBeInTheDocument();
+    const t = createStorybookTranslator(globals);
+    await expect(canvas.getByRole("button", { name: t("authUi.shortCode.journeys.emailUpdate.submit") })).toBeVisible();
+    await expect(canvas.queryByLabelText(t("authUi.shortCode.newPasswordLabel"))).not.toBeInTheDocument();
   }
 
-  async function verifyValidationLink({ canvasElement }: { canvasElement: HTMLElement }) {
-    const canvas = within(canvasElement);
-    const link = canvas.getByRole("link", { name: "The passwords do not match." });
-    await expect(link.getAttribute("href")).toMatch(/-confirm-password$/);
+  async function verifyValidationFeedback({ canvasElement }: { canvasElement: HTMLElement }) {
+    await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
+    await expect(within(canvasElement).queryByRole("link")).not.toBeInTheDocument();
   }
 
-  async function verifySubmittingLocked({ canvasElement }: { canvasElement: HTMLElement }) {
+  async function verifySubmittingLocked({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole("button", { name: "Securing your account…" })).toBeDisabled();
-    await expect(canvas.getByLabelText(/New password/)).toBeDisabled();
+    const t = createStorybookTranslator(globals);
+    await expect(
+      canvas.getByRole("button", { name: t("authUi.shortCode.journeys.passwordReset.submitting") })
+    ).toBeDisabled();
+    await expect(
+      canvas.getByLabelText(t("authUi.shortCode.newPasswordLabel"), {
+        exact: false,
+        selector: 'input[name="password"]',
+      })
+    ).toBeDisabled();
   }
 </script>
 
-<Story name="Complete registration" asChild play={verifyRegistrationForm}>
-  <StoryHarness initialModel={{ journey: "register", state: { status: "ready" }, targetHint: "m•••@example.test" }} />
+<Story
+  name="Complete registration — desktop"
+  exportName="CompleteRegistrationDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifyRegistrationForm}
+>
+  <StoryHarness initialModel={{ journey: "register", state: { status: "ready" } }} />
 </Story>
 
-<Story name="Confirm email update" asChild play={verifyEmailConfirmation}>
-  <StoryHarness
-    initialModel={{ journey: "email-update", state: { status: "ready" }, targetHint: "n••••••@example.test" }}
-  />
+<Story
+  name="Complete registration — mobile"
+  exportName="CompleteRegistrationMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+>
+  <StoryHarness initialModel={{ journey: "register", state: { status: "ready" } }} />
 </Story>
 
-<Story name="Complete password reset" asChild>
+<Story
+  name="Confirm email update — desktop"
+  exportName="ConfirmEmailUpdateDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifyEmailConfirmation}
+>
+  <StoryHarness initialModel={{ journey: "email-update", state: { status: "ready" } }} />
+</Story>
+
+<Story
+  name="Confirm email update — mobile"
+  exportName="ConfirmEmailUpdateMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+>
+  <StoryHarness initialModel={{ journey: "email-update", state: { status: "ready" } }} />
+</Story>
+
+<Story
+  name="Complete password reset — desktop"
+  exportName="CompletePasswordResetDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+>
+  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "ready" } }} />
+</Story>
+
+<Story
+  name="Complete password reset — mobile"
+  exportName="CompletePasswordResetMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+>
   <StoryHarness initialModel={{ journey: "password-reset", state: { status: "ready" } }} />
 </Story>
 
@@ -74,18 +156,17 @@
   <StoryHarness initialModel={{ journey: "password-reset", state: { status: "submitting" } }} />
 </Story>
 
-<Story name="Validation error" asChild play={verifyValidationLink}>
+<Story name="Validation error" asChild play={verifyValidationFeedback}>
   <StoryHarness
     initialModel={{
       journey: "register",
       state: {
         status: "validation-error",
         issues: [
-          { field: "newPassword", message: "Choose a new password." },
-          { field: "confirmPassword", message: "The passwords do not match." },
+          { field: "newPassword", feedback: "newPassword" },
+          { field: "confirmPassword", feedback: "passwordMismatch" },
         ],
       },
-      targetHint: "m•••@example.test",
     }}
   />
 </Story>
@@ -96,7 +177,7 @@
       journey: "password-reset",
       state: {
         status: "service-error",
-        message: "Studio could not verify this secure link. No password was changed.",
+        feedback: "serviceUnavailable",
       },
     }}
   />
@@ -106,23 +187,7 @@
   <StoryHarness
     initialModel={{
       journey: "register",
-      state: { status: "success", message: "Your account and protected Studio session are ready." },
-      targetHint: "m•••@example.test",
-    }}
-  />
-</Story>
-
-<Story name="Narrow French long error" asChild parameters={{ locale: "fr" }}>
-  <StoryHarness
-    frameWidth="22rem"
-    initialModel={{
-      journey: "email-update",
-      state: {
-        status: "service-error",
-        message:
-          "Studio n’a pas pu vérifier cette demande sécurisée pour le moment. L’adresse actuelle du compte demeure inchangée et le lien n’a pas été affiché.",
-      },
-      targetHint: "n••••••••••••@example.test",
+      state: { status: "success", feedback: "registrationCompleted" },
     }}
   />
 </Story>

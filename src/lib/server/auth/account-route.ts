@@ -1,6 +1,6 @@
 import type { AccountScreenModel } from "$lib/application/auth/types";
 import { createAuthenticationContext } from "$lib/server/auth/context";
-import { maskEmail, validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
+import { validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
 import { logoutAuthentication } from "$lib/server/auth/logout";
 import { readTokenExpiry } from "$lib/server/auth/session";
 
@@ -57,7 +57,7 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
     return {
       accountModel: {
         status: "error",
-        message: t("authFlow.feedback.sessionUnavailable"),
+        feedback: "sessionUnavailable",
       } satisfies AccountScreenModel,
     };
   }
@@ -65,8 +65,7 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
 
 export const accountActions = {
   password: async (event: RequestEvent) => {
-    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-    const input = validatePasswordChange(await event.request.formData(), t);
+    const input = validatePasswordChange(await event.request.formData());
 
     if (!input.success) {
       return fail(400, {
@@ -88,9 +87,7 @@ export const accountActions = {
           kind: "password" as const,
           state: {
             status: "service-error" as const,
-            message: isHttpStatusError(error, 403)
-              ? t("authFlow.feedback.invalidCurrentPassword")
-              : t("authFlow.feedback.serviceUnavailable"),
+            feedback: isHttpStatusError(error, 403) ? "invalidCurrentPassword" : "serviceUnavailable",
           },
         },
       });
@@ -99,14 +96,13 @@ export const accountActions = {
     return {
       accountAction: {
         kind: "password" as const,
-        state: { status: "success" as const, message: t("authFlow.feedback.passwordChanged") },
+        state: { status: "success" as const, feedback: "passwordChanged" as const },
       },
     };
   },
 
   email: async (event: RequestEvent) => {
-    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-    const input = validateEmailRequest(await event.request.formData(), t);
+    const input = validateEmailRequest(await event.request.formData());
 
     if (!input.success) {
       return fail(400, {
@@ -131,7 +127,7 @@ export const accountActions = {
           kind: "email" as const,
           state: {
             status: "service-error" as const,
-            message: t("authFlow.feedback.serviceUnavailable"),
+            feedback: "serviceUnavailable" as const,
           },
         },
       });
@@ -142,7 +138,7 @@ export const accountActions = {
         kind: "email" as const,
         state: {
           status: "pending-email" as const,
-          targetHint: maskEmail(input.value.email),
+          targetHint: input.value.email,
         },
       },
     };
