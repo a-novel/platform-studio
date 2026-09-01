@@ -9,7 +9,7 @@ export default interface Resources {
         "invalidCurrentPassword": "The current password is incorrect.",
         "passwordChanged": "Your password was changed.",
         "passwordReset": "Your password was reset. You can now access your account.",
-        "registrationCompleted": "Your Studio account is ready.",
+        "registrationCompleted": "Your Agora account is ready.",
         "serviceUnavailable": "The authentication service is temporarily unavailable. Try again.",
         "sessionUnavailable": "Studio could not verify the current session. Try again."
       },
@@ -99,22 +99,22 @@ export default interface Resources {
         "continue": "Continue to Studio",
         "journeys": {
           "emailUpdate": {
-            "description": "Confirm the email change requested for your Studio account.",
+            "description": "Confirm the email change requested for your Agora account.",
             "submit": "Confirm email change",
             "submitting": "Confirming email change…",
             "title": "Confirm your new email"
           },
           "passwordReset": {
-            "description": "Set a new password to regain access to your Studio account.",
+            "description": "Set a new password to regain access to your Agora account.",
             "submit": "Reset password",
             "submitting": "Resetting password…",
             "title": "Choose a new password"
           },
           "register": {
-            "description": "Set a password to access your Studio account.",
+            "description": "Set a password to access your Agora account.",
             "submit": "Create account",
             "submitting": "Creating account…",
-            "title": "Complete your Studio account"
+            "title": "Complete your Agora account"
           }
         },
         "newPasswordLabel": "New password",

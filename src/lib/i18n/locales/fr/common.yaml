@@ -6,7 +6,7 @@ authFlow:
     invalidCurrentPassword: Le mot de passe actuel est incorrect.
     passwordChanged: Votre mot de passe a été modifié.
     passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant accéder à votre compte.
-    registrationCompleted: Votre compte Studio est prêt.
+    registrationCompleted: Votre compte Agora est prêt.
     serviceUnavailable: Le service d’authentification est temporairement indisponible. Réessayez.
     sessionUnavailable: Studio n’a pas pu vérifier la session actuelle. Réessayez.
   validation:
@@ -83,20 +83,20 @@ authUi:
     continue: Continuer vers Studio
     journeys:
       emailUpdate:
-        description: Confirmez le changement d’adresse demandé pour votre compte Studio.
+        description: Confirmez le changement d’adresse demandé pour votre compte Agora.
         submit: Confirmer le changement d’adresse
         submitting: Confirmation du changement d’adresse…
         title: Confirmer votre nouvelle adresse e-mail
       passwordReset:
-        description: Définissez un nouveau mot de passe pour retrouver l’accès à votre compte Studio.
+        description: Définissez un nouveau mot de passe pour retrouver l’accès à votre compte Agora.
         submit: Réinitialiser le mot de passe
         submitting: Réinitialisation du mot de passe…
         title: Choisir un nouveau mot de passe
       register:
-        description: Définissez un mot de passe pour accéder à votre compte Studio.
+        description: Définissez un mot de passe pour accéder à votre compte Agora.
         submit: Créer le compte
         submitting: Création du compte…
-        title: Terminer la création de votre compte Studio
+        title: Terminer la création de votre compte Agora
     newPasswordLabel: Nouveau mot de passe
     restart: Demander un nouveau lien sécurisé
     states:
