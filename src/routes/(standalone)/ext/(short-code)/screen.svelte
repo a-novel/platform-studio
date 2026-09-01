@@ -202,6 +202,7 @@
 
 <style>
   .standalone-page {
+    display: grid;
     box-sizing: border-box;
     background: var(--color-surface-canvas);
     padding: clamp(var(--space-4), 5vi, var(--space-12));
@@ -218,6 +219,7 @@
   }
 
   .secure-action {
+    align-self: center;
     margin-inline: auto;
     max-inline-size: var(--layout-readable-measure);
   }

@@ -43,6 +43,14 @@
     await expect(canvas.getByText(t("authUi.shortCode.journeys.register.description"))).toBeVisible();
     await expect(canvas.queryByText(t("authUi.account.password.hint"))).not.toBeInTheDocument();
     expect(canvasElement.textContent).not.toContain("@");
+
+    const pageBounds = canvas.getByRole("main").getBoundingClientRect();
+    const actionBounds = canvas
+      .getByRole("region", { name: t("authUi.shortCode.journeys.register.title") })
+      .getBoundingClientRect();
+    const spaceBefore = actionBounds.top - pageBounds.top;
+    const spaceAfter = pageBounds.bottom - actionBounds.bottom;
+    expect(Math.abs(spaceBefore - spaceAfter)).toBeLessThanOrEqual(1);
   }
 
   async function verifyEmailConfirmation({
@@ -99,6 +107,7 @@
   exportName="CompleteRegistrationMobile"
   globals={reviewStoryGlobals.mobile}
   asChild
+  play={verifyRegistrationForm}
 >
   <StoryHarness initialModel={{ journey: "register", state: { status: "ready" } }} />
 </Story>
