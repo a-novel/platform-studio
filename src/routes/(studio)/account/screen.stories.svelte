@@ -14,8 +14,8 @@
     claims: {
       userId: "2f798f4a-0694-4f68-9928-42f3e906e871",
       roles: ["auth:user", "studio:creator"],
-      accessExpiresAt: "18 Aug 2026, 19:30",
-      refreshExpiresAt: "25 Aug 2026, 18:30",
+      accessExpiresAt: "2026-08-18T19:30:00Z",
+      refreshExpiresAt: "2026-08-25T18:30:00Z",
     },
     passwordState: { status: "ready" },
     emailState: { status: "ready" },
@@ -41,6 +41,13 @@
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("heading", { name: t("authUi.account.title"), level: 1 })).toBeVisible();
     await expect(canvas.getByText("2f798f4a-0694-4f68-9928-42f3e906e871")).toBeVisible();
+    const locale = globals.locale === "fr" ? "fr" : "en";
+    const accessExpiry = new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "UTC",
+    }).format(new Date(ready.claims.accessExpiresAt));
+    await expect(canvas.getByText(accessExpiry)).toBeVisible();
     await expect(canvas.getByRole("textbox", { name: t("authUi.account.email.label") })).toBeVisible();
   }
 
@@ -196,8 +203,8 @@
       claims: {
         ...ready.claims,
         roles: ["auth:user", "studio:collaborative-story-creator"],
-        accessExpiresAt: "18 September 2026, 19:30",
-        refreshExpiresAt: "25 September 2026, 18:30",
+        accessExpiresAt: "2026-09-18T19:30:00Z",
+        refreshExpiresAt: "2026-09-25T18:30:00Z",
       },
       emailState: {
         status: "service-error",

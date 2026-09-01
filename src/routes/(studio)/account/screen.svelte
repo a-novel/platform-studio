@@ -90,7 +90,7 @@
     {:else}
       <Grid minItemWidth="lg" gap="4">
         <Card class="claims-card" surface="subtle" padding="lg">
-          <section class="card-section" aria-labelledby={`${componentId}-claims-title`}>
+          <section id="account-claims" class="card-section" aria-labelledby={`${componentId}-claims-title`}>
             <div class="section-heading">
               <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
               <div>
@@ -133,7 +133,7 @@
         </Card>
 
         <Card surface="raised" padding="lg">
-          <section class="card-section" aria-labelledby={`${componentId}-password-title`}>
+          <section id="account-password" class="card-section" aria-labelledby={`${componentId}-password-title`}>
             <div class="section-heading">
               <div>
                 <h2 id={`${componentId}-password-title`}>{t("authUi.account.password.title")}</h2>
@@ -224,7 +224,7 @@
         </Card>
 
         <Card surface="raised" padding="lg">
-          <section class="card-section" aria-labelledby={`${componentId}-email-title`}>
+          <section id="account-email" class="card-section" aria-labelledby={`${componentId}-email-title`}>
             <div class="section-heading">
               <div>
                 <h2 id={`${componentId}-email-title`}>{t("authUi.account.email.title")}</h2>
@@ -291,7 +291,7 @@
         </Card>
 
         <Card class="logout-card" surface="subtle" padding="lg">
-          <section class="logout-section" aria-labelledby={`${componentId}-logout-title`}>
+          <section id="account-session" class="logout-section" aria-labelledby={`${componentId}-logout-title`}>
             <div class="section-heading">
               <div>
                 <h2 id={`${componentId}-logout-title`}>{t("authUi.account.logout.title")}</h2>
@@ -340,6 +340,11 @@
     display: grid;
     gap: var(--space-4);
     min-inline-size: 0;
+  }
+
+  .card-section,
+  .logout-section {
+    scroll-margin-block-start: var(--space-5);
   }
 
   .section-heading {
