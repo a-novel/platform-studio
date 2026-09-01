@@ -263,7 +263,7 @@
     id={drawerId}
     class="studio-navigation-dialog"
     controller={controller.navigationDialog}
-    title={t("shell.navigation")}
+    title={t("shell.brand")}
     closeOnBackdrop
   >
     <IconButton

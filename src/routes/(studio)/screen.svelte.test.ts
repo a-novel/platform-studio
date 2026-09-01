@@ -132,7 +132,7 @@ describe("studio shell screen", () => {
       withLocale()
     );
 
-    const navigation = page.getByRole("dialog", { name: "Studio navigation" });
+    const navigation = page.getByRole("dialog", { name: "Studio" });
     await expect.element(navigation).toBeVisible();
 
     const accountName = navigation.getByText(displayName).element();

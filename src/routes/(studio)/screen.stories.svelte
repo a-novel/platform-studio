@@ -118,7 +118,7 @@
   }) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    const navigation = canvas.getByRole("dialog", { name: t("shell.navigation") });
+    const navigation = canvas.getByRole("dialog", { name: t("shell.brand") });
     await expect(navigation).toBeVisible();
 
     await userEvent.click(within(navigation).getByRole("button", { name: t("shell.closeNavigation") }));
@@ -141,15 +141,15 @@
     const navigationRail = canvas.getByRole("complementary", { hidden: true });
     await expect(navigationRail).toHaveAttribute("aria-label", t("shell.navigation"));
     await expect(openNavigation).toHaveAttribute("aria-expanded", "false");
-    await expect(canvas.queryByRole("dialog", { name: t("shell.navigation") })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("dialog", { name: t("shell.brand") })).not.toBeInTheDocument();
     await expect(getComputedStyle(mobileHeader).backgroundColor).toBe(getComputedStyle(navigationRail).backgroundColor);
 
     await userEvent.click(openNavigation);
-    const navigation = canvas.getByRole("dialog", { name: t("shell.navigation") });
+    const navigation = canvas.getByRole("dialog", { name: t("shell.brand") });
     await expect(navigation).toBeVisible();
 
     await userEvent.click(within(navigation).getByRole("button", { name: t("shell.closeNavigation") }));
-    await expect(canvas.queryByRole("dialog", { name: t("shell.navigation") })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("dialog", { name: t("shell.brand") })).not.toBeInTheDocument();
     await expect(openNavigation).toHaveAttribute("aria-expanded", "false");
     clearFocus();
   }
