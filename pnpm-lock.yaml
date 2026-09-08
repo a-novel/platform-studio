@@ -22,6 +22,9 @@ importers:
       "@a-novel-kit/uikit-fonts":
         specifier: 0.3.1
         version: 0.3.1
+      "@a-novel-kit/uikit-images":
+        specifier: 0.4.0
+        version: 0.4.0
       "@a-novel-kit/uikit-tokens":
         specifier: 0.3.1
         version: 0.3.1
@@ -240,6 +243,13 @@ packages:
       {
         integrity: sha512-Lo5HCoope7RXwSJQn8FlzzC4uJ19M+ZQRsZUe87B5STqmCcEYKqWPc1bB/2qrRZwqK1oY7ZrWbnlp5doMrTs4w==,
         tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-fonts/0.3.1/efc34c7f654bf2e255dfb17af7b913b5501ab1f2,
+      }
+
+  "@a-novel-kit/uikit-images@0.4.0":
+    resolution:
+      {
+        integrity: sha512-hDmvWctGDzBUs+lLOQQTCsnQUm/WQMEDqOlt75QfFcZeBVWkK5BR6gWSiVIjAStrTTQR+73aoq0dE4RaPmNgtA==,
+        tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-images/0.4.0/cfa7941c9f9aee5ddb45bf9d38f453ee33fc7a23,
       }
 
   "@a-novel-kit/uikit-storybook@0.3.1":
@@ -4287,6 +4297,8 @@ snapshots:
   "@a-novel-kit/nodelib-server@1.6.3": {}
 
   "@a-novel-kit/uikit-fonts@0.3.1": {}
+
+  "@a-novel-kit/uikit-images@0.4.0": {}
 
   "@a-novel-kit/uikit-storybook@0.3.1(@storybook/svelte@10.5.8(storybook@10.5.8(prettier@3.9.6)(react@19.2.8))(svelte@5.56.9(@typescript-eslint/types@8.67.0)))(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(@vitest/browser-playwright@4.1.10)(@vitest/browser@4.1.10)(@vitest/runner@4.1.10)(esbuild@0.28.2)(react@19.2.8)(rollup@4.62.4)(storybook@10.5.8(prettier@3.9.6)(react@19.2.8))(supports-color@7.2.0)(svelte@5.56.9(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.10)":
     dependencies:

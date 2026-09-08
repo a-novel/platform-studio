@@ -65,6 +65,7 @@ describe("studio shell screen", () => {
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
+    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "160");
     const signIn = page.getByRole("button", { name: "Login" });
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
     await signIn.click();
@@ -82,6 +83,7 @@ describe("studio shell screen", () => {
     );
 
     await expect.element(page.getByRole("link", { name: "Accueil" })).toBeVisible();
+    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "32");
     await expect
       .element(page.getByRole("button", { name: "Développer la navigation" }))
       .toHaveAttribute("aria-expanded", "false");

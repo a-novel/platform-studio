@@ -67,6 +67,7 @@
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("link", { name: t("shell.home") })).toHaveAttribute("aria-current", "page");
+    await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "160");
 
     const signIn = canvas.getByRole("button", { name: t("shell.signIn") });
     await userEvent.click(signIn);
@@ -94,6 +95,7 @@
   }) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
+    await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "32");
     const toggle = canvas.getByRole("button", { name: t("shell.expandNavigation") });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
@@ -180,7 +182,7 @@
 
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    const navigation = canvas.getByRole("dialog", { name: t("shell.navigation") });
+    const navigation = canvas.getByRole("dialog", { name: t("shell.brand") });
     const labelStarts = [
       within(navigation).getByText(t("shell.home")).getBoundingClientRect().left,
       within(navigation).getByText("Maya Chen").getBoundingClientRect().left,

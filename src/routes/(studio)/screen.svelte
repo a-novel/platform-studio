@@ -17,6 +17,10 @@
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Avatar, Button, Dialog, IconButton, NavList, SkipLink, Spinner } from "@a-novel-kit/uikit";
+  import agoraBanner320 from "@a-novel-kit/uikit-images/files/banner/320w/agora-banner.png";
+  import agoraBanner640 from "@a-novel-kit/uikit-images/files/banner/640w/agora-banner.png";
+  import agoraIcon48 from "@a-novel-kit/uikit-images/files/icon/48x48/agora-icon.png";
+  import agoraIcon96 from "@a-novel-kit/uikit-images/files/icon/96x96/agora-icon.png";
 
   import { CircleAlert, House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 
@@ -61,8 +65,26 @@
 
 {#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
 
-{#snippet brand()}
-  <span class="brand-name">{t("shell.brand")}</span>
+{#snippet brand(compact: boolean)}
+  {#if compact}
+    <img
+      class="brand-icon"
+      src={agoraIcon48}
+      srcset={`${agoraIcon48} 1x, ${agoraIcon96} 2x`}
+      width="32"
+      height="32"
+      alt={t("shell.brand")}
+    />
+  {:else}
+    <img
+      class="brand-banner"
+      src={agoraBanner320}
+      srcset={`${agoraBanner320} 1x, ${agoraBanner640} 2x`}
+      width="160"
+      height="40"
+      alt={t("shell.brand")}
+    />
+  {/if}
 {/snippet}
 
 {#snippet primaryNavigation(onNavigate?: (event: MouseEvent) => void)}
@@ -210,7 +232,7 @@
   <div class="shell" data-rail={model.rail}>
     <aside class="rail" class:collapsed={compactRail} aria-label={t("shell.navigation")}>
       <div class="rail-header">
-        {#if !compactRail}{@render brand()}{/if}
+        {@render brand(compactRail)}
         <IconButton
           label={compactRail ? t("shell.expandNavigation") : t("shell.collapseNavigation")}
           variant="ghost"
@@ -250,7 +272,7 @@
         >
           <Menu size="var(--icon-size-sm)" aria-hidden="true" />
         </IconButton>
-        {@render brand()}
+        {@render brand(false)}
       </header>
 
       <main id="main-content" class="main-content" tabindex="-1">
@@ -350,17 +372,26 @@
   }
 
   .collapsed .rail-header {
+    flex-direction: column;
     justify-content: center;
   }
 
-  .brand-name {
-    min-inline-size: 0;
-    overflow: hidden;
-    color: var(--color-text-primary);
-    font-weight: var(--font-weight-bold);
-    font-family: var(--font-family-display);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .brand-banner,
+  .brand-icon {
+    display: block;
+    flex: none;
+    object-fit: contain;
+  }
+
+  .brand-banner {
+    inline-size: 10rem;
+    max-inline-size: 100%;
+    block-size: auto;
+  }
+
+  .brand-icon {
+    inline-size: 2rem;
+    block-size: 2rem;
   }
 
   .account-name {
