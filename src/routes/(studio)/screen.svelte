@@ -26,11 +26,13 @@
     Avatar,
     Button,
     Dialog,
+    type DialogController,
     IconButton,
     InlineMessage,
     NavList,
     SkipLink,
     Spinner,
+    createOpenController,
   } from "@a-novel-kit/uikit";
 
   import {
@@ -68,6 +70,26 @@
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
   const authDialogTitle = $derived(getAuthDialogTitle(model.authView));
   const authDialogDescription = $derived(getAuthDialogDescription(model.authView));
+  const accountMenuControllers = {
+    rail: createOpenController(),
+    drawer: createOpenController(),
+  };
+  const drawerController: DialogController = {
+    get state() {
+      return { open: model.drawerOpen };
+    },
+    open: () => onDrawerOpenChange?.(true),
+    close: () => onDrawerOpenChange?.(false),
+    toggle: () => onDrawerOpenChange?.(!model.drawerOpen),
+  };
+  const authenticationController: DialogController = {
+    get state() {
+      return { open: model.authView !== null };
+    },
+    open: () => onAuthViewChange?.(model.authView ?? "login"),
+    close: () => onAuthViewChange?.(null),
+    toggle: () => onAuthViewChange?.(model.authView === null ? "login" : null),
+  };
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
     if (event.target instanceof Element && event.target.closest("a")) onDrawerOpenChange?.(false);
@@ -182,6 +204,7 @@
       <ActionMenu
         label={t("shell.accountMenu")}
         align="start"
+        controller={accountMenuControllers[surface]}
         trigger={accountTrigger}
         items={[
           {
@@ -298,10 +321,9 @@
   <Dialog
     id={drawerId}
     class="studio-navigation-dialog"
-    open={model.drawerOpen}
+    controller={drawerController}
     title={t("shell.navigation")}
     closeOnBackdrop
-    onClose={() => onDrawerOpenChange?.(false)}
   >
     <div class="drawer-toolbar">
       <IconButton
@@ -322,12 +344,11 @@
 
   <Dialog
     id={authenticationId}
-    open={model.authView !== null}
+    controller={authenticationController}
     title={authDialogTitle}
     description={authDialogDescription}
     actions={authActions}
     closeOnBackdrop
-    onClose={() => onAuthViewChange?.(null)}
   >
     {#if model.authView && authContent}
       {@render authContent(model.authView)}
