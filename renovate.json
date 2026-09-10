@@ -4,11 +4,10 @@
   "extends": ["config:recommended"],
   "packageRules": [
     {
-      "matchManagers": ["npm"],
-      "postUpgradeTasks": {
-        "commands": ["pnpm format"],
-        "executionMode": "branch"
-      }
+      "description": "Update Playwright and its browser image as one tested runtime.",
+      "matchPackageNames": ["playwright", "mcr.microsoft.com/playwright"],
+      "groupName": "Playwright runtime",
+      "groupSlug": "playwright-runtime"
     },
     {
       "matchDepTypes": ["peerDependencies"],
