@@ -4,7 +4,7 @@ const config: StorybookConfig = {
   addons: ["@a-novel-kit/uikit-storybook"],
   framework: "@storybook/sveltekit",
   staticDirs: ["../static"],
-  stories: ["../src/**/*.stories.@(js|ts|svelte)"],
+  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|ts|svelte)"],
 };
 
 export default config;
