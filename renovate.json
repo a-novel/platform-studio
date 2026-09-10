@@ -1,23 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "postUpdateOptions": ["pnpmDedupe"],
-  "extends": ["config:recommended"],
   "packageRules": [
     {
       "matchDepTypes": ["peerDependencies"],
       "rangeStrategy": "bump",
       "enabled": true
-    },
-    {
-      "description": "Consolidate non-major npm updates because they all edit the shared pnpm lockfile.",
-      "matchManagers": ["npm"],
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest", "lockFileMaintenance"],
-      "groupName": "javascript dependencies"
-    },
-    {
-      "description": "Update Playwright and its browser image as one tested runtime.",
-      "matchPackageNames": ["playwright", "/^@playwright\\//", "mcr.microsoft.com/playwright"],
-      "groupName": "playwright"
     }
   ]
 }
