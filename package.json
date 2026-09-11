@@ -95,7 +95,7 @@
     "vitest": "4.1.11",
     "vitest-browser-svelte": "3.1.0"
   },
-  "packageManager": "pnpm@12.3.4",
+  "packageManager": "pnpm@12.4.0",
   "engines": {
     "node": ">=24.0.0",
     "npm": ">=10.9.2"
