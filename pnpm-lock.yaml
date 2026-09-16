@@ -168,7 +168,7 @@ importers:
     dependencies:
       '@a-novel-kit/nodelib-browser':
         specifier: 1.6.3
-        version: 1.6.3(zod@4.6.3)
+        version: 1.6.3(zod@4.6.4)
       '@a-novel-kit/nodelib-i18n':
         specifier: 1.6.3
         version: 1.6.3(i18next@26.4.2(typescript@6.0.3))(svelte@5.57.0(@typescript-eslint/types@8.69.0))
@@ -186,7 +186,7 @@ importers:
         version: 0.4.0
       '@a-novel/service-authentication-rest':
         specifier: 2.9.1
-        version: 2.9.1(@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.3))(zod@4.6.3)
+        version: 2.9.1(@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.4))(zod@4.6.4)
       '@lucide/svelte':
         specifier: 1.45.0
         version: 1.45.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))
@@ -194,8 +194,8 @@ importers:
         specifier: 26.4.2
         version: 26.4.2(typescript@6.0.3)
       zod:
-        specifier: 4.6.3
-        version: 4.6.3
+        specifier: 4.6.4
+        version: 4.6.4
     devDependencies:
       '@a-novel-kit/nodelib-config':
         specifier: 1.6.3
@@ -3705,17 +3705,17 @@ packages:
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
 
-  zod@4.6.3:
-    resolution: {integrity: sha512-qTMC0QXIpf4iH+G0rCJl6ZjKiFpqAU9++JDN8tqts3KP58MWeJU/in9tDccsHqlOolCIrBKsiPXR8vCLhe4QhA==}
+  zod@4.6.4:
+    resolution: {integrity: sha512-AXSD6hvGdvRjajG/l1cC+d6IrhH+sjmPKtYeQdJIK8MFJl3LyClzS+o/YsVC+zQZPupAaeH5skwwm8YqYH7BqA==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
 
-  '@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.3)':
+  '@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.4)':
     dependencies:
-      zod: 4.6.3
+      zod: 4.6.4
 
   '@a-novel-kit/nodelib-config@1.6.3(190601977ca08d97e042690cc91c30dd)':
     dependencies:
@@ -3795,10 +3795,10 @@ snapshots:
       '@lucide/svelte': 1.45.0(svelte@5.57.0(@typescript-eslint/types@8.69.0))
       svelte: 5.57.0(@typescript-eslint/types@8.69.0)
 
-  '@a-novel/service-authentication-rest@2.9.1(@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.3))(zod@4.6.3)':
+  '@a-novel/service-authentication-rest@2.9.1(@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.4))(zod@4.6.4)':
     dependencies:
-      '@a-novel-kit/nodelib-browser': 1.6.3(zod@4.6.3)
-      zod: 4.6.3
+      '@a-novel-kit/nodelib-browser': 1.6.3(zod@4.6.4)
+      zod: 4.6.4
 
   '@adobe/css-tools@4.5.0': {}
 
@@ -6956,6 +6956,6 @@ snapshots:
 
   zimmerframe@1.1.4: {}
 
-  zod@4.6.3: {}
+  zod@4.6.4: {}
 
   zwitch@2.0.4: {}
