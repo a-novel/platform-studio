@@ -46,7 +46,7 @@
     "@a-novel-kit/uikit-fonts": "0.4.0",
     "@a-novel-kit/uikit-tokens": "0.4.0",
     "@a-novel/service-authentication-rest": "2.9.1",
-    "@lucide/svelte": "1.45.0",
+    "@lucide/svelte": "1.46.0",
     "i18next": "26.4.2",
     "zod": "4.6.5"
   },
