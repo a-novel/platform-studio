@@ -80,7 +80,7 @@
     "i18next-cli-plugin-svelte": "2.4.1",
     "jsdom": "30.0.1",
     "playwright": "1.63.0",
-    "prettier": "3.9.6",
+    "prettier": "3.9.7",
     "prettier-plugin-css-order": "2.2.0",
     "prettier-plugin-packagejson": "3.0.2",
     "prettier-plugin-svelte": "4.1.1",
