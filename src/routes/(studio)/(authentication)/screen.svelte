@@ -8,7 +8,8 @@
 </script>
 
 <script lang="ts">
-  import type { AuthenticationField, AuthenticationJourney } from "$lib/application/auth/types";
+  import type { AuthenticationField } from "$lib/application/auth/types";
+  import { translateAuthenticationJourney } from "$lib/i18n/auth-copy";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
@@ -25,44 +26,9 @@
   const passwordId = `${componentId}-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const submitLabel = $derived(getSubmitLabel(model.journey));
-  const submittingLabel = $derived(getSubmittingLabel(model.journey));
-  const pendingDescription = $derived(getPendingDescription(model.journey));
-
-  function getSubmitLabel(journey: AuthenticationJourney): string {
-    switch (journey) {
-      case "register":
-        return t("authUi.authentication.journeys.register.submit");
-      case "reset":
-        return t("authUi.authentication.journeys.reset.submit");
-      case "login":
-      default:
-        return t("authUi.authentication.journeys.login.submit");
-    }
-  }
-
-  function getSubmittingLabel(journey: AuthenticationJourney): string {
-    switch (journey) {
-      case "register":
-        return t("authUi.authentication.journeys.register.submitting");
-      case "reset":
-        return t("authUi.authentication.journeys.reset.submitting");
-      case "login":
-      default:
-        return t("authUi.authentication.journeys.login.submitting");
-    }
-  }
-
-  function getPendingDescription(journey: AuthenticationJourney): string {
-    switch (journey) {
-      case "register":
-        return t("authUi.authentication.journeys.register.pendingDescription");
-      case "reset":
-      case "login":
-      default:
-        return t("authUi.authentication.journeys.reset.pendingDescription");
-    }
-  }
+  const submitLabel = $derived(translateAuthenticationJourney(t, model.journey, "submit"));
+  const submittingLabel = $derived(translateAuthenticationJourney(t, model.journey, "submitting"));
+  const pendingDescription = $derived(translateAuthenticationJourney(t, model.journey, "pendingDescription"));
 
   function fieldError(field: AuthenticationField): string | undefined {
     const issue = issues.find((candidate) => candidate.field === field);

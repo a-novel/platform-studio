@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-  import type { ShortCodeJourney } from "$lib/application/auth/types";
+  import { translateShortCodeJourney, translateShortCodeStatus } from "$lib/i18n/auth-copy";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
@@ -29,10 +29,10 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const journeyTitle = $derived(getJourneyTitle(model.journey));
-  const journeyDescription = $derived(getJourneyDescription(model.journey));
-  const journeySubmit = $derived(getJourneySubmit(model.journey));
-  const journeySubmitting = $derived(getJourneySubmitting(model.journey));
+  const journeyTitle = $derived(translateShortCodeJourney(t, model.journey, "title"));
+  const journeyDescription = $derived(translateShortCodeJourney(t, model.journey, "description"));
+  const journeySubmit = $derived(translateShortCodeJourney(t, model.journey, "submit"));
+  const journeySubmitting = $derived(translateShortCodeJourney(t, model.journey, "submitting"));
   const unavailableStatus = $derived(
     model.state.status === "missing" || model.state.status === "invalid" || model.state.status === "expired"
       ? model.state.status
@@ -50,78 +50,6 @@
   function submit(event: SubmitEvent) {
     if (!controller.submit()) event.preventDefault();
   }
-
-  function getJourneyTitle(journey: ShortCodeJourney): string {
-    switch (journey) {
-      case "email-update":
-        return t("authUi.shortCode.journeys.emailUpdate.title");
-      case "password-reset":
-        return t("authUi.shortCode.journeys.passwordReset.title");
-      case "register":
-      default:
-        return t("authUi.shortCode.journeys.register.title");
-    }
-  }
-
-  function getJourneyDescription(journey: ShortCodeJourney): string {
-    switch (journey) {
-      case "email-update":
-        return t("authUi.shortCode.journeys.emailUpdate.description");
-      case "password-reset":
-        return t("authUi.shortCode.journeys.passwordReset.description");
-      case "register":
-      default:
-        return t("authUi.shortCode.journeys.register.description");
-    }
-  }
-
-  function getJourneySubmit(journey: ShortCodeJourney): string {
-    switch (journey) {
-      case "email-update":
-        return t("authUi.shortCode.journeys.emailUpdate.submit");
-      case "password-reset":
-        return t("authUi.shortCode.journeys.passwordReset.submit");
-      case "register":
-      default:
-        return t("authUi.shortCode.journeys.register.submit");
-    }
-  }
-
-  function getJourneySubmitting(journey: ShortCodeJourney): string {
-    switch (journey) {
-      case "email-update":
-        return t("authUi.shortCode.journeys.emailUpdate.submitting");
-      case "password-reset":
-        return t("authUi.shortCode.journeys.passwordReset.submitting");
-      case "register":
-      default:
-        return t("authUi.shortCode.journeys.register.submitting");
-    }
-  }
-
-  function getUnavailableTitle(status: "missing" | "invalid" | "expired"): string {
-    switch (status) {
-      case "invalid":
-        return t("authUi.shortCode.states.invalid.title");
-      case "expired":
-        return t("authUi.shortCode.states.expired.title");
-      case "missing":
-      default:
-        return t("authUi.shortCode.states.missing.title");
-    }
-  }
-
-  function getUnavailableDescription(status: "missing" | "invalid" | "expired"): string {
-    switch (status) {
-      case "invalid":
-        return t("authUi.shortCode.states.invalid.description");
-      case "expired":
-        return t("authUi.shortCode.states.expired.description");
-      case "missing":
-      default:
-        return t("authUi.shortCode.states.missing.description");
-    }
-  }
 </script>
 
 <main class="standalone-page">
@@ -132,9 +60,9 @@
     </header>
 
     {#if unavailableStatus}
-      <Alert tone="error" title={getUnavailableTitle(unavailableStatus)}>
+      <Alert tone="error" title={translateShortCodeStatus(t, unavailableStatus, "title")}>
         <div class="status-copy">
-          <p>{getUnavailableDescription(unavailableStatus)}</p>
+          <p>{translateShortCodeStatus(t, unavailableStatus, "description")}</p>
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
           <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
         </div>
