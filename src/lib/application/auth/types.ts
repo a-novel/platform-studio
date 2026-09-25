@@ -1,7 +1,22 @@
+/** Stable product feedback categories translated only at the rendering boundary. */
+export type AuthenticationFeedback =
+  | "emailUpdated"
+  | "invalidCredentials"
+  | "invalidCurrentPassword"
+  | "passwordChanged"
+  | "passwordReset"
+  | "registrationCompleted"
+  | "serviceUnavailable"
+  | "sessionUnavailable";
+
+/** Stable validation categories translated only at the rendering boundary. */
+export type AuthenticationValidation =
+  "confirmPassword" | "currentPassword" | "email" | "newPassword" | "password" | "passwordMismatch";
+
 /** A validation problem tied to one named form control. */
 export interface FormIssue<Field extends string> {
   field: Field;
-  message: string;
+  feedback: AuthenticationValidation;
 }
 
 /** Serializable states shared by progressively enhanced forms. */
@@ -9,8 +24,8 @@ export type FormState<Field extends string> =
   | { status: "ready" }
   | { status: "submitting" }
   | { status: "validation-error"; issues: readonly FormIssue<Field>[] }
-  | { status: "service-error"; message: string }
-  | { status: "success"; message: string };
+  | { status: "service-error"; feedback: AuthenticationFeedback }
+  | { status: "success"; feedback: AuthenticationFeedback };
 
 export type AuthenticationJourney = "login" | "register" | "reset";
 export type AuthenticationField = "email" | "password";
@@ -53,11 +68,12 @@ export interface ReadyAccountScreenModel {
   claims: AccountClaimsSummary;
   passwordState: FormState<AccountPasswordField>;
   emailState: FormState<AccountEmailField> | PendingEmailState;
-  logoutState: "ready" | "submitting" | { status: "service-error"; message: string };
+  logoutState: "ready" | "submitting" | { status: "service-error"; feedback: AuthenticationFeedback };
 }
 
 /** Every protected account-screen state. */
-export type AccountScreenModel = { status: "loading" } | { status: "error"; message: string } | ReadyAccountScreenModel;
+export type AccountScreenModel =
+  { status: "loading" } | { status: "error"; feedback: AuthenticationFeedback } | ReadyAccountScreenModel;
 
 /** POST destinations supplied by the SvelteKit account route. */
 export interface AccountFormActions {
@@ -77,5 +93,4 @@ export type ShortCodeState =
 export interface ShortCodeScreenModel {
   journey: ShortCodeJourney;
   state: ShortCodeState;
-  targetHint?: string;
 }

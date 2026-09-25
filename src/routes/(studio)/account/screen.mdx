@@ -1,0 +1,139 @@
+import * as AccountStories from "./screen.stories.svelte";
+
+import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
+
+<Meta of={AccountStories} />
+
+# Account screen
+
+Account management is a full route rather than a dialog. Its forms and session details are shown
+at the canonical desktop and mobile review sizes.
+
+## Account status
+
+### Ready
+
+<ResponsiveStoryPair desktop={AccountStories.ReadyDesktop} mobile={AccountStories.ReadyMobile} meta={AccountStories} />
+
+### Loading
+
+<ResponsiveStoryPair desktop={AccountStories.Loading} mobile={AccountStories.Loading} meta={AccountStories} />
+
+### Load error
+
+<ResponsiveStoryPair desktop={AccountStories.LoadError} mobile={AccountStories.LoadError} meta={AccountStories} />
+
+## Password
+
+### Validation errors
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordValidationError}
+  mobile={AccountStories.PasswordValidationError}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+### Submitting
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordSubmitting}
+  mobile={AccountStories.PasswordSubmitting}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+### Service error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordServiceError}
+  mobile={AccountStories.PasswordServiceError}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+### Success
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordSuccess}
+  mobile={AccountStories.PasswordSuccess}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+## Email
+
+### Validation error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailValidationError}
+  mobile={AccountStories.EmailValidationError}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+### Submitting
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailSubmitting}
+  mobile={AccountStories.EmailSubmitting}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+### Service error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailServiceError}
+  mobile={AccountStories.EmailServiceError}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+### Confirmation pending
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailConfirmationPending}
+  mobile={AccountStories.EmailConfirmationPending}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+### Success
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailSuccess}
+  mobile={AccountStories.EmailSuccess}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+## Session
+
+### Logout submitting
+
+<ResponsiveStoryPair
+  desktop={AccountStories.LogoutSubmitting}
+  mobile={AccountStories.LogoutSubmitting}
+  meta={AccountStories}
+  startAt="account-session"
+/>
+
+### Logout error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.LogoutError}
+  mobile={AccountStories.LogoutError}
+  meta={AccountStories}
+  startAt="account-session"
+/>
+
+## Responsive content
+
+### Long content
+
+<ResponsiveStoryPair
+  desktop={AccountStories.LongContentMobile}
+  mobile={AccountStories.LongContentMobile}
+  meta={AccountStories}
+/>

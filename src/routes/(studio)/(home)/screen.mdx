@@ -1,0 +1,12 @@
+import * as HomeStories from "./screen.stories.svelte";
+
+import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
+
+<Meta of={HomeStories} />
+
+# Empty home
+
+The intentionally empty Studio workspace keeps its title available to assistive technology while
+reserving the visual canvas for future creative tools.
+
+<ResponsiveStoryPair desktop={HomeStories.DefaultDesktop} mobile={HomeStories.DefaultMobile} meta={HomeStories} />

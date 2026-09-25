@@ -1,0 +1,92 @@
+import * as SecureLinkStories from "./screen.stories.svelte";
+
+import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
+
+<Meta of={SecureLinkStories} />
+
+# Secure email links
+
+These standalone routes intentionally omit the Studio shell. Each supported journey is documented
+in isolated desktop and mobile documents.
+
+## Supported journeys
+
+### Complete registration
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.CompleteRegistrationDesktop}
+  mobile={SecureLinkStories.CompleteRegistrationMobile}
+  meta={SecureLinkStories}
+/>
+
+### Confirm email update
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.ConfirmEmailUpdateDesktop}
+  mobile={SecureLinkStories.ConfirmEmailUpdateMobile}
+  meta={SecureLinkStories}
+/>
+
+### Complete password reset
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.CompletePasswordResetDesktop}
+  mobile={SecureLinkStories.CompletePasswordResetMobile}
+  meta={SecureLinkStories}
+/>
+
+## Link status
+
+### Missing details
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.MissingLinkDetails}
+  mobile={SecureLinkStories.MissingLinkDetails}
+  meta={SecureLinkStories}
+/>
+
+### Invalid
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.InvalidLink}
+  mobile={SecureLinkStories.InvalidLink}
+  meta={SecureLinkStories}
+/>
+
+### Expired
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.ExpiredLink}
+  mobile={SecureLinkStories.ExpiredLink}
+  meta={SecureLinkStories}
+/>
+
+## Submission
+
+### Submitting
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.SubmittingOnce}
+  mobile={SecureLinkStories.SubmittingOnce}
+  meta={SecureLinkStories}
+/>
+
+### Validation error
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.ValidationError}
+  mobile={SecureLinkStories.ValidationError}
+  meta={SecureLinkStories}
+/>
+
+### Service error
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.ServiceError}
+  mobile={SecureLinkStories.ServiceError}
+  meta={SecureLinkStories}
+/>
+
+### Success
+
+<ResponsiveStoryPair desktop={SecureLinkStories.Success} mobile={SecureLinkStories.Success} meta={SecureLinkStories} />

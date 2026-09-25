@@ -1,70 +1,60 @@
 <script module lang="ts">
-  import type { AccountScreenModel, ReadyAccountScreenModel } from "$lib/application/auth/types";
+  import type { AccountScreenModel } from "$lib/application/auth/types";
 
   /** Controllable Storybook harness around the pure account screen. */
   export interface AccountScreenStoryProps {
+    /** Initial controller state rendered by the story. */
     initialModel: AccountScreenModel;
-    frameWidth?: string;
   }
 </script>
 
 <script lang="ts">
+  import { createAccountScreenController } from "./controller.svelte";
   import AccountScreen from "./screen.svelte";
 
   import { untrack } from "svelte";
 
-  let { initialModel, frameWidth }: AccountScreenStoryProps = $props();
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
 
-  let model = $state<AccountScreenModel>(untrack(() => structuredClone(initialModel)));
+  let { initialModel }: AccountScreenStoryProps = $props();
+  const i18n = getI18nContext();
+
+  function localizeClaimExpiries(model: AccountScreenModel): AccountScreenModel {
+    if (model.status !== "ready") return model;
+
+    const formatter = new Intl.DateTimeFormat(i18n.language, {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "UTC",
+    });
+    for (const key of ["accessExpiresAt", "refreshExpiresAt"] as const) {
+      const expiry = Date.parse(model.claims[key]);
+      if (!Number.isNaN(expiry)) model.claims[key] = formatter.format(expiry);
+    }
+
+    return model;
+  }
 
   const actions = {
     password: "/storybook/account/password",
     email: "/storybook/account/email",
     logout: "/storybook/account/logout",
   };
-
-  function updateReady(patch: Partial<ReadyAccountScreenModel>) {
-    if (model.status === "ready") model = { ...model, ...patch };
-  }
-
-  function retry() {
-    model = { status: "loading" };
-  }
-
-  function submitPassword(event: SubmitEvent) {
-    event.preventDefault();
-    if (model.status !== "ready" || model.passwordState.status === "submitting") return;
-    updateReady({ passwordState: { status: "submitting" } });
-  }
-
-  function submitEmail(event: SubmitEvent) {
-    event.preventDefault();
-    if (model.status !== "ready" || model.emailState.status === "submitting") return;
-    updateReady({ emailState: { status: "submitting" } });
-  }
-
-  function submitLogout(event: SubmitEvent) {
-    event.preventDefault();
-    if (model.status !== "ready" || model.logoutState === "submitting") return;
-    updateReady({ logoutState: "submitting" });
-  }
+  const controller = createAccountScreenController({
+    model: untrack(() => localizeClaimExpiries(structuredClone(initialModel))),
+    actions,
+    allowNativeSubmission: false,
+  });
 </script>
 
-<div class="story-frame" style:--story-frame-width={frameWidth}>
-  <AccountScreen
-    {model}
-    {actions}
-    onRetry={retry}
-    onPasswordSubmit={submitPassword}
-    onEmailSubmit={submitEmail}
-    onLogoutSubmit={submitLogout}
-  />
+<div class="story-frame">
+  <AccountScreen {controller} />
 </div>
 
 <style>
   .story-frame {
     background: var(--color-surface-canvas);
-    inline-size: var(--story-frame-width, 100%);
+    inline-size: 100%;
     min-block-size: 100dvb;
   }
 </style>

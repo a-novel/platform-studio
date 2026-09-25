@@ -44,6 +44,7 @@
     "@a-novel-kit/nodelib-server": "1.6.3",
     "@a-novel-kit/uikit": "0.4.0",
     "@a-novel-kit/uikit-fonts": "0.4.0",
+    "@a-novel-kit/uikit-images": "0.4.0",
     "@a-novel-kit/uikit-tokens": "0.4.0",
     "@a-novel/service-authentication-rest": "2.9.1",
     "@lucide/svelte": "1.47.0",
