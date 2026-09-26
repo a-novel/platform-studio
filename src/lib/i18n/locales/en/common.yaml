@@ -83,15 +83,15 @@ authUi:
     continue: Continue to Studio
     journeys:
       emailUpdate:
-        description: Confirm the email change requested for your Agora account.
-        submit: Confirm email change
-        submitting: Confirming email change…
-        title: Confirm your new email
+        description: Someone requested an email change for your account. Make sure you made the request; otherwise, ignore this link.
+        submit: Update email
+        submitting: Updating email…
+        title: Confirm your new Agora email
       passwordReset:
-        description: Set a password to regain access to your Agora account.
+        description: Set a password to regain access to your account.
         submit: Reset password
         submitting: Resetting password…
-        title: Choose a new password
+        title: Choose a new Agora password
       register:
         description: Set a password to access your account.
         submit: Create account

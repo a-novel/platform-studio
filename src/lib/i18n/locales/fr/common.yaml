@@ -1,8 +1,8 @@
 authFlow:
   expiryUnavailable: Non indiqué par ce jeton
   feedback:
-    emailUpdated: Votre adresse courriel a été mise à jour.
-    invalidCredentials: L’adresse courriel ou le mot de passe est incorrect.
+    emailUpdated: Votre courriel a été mis à jour.
+    invalidCredentials: Le courriel ou le mot de passe est incorrect.
     invalidCurrentPassword: Le mot de passe actuel est incorrect.
     passwordChanged: Votre mot de passe a été modifié.
     passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant accéder à votre compte.
@@ -12,7 +12,7 @@ authFlow:
   validation:
     confirmPassword: Confirmez le nouveau mot de passe.
     currentPassword: Saisissez le mot de passe actuel.
-    email: Saisissez une adresse courriel valide.
+    email: Saisissez un courriel valide.
     newPassword: Choisissez un nouveau mot de passe valide.
     password: Saisissez votre mot de passe.
     passwordMismatch: Les mots de passe ne correspondent pas.
@@ -23,23 +23,23 @@ authUi:
       description: Ces valeurs proviennent des déclarations actuelles et vérifiées du service d’authentification.
       noRoles: Aucun rôle indiqué
       privacyDescription: Le service ne fournit pas de lecture personnelle faisant autorité. Studio affiche les déclarations vérifiées de la session au lieu de deviner une adresse.
-      privacyTitle: Pourquoi l’adresse courriel n’apparaît pas
+      privacyTitle: Pourquoi le courriel n’apparaît pas
       refreshExpiresAt: Expiration de la session
       roles: Rôles
       title: Résumé de la session
       userId: Identifiant utilisateur
     description: Consultez la session actuelle et gérez les identifiants protégés par votre compte.
     email:
-      description: Envoyez un lien de confirmation à usage unique à la nouvelle adresse.
-      hint: L’adresse ne change qu’après confirmation de son lien sécurisé.
-      label: Nouvelle adresse courriel
+      description: Envoyez un lien de confirmation à usage unique au nouveau courriel.
+      hint: Le courriel ne change qu’après confirmation de son lien sécurisé.
+      label: Nouveau courriel
       pendingDescription: Lien de confirmation envoyé à
       pendingTitle: Confirmation en attente
       resend: Envoyer un autre lien
       submit: Envoyer le lien de confirmation
       submitting: Envoi du lien de confirmation…
-      successTitle: Adresse courriel mise à jour
-      title: Changez l’adresse courriel
+      successTitle: Courriel mis à jour
+      title: Changez le courriel
     eyebrow: Compte
     loadErrorTitle: Les informations du compte sont indisponibles
     loadingDescription: Studio vérifie la session actuelle.
@@ -61,7 +61,7 @@ authUi:
       title: Changez le mot de passe
     title: Gérez le compte
   authentication:
-    emailLabel: Adresse courriel
+    emailLabel: Courriel
     journeys:
       login:
         submit: Connexion
@@ -71,7 +71,7 @@ authUi:
         submit: Envoyer le lien d’inscription
         submitting: Envoi du lien d’inscription…
       reset:
-        pendingDescription: Si un compte utilise cette adresse, un lien de réinitialisation a été envoyé à
+        pendingDescription: Si un compte utilise ce courriel, un lien de réinitialisation a été envoyé à
         submit: Envoyer le lien de réinitialisation
         submitting: Envoi du lien de réinitialisation…
     passwordLabel: Mot de passe
@@ -83,15 +83,15 @@ authUi:
     continue: Continuer vers Studio
     journeys:
       emailUpdate:
-        description: Confirmez le changement d’adresse demandé pour votre compte Agora.
-        submit: Confirmer le changement d’adresse
-        submitting: Confirmation du changement d’adresse…
-        title: Confirmez votre nouvelle adresse courriel
+        description: Une demande de changement de courriel a été faite pour votre compte. Vérifiez qu’elle vient bien de vous ; sinon, ignorez ce lien.
+        submit: Mettre à jour le courriel
+        submitting: Mise à jour du courriel…
+        title: Confirmez votre nouveau courriel Agora
       passwordReset:
-        description: Définissez un mot de passe pour retrouver l’accès à votre compte Agora.
+        description: Définissez un mot de passe pour retrouver l’accès à votre compte.
         submit: Réinitialiser le mot de passe
         submitting: Réinitialisation du mot de passe…
-        title: Choisissez un nouveau mot de passe
+        title: Choisissez un nouveau mot de passe Agora
       register:
         description: Définissez un mot de passe pour accéder à votre compte.
         submit: Créer le compte
