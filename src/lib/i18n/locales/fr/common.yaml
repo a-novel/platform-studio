@@ -1,8 +1,8 @@
 authFlow:
   expiryUnavailable: Non indiqué par ce jeton
   feedback:
-    emailUpdated: Votre adresse e-mail a été mise à jour.
-    invalidCredentials: L’adresse e-mail ou le mot de passe est incorrect.
+    emailUpdated: Votre adresse courriel a été mise à jour.
+    invalidCredentials: L’adresse courriel ou le mot de passe est incorrect.
     invalidCurrentPassword: Le mot de passe actuel est incorrect.
     passwordChanged: Votre mot de passe a été modifié.
     passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant accéder à votre compte.
@@ -12,7 +12,7 @@ authFlow:
   validation:
     confirmPassword: Confirmez le nouveau mot de passe.
     currentPassword: Saisissez le mot de passe actuel.
-    email: Saisissez une adresse e-mail valide.
+    email: Saisissez une adresse courriel valide.
     newPassword: Choisissez un nouveau mot de passe valide.
     password: Saisissez votre mot de passe.
     passwordMismatch: Les mots de passe ne correspondent pas.
@@ -23,7 +23,7 @@ authUi:
       description: Ces valeurs proviennent des déclarations actuelles et vérifiées du service d’authentification.
       noRoles: Aucun rôle indiqué
       privacyDescription: Le service ne fournit pas de lecture personnelle faisant autorité. Studio affiche les déclarations vérifiées de la session au lieu de deviner une adresse.
-      privacyTitle: Pourquoi l’adresse e-mail n’apparaît pas
+      privacyTitle: Pourquoi l’adresse courriel n’apparaît pas
       refreshExpiresAt: Expiration de la session
       roles: Rôles
       title: Résumé de la session
@@ -32,14 +32,14 @@ authUi:
     email:
       description: Envoyez un lien de confirmation à usage unique à la nouvelle adresse.
       hint: L’adresse ne change qu’après confirmation de son lien sécurisé.
-      label: Nouvelle adresse e-mail
+      label: Nouvelle adresse courriel
       pendingDescription: Lien de confirmation envoyé à
       pendingTitle: Confirmation en attente
       resend: Envoyer un autre lien
       submit: Envoyer le lien de confirmation
       submitting: Envoi du lien de confirmation…
-      successTitle: Adresse e-mail mise à jour
-      title: Changez l’adresse e-mail
+      successTitle: Adresse courriel mise à jour
+      title: Changez l’adresse courriel
     eyebrow: Compte
     loadErrorTitle: Les informations du compte sont indisponibles
     loadingDescription: Studio vérifie la session actuelle.
@@ -61,7 +61,7 @@ authUi:
       title: Changez le mot de passe
     title: Gérez le compte
   authentication:
-    emailLabel: Adresse e-mail
+    emailLabel: Adresse courriel
     journeys:
       login:
         submit: Connexion
@@ -86,7 +86,7 @@ authUi:
         description: Confirmez le changement d’adresse demandé pour votre compte Agora.
         submit: Confirmer le changement d’adresse
         submitting: Confirmation du changement d’adresse…
-        title: Confirmez votre nouvelle adresse e-mail
+        title: Confirmez votre nouvelle adresse courriel
       passwordReset:
         description: Définissez un mot de passe pour retrouver l’accès à votre compte Agora.
         submit: Réinitialiser le mot de passe
@@ -107,7 +107,7 @@ authUi:
         description: Le lien est peut-être incomplet ou déjà utilisé. Demandez-en un nouveau pour continuer en toute sécurité.
         title: Ce lien sécurisé n’est pas valide
       missing:
-        description: Cette page nécessite le lien complet reçu par e-mail. Demandez un nouveau lien et ouvrez-le sans modifier son adresse.
+        description: Cette page nécessite le lien complet reçu par courriel. Demandez un nouveau lien et ouvrez-le sans modifier son adresse.
         title: Des informations du lien sécurisé sont manquantes
 shell:
   accountFallback: Compte
