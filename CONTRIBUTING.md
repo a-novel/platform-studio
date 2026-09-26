@@ -27,6 +27,8 @@ Keep reusable controls in UIKit. Studio owns screen composition and product-spec
 
 Messages live in the YAML locale catalogs under `src/lib/i18n/locales`. Call the typed translation function with static keys so extraction can keep source and locale files aligned.
 
+For languages with formal and informal address, use the formal form in static text (`vous` in French, `usted` in Spanish). Use the language’s conventional action-label form for buttons, links, and other controls; French uses infinitives such as `Créer le compte`.
+
 Run `pnpm i18n:extract` after adding or removing messages. Review both languages, then run `pnpm i18n:check` before committing. The check covers extraction drift, generated types, missing translations, and unused translations.
 
 ## Reviewing the application
