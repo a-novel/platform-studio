@@ -136,7 +136,7 @@ describe("pure authentication screens", () => {
     const alert = page.getByRole("alert").element();
     const submit = page.getByRole("button", { name: "Login" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
-    expect(alert.textContent?.trim()).toBe("The authentication service is temporarily unavailable. Try again.");
+    expect(alert.textContent?.trim()).toBe("The service is temporarily unavailable. Try again.");
   });
 
   it("translates stable feedback codes through the active locale", async () => {
@@ -213,8 +213,8 @@ describe("pure authentication screens", () => {
     render(AccountScreen, { controller }, withLocale());
 
     expect((await submitForm("Change password")).getAttribute("action")).toBe("/account?/password");
-    expect((await submitForm("Send confirmation link")).getAttribute("action")).toBe("/account?/email");
-    expect((await submitForm("Sign out")).getAttribute("action")).toBe("/account?/logout");
+    expect((await submitForm("Send link")).getAttribute("action")).toBe("/account?/email");
+    expect((await submitForm("Log out")).getAttribute("action")).toBe("/account?/logout");
     expect(controller.state.model).toMatchObject({
       status: "ready",
       passwordState: { status: "submitting" },
@@ -258,7 +258,7 @@ describe("pure authentication screens", () => {
 
     const status = page.getByRole("status");
     await expect.element(status).toBeVisible();
-    await expect.element(page.getByText("Your Agora account is ready.")).toBeVisible();
+    await expect.element(page.getByText("Your account is ready.")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Continue to Studio" })).toHaveAttribute("href", "/");
     expect(document.querySelector("form")).toBeNull();
   });

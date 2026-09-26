@@ -1,17 +1,17 @@
 authFlow:
-  expiryUnavailable: Non indiqué par ce jeton
+  expiryUnavailable: Non renseignée
   feedback:
     emailUpdated: Votre courriel a été mis à jour.
     invalidCredentials: Le courriel ou le mot de passe est incorrect.
-    invalidCurrentPassword: Le mot de passe actuel est incorrect.
+    invalidCurrentPassword: Votre mot de passe actuel est incorrect.
     passwordChanged: Votre mot de passe a été modifié.
-    passwordReset: Votre mot de passe a été réinitialisé. Vous pouvez maintenant accéder à votre compte.
-    registrationCompleted: Votre compte Agora est prêt.
-    serviceUnavailable: Le service d’authentification est temporairement indisponible. Réessayez.
-    sessionUnavailable: Studio n’a pas pu vérifier la session actuelle. Réessayez.
+    passwordReset: Votre mot de passe a été réinitialisé.
+    registrationCompleted: Votre compte est prêt.
+    serviceUnavailable: Le service est temporairement indisponible. Réessayez.
+    sessionUnavailable: Impossible de vérifier votre session. Réessayez.
   validation:
-    confirmPassword: Confirmez le nouveau mot de passe.
-    currentPassword: Saisissez le mot de passe actuel.
+    confirmPassword: Confirmez votre nouveau mot de passe.
+    currentPassword: Saisissez votre mot de passe actuel.
     email: Saisissez un courriel valide.
     newPassword: Choisissez un nouveau mot de passe valide.
     password: Saisissez votre mot de passe.
@@ -20,46 +20,46 @@ authUi:
   account:
     claims:
       accessExpiresAt: Expiration de l’accès
-      description: Ces valeurs proviennent des déclarations actuelles et vérifiées du service d’authentification.
+      description: Informations vérifiées pour votre connexion actuelle.
       noRoles: Aucun rôle indiqué
-      privacyDescription: Le service ne fournit pas de lecture personnelle faisant autorité. Studio affiche les déclarations vérifiées de la session au lieu de deviner une adresse.
-      privacyTitle: Pourquoi le courriel n’apparaît pas
+      privacyDescription: Votre courriel ne fait pas partie des informations de session disponibles.
+      privacyTitle: Pourquoi votre courriel n’apparaît pas
       refreshExpiresAt: Expiration de la session
       roles: Rôles
       title: Résumé de la session
       userId: Identifiant utilisateur
-    description: Consultez la session actuelle et gérez les identifiants protégés par votre compte.
+    description: Modifiez votre courriel, votre mot de passe ou consultez votre session.
     email:
-      description: Envoyez un lien de confirmation à usage unique au nouveau courriel.
-      hint: Le courriel ne change qu’après confirmation de son lien sécurisé.
+      description: Vous recevrez un lien pour confirmer ce changement.
+      hint: Votre courriel actuel reste inchangé jusqu’à la confirmation.
       label: Nouveau courriel
       pendingDescription: Lien de confirmation envoyé à
       pendingTitle: Confirmation en attente
       resend: Envoyer un autre lien
-      submit: Envoyer le lien de confirmation
-      submitting: Envoi du lien de confirmation…
+      submit: Envoyer le lien
+      submitting: Envoi du lien…
       successTitle: Courriel mis à jour
-      title: Changez le courriel
+      title: Changez votre courriel
     eyebrow: Compte
-    loadErrorTitle: Les informations du compte sont indisponibles
-    loadingDescription: Studio vérifie la session actuelle.
+    loadErrorTitle: Informations du compte indisponibles
+    loadingDescription: Vérification de votre session en cours.
     loadingTitle: Chargement du compte
     logout:
-      description: Cette action efface la session Studio locale sur cet appareil.
+      description: Vous serez déconnecté de Studio sur cet appareil.
       submit: Se déconnecter
       submitting: Déconnexion en cours…
       title: Déconnectez-vous de Studio
     password:
       confirmLabel: Confirmez le nouveau mot de passe
       currentLabel: Mot de passe actuel
-      description: Confirmez votre mot de passe actuel avant d’en choisir un nouveau.
-      hint: Utilisez une phrase secrète unique que vous ne réutilisez pas ailleurs.
+      description: Saisissez votre mot de passe actuel pour le modifier.
+      hint: Choisissez un mot de passe que vous n’utilisez nulle part ailleurs.
       newLabel: Nouveau mot de passe
       submit: Changer le mot de passe
       submitting: Modification du mot de passe…
       successTitle: Mot de passe modifié
-      title: Changez le mot de passe
-    title: Gérez le compte
+      title: Changez votre mot de passe
+    title: Gérez votre compte
   authentication:
     emailLabel: Courriel
     journeys:
@@ -67,13 +67,13 @@ authUi:
         submit: Connexion
         submitting: Connexion…
       register:
-        pendingDescription: Terminez la création de votre compte avec le lien envoyé à
-        submit: Envoyer le lien d’inscription
-        submitting: Envoi du lien d’inscription…
+        pendingDescription: Ouvrez le lien envoyé à
+        submit: Envoyer le lien
+        submitting: Envoi du lien…
       reset:
-        pendingDescription: Si un compte utilise ce courriel, un lien de réinitialisation a été envoyé à
-        submit: Envoyer le lien de réinitialisation
-        submitting: Envoi du lien de réinitialisation…
+        pendingDescription: Si ce courriel est associé à un compte, un lien a été envoyé à
+        submit: Envoyer le lien
+        submitting: Envoi du lien…
     passwordLabel: Mot de passe
     pendingTitle: Consultez votre messagerie
     successTitle: Tout est prêt
@@ -83,7 +83,7 @@ authUi:
     continue: Continuer vers Studio
     journeys:
       emailUpdate:
-        description: Une demande de changement de courriel a été faite pour votre compte. Vérifiez qu’elle vient bien de vous ; sinon, ignorez ce lien.
+        description: Un changement de courriel a été demandé pour votre compte. Si vous n’êtes pas à l’origine de cette demande, ignorez ce lien.
         submit: Mettre à jour le courriel
         submitting: Mise à jour du courriel…
         title: Confirmez votre nouveau courriel Agora
@@ -98,17 +98,17 @@ authUi:
         submitting: Création du compte…
         title: Terminez la création de votre compte Agora
     newPasswordLabel: Nouveau mot de passe
-    restart: Demander un nouveau lien sécurisé
+    restart: Demander un nouveau lien
     states:
       expired:
-        description: Les liens sécurisés fonctionnent pendant une durée limitée. Demandez un nouveau lien pour continuer.
-        title: Ce lien sécurisé a expiré
+        description: Demandez un nouveau lien pour continuer.
+        title: Ce lien a expiré
       invalid:
-        description: Le lien est peut-être incomplet ou déjà utilisé. Demandez-en un nouveau pour continuer en toute sécurité.
-        title: Ce lien sécurisé n’est pas valide
+        description: Il est peut-être incomplet ou déjà utilisé. Demandez-en un nouveau.
+        title: Ce lien n’est pas valide
       missing:
-        description: Cette page nécessite le lien complet reçu par courriel. Demandez un nouveau lien et ouvrez-le sans modifier son adresse.
-        title: Des informations du lien sécurisé sont manquantes
+        description: Ouvrez le lien complet reçu par courriel ou demandez-en un nouveau.
+        title: Ce lien est incomplet
 shell:
   accountFallback: Compte
   auth:
@@ -123,18 +123,18 @@ shell:
       title: Réinitialisez votre mot de passe
     signInInstead: Connexion
   brand: Studio
-  closeAuthentication: Fermer l’authentification
+  closeAuthentication: Fermer la fenêtre
   closeNavigation: Fermer la navigation
   collapseNavigation: Réduire la navigation
   expandNavigation: Développer la navigation
   home: Accueil
   homeTitle: Accueil
   logout: Se déconnecter
-  manageAccount: Gérer le compte
+  manageAccount: Gérer votre compte
   manageAccountFor: Gérer le compte de {{name}}
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
   sessionLoading: Chargement du compte
-  sessionUnavailable: L’état du compte est temporairement indisponible.
+  sessionUnavailable: Informations du compte indisponibles.
   signIn: Connexion
   skipToContent: Aller au contenu

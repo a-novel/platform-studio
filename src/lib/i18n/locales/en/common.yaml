@@ -1,17 +1,17 @@
 authFlow:
-  expiryUnavailable: Not reported by this token
+  expiryUnavailable: Not provided
   feedback:
     emailUpdated: Your email address was updated.
     invalidCredentials: The email address or password is incorrect.
-    invalidCurrentPassword: The current password is incorrect.
+    invalidCurrentPassword: Your current password is incorrect.
     passwordChanged: Your password was changed.
-    passwordReset: Your password was reset. You can now access your account.
-    registrationCompleted: Your Agora account is ready.
-    serviceUnavailable: The authentication service is temporarily unavailable. Try again.
-    sessionUnavailable: Studio could not verify the current session. Try again.
+    passwordReset: Your password was reset.
+    registrationCompleted: Your account is ready.
+    serviceUnavailable: The service is temporarily unavailable. Try again.
+    sessionUnavailable: We couldn’t verify your session. Try again.
   validation:
-    confirmPassword: Confirm the new password.
-    currentPassword: Enter the current password.
+    confirmPassword: Confirm your new password.
+    currentPassword: Enter your current password.
     email: Enter a valid email address.
     newPassword: Choose a valid new password.
     password: Enter your password.
@@ -20,46 +20,46 @@ authUi:
   account:
     claims:
       accessExpiresAt: Access expires
-      description: These values come from the authentication service’s current, verified claims.
+      description: Verified information about your current login.
       noRoles: No roles reported
-      privacyDescription: The service does not expose an authoritative self-credential read. Studio shows verified session claims instead of guessing an address.
-      privacyTitle: Why no email is shown
+      privacyDescription: Your email isn’t included in the available session information.
+      privacyTitle: Why your email isn’t shown
       refreshExpiresAt: Session expires
       roles: Roles
       title: Session summary
       userId: User ID
-    description: Review the current session and manage the credentials protected by your account.
+    description: Change your email or password, or review your session.
     email:
-      description: Send a one-time confirmation link to the new address.
-      hint: The address changes only after its secure link is confirmed.
+      description: You’ll receive a link to confirm this change.
+      hint: Your current email stays unchanged until you confirm.
       label: New email address
       pendingDescription: Confirmation link sent to
       pendingTitle: Confirmation pending
       resend: Send another link
-      submit: Send confirmation link
-      submitting: Sending confirmation link…
+      submit: Send link
+      submitting: Sending link…
       successTitle: Email updated
-      title: Change email
+      title: Change your email
     eyebrow: Account
     loadErrorTitle: Account details are unavailable
-    loadingDescription: Studio is checking the current session.
+    loadingDescription: Checking your session.
     loadingTitle: Loading account
     logout:
-      description: This clears the local Studio session on this device.
-      submit: Sign out
-      submitting: Signing out…
-      title: Sign out of Studio
+      description: You’ll be logged out of Studio on this device.
+      submit: Log out
+      submitting: Logging out…
+      title: Log out of Studio
     password:
       confirmLabel: Confirm new password
       currentLabel: Current password
-      description: Confirm your current password before choosing a replacement.
-      hint: Use a unique passphrase that you do not reuse elsewhere.
+      description: Enter your current password to change it.
+      hint: Choose a password you don’t use anywhere else.
       newLabel: New password
       submit: Change password
       submitting: Changing password…
       successTitle: Password changed
-      title: Change password
-    title: Manage account
+      title: Change your password
+    title: Manage your account
   authentication:
     emailLabel: Email address
     journeys:
@@ -67,13 +67,13 @@ authUi:
         submit: Login
         submitting: Logging in…
       register:
-        pendingDescription: Finish creating your account from the link sent to
-        submit: Send registration link
-        submitting: Sending registration link…
+        pendingDescription: Open the link sent to
+        submit: Send link
+        submitting: Sending link…
       reset:
-        pendingDescription: If an account uses this address, a password reset link was sent to
-        submit: Send password reset link
-        submitting: Sending password reset link…
+        pendingDescription: If this email is linked to an account, a link was sent to
+        submit: Send link
+        submitting: Sending link…
     passwordLabel: Password
     pendingTitle: Check your email
     successTitle: You’re all set
@@ -83,7 +83,7 @@ authUi:
     continue: Continue to Studio
     journeys:
       emailUpdate:
-        description: Someone requested an email change for your account. Make sure you made the request; otherwise, ignore this link.
+        description: Someone requested an email change for your account. If it wasn’t you, ignore this link.
         submit: Update email
         submitting: Updating email…
         title: Confirm your new Agora email
@@ -96,19 +96,19 @@ authUi:
         description: Set a password to access your account.
         submit: Create account
         submitting: Creating account…
-        title: Complete your Agora account
+        title: Finish creating your Agora account
     newPasswordLabel: New password
-    restart: Request a new secure link
+    restart: Request a new link
     states:
       expired:
-        description: Secure links work for a limited time. Request a fresh link to continue.
-        title: This secure link has expired
+        description: Request a new link to continue.
+        title: This link has expired
       invalid:
-        description: The link may be incomplete or already used. Request a new one to continue safely.
-        title: This secure link is not valid
+        description: It may be incomplete or already used. Request a new one.
+        title: This link is not valid
       missing:
-        description: This page needs the complete link from the email. Request a new link and open it without editing the address.
-        title: Secure link details are missing
+        description: Open the complete link from your email or request a new one.
+        title: This link is incomplete
 shell:
   accountFallback: Account
   auth:
@@ -123,18 +123,18 @@ shell:
       title: Reset your password
     signInInstead: Login
   brand: Studio
-  closeAuthentication: Close authentication
+  closeAuthentication: Close dialog
   closeNavigation: Close navigation
   collapseNavigation: Collapse navigation
   expandNavigation: Expand navigation
   home: Home
   homeTitle: Home
   logout: Log out
-  manageAccount: Manage account
+  manageAccount: Manage your account
   manageAccountFor: Manage account for {{name}}
   navigation: Studio navigation
   openNavigation: Open navigation
   sessionLoading: Loading account
-  sessionUnavailable: Account status is temporarily unavailable.
+  sessionUnavailable: Account details are unavailable.
   signIn: Login
   skipToContent: Skip to content

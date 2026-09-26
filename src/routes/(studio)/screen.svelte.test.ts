@@ -163,7 +163,7 @@ describe("studio shell screen", () => {
     const shell = controller({ authView: "login" }, { lockAuthentication: true });
     render(Screen, { controller: shell }, withLocale());
 
-    await page.getByRole("button", { name: "Close authentication" }).click();
+    await page.getByRole("button", { name: "Close dialog" }).click();
 
     expect(shell.state.model.authView).toBe("login");
     await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
@@ -202,7 +202,7 @@ describe("studio shell screen", () => {
       withLocale()
     );
 
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Account status is temporarily unavailable.");
+    await expect.element(page.getByRole("alert")).toHaveTextContent("Account details are unavailable.");
     await expect.element(page.getByRole("button", { name: /Retry account status/i })).not.toBeInTheDocument();
   });
 });
