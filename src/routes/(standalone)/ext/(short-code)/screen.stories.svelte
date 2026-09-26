@@ -90,6 +90,19 @@
       })
     ).toBeDisabled();
   }
+
+  async function verifySuccess({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
+    const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
+    await expect(canvas.getByRole("status")).toBeVisible();
+    await expect(canvas.getByRole("link", { name: t("authUi.shortCode.continue") })).toBeVisible();
+  }
 </script>
 
 <Story
@@ -192,11 +205,19 @@
   />
 </Story>
 
-<Story name="Success" asChild>
+<Story name="Registration success" globals={reviewStoryGlobals.desktop} asChild play={verifySuccess}>
   <StoryHarness
     initialModel={{
       journey: "register",
       state: { status: "success", feedback: "registrationCompleted" },
     }}
   />
+</Story>
+
+<Story name="Email update success" globals={reviewStoryGlobals.desktop} asChild play={verifySuccess}>
+  <StoryHarness initialModel={{ journey: "email-update", state: { status: "success", feedback: "emailUpdated" } }} />
+</Story>
+
+<Story name="Password reset success" globals={reviewStoryGlobals.desktop} asChild play={verifySuccess}>
+  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "success", feedback: "passwordReset" } }} />
 </Story>

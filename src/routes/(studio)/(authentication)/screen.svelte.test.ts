@@ -244,6 +244,25 @@ describe("pure authentication screens", () => {
     expect(document.querySelector('[name="target"]')).toBeNull();
   });
 
+  it("presents secure-link completion as a clear success state", async () => {
+    render(
+      ShortCodeScreen,
+      {
+        controller: shortCodeController({
+          journey: "register",
+          state: { status: "success", feedback: "registrationCompleted" },
+        }),
+      },
+      withLocale()
+    );
+
+    const status = page.getByRole("status");
+    await expect.element(status).toBeVisible();
+    await expect.element(page.getByText("Your Agora account is ready.")).toBeVisible();
+    await expect.element(page.getByRole("link", { name: "Continue to Studio" })).toBeVisible();
+    expect(status.element().querySelector("svg")).not.toBeNull();
+  });
+
   it("renders email confirmation without password controls", async () => {
     const controller = createShortCodeScreenController({
       model: { journey: "email-update", state: { status: "ready" } },
