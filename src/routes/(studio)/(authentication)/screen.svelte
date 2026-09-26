@@ -11,7 +11,7 @@
   import type { AuthenticationField } from "$lib/application/auth/types";
   import { translateAuthenticationJourney } from "$lib/i18n/auth-copy";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
-  import SuccessState from "$lib/ui/SuccessState.svelte";
+  import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input } from "@a-novel-kit/uikit";
@@ -47,10 +47,7 @@
     <p class="pending-copy">{pendingDescription} <strong>{model.state.targetHint}</strong></p>
   </section>
 {:else if model.state.status === "success"}
-  <SuccessState
-    title={t("authUi.authentication.successTitle")}
-    message={translateAuthenticationFeedback(t, model.state.feedback)}
-  />
+  <AuthenticationCompletion feedback={model.state.feedback} />
 {:else}
   <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
     <Field controlId={emailId} label={t("authUi.authentication.emailLabel")} error={fieldError("email")} required>
@@ -119,6 +116,13 @@
   .pending-copy {
     margin: 0;
     line-height: var(--line-height-normal);
+  }
+
+  .completion-title {
+    margin: 0;
+    color: var(--color-feedback-success-text);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
   }
 
   .pending-copy strong {

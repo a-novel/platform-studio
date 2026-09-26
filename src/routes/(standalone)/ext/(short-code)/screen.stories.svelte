@@ -205,7 +205,13 @@
   />
 </Story>
 
-<Story name="Registration success" globals={reviewStoryGlobals.desktop} asChild play={verifySuccess}>
+<Story
+  name="Registration success"
+  exportName="RegistrationSuccess"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifySuccess}
+>
   <StoryHarness
     initialModel={{
       journey: "register",
@@ -214,10 +220,22 @@
   />
 </Story>
 
-<Story name="Email update success" globals={reviewStoryGlobals.desktop} asChild play={verifySuccess}>
+<Story
+  name="Email update success"
+  exportName="EmailUpdateSuccess"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifySuccess}
+>
   <StoryHarness initialModel={{ journey: "email-update", state: { status: "success", feedback: "emailUpdated" } }} />
 </Story>
 
-<Story name="Password reset success" globals={reviewStoryGlobals.desktop} asChild play={verifySuccess}>
+<Story
+  name="Password reset success"
+  exportName="PasswordResetSuccess"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifySuccess}
+>
   <StoryHarness initialModel={{ journey: "password-reset", state: { status: "success", feedback: "passwordReset" } }} />
 </Story>

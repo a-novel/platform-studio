@@ -12,7 +12,7 @@
 <script lang="ts">
   import { translateShortCodeJourney, translateShortCodeStatus } from "$lib/i18n/auth-copy";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
-  import SuccessState from "$lib/ui/SuccessState.svelte";
+  import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, Input, Link } from "@a-novel-kit/uikit";
@@ -69,12 +69,7 @@
         </div>
       </Alert>
     {:else if model.state.status === "success"}
-      <SuccessState title={translateAuthenticationFeedback(t, model.state.feedback)}>
-        {#snippet actions()}
-          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-          <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
-        {/snippet}
-      </SuccessState>
+      <AuthenticationCompletion feedback={model.state.feedback} {continueHref} />
     {:else}
       <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
         {#if model.journey !== "email-update"}

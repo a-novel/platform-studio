@@ -157,7 +157,7 @@ describe("pure authentication screens", () => {
       withLocale("fr")
     );
 
-    await expect.element(page.getByText("Saisissez une adresse e-mail valide.")).toBeVisible();
+    await expect.element(page.getByText("Saisissez un courriel valide.")).toBeVisible();
     await expect.element(page.getByText("Saisissez votre mot de passe.")).toBeVisible();
     validation.unmount();
 
@@ -172,7 +172,7 @@ describe("pure authentication screens", () => {
       withLocale("fr")
     );
 
-    await expect.element(page.getByText("L’adresse e-mail ou le mot de passe est incorrect.")).toBeVisible();
+    await expect.element(page.getByText("Le courriel ou le mot de passe est incorrect.")).toBeVisible();
   });
 
   it("shows the complete address the user just submitted without a redundant label", async () => {
@@ -259,8 +259,8 @@ describe("pure authentication screens", () => {
     const status = page.getByRole("status");
     await expect.element(status).toBeVisible();
     await expect.element(page.getByText("Your Agora account is ready.")).toBeVisible();
-    await expect.element(page.getByRole("link", { name: "Continue to Studio" })).toBeVisible();
-    expect(status.element().querySelector("svg")).not.toBeNull();
+    await expect.element(page.getByRole("link", { name: "Continue to Studio" })).toHaveAttribute("href", "/");
+    expect(document.querySelector("form")).toBeNull();
   });
 
   it("renders email confirmation without password controls", async () => {
@@ -274,10 +274,10 @@ describe("pure authentication screens", () => {
 
     render(ShortCodeScreen, { controller }, withLocale());
 
-    const submitLocator = page.getByRole("button", { name: "Confirm email change" });
+    const submitLocator = page.getByRole("button", { name: "Update email" });
     await expect.element(submitLocator).toBeVisible();
     const submit = submitLocator.element();
-    const form = await submitForm("Confirm email change");
+    const form = await submitForm("Update email");
 
     expect(form.querySelector('input[type="password"]')).toBeNull();
     expect(getComputedStyle(submit).marginBlockStart).toBe("8px");
