@@ -88,12 +88,12 @@ authUi:
         submitting: Confirming email change…
         title: Confirm your new email
       passwordReset:
-        description: Set a new password to regain access to your Agora account.
+        description: Set a password to regain access to your Agora account.
         submit: Reset password
         submitting: Resetting password…
         title: Choose a new password
       register:
-        description: Set a password to access your Agora account.
+        description: Set a password to access your account.
         submit: Create account
         submitting: Creating account…
         title: Complete your Agora account

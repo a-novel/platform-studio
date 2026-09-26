@@ -88,12 +88,12 @@ authUi:
         submitting: Confirmation du changement d’adresse…
         title: Confirmez votre nouvelle adresse e-mail
       passwordReset:
-        description: Définissez un nouveau mot de passe pour retrouver l’accès à votre compte Agora.
+        description: Définissez un mot de passe pour retrouver l’accès à votre compte Agora.
         submit: Réinitialisez le mot de passe
         submitting: Réinitialisation du mot de passe…
         title: Choisissez un nouveau mot de passe
       register:
-        description: Définissez un mot de passe pour accéder à votre compte Agora.
+        description: Définissez un mot de passe pour accéder à votre compte.
         submit: Créez le compte
         submitting: Création du compte…
         title: Terminez la création de votre compte Agora
