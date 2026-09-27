@@ -117,6 +117,57 @@ describe("studio shell screen", () => {
     expect(shell.state.model.session.status).toBe("anonymous");
   });
 
+  it.each(["anonymous", "authenticated"] as const)(
+    "preserves %s navigation surfaces and control styles across desktop and mobile",
+    async (status) => {
+      const presentations = [];
+      for (const width of [1280, 390, 320]) {
+        await page.viewport(width, 844);
+        const view = await render(
+          Screen,
+          {
+            controller: controller({
+              drawerOpen: width < 768,
+              session: status === "authenticated" ? { status, displayName: "Maya Chen", initials: "MC" } : { status },
+            }),
+          },
+          withLocale()
+        );
+        const surface = page.getByRole(width < 768 ? "dialog" : "complementary", { name: /Studio/ });
+        await expect.element(surface).toBeVisible();
+        await surface.getByRole("img", { name: "Studio" }).hover();
+        const controls = [surface.getByRole("link", { name: "Home" })];
+        if (status === "authenticated") controls.push(surface.getByRole("link", { name: "Maya Chen" }));
+        controls.push(surface.getByRole("button", { name: status === "authenticated" ? "Log out" : "Login" }));
+
+        const styles = async (element: Element) => {
+          await new Promise(requestAnimationFrame);
+          for (const animation of element.getAnimations()) animation.finish();
+          await new Promise(requestAnimationFrame);
+          const style = getComputedStyle(element);
+          return {
+            background: style.backgroundColor,
+            color: style.color,
+            opacity: style.opacity,
+            weight: style.fontWeight,
+            lineHeight: style.lineHeight,
+            padding: style.padding,
+          };
+        };
+        const resting = await Promise.all(controls.map((control) => styles(control.element())));
+        const hovered = [];
+        for (const control of controls) {
+          await control.hover();
+          hovered.push(await styles(control.element()));
+        }
+        presentations.push({ background: getComputedStyle(surface.element()).backgroundColor, resting, hovered });
+        await view.unmount();
+      }
+      expect(presentations[1]).toEqual(presentations[0]);
+      expect(presentations[2]).toEqual(presentations[0]);
+    }
+  );
+
   it.each([320, 390, 767])("keeps mobile branding and controls aligned at %ipx", async (width) => {
     await page.viewport(width, 844);
     render(Screen, { controller: controller({ rail: "collapsed" }) }, withLocale());

@@ -65,6 +65,12 @@
 
 {#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
 
+{#snippet accountIcon()}
+  {#if authenticatedSession}
+    <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
+  {/if}
+{/snippet}
+
 {#snippet brand(compact: boolean)}
   <span class="brand" class:compact>
     {#if compact}
@@ -130,28 +136,25 @@
         </InlineMessage>
       </div>
     {:else if authenticatedSession}
-      <!-- eslint-disable svelte/no-navigation-without-resolve -- The pure shell receives an app-resolved URL. -->
-      <a
-        class="account-link"
-        class:compact
-        href={accountHref}
-        aria-label={compact
-          ? t("shell.manageAccountFor", { name: authenticatedSession.displayName })
-          : authenticatedSession.displayName}
+      <NavList
+        class="shell-navigation"
         title={compact ? authenticatedSession.displayName : t("shell.manageAccount")}
-      >
-        <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
-        {#if !compact}
-          <span class="account-name">{authenticatedSession.displayName}</span>
-        {/if}
-      </a>
-      <!-- eslint-enable svelte/no-navigation-without-resolve -->
+        items={[
+          {
+            href: accountHref,
+            label: compact
+              ? t("shell.manageAccountFor", { name: authenticatedSession.displayName })
+              : authenticatedSession.displayName,
+            icon: accountIcon,
+          },
+        ]}
+      />
       <form class="logout-form" method="POST" action={logoutAction} onsubmit={submitLogout}>
         <Button
           class="shell-account-button {compact ? 'compact-control' : ''}"
           type="submit"
           variant="ghost"
-          tone="danger"
+          tone="neutral"
           size="sm"
           square={compact}
           aria-label={compact ? t("shell.logout") : undefined}
@@ -352,15 +355,20 @@
     display: grid;
     position: sticky;
     grid-template-rows: auto minmax(0, 1fr) auto;
-    gap: var(--space-3);
+    gap: var(--space-4);
     z-index: var(--layer-sticky);
     box-sizing: border-box;
     inset-block-start: 0;
-    background: var(--color-surface-island-strong);
     padding: var(--space-2);
     inline-size: var(--studio-rail-width);
     block-size: 100dvb;
     overflow: hidden;
+  }
+
+  .rail,
+  .mobile-header,
+  .shell-viewport :global(dialog.studio-navigation-dialog) {
+    background: var(--color-surface-island-strong);
   }
 
   .rail-header {
@@ -405,13 +413,6 @@
     block-size: var(--icon-size-lg);
   }
 
-  .account-name {
-    min-inline-size: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .rail-navigation {
     min-block-size: 0;
     overflow-y: auto;
@@ -420,15 +421,21 @@
 
   :global(.shell-navigation) {
     inline-size: 100%;
+    min-inline-size: 0;
   }
 
   :global(.shell-navigation .item) {
     inline-size: 100%;
   }
 
+  :global(.shell-navigation .icon) {
+    justify-content: center;
+    inline-size: var(--control-height-sm);
+  }
+
   .collapsed :global(.shell-navigation .item) {
     justify-content: center;
-    padding-inline: 0;
+    padding: 0;
   }
 
   .collapsed :global(.shell-navigation .label) {
@@ -461,24 +468,20 @@
     flex: none;
     justify-content: center;
     align-items: center;
-    inline-size: var(--icon-size-sm);
+    inline-size: var(--control-height-sm);
   }
 
-  .account-status,
-  .account-link {
+  .account-status {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     box-sizing: border-box;
-    min-inline-size: 0;
-    min-block-size: var(--control-height-sm);
-  }
-
-  .account-status {
     border: var(--border-width-thin) solid var(--color-border-subtle);
     border-radius: var(--radius-md);
     background: var(--color-surface-island-subtle);
     padding: var(--space-2);
+    min-inline-size: 0;
+    min-block-size: var(--control-height-sm);
     color: var(--color-text-muted);
     font-size: var(--font-size-xs);
     line-height: var(--line-height-tight);
@@ -490,32 +493,11 @@
     color: var(--color-feedback-error-text);
   }
 
-  .account-status.compact,
-  .account-link.compact {
+  .account-status.compact {
     justify-content: center;
     padding: 0;
     inline-size: var(--control-height-sm);
     block-size: var(--control-height-sm);
-  }
-
-  .account-link {
-    border: 0;
-    border-radius: var(--radius-md);
-    background: transparent;
-    padding: var(--space-2);
-    color: var(--color-text-primary);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-sm);
-    text-decoration: none;
-  }
-
-  .account-link:hover {
-    background: var(--color-surface-hover);
-  }
-
-  .account-link:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus-ring);
-    outline-offset: var(--focus-ring-offset);
   }
 
   :global(.shell-account-button) {
@@ -524,6 +506,8 @@
 
   :global(button.shell-account-button:not(.compact-control)) {
     justify-content: flex-start;
+    border: 0;
+    padding: var(--space-2) var(--space-3);
     inline-size: 100%;
     overflow: hidden;
     text-align: start;
@@ -567,30 +551,6 @@
 
   .drawer-account {
     margin-block-start: var(--space-2);
-  }
-
-  .drawer-navigation :global(.shell-navigation .icon),
-  .drawer-account .account-action-icon {
-    justify-content: center;
-    inline-size: var(--control-height-sm);
-  }
-
-  .drawer-account .account-link,
-  .drawer-account :global(button.shell-account-button:not(.compact-control)) {
-    padding: var(--space-2) var(--space-3);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--line-height-compact);
-  }
-
-  .rail-account :global(button.shell-account-button.danger:not(.compact-control)),
-  .drawer-account :global(button.shell-account-button.danger:not(.compact-control)) {
-    --button-foreground: color-mix(in oklab, var(--color-text-primary) var(--color-mix-3), var(--base-pressure));
-    --button-foreground-hover: color-mix(in oklab, var(--color-text-primary) var(--color-mix-7), var(--base-pressure));
-  }
-
-  .drawer-account .account-link:hover,
-  .drawer-account :global(button.shell-account-button:not(.compact-control):hover:not(:disabled)) {
-    background: var(--color-navigation-hover-surface);
   }
 
   :global(.navigation-dialog-close) {
@@ -699,7 +659,6 @@
       gap: var(--space-2);
       z-index: var(--layer-sticky);
       inset-block-start: 0;
-      background: var(--color-surface-island-strong);
       padding: var(--space-2);
     }
 
