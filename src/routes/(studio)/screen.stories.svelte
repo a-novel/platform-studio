@@ -67,7 +67,7 @@
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("link", { name: t("shell.home") })).toHaveAttribute("aria-current", "page");
-    await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "160");
+    await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "128");
 
     const signIn = canvas.getByRole("button", { name: t("shell.signIn") });
     await userEvent.click(signIn);
@@ -95,7 +95,7 @@
   }) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "32");
+    await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "24");
     const toggle = canvas.getByRole("button", { name: t("shell.expandNavigation") });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
@@ -122,6 +122,7 @@
     const t = createStorybookTranslator(globals);
     const navigation = canvas.getByRole("dialog", { name: t("shell.brand") });
     await expect(navigation).toBeVisible();
+    await expect(within(navigation).getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "128");
 
     await userEvent.click(within(navigation).getByRole("button", { name: t("shell.closeNavigation") }));
     await expect(navigation).toBeVisible();

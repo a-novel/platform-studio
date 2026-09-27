@@ -66,25 +66,31 @@
 {#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
 
 {#snippet brand(compact: boolean)}
-  {#if compact}
-    <img
-      class="brand-icon"
-      src={agoraIcon48}
-      srcset={`${agoraIcon48} 1x, ${agoraIcon96} 2x`}
-      width="32"
-      height="32"
-      alt={t("shell.brand")}
-    />
-  {:else}
-    <img
-      class="brand-banner"
-      src={agoraBanner320}
-      srcset={`${agoraBanner320} 1x, ${agoraBanner640} 2x`}
-      width="160"
-      height="40"
-      alt={t("shell.brand")}
-    />
-  {/if}
+  <span class="brand" class:compact>
+    {#if compact}
+      <img
+        class="brand-icon"
+        src={agoraIcon48}
+        srcset={`${agoraIcon48} 1x, ${agoraIcon96} 2x`}
+        width="24"
+        height="24"
+        alt={t("shell.brand")}
+      />
+    {:else}
+      <img
+        class="brand-banner"
+        src={agoraBanner320}
+        srcset={`${agoraBanner320} 1x, ${agoraBanner640} 2x`}
+        width="128"
+        height="32"
+        alt={t("shell.brand")}
+      />
+    {/if}
+  </span>
+{/snippet}
+
+{#snippet navigationTitle()}
+  {@render brand(false)}
 {/snippet}
 
 {#snippet primaryNavigation(onNavigate?: (event: MouseEvent) => void)}
@@ -255,6 +261,7 @@
 
     <div class="workspace">
       <header class="mobile-header">
+        {@render brand(false)}
         <IconButton
           label={t("shell.openNavigation")}
           variant="ghost"
@@ -266,7 +273,6 @@
         >
           <Menu size="var(--icon-size-sm)" aria-hidden="true" />
         </IconButton>
-        {@render brand(false)}
       </header>
 
       <main id="main-content" class="main-content" tabindex="-1">
@@ -279,7 +285,7 @@
     id={drawerId}
     class="studio-navigation-dialog"
     controller={controller.navigationDialog}
-    title={t("shell.brand")}
+    title={navigationTitle}
     closeOnBackdrop
   >
     <IconButton
@@ -370,6 +376,17 @@
     justify-content: center;
   }
 
+  .brand {
+    display: flex;
+    align-items: center;
+    padding: var(--space-2);
+    min-inline-size: 0;
+  }
+
+  .brand.compact {
+    padding: var(--space-1);
+  }
+
   .brand-banner,
   .brand-icon {
     display: block;
@@ -378,14 +395,14 @@
   }
 
   .brand-banner {
-    inline-size: 10rem;
+    inline-size: calc(var(--control-height-sm) * 4);
     max-inline-size: 100%;
     block-size: auto;
   }
 
   .brand-icon {
-    inline-size: 2rem;
-    block-size: 2rem;
+    inline-size: var(--icon-size-lg);
+    block-size: var(--icon-size-lg);
   }
 
   .account-name {
@@ -585,6 +602,8 @@
 
   :global(.navigation-dialog-close) {
     position: fixed;
+    inset-block-start: var(--space-4);
+    inset-inline-end: var(--space-2);
   }
 
   :global(.authentication-dialog-close) {
@@ -636,7 +655,8 @@
   }
 
   :global(dialog.studio-navigation-dialog > .panel > header) {
-    padding-inline-end: calc(var(--space-5) + var(--control-height-sm));
+    padding: var(--space-2);
+    padding-inline-end: calc(var(--space-4) + var(--control-height-sm));
   }
 
   :global(dialog.studio-navigation-dialog > .panel > .content) {
@@ -670,11 +690,6 @@
       inset-block-start: 0;
       background: var(--color-surface-island-strong);
       padding: var(--space-2);
-    }
-
-    :global(dialog.studio-navigation-dialog > .panel > header) {
-      padding: var(--space-3);
-      padding-inline-end: calc(var(--space-3) + var(--control-height-sm));
     }
 
     :global(dialog.studio-navigation-dialog > .panel > .content) {

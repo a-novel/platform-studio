@@ -65,7 +65,7 @@ describe("studio shell screen", () => {
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
-    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "160");
+    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "128");
     const signIn = page.getByRole("button", { name: "Login" });
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
     await signIn.click();
@@ -83,7 +83,7 @@ describe("studio shell screen", () => {
     );
 
     await expect.element(page.getByRole("link", { name: "Accueil" })).toBeVisible();
-    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "32");
+    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "24");
     await expect
       .element(page.getByRole("button", { name: "Développer la navigation" }))
       .toHaveAttribute("aria-expanded", "false");
@@ -114,6 +114,35 @@ describe("studio shell screen", () => {
 
     await page.getByRole("button", { name: "Log out" }).click();
     expect(shell.state.model.session.status).toBe("anonymous");
+  });
+
+  it.each([320, 390, 767])("keeps mobile branding and controls aligned at %ipx", async (width) => {
+    await page.viewport(width, 844);
+    render(Screen, { controller: controller({ rail: "collapsed" }) }, withLocale());
+
+    const logo = page.getByRole("img", { name: "Studio" });
+    await expect.element(logo).toHaveAttribute("width", "128");
+    const logoBounds = logo.element().getBoundingClientRect();
+    const source = logo.element().getAttribute("src");
+    const open = page.getByRole("button", { name: "Open navigation" });
+    const controlBounds = open.element().getBoundingClientRect();
+    expect(logoBounds.left).toBeGreaterThanOrEqual(16);
+    expect(controlBounds.left).toBeGreaterThan(logoBounds.right);
+    expect(
+      Math.abs(logoBounds.top + logoBounds.height / 2 - controlBounds.top - controlBounds.height / 2)
+    ).toBeLessThanOrEqual(1);
+
+    await open.click();
+    const menu = page.getByRole("dialog", { name: "Studio" });
+    const menuLogo = menu.getByRole("img", { name: "Studio" });
+    await expect.element(menuLogo).toHaveAttribute("src", source);
+    const menuLogoBounds = menuLogo.element().getBoundingClientRect();
+    const closeBounds = menu.getByRole("button", { name: "Close navigation" }).element().getBoundingClientRect();
+    for (const key of ["x", "y", "width", "height"] as const) {
+      expect(menuLogoBounds[key]).toBeCloseTo(logoBounds[key], 0);
+      expect(closeBounds[key]).toBeCloseTo(controlBounds[key], 0);
+    }
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
   });
 
   it("aligns mobile drawer labels and contains a long account name", async () => {
