@@ -16,7 +16,7 @@
   import AuthenticationPanel from "./(authentication)/screen.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Avatar, Button, Dialog, IconButton, InlineMessage, NavList, SkipLink } from "@a-novel-kit/uikit";
+  import { Alert, Avatar, Button, Dialog, IconButton, InlineMessage, NavList, SkipLink } from "@a-novel-kit/uikit";
   import agoraBanner320 from "@a-novel-kit/uikit-images/files/banner/320w/agora-banner.png";
   import agoraBanner640 from "@a-novel-kit/uikit-images/files/banner/640w/agora-banner.png";
   import agoraIcon48 from "@a-novel-kit/uikit-images/files/icon/48x48/agora-icon.png";
@@ -116,25 +116,17 @@
   </nav>
 {/snippet}
 
-{#snippet accountWidget(compact: boolean, surface: "rail" | "drawer")}
+{#snippet accountWidget(compact: boolean)}
   <div class="account-widget" data-session={model.session.status}>
-    {#if model.session.status === "loading"}
-      <div class="account-status" class:compact title={compact ? t("shell.sessionLoading") : undefined}>
-        <InlineMessage tone="loading" aria-label={compact ? t("shell.sessionLoading") : undefined}>
-          {#if !compact}{t("shell.sessionLoading")}{/if}
-        </InlineMessage>
-      </div>
-    {:else if model.session.status === "error"}
-      <div
-        id={`${componentId}-${surface}-session-error`}
-        class="account-status error"
-        class:compact
-        title={compact ? t("shell.sessionUnavailable") : undefined}
-      >
-        <InlineMessage tone="error" aria-label={compact ? t("shell.sessionUnavailable") : undefined}>
-          {#if !compact}{t("shell.sessionUnavailable")}{/if}
-        </InlineMessage>
-      </div>
+    {#if model.session.status === "loading" || model.session.status === "error"}
+      {@const title = model.session.status === "loading" ? t("shell.sessionLoading") : t("shell.sessionUnavailable")}
+      {#if compact}
+        <div class="compact-status" {title}>
+          <InlineMessage tone={model.session.status} aria-label={title} />
+        </div>
+      {:else}
+        <Alert tone={model.session.status} {title} />
+      {/if}
     {:else if authenticatedSession}
       <NavList
         class="shell-navigation"
@@ -258,7 +250,7 @@
       </div>
 
       <div class="rail-account">
-        {@render accountWidget(compactRail, "rail")}
+        {@render accountWidget(compactRail)}
       </div>
     </aside>
 
@@ -303,7 +295,7 @@
     </IconButton>
     <div class="drawer-navigation">{@render primaryNavigation(closeDrawerAfterNavigation)}</div>
     <div class="drawer-account">
-      {@render accountWidget(false, "drawer")}
+      {@render accountWidget(false)}
     </div>
   </Dialog>
 
@@ -471,31 +463,9 @@
     inline-size: var(--control-height-sm);
   }
 
-  .account-status {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    box-sizing: border-box;
-    border: var(--border-width-thin) solid var(--color-border-subtle);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-2);
-    min-inline-size: 0;
-    min-block-size: var(--control-height-sm);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-xs);
-    line-height: var(--line-height-tight);
-  }
-
-  .account-status.error {
-    border-color: var(--color-feedback-error-border);
-    background: var(--color-feedback-error-surface);
-    color: var(--color-feedback-error-text);
-  }
-
-  .account-status.compact {
-    justify-content: center;
-    padding: 0;
+  .compact-status {
+    display: grid;
+    place-items: center;
     inline-size: var(--control-height-sm);
     block-size: var(--control-height-sm);
   }

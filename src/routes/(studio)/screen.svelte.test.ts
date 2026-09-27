@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 
+import { Alert } from "@a-novel-kit/uikit";
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
 
@@ -317,5 +318,37 @@ describe("studio shell screen", () => {
 
     await expect.element(page.getByRole("alert")).toHaveTextContent("Account details are unavailable.");
     await expect.element(page.getByRole("button", { name: /Retry account status/i })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [320, "loading"],
+    [320, "error"],
+    [1280, "loading"],
+    [1280, "error"],
+  ] as const)("uses the shared section message for %s px %s feedback", async (width, status) => {
+    await page.viewport(width, 800);
+    render(Screen, { controller: controller({ session: { status }, drawerOpen: width < 1280 }) }, withLocale());
+    const role = status === "error" ? "alert" : "status";
+    const message = page.getByRole(role);
+    await expect.element(message).toBeVisible();
+    const actual = getComputedStyle(message.element());
+    render(Alert, { tone: status, title: "Reference", "aria-label": "Reference" });
+    const reference = getComputedStyle(page.getByRole(role, { name: "Reference" }).element());
+
+    for (const property of ["background-color", "border-width", "padding", "border-radius", "gap"]) {
+      expect(actual.getPropertyValue(property)).toBe(reference.getPropertyValue(property));
+    }
+  });
+
+  it.each(["loading", "error"] as const)("keeps collapsed %s feedback named without a custom box", async (status) => {
+    render(Screen, { controller: controller({ session: { status }, rail: "collapsed" }) }, withLocale());
+    const message = page.getByRole(status === "error" ? "alert" : "status", {
+      name: status === "error" ? "Account details are unavailable." : "Loading account",
+    });
+    await expect.element(message).toBeVisible();
+    const wrapper = message.element().parentElement;
+    if (!wrapper) throw new Error("Missing compact feedback layout");
+    expect(getComputedStyle(wrapper).borderWidth).toBe("0px");
+    expect(getComputedStyle(wrapper).backgroundColor).toBe("rgba(0, 0, 0, 0)");
   });
 });
