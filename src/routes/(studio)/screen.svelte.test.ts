@@ -65,7 +65,7 @@ describe("studio shell screen", () => {
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
-    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "112");
+    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "96");
     const signIn = page.getByRole("button", { name: "Login" });
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
     await signIn.click();
@@ -121,7 +121,7 @@ describe("studio shell screen", () => {
     render(Screen, { controller: controller({ rail: "collapsed" }) }, withLocale());
 
     const logo = page.getByRole("img", { name: "Studio" });
-    await expect.element(logo).toHaveAttribute("width", "112");
+    await expect.element(logo).toHaveAttribute("width", "96");
     const logoBounds = logo.element().getBoundingClientRect();
     const source = logo.element().getAttribute("src");
     const open = page.getByRole("button", { name: "Open navigation" });
