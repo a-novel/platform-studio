@@ -108,6 +108,13 @@
     inline-size: 100%;
   }
 
+  @media (min-width: 35rem) {
+    form > :global(button) {
+      justify-self: start;
+      inline-size: auto;
+    }
+  }
+
   .completion-state {
     display: grid;
     gap: var(--space-2);

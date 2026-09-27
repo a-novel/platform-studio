@@ -68,18 +68,27 @@ async function submitForm(buttonName: string): Promise<HTMLFormElement> {
   return form as HTMLFormElement;
 }
 
-function expectFormActionLayout(form: HTMLFormElement) {
+async function expectFormActionLayout(form: HTMLFormElement) {
   const button = form.querySelector('button[type="submit"]');
   expect(button).not.toBeNull();
   if (!button) return;
 
-  const bounds = button.getBoundingClientRect();
-  const formBounds = form.getBoundingClientRect();
-  expect(bounds.left).toBeCloseTo(formBounds.left);
-  expect(bounds.width).toBeCloseTo(formBounds.width);
-  expect(getComputedStyle(button).marginBlockStart).toBe("16px");
-  const preceding = button.previousElementSibling;
-  if (preceding) expect(bounds.top - preceding.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(32);
+  const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+  try {
+    for (const width of [390, 1280]) {
+      await page.viewport(width, 844);
+      const bounds = button.getBoundingClientRect();
+      const formBounds = form.getBoundingClientRect();
+      expect(bounds.left).toBeCloseTo(formBounds.left);
+      if (width === 390) expect(bounds.width).toBeCloseTo(formBounds.width);
+      else expect(bounds.width).toBeLessThan(formBounds.width);
+      expect(getComputedStyle(button).marginBlockStart).toBe("16px");
+      const preceding = button.previousElementSibling;
+      if (preceding) expect(bounds.top - preceding.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(32);
+    }
+  } finally {
+    await page.viewport(originalViewport.width, originalViewport.height);
+  }
 }
 
 describe("pure authentication screens", () => {
@@ -90,7 +99,7 @@ describe("pure authentication screens", () => {
 
     const form = await submitForm("Login");
 
-    expectFormActionLayout(form);
+    await expectFormActionLayout(form);
     expect(form.getAttribute("action")).toBe("/auth?/login");
     expect(form.getAttribute("method")).toBe("POST");
     expect(controller.state.model.state.status).toBe("submitting");
@@ -234,7 +243,7 @@ describe("pure authentication screens", () => {
     ] as const) {
       const form = await submitForm(label);
       expect(form.getAttribute("action")).toBe(action);
-      expectFormActionLayout(form);
+      await expectFormActionLayout(form);
     }
     expect(controller.state.model).toMatchObject({
       status: "ready",
@@ -260,7 +269,7 @@ describe("pure authentication screens", () => {
     await expect.element(button).toBeDisabled();
     const form = (button.element() as HTMLButtonElement).form;
     expect(form).not.toBeNull();
-    if (form) expectFormActionLayout(form);
+    if (form) await expectFormActionLayout(form);
     expect(button.element().querySelector('[role="status"]')).toBeNull();
     await expect.element(page.getByLabelText(/New password/)).toBeDisabled();
     await expect.element(page.getByLabelText(/Confirm new password/)).toBeDisabled();
@@ -301,7 +310,7 @@ describe("pure authentication screens", () => {
     const form = await submitForm("Update email");
 
     expect(form.querySelector('input[type="password"]')).toBeNull();
-    expectFormActionLayout(form);
+    await expectFormActionLayout(form);
     expect(controller.state.model.state.status).toBe("submitting");
   });
 });

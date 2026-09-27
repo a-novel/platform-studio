@@ -378,6 +378,13 @@
     inline-size: 100%;
   }
 
+  @media (min-width: 35rem) {
+    form > :global(button) {
+      justify-self: start;
+      inline-size: auto;
+    }
+  }
+
   .roles {
     display: flex;
     flex-wrap: wrap;

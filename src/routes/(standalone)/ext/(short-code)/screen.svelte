@@ -181,6 +181,13 @@
     inline-size: 100%;
   }
 
+  @media (min-width: 35rem) {
+    form > :global(button) {
+      justify-self: start;
+      inline-size: auto;
+    }
+  }
+
   :global(.alert.compact-form-error.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
