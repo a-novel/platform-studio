@@ -85,7 +85,7 @@ export default interface Resources {
           "confirmLabel": "Confirm new password",
           "currentLabel": "Current password",
           "description": "Enter your current password to change it.",
-          "hint": "Choose a password you don’t use anywhere else.",
+          "hint": "Choose a long, memorable password.",
           "newLabel": "New password",
           "submit": "Change password",
           "submitting": "Changing password…",

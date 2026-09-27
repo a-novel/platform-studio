@@ -70,7 +70,7 @@ authUi:
       confirmLabel: Confirmez le nouveau mot de passe
       currentLabel: Mot de passe actuel
       description: Saisissez votre mot de passe actuel pour le modifier.
-      hint: Choisissez un mot de passe que vous n’utilisez nulle part ailleurs.
+      hint: Choisissez un mot de passe long et facile à retenir.
       newLabel: Nouveau mot de passe
       submit: Changer le mot de passe
       submitting: Modification du mot de passe…
