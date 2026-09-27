@@ -54,7 +54,11 @@
 </script>
 
 <main class="standalone-page">
-  <section class="secure-action" aria-labelledby={`${componentId}-title`}>
+  <section
+    class="secure-action"
+    class:outcome={unavailableStatus !== null || model.state.status === "success"}
+    aria-labelledby={`${componentId}-title`}
+  >
     <header class="page-heading">
       <h1 id={`${componentId}-title`}>{journeyTitle}</h1>
       {#if !unavailableStatus && model.state.status !== "success"}<p>{journeyDescription}</p>{/if}
@@ -148,7 +152,13 @@
   .secure-action {
     align-self: center;
     margin-inline: auto;
+    inline-size: 100%;
     max-inline-size: var(--layout-readable-measure);
+  }
+
+  .secure-action.outcome {
+    gap: var(--space-6);
+    text-align: center;
   }
 
   .page-heading {
@@ -168,17 +178,22 @@
   }
 
   .page-heading p {
-    line-height: var(--line-height-normal);
-  }
-
-  .page-heading p {
     color: var(--color-text-muted);
+    line-height: var(--line-height-normal);
   }
 
   form > :global(button) {
     justify-content: center;
     margin-block-start: var(--space-4);
     inline-size: 100%;
+  }
+
+  form > :global(.compact-form-error:not(:first-child)) {
+    margin-block-start: var(--space-4);
+  }
+
+  form > :global(.compact-form-error + button) {
+    margin-block-start: 0;
   }
 
   @media (min-width: 35rem) {
@@ -194,7 +209,7 @@
     }
   }
 
-  :global(.compact-form-error.compact-form-error) {
+  form > :global(.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
   }

@@ -100,12 +100,10 @@
 
       <Card surface="raised" padding="none">
         <section id="account-password" class="card-section" aria-labelledby={`${componentId}-password-title`}>
-          <div class="section-heading">
-            <div>
-              <h2 id={`${componentId}-password-title`}>{t("authUi.account.password.title")}</h2>
-              <p>{t("authUi.account.password.description")}</p>
-            </div>
-          </div>
+          <header class="section-heading">
+            <h2 id={`${componentId}-password-title`}>{t("authUi.account.password.title")}</h2>
+            <p>{t("authUi.account.password.description")}</p>
+          </header>
 
           {#if model.passwordState.status === "success"}
             <Alert tone="success" title={t("authUi.account.password.successTitle")}>
@@ -191,12 +189,10 @@
 
       <Card surface="raised" padding="none">
         <section id="account-email" class="card-section" aria-labelledby={`${componentId}-email-title`}>
-          <div class="section-heading">
-            <div>
-              <h2 id={`${componentId}-email-title`}>{t("authUi.account.email.title")}</h2>
-              <p>{t("authUi.account.email.description")}</p>
-            </div>
-          </div>
+          <header class="section-heading">
+            <h2 id={`${componentId}-email-title`}>{t("authUi.account.email.title")}</h2>
+            <p>{t("authUi.account.email.description")}</p>
+          </header>
 
           {#if model.emailState.status === "pending-email"}
             <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
@@ -254,12 +250,10 @@
 
       <Card surface="subtle" padding="none">
         <section id="account-session" class="logout-section" aria-labelledby={`${componentId}-logout-title`}>
-          <div class="section-heading">
-            <div>
-              <h2 id={`${componentId}-logout-title`}>{t("authUi.account.logout.title")}</h2>
-              <p>{t("authUi.account.logout.description")}</p>
-            </div>
-          </div>
+          <header class="section-heading">
+            <h2 id={`${componentId}-logout-title`}>{t("authUi.account.logout.title")}</h2>
+            <p>{t("authUi.account.logout.description")}</p>
+          </header>
           <form
             method="POST"
             action={actions.logout}
@@ -318,6 +312,11 @@
     color: var(--color-text-accent);
   }
 
+  header.section-heading {
+    display: grid;
+    gap: var(--space-2);
+  }
+
   h2,
   .section-heading p,
   .feedback-message,
@@ -344,6 +343,14 @@
     justify-content: center;
     margin-block-start: var(--space-4);
     inline-size: 100%;
+  }
+
+  form > :global(.compact-form-error:not(:first-child)) {
+    margin-block-start: var(--space-4);
+  }
+
+  form > :global(.compact-form-error + button) {
+    margin-block-start: 0;
   }
 
   @media (min-width: 35rem) {
@@ -397,7 +404,7 @@
     overflow-wrap: anywhere;
   }
 
-  :global(.compact-form-error.compact-form-error) {
+  form > :global(.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
   }

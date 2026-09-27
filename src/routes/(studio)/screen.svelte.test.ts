@@ -1,6 +1,7 @@
 import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 import type { StudioShellViewModel } from "$lib/application/shell/types";
 import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
+import { createStudioI18n } from "$lib/i18n/instance";
 
 import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
 import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
@@ -186,6 +187,31 @@ describe("studio shell screen", () => {
     await registrationDialog.getByRole("button", { name: "Login" }).click();
 
     expect(shell.state.model.authView).toBe("login");
+  });
+
+  it.each([320, 390, 768, 1280])("aligns dialog headings, close controls, and actions at %ipx", async (width) => {
+    await page.viewport(width, 568);
+    const { t } = createStudioI18n("fr");
+    render(Screen, { controller: controller({ authView: "login" }) }, withLocale("fr"));
+
+    const dialog = page.getByRole("dialog");
+    await expect.element(dialog).toBeVisible();
+    const heading = dialog.getByRole("heading").element().getBoundingClientRect();
+    const close = dialog
+      .getByRole("button", { name: t("shell.closeAuthentication") })
+      .element()
+      .getBoundingClientRect();
+    const submit = dialog.getByRole("button", { name: t("shell.signIn"), exact: true }).element() as HTMLButtonElement;
+    if (!submit.form) throw new Error("Submit button must belong to a form");
+    const form = submit.form.getBoundingClientRect();
+    const secondary = dialog.getByText(t("shell.auth.forgotPassword")).element().getBoundingClientRect();
+
+    expect(heading.left).toBeCloseTo(form.left);
+    expect(close.top).toBeCloseTo(heading.top);
+    expect(close.right).toBeCloseTo(form.right);
+    expect(secondary.left).toBeCloseTo(form.left);
+    expect(secondary.top - submit.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(24);
+    expect(dialog.element().scrollWidth).toBeLessThanOrEqual(dialog.element().clientWidth);
   });
 
   it("keeps a review dialog open when its controller rejects dismissal", async () => {

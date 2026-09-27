@@ -593,38 +593,49 @@
     background: var(--color-navigation-hover-surface);
   }
 
-  :global(.navigation-dialog-close),
-  :global(.authentication-dialog-close) {
-    z-index: 1;
-    inset-block-start: var(--space-3);
-    inset-inline-end: var(--space-3);
-  }
-
   :global(.navigation-dialog-close) {
     position: fixed;
+    z-index: 1;
     inset-block-start: var(--space-4);
     inset-inline-end: var(--space-2);
   }
 
+  :global(dialog.authentication-dialog) {
+    --authentication-padding-inline: var(--space-5);
+    --authentication-padding-block: var(--space-5);
+  }
+
   :global(.authentication-dialog-close) {
     position: absolute;
+    z-index: 1;
+    inset-block-start: var(--authentication-padding-block);
+    inset-inline-end: var(--authentication-padding-inline);
   }
 
   :global(dialog.authentication-dialog > .panel > header) {
-    padding-inline-end: calc(var(--space-5) + var(--control-height-sm));
-    padding-block-end: var(--space-2);
+    padding: var(--authentication-padding-block) var(--authentication-padding-inline) var(--space-4);
+    padding-inline-end: calc(var(--authentication-padding-inline) + var(--control-height-sm) + var(--space-2));
+  }
+
+  :global(dialog.authentication-dialog > .panel > header > h2) {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--control-height-sm);
   }
 
   :global(dialog.authentication-dialog > .panel > .content) {
-    padding-block: var(--space-3);
+    padding: 0 var(--authentication-padding-inline) var(--space-6);
   }
 
   :global(dialog.authentication-dialog > .panel > footer) {
     justify-content: flex-start;
-    padding-block-start: var(--space-2);
+    gap: var(--space-2) var(--space-6);
+    padding: 0 var(--authentication-padding-inline) var(--authentication-padding-block);
   }
 
-  :global(.authentication-secondary-action) {
+  :global(dialog.authentication-dialog .authentication-secondary-action) {
+    border: 0;
+    padding-inline: 0;
     min-inline-size: 0;
     max-inline-size: 100%;
     white-space: normal;
@@ -697,6 +708,9 @@
     }
 
     :global(dialog.authentication-dialog.authentication-dialog) {
+      --authentication-padding-inline: var(--space-2);
+      --authentication-padding-block: var(--space-3);
+
       inline-size: calc(100vi - var(--space-4));
       max-inline-size: calc(100vi - var(--space-4));
       max-block-size: calc(100dvb - var(--space-4));
@@ -706,26 +720,14 @@
       min-inline-size: 0;
     }
 
-    :global(dialog.authentication-dialog > .panel > header) {
-      padding-inline: var(--space-2) calc(var(--space-3) + var(--control-height-sm));
-      padding-block-start: var(--space-3);
-    }
-
-    :global(dialog.authentication-dialog > .panel > .content) {
-      padding-inline: var(--space-2);
-    }
-
     :global(dialog.authentication-dialog > .panel > footer) {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-1);
-      padding-inline: var(--space-2);
-      padding-block-end: var(--space-3);
     }
 
     :global(dialog.authentication-dialog > .panel > footer > .authentication-secondary-action) {
       justify-content: flex-start;
-      padding-inline: var(--space-2);
       inline-size: 100%;
       text-align: start;
     }

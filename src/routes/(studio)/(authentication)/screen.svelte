@@ -110,6 +110,14 @@
     inline-size: 100%;
   }
 
+  form > :global(.compact-form-error:not(:first-child)) {
+    margin-block-start: var(--space-4);
+  }
+
+  form > :global(.compact-form-error + button) {
+    margin-block-start: 0;
+  }
+
   @media (min-width: 35rem) {
     form > :global(button) {
       justify-self: start;
@@ -122,7 +130,7 @@
     overflow-wrap: anywhere;
   }
 
-  :global(.compact-form-error.compact-form-error) {
+  form > :global(.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
   }

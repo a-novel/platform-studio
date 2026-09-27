@@ -78,9 +78,18 @@ async function expectFormActionLayout(form: HTMLFormElement) {
       expect(bounds.left).toBeCloseTo(formBounds.left);
       if (width === 390) expect(bounds.width).toBeCloseTo(formBounds.width);
       else expect(bounds.width).toBeLessThan(formBounds.width);
-      expect(getComputedStyle(button).marginBlockStart).toBe("16px");
       const preceding = button.previousElementSibling;
-      if (preceding) expect(bounds.top - preceding.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(32);
+      if (preceding) {
+        const gap = bounds.top - preceding.getBoundingClientRect().bottom;
+        if (preceding.getAttribute("role") === "alert") {
+          expect(gap).toBe(16);
+          const fields = preceding.previousElementSibling;
+          if (fields)
+            expect(
+              preceding.getBoundingClientRect().top - fields.getBoundingClientRect().bottom
+            ).toBeGreaterThanOrEqual(32);
+        } else expect(gap).toBeGreaterThanOrEqual(32);
+      }
     }
   } finally {
     await page.viewport(originalViewport.width, originalViewport.height);
@@ -157,6 +166,9 @@ describe("pure authentication screens", () => {
     const submit = page.getByRole("button", { name: "Login" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     expect(alert.textContent?.trim()).toBe("The service is temporarily unavailable. Try again.");
+    const form = (submit as HTMLButtonElement).form;
+    if (!form) throw new Error("Submit button must belong to a form");
+    await expectFormActionLayout(form);
   });
 
   it("translates stable feedback codes through the active locale", async () => {
@@ -311,6 +323,41 @@ describe("pure authentication screens", () => {
     await expect.element(page.getByText("Your account is ready.")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Continue to Studio" })).toHaveAttribute("href", "/");
     expect(document.querySelector("form")).toBeNull();
+    const heading = page.getByRole("heading", { level: 1 }).element();
+    expect(getComputedStyle(heading).textAlign).toBe("center");
+  });
+
+  it("keeps account and secure-link service errors with their submit actions", async () => {
+    const account = await render(
+      AccountScreen,
+      {
+        controller: createAccountScreenController({
+          model: {
+            ...readyAccount,
+            passwordState: { status: "service-error", feedback: "serviceUnavailable" },
+            emailState: { status: "service-error", feedback: "serviceUnavailable" },
+            logoutState: { status: "service-error", feedback: "serviceUnavailable" },
+          },
+          actions: { password: "/account?/password", email: "/account?/email", logout: "/account?/logout" },
+          allowNativeSubmission: false,
+        }),
+      },
+      withLocale()
+    );
+    for (const form of document.querySelectorAll("form")) await expectFormActionLayout(form);
+    account.unmount();
+
+    await render(
+      ShortCodeScreen,
+      {
+        controller: shortCodeController({
+          journey: "password-reset",
+          state: { status: "service-error", feedback: "serviceUnavailable" },
+        }),
+      },
+      withLocale()
+    );
+    for (const form of document.querySelectorAll("form")) await expectFormActionLayout(form);
   });
 
   it("renders email confirmation without password controls", async () => {
