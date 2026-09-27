@@ -256,7 +256,11 @@ describe("studio shell screen", () => {
     if (!submit.form) throw new Error("Submit button must belong to a form");
     const form = submit.form.getBoundingClientRect();
     const secondary = dialog.getByText(t("shell.auth.forgotPassword")).element().getBoundingClientRect();
+    const outer = dialog.element().getBoundingClientRect();
 
+    if (width < 768) expect(outer.left).toBe(8);
+    expect(form.left - outer.left).toBe(width < 768 ? 16 : 20);
+    expect(outer.right - form.right).toBe(width < 768 ? 16 : 20);
     expect(heading.left).toBeCloseTo(form.left);
     expect(close.top).toBeCloseTo(heading.top);
     expect(close.right).toBeCloseTo(form.right);

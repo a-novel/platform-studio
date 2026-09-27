@@ -417,7 +417,7 @@
 
     .card-section,
     .logout-section {
-      padding: var(--space-3) var(--space-2);
+      padding: var(--space-4);
     }
 
     .session-details {

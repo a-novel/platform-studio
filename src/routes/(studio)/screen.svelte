@@ -667,8 +667,8 @@
     }
 
     :global(dialog.authentication-dialog.authentication-dialog) {
-      --authentication-padding-inline: var(--space-2);
-      --authentication-padding-block: var(--space-3);
+      --authentication-padding-inline: var(--space-4);
+      --authentication-padding-block: var(--space-4);
 
       inline-size: calc(100vi - var(--space-4));
       max-inline-size: calc(100vi - var(--space-4));

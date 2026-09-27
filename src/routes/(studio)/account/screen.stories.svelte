@@ -72,11 +72,9 @@
     const emailInput = canvas.getByRole("textbox", { name: t("authUi.account.email.label") });
     await expect(emailInput).toBeVisible();
     if (window.matchMedia("(width < 35rem)").matches) {
-      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const submit = canvas.getByRole("button", { name: t("authUi.account.email.submit") });
-      await expect(submit.getBoundingClientRect().width).toBeGreaterThanOrEqual(
-        document.documentElement.clientWidth - 2 * rem
-      );
+      const submit = canvas.getByRole<HTMLButtonElement>("button", { name: t("authUi.account.email.submit") });
+      if (!submit.form) throw new Error("Submit button must belong to a form");
+      await expect(submit.getBoundingClientRect().width).toBeCloseTo(submit.form.getBoundingClientRect().width);
     }
 
     const password = canvas.getByRole("region", { name: t("authUi.account.password.title") }).getBoundingClientRect();

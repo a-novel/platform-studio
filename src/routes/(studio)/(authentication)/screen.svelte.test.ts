@@ -232,6 +232,7 @@ describe("pure authentication screens", () => {
   });
 
   it("keeps account actions independently mockable", async () => {
+    await page.viewport(390, 844);
     const controller = createAccountScreenController({
       model: readyAccount,
       actions: {
@@ -252,6 +253,13 @@ describe("pure authentication screens", () => {
       const form = await submitForm(label);
       expect(form.getAttribute("action")).toBe(action);
       await expectFormActionLayout(form);
+      const section = form.closest("section");
+      if (!section) throw new Error("Account forms must belong to a section");
+      const outer = section.getBoundingClientRect();
+      const inner = form.getBoundingClientRect();
+      expect(outer.left).toBe(8);
+      expect(inner.left - outer.left).toBe(16);
+      expect(outer.right - inner.right).toBe(16);
     }
     expect(controller.state.model).toMatchObject({
       passwordState: { status: "submitting" },
