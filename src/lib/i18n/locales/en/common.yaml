@@ -41,9 +41,9 @@ authUi:
       successTitle: Email updated
       title: Change your email
     eyebrow: Account
-    loadErrorTitle: Account details are unavailable
+    loadErrorTitle: Session summary unavailable
     loadingDescription: Checking your session.
-    loadingTitle: Loading account
+    loadingTitle: Loading session
     logout:
       description: You’ll be logged out of Studio on this device.
       submit: Log out

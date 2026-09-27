@@ -1,8 +1,4 @@
-import type {
-  AuthenticationPanelModel,
-  ReadyAccountScreenModel,
-  ShortCodeScreenModel,
-} from "$lib/application/auth/types";
+import type { AccountScreenModel, AuthenticationPanelModel, ShortCodeScreenModel } from "$lib/application/auth/types";
 import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
 import { createShortCodeScreenController } from "../../(standalone)/ext/(short-code)/controller.svelte";
@@ -19,9 +15,9 @@ import { page } from "vitest/browser";
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
 
-const readyAccount: ReadyAccountScreenModel = {
-  status: "ready",
+const readyAccount: AccountScreenModel = {
   claims: {
+    status: "ready",
     userId: "verified-user-id",
     roles: ["auth:user"],
     accessExpiresAt: "18 Aug 2026, 19:30",
@@ -246,11 +242,32 @@ describe("pure authentication screens", () => {
       await expectFormActionLayout(form);
     }
     expect(controller.state.model).toMatchObject({
-      status: "ready",
       passwordState: { status: "submitting" },
       emailState: { status: "submitting" },
       logoutState: "submitting",
     });
+  });
+
+  it.each(["loading", "error"] as const)("keeps account forms usable while the recap is %s", async (status) => {
+    const controller = createAccountScreenController({
+      model: {
+        ...readyAccount,
+        claims: status === "loading" ? { status } : { status, feedback: "sessionUnavailable" },
+      },
+      actions: { password: "/account?/password", email: "/account?/email", logout: "/account?/logout" },
+      allowNativeSubmission: false,
+    });
+    render(AccountScreen, { controller }, withLocale());
+    const recap = page.getByRole("region", { name: "Session summary" });
+    await expect.element(recap).toBeVisible();
+    await expect.element(page.getByLabelText(/Current password/)).toBeEnabled();
+    await expect.element(page.getByLabelText(/New email address/)).toBeEnabled();
+    await page.getByLabelText(/New email address/).fill("creator@example.test");
+    await page.getByRole("button", { name: "Send link" }).click();
+    await expect.element(page.getByRole("button", { name: /Sending link/ })).toBeDisabled();
+    await expect.element(page.getByRole("button", { name: "Change password" })).toBeEnabled();
+    await expect.element(page.getByRole("button", { name: "Log out" })).toBeEnabled();
+    expect(controller.state.model.claims.status).toBe(status);
   });
 
   it("never renders secure-link material and locks completion while submitting", async () => {

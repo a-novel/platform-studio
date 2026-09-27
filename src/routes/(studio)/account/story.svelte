@@ -20,7 +20,7 @@
   const i18n = getI18nContext();
 
   function localizeClaimExpiries(model: AccountScreenModel): AccountScreenModel {
-    if (model.status !== "ready") return model;
+    if (model.claims.status !== "ready") return model;
 
     const formatter = new Intl.DateTimeFormat(i18n.language, {
       dateStyle: "medium",

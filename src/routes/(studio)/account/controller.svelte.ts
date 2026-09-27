@@ -1,4 +1,4 @@
-import type { AccountFormActions, AccountScreenModel, ReadyAccountScreenModel } from "$lib/application/auth/types";
+import type { AccountFormActions, AccountScreenModel } from "$lib/application/auth/types";
 
 /** State rendered by the account-management component. */
 export interface AccountScreenControllerState {
@@ -34,8 +34,7 @@ export function createAccountScreenController({
   let model = $state(initialModel);
   let actions = $state(initialActions);
 
-  function updateReady(patch: Partial<ReadyAccountScreenModel>): boolean {
-    if (model.status !== "ready") return false;
+  function update(patch: Partial<AccountScreenModel>): boolean {
     model = { ...model, ...patch };
     return allowNativeSubmission;
   }
@@ -49,16 +48,16 @@ export function createAccountScreenController({
       actions = nextActions;
     },
     submitPassword() {
-      if (model.status !== "ready" || model.passwordState.status === "submitting") return false;
-      return updateReady({ passwordState: { status: "submitting" } });
+      if (model.passwordState.status === "submitting") return false;
+      return update({ passwordState: { status: "submitting" } });
     },
     submitEmail() {
-      if (model.status !== "ready" || model.emailState.status === "submitting") return false;
-      return updateReady({ emailState: { status: "submitting" } });
+      if (model.emailState.status === "submitting") return false;
+      return update({ emailState: { status: "submitting" } });
     },
     submitLogout() {
-      if (model.status !== "ready" || model.logoutState === "submitting") return false;
-      return updateReady({ logoutState: "submitting" });
+      if (model.logoutState === "submitting") return false;
+      return update({ logoutState: "submitting" });
     },
   };
 }

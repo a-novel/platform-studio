@@ -41,9 +41,9 @@ authUi:
       successTitle: Courriel mis à jour
       title: Changez votre courriel
     eyebrow: Compte
-    loadErrorTitle: Informations du compte indisponibles
+    loadErrorTitle: Récapitulatif de session indisponible
     loadingDescription: Vérification de votre session en cours.
-    loadingTitle: Chargement du compte
+    loadingTitle: Chargement de la session
     logout:
       description: Vous serez déconnecté de Studio sur cet appareil.
       submit: Se déconnecter

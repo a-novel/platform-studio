@@ -1,4 +1,4 @@
-import type { AccountScreenModel } from "$lib/application/auth/types";
+import { createAccountModel } from "$lib/application/auth/account-action";
 import { createAuthenticationContext } from "$lib/server/auth/context";
 import { validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
 import { logoutAuthentication } from "$lib/server/auth/logout";
@@ -38,27 +38,22 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
     if (!session) redirect(303, loginRedirect);
 
     return {
-      accountModel: {
+      accountModel: createAccountModel({
         status: "ready",
-        claims: {
-          userId: session.claims.userID,
-          roles: session.claims.roles ?? [],
-          accessExpiresAt: formatExpiry(session.accessToken, locals.locale, t("authFlow.expiryUnavailable")),
-          refreshExpiresAt: formatExpiry(session.refreshToken, locals.locale, t("authFlow.expiryUnavailable")),
-        },
-        passwordState: { status: "ready" },
-        emailState: { status: "ready" },
-        logoutState: "ready",
-      } satisfies AccountScreenModel,
+        userId: session.claims.userID,
+        roles: session.claims.roles ?? [],
+        accessExpiresAt: formatExpiry(session.accessToken, locals.locale, t("authFlow.expiryUnavailable")),
+        refreshExpiresAt: formatExpiry(session.refreshToken, locals.locale, t("authFlow.expiryUnavailable")),
+      }),
     };
   } catch (error) {
     if (isRedirect(error)) throw error;
 
     return {
-      accountModel: {
+      accountModel: createAccountModel({
         status: "error",
         feedback: "sessionUnavailable",
-      } satisfies AccountScreenModel,
+      }),
     };
   }
 };

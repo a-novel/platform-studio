@@ -1,3 +1,5 @@
+import { createAccountModel } from "$lib/application/auth/account-action";
+
 import {
   createShortCodeScreenController,
   shortCodeControllerState,
@@ -36,8 +38,8 @@ describe("platform controllers", () => {
   it("keeps account actions independent while sharing one controller", () => {
     const controller = createAccountScreenController({
       model: {
-        status: "ready",
         claims: {
+          status: "ready",
           userId: "user-id",
           roles: [],
           accessExpiresAt: "later",
@@ -61,14 +63,32 @@ describe("platform controllers", () => {
     });
 
     const nextActions = { ...actions, logout: "/logout" };
-    controller.synchronize({ status: "error", feedback: "sessionUnavailable" }, nextActions);
+    const unavailable = createAccountModel({ status: "error", feedback: "sessionUnavailable" });
+    controller.synchronize(unavailable, nextActions);
     expect(controller.state).toEqual({
-      model: { status: "error", feedback: "sessionUnavailable" },
+      model: unavailable,
       actions: nextActions,
     });
     expect(controller.submitPassword()).toBe(false);
     expect(controller.submitEmail()).toBe(false);
     expect(controller.submitLogout()).toBe(false);
+    expect(controller.state.model).toMatchObject({
+      claims: unavailable.claims,
+      passwordState: { status: "submitting" },
+      emailState: { status: "submitting" },
+      logoutState: "submitting",
+    });
+  });
+
+  it("allows native account submissions when only the recap failed", () => {
+    const controller = createAccountScreenController({
+      model: createAccountModel({ status: "error", feedback: "sessionUnavailable" }),
+      actions,
+    });
+    for (const submit of [controller.submitPassword, controller.submitEmail, controller.submitLogout]) {
+      expect(submit()).toBe(true);
+      expect(submit()).toBe(false);
+    }
   });
 
   it("owns secure-link submission and rejects unavailable states", () => {

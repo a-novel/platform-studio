@@ -1,15 +1,13 @@
-import { mergeAccountAction, readyAccountModel } from "./account-action";
+import { createAccountModel, mergeAccountAction } from "./account-action";
 
 import { describe, expect, it } from "vitest";
 
-const ready = readyAccountModel({
+const ready = createAccountModel({
   status: "ready",
-  claims: {
-    userId: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
-    roles: ["auth:user"],
-    accessExpiresAt: "soon",
-    refreshExpiresAt: "later",
-  },
+  userId: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
+  roles: ["auth:user"],
+  accessExpiresAt: "soon",
+  refreshExpiresAt: "later",
 });
 
 describe("mergeAccountAction", () => {
@@ -41,8 +39,8 @@ describe("mergeAccountAction", () => {
     });
   });
 
-  it("does not attach action state to an unavailable account model", () => {
-    const unavailable = { status: "error", feedback: "sessionUnavailable" } as const;
+  it("preserves action feedback when the session recap is unavailable", () => {
+    const unavailable = createAccountModel({ status: "error", feedback: "sessionUnavailable" });
     expect(
       mergeAccountAction(unavailable, {
         accountAction: {
@@ -50,6 +48,6 @@ describe("mergeAccountAction", () => {
           state: { status: "success", feedback: "passwordChanged" },
         },
       })
-    ).toBe(unavailable);
+    ).toEqual({ ...unavailable, passwordState: { status: "success", feedback: "passwordChanged" } });
   });
 });

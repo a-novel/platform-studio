@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { ReadyAccountScreenModel } from "$lib/application/auth/types";
+  import type { AccountScreenModel } from "$lib/application/auth/types";
   import { createStorybookTranslator } from "$lib/i18n/storybook";
 
   import StoryHarness from "./story.svelte";
@@ -9,9 +9,9 @@
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, within } from "storybook/test";
 
-  const ready: ReadyAccountScreenModel = {
-    status: "ready",
+  const ready = {
     claims: {
+      status: "ready",
       userId: "2f798f4a-0694-4f68-9928-42f3e906e871",
       roles: ["auth:user", "studio:creator"],
       accessExpiresAt: "2026-08-18T19:30:00Z",
@@ -20,7 +20,7 @@
     passwordState: { status: "ready" },
     emailState: { status: "ready" },
     logoutState: "ready",
-  };
+  } satisfies AccountScreenModel;
 
   const { Story } = defineMeta({
     title: "Authentication/Account screen",
@@ -60,6 +60,27 @@
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {
     await expect(canvasElement.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
     expect(canvasElement.querySelector('a[href$="-confirm-password"]')).toBeNull();
+  }
+
+  async function verifyFormsAvailable({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
+    const canvas = within(canvasElement);
+    const t = createStorybookTranslator(globals);
+    const recap = canvas.getByRole("region", { name: t("authUi.account.claims.title") });
+    await expect(within(recap).getByRole("alert")).toBeVisible();
+    for (const key of [
+      "authUi.account.password.submit",
+      "authUi.account.email.submit",
+      "authUi.account.logout.submit",
+    ] as const) {
+      await expect(canvas.getByRole("button", { name: t(key) })).toBeEnabled();
+    }
+    await expect(canvas.getByRole("textbox", { name: t("authUi.account.email.label") })).toBeEnabled();
   }
 
   async function verifyPasswordLocked({
@@ -102,11 +123,11 @@
 </Story>
 
 <Story name="Loading" asChild>
-  <StoryHarness initialModel={{ status: "loading" }} />
+  <StoryHarness initialModel={{ ...ready, claims: { status: "loading" } }} />
 </Story>
 
-<Story name="Load error" asChild>
-  <StoryHarness initialModel={{ status: "error", feedback: "sessionUnavailable" }} />
+<Story name="Load error" asChild play={verifyFormsAvailable}>
+  <StoryHarness initialModel={{ ...ready, claims: { status: "error", feedback: "sessionUnavailable" } }} />
 </Story>
 
 <Story name="Password validation error" asChild play={verifyPasswordValidation}>

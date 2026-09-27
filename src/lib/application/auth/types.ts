@@ -62,18 +62,19 @@ export interface AccountClaimsSummary {
   refreshExpiresAt: string;
 }
 
-/** Ready account data and independently controlled actions. */
-export interface ReadyAccountScreenModel {
-  status: "ready";
-  claims: AccountClaimsSummary;
+/** Session recap availability, independent of account form state. */
+export type AccountClaimsState =
+  | ({ status: "ready" } & AccountClaimsSummary)
+  | { status: "loading" }
+  | { status: "error"; feedback: AuthenticationFeedback };
+
+/** Account recap and independently controlled actions. */
+export interface AccountScreenModel {
+  claims: AccountClaimsState;
   passwordState: FormState<AccountPasswordField>;
   emailState: FormState<AccountEmailField> | PendingEmailState;
   logoutState: "ready" | "submitting" | { status: "service-error"; feedback: AuthenticationFeedback };
 }
-
-/** Every protected account-screen state. */
-export type AccountScreenModel =
-  { status: "loading" } | { status: "error"; feedback: AuthenticationFeedback } | ReadyAccountScreenModel;
 
 /** POST destinations supplied by the SvelteKit account route. */
 export interface AccountFormActions {
