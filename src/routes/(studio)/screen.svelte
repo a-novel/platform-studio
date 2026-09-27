@@ -81,8 +81,8 @@
         class="brand-banner"
         src={agoraBanner320}
         srcset={`${agoraBanner320} 1x, ${agoraBanner640} 2x`}
-        width="128"
-        height="32"
+        width="112"
+        height="28"
         alt={t("shell.brand")}
       />
     {/if}
@@ -395,9 +395,9 @@
   }
 
   .brand-banner {
-    inline-size: calc(var(--control-height-sm) * 4);
+    inline-size: calc(var(--control-height-sm) * 3.5);
     max-inline-size: 100%;
-    block-size: auto;
+    block-size: var(--control-height-sm);
   }
 
   .brand-icon {
