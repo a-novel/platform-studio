@@ -65,53 +65,51 @@
     <PageHeader title={t("authUi.account.title")} description={t("authUi.account.description")} />
 
     <Stack gap="4">
-      <Card surface="subtle" padding="none">
-        <section id="account-claims" class="card-section" aria-labelledby={`${componentId}-claims-title`}>
-          <div class="section-heading">
-            <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
-            <h2 id={`${componentId}-claims-title`}>{t("authUi.account.claims.title")}</h2>
-          </div>
+      <section id="account-claims" class="session-summary" aria-labelledby={`${componentId}-claims-title`}>
+        <div class="section-heading">
+          <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
+          <h2 id={`${componentId}-claims-title`}>{t("authUi.account.claims.title")}</h2>
+        </div>
 
-          {#if model.claims.status === "loading"}
-            <Alert tone="loading" title={t("authUi.account.loadingTitle")}>
-              <p class="feedback-message">{t("authUi.account.loadingDescription")}</p>
-            </Alert>
-          {:else if model.claims.status === "error"}
-            <Alert tone="error" title={t("authUi.account.loadErrorTitle")}>
-              <p class="feedback-message">{translateAuthenticationFeedback(t, model.claims.feedback)}</p>
-            </Alert>
-          {:else}
-            <dl class="session-details">
-              <div>
-                <dt>{t("authUi.account.claims.userId")}</dt>
-                <dd class="monospace">{model.claims.userId}</dd>
-              </div>
-              <div>
-                <dt>{t("authUi.account.claims.roles")}</dt>
-                <dd>
-                  <div class="roles">
-                    {#each model.claims.roles as role (role)}
-                      <Badge tone="brand">{role}</Badge>
-                    {:else}
-                      <span>{t("authUi.account.claims.noRoles")}</span>
-                    {/each}
-                  </div>
-                </dd>
-              </div>
-              <div class="session-expiry">
-                <dt>{t("authUi.account.claims.accessExpiresAt")}</dt>
-                <dd>{model.claims.accessExpiresAt}</dd>
-              </div>
-              <div class="session-expiry">
-                <dt>{t("authUi.account.claims.refreshExpiresAt")}</dt>
-                <dd>{model.claims.refreshExpiresAt}</dd>
-              </div>
-            </dl>
+        {#if model.claims.status === "loading"}
+          <Alert tone="loading" title={t("authUi.account.loadingTitle")}>
+            <p class="feedback-message">{t("authUi.account.loadingDescription")}</p>
+          </Alert>
+        {:else if model.claims.status === "error"}
+          <Alert tone="error" title={t("authUi.account.loadErrorTitle")}>
+            <p class="feedback-message">{translateAuthenticationFeedback(t, model.claims.feedback)}</p>
+          </Alert>
+        {:else}
+          <dl class="session-details">
+            <div>
+              <dt>{t("authUi.account.claims.userId")}</dt>
+              <dd class="monospace">{model.claims.userId}</dd>
+            </div>
+            <div>
+              <dt>{t("authUi.account.claims.roles")}</dt>
+              <dd>
+                <div class="roles">
+                  {#each model.claims.roles as role (role)}
+                    <Badge tone="brand">{role}</Badge>
+                  {:else}
+                    <span>{t("authUi.account.claims.noRoles")}</span>
+                  {/each}
+                </div>
+              </dd>
+            </div>
+            <div class="session-expiry">
+              <dt>{t("authUi.account.claims.accessExpiresAt")}</dt>
+              <dd>{model.claims.accessExpiresAt}</dd>
+            </div>
+            <div class="session-expiry">
+              <dt>{t("authUi.account.claims.refreshExpiresAt")}</dt>
+              <dd>{model.claims.refreshExpiresAt}</dd>
+            </div>
+          </dl>
 
-            <InlineMessage tone="info" role="note">{t("authUi.account.claims.privacyDescription")}</InlineMessage>
-          {/if}
-        </section>
-      </Card>
+          <InlineMessage tone="info" role="note">{t("authUi.account.claims.privacyDescription")}</InlineMessage>
+        {/if}
+      </section>
 
       <Card surface="raised" padding="none">
         <section id="account-password" class="card-section" aria-labelledby={`${componentId}-password-title`}>
@@ -310,6 +308,7 @@
     padding-block: var(--space-6) var(--space-12);
   }
 
+  .session-summary,
   .card-section,
   .logout-section,
   form {
@@ -322,10 +321,6 @@
   .logout-section {
     padding: var(--space-6);
     scroll-margin-block-start: var(--space-5);
-  }
-
-  #account-claims {
-    padding: var(--space-4);
   }
 
   .section-heading {
@@ -431,8 +426,7 @@
     }
 
     .card-section,
-    .logout-section,
-    #account-claims {
+    .logout-section {
       padding: var(--space-3) var(--space-2);
     }
 
