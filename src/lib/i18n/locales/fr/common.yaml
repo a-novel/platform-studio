@@ -38,7 +38,6 @@ authUi:
     claims:
       accessExpiresAt: Expiration de l’accès
       noRoles: Aucun rôle indiqué
-      privacyDescription: Votre courriel ne fait pas partie des informations de session disponibles.
       refreshExpiresAt: Expiration de la session
       roles: Rôles
       title: Résumé de la session

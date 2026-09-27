@@ -41,11 +41,8 @@
     const recap = within(canvasElement).getByRole("region", { name: t("authUi.account.claims.title") });
     const bounds = recap.getBoundingClientRect();
     const summary = within(recap);
-    for (const value of [
-      summary.getByRole("heading"),
-      ...summary.getAllByRole("definition"),
-      summary.getByRole("note"),
-    ]) {
+    await expect(summary.queryByRole("note")).not.toBeInTheDocument();
+    for (const value of [summary.getByRole("heading"), ...summary.getAllByRole("definition")]) {
       const box = value.getBoundingClientRect();
       await expect(box.left).toBeGreaterThanOrEqual(bounds.left);
       await expect(box.right).toBeLessThanOrEqual(bounds.right);

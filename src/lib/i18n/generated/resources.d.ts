@@ -50,7 +50,6 @@ export default interface Resources {
         "claims": {
           "accessExpiresAt": "Access expires",
           "noRoles": "No roles reported",
-          "privacyDescription": "Your email isn’t included in the available session information.",
           "refreshExpiresAt": "Session expires",
           "roles": "Roles",
           "title": "Session summary",

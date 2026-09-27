@@ -13,18 +13,7 @@
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import {
-    Alert,
-    Badge,
-    Button,
-    Card,
-    Container,
-    Field,
-    InlineMessage,
-    Input,
-    PageHeader,
-    Stack,
-  } from "@a-novel-kit/uikit";
+  import { Alert, Badge, Button, Card, Container, Field, Input, PageHeader, Stack } from "@a-novel-kit/uikit";
 
   import { ShieldCheck } from "@lucide/svelte";
 
@@ -106,8 +95,6 @@
               <dd>{model.claims.refreshExpiresAt}</dd>
             </div>
           </dl>
-
-          <InlineMessage tone="info" role="note">{t("authUi.account.claims.privacyDescription")}</InlineMessage>
         {/if}
       </section>
 
