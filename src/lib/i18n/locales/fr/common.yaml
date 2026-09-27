@@ -45,7 +45,7 @@ authUi:
       roles: Rôles
       title: Résumé de la session
       userId: Identifiant utilisateur
-    description: Modifiez votre courriel, votre mot de passe ou consultez votre session.
+    description: Vos informations personnelles et vos paramètres de sécurité.
     email:
       description: Vous recevrez un lien pour confirmer ce changement.
       hint: Votre courriel actuel reste inchangé jusqu’à la confirmation.

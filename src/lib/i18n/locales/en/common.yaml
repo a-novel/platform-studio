@@ -45,7 +45,7 @@ authUi:
       roles: Roles
       title: Session summary
       userId: User ID
-    description: Change your email or password, or review your session.
+    description: Your personal information and security settings.
     email:
       description: You’ll receive a link to confirm this change.
       hint: Your current email stays unchanged until you confirm.
