@@ -373,7 +373,9 @@
   }
 
   form > :global(button) {
-    justify-self: start;
+    justify-content: center;
+    margin-block-start: var(--space-4);
+    inline-size: 100%;
   }
 
   .roles {

@@ -21,6 +21,8 @@ A screen starts as pure UI with its behavior supplied through typed props. Add i
 
 Prefer a single top-to-bottom flow across screen sizes. Stack independent forms and task sections vertically so visual order follows reading and keyboard order; reserve columns for content that benefits from comparison.
 
+Form submit buttons span the form width at every screen size. Separate them from the preceding fields with twice the normal field gap, keeping secondary actions distinct.
+
 Once those states render correctly, add the logic behind a mockable boundary. Unit tests cover the logic, browser tests cover behavior that needs the DOM, and the route or layout supplies the production wiring.
 
 Keep reusable controls in UIKit. Studio owns screen composition and product-specific behavior.

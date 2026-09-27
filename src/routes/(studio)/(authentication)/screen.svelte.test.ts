@@ -68,6 +68,20 @@ async function submitForm(buttonName: string): Promise<HTMLFormElement> {
   return form as HTMLFormElement;
 }
 
+function expectFormActionLayout(form: HTMLFormElement) {
+  const button = form.querySelector('button[type="submit"]');
+  expect(button).not.toBeNull();
+  if (!button) return;
+
+  const bounds = button.getBoundingClientRect();
+  const formBounds = form.getBoundingClientRect();
+  expect(bounds.left).toBeCloseTo(formBounds.left);
+  expect(bounds.width).toBeCloseTo(formBounds.width);
+  expect(getComputedStyle(button).marginBlockStart).toBe("16px");
+  const preceding = button.previousElementSibling;
+  if (preceding) expect(bounds.top - preceding.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(32);
+}
+
 describe("pure authentication screens", () => {
   it("delegates login submission without owning credential state", async () => {
     const controller = authenticationController({ journey: "login", state: { status: "ready" } });
@@ -76,6 +90,7 @@ describe("pure authentication screens", () => {
 
     const form = await submitForm("Login");
 
+    expectFormActionLayout(form);
     expect(form.getAttribute("action")).toBe("/auth?/login");
     expect(form.getAttribute("method")).toBe("POST");
     expect(controller.state.model.state.status).toBe("submitting");
@@ -212,9 +227,15 @@ describe("pure authentication screens", () => {
 
     render(AccountScreen, { controller }, withLocale());
 
-    expect((await submitForm("Change password")).getAttribute("action")).toBe("/account?/password");
-    expect((await submitForm("Send link")).getAttribute("action")).toBe("/account?/email");
-    expect((await submitForm("Log out")).getAttribute("action")).toBe("/account?/logout");
+    for (const [label, action] of [
+      ["Change password", "/account?/password"],
+      ["Send link", "/account?/email"],
+      ["Log out", "/account?/logout"],
+    ] as const) {
+      const form = await submitForm(label);
+      expect(form.getAttribute("action")).toBe(action);
+      expectFormActionLayout(form);
+    }
     expect(controller.state.model).toMatchObject({
       status: "ready",
       passwordState: { status: "submitting" },
@@ -237,6 +258,9 @@ describe("pure authentication screens", () => {
 
     const button = page.getByRole("button", { name: /Resetting password/ });
     await expect.element(button).toBeDisabled();
+    const form = (button.element() as HTMLButtonElement).form;
+    expect(form).not.toBeNull();
+    if (form) expectFormActionLayout(form);
     expect(button.element().querySelector('[role="status"]')).toBeNull();
     await expect.element(page.getByLabelText(/New password/)).toBeDisabled();
     await expect.element(page.getByLabelText(/Confirm new password/)).toBeDisabled();
@@ -274,13 +298,10 @@ describe("pure authentication screens", () => {
 
     render(ShortCodeScreen, { controller }, withLocale());
 
-    const submitLocator = page.getByRole("button", { name: "Update email" });
-    await expect.element(submitLocator).toBeVisible();
-    const submit = submitLocator.element();
     const form = await submitForm("Update email");
 
     expect(form.querySelector('input[type="password"]')).toBeNull();
-    expect(getComputedStyle(submit).marginBlockStart).toBe("8px");
+    expectFormActionLayout(form);
     expect(controller.state.model.state.status).toBe("submitting");
   });
 });
