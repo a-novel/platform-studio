@@ -19,6 +19,8 @@ Dependencies point inward: routes compose the runtime layers; client and server 
 
 A screen starts as pure UI with its behavior supplied through typed props. Add its Storybook states first so reviewers can inspect empty, loading, error, and populated states without live services.
 
+Prefer a single top-to-bottom flow across screen sizes. Stack independent forms and task sections vertically so visual order follows reading and keyboard order; reserve columns for content that benefits from comparison.
+
 Once those states render correctly, add the logic behind a mockable boundary. Unit tests cover the logic, browser tests cover behavior that needs the DOM, and the route or layout supplies the production wiring.
 
 Keep reusable controls in UIKit. Studio owns screen composition and product-specific behavior.

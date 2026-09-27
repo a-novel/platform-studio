@@ -21,7 +21,6 @@
     Container,
     DescriptionList,
     Field,
-    Grid,
     Input,
     PageHeader,
     Spinner,
@@ -88,8 +87,8 @@
         <p class="feedback-message">{translateAuthenticationFeedback(t, model.feedback)}</p>
       </Alert>
     {:else}
-      <Grid minItemWidth="lg" gap="4">
-        <Card class="claims-card" surface="subtle" padding="lg">
+      <Stack gap="4">
+        <Card surface="subtle" padding="lg">
           <section id="account-claims" class="card-section" aria-labelledby={`${componentId}-claims-title`}>
             <div class="section-heading">
               <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
@@ -290,7 +289,7 @@
           </section>
         </Card>
 
-        <Card class="logout-card" surface="subtle" padding="lg">
+        <Card surface="subtle" padding="lg">
           <section id="account-session" class="logout-section" aria-labelledby={`${componentId}-logout-title`}>
             <div class="section-heading">
               <div>
@@ -319,7 +318,7 @@
             </form>
           </section>
         </Card>
-      </Grid>
+      </Stack>
     {/if}
   </Stack>
 </Container>
@@ -327,11 +326,6 @@
 <style>
   :global(.container) {
     padding-block: var(--space-6) var(--space-12);
-  }
-
-  :global(.claims-card),
-  :global(.logout-card) {
-    grid-column: 1 / -1;
   }
 
   .card-section,

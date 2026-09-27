@@ -49,6 +49,12 @@
     }).format(new Date(ready.claims.accessExpiresAt));
     await expect(canvas.getByText(accessExpiry)).toBeVisible();
     await expect(canvas.getByRole("textbox", { name: t("authUi.account.email.label") })).toBeVisible();
+
+    const password = canvas.getByRole("region", { name: t("authUi.account.password.title") }).getBoundingClientRect();
+    const email = canvas.getByRole("region", { name: t("authUi.account.email.title") }).getBoundingClientRect();
+    const logout = canvas.getByRole("region", { name: t("authUi.account.logout.title") }).getBoundingClientRect();
+    await expect(email.top).toBeGreaterThan(password.bottom);
+    await expect(logout.top).toBeGreaterThan(email.bottom);
   }
 
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -85,7 +91,13 @@
   <StoryHarness initialModel={ready} />
 </Story>
 
-<Story name="Ready — mobile" exportName="ReadyMobile" globals={reviewStoryGlobals.mobile} asChild>
+<Story
+  name="Ready — mobile"
+  exportName="ReadyMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyReadyAccount}
+>
   <StoryHarness initialModel={ready} />
 </Story>
 
