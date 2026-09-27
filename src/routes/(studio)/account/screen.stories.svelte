@@ -236,15 +236,6 @@
   />
 </Story>
 
-<Story name="Email success" asChild>
-  <StoryHarness
-    initialModel={{
-      ...ready,
-      emailState: { status: "success", feedback: "emailUpdated" },
-    }}
-  />
-</Story>
-
 <Story name="Logout submitting" asChild>
   <StoryHarness initialModel={{ ...ready, logoutState: "submitting" }} />
 </Story>

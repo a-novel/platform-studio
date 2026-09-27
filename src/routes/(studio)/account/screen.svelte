@@ -198,11 +198,7 @@
             </div>
           </div>
 
-          {#if model.emailState.status === "success"}
-            <Alert tone="success" title={t("authUi.account.email.successTitle")}>
-              <p class="feedback-message">{translateAuthenticationFeedback(t, model.emailState.feedback)}</p>
-            </Alert>
-          {:else if model.emailState.status === "pending-email"}
+          {#if model.emailState.status === "pending-email"}
             <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
               <p class="pending-copy">
                 {t("authUi.account.email.pendingDescription")} <strong>{model.emailState.targetHint}</strong>

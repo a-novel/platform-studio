@@ -1,19 +1,13 @@
-import type {
-  AccountClaimsState,
-  AccountEmailField,
-  AccountPasswordField,
-  AccountScreenModel,
-  FormState,
-} from "./types";
+import type { AccountClaimsState, AccountScreenModel } from "./types";
 
 export type AccountActionData =
   | {
       accountAction: {
         kind: "email";
-        state: FormState<AccountEmailField> | { status: "pending-email"; targetHint: string };
+        state: AccountScreenModel["emailState"];
       };
     }
-  | { accountAction: { kind: "password"; state: FormState<AccountPasswordField> } };
+  | { accountAction: { kind: "password"; state: AccountScreenModel["passwordState"] } };
 
 export function mergeAccountAction(model: AccountScreenModel, data: unknown): AccountScreenModel {
   if (!data || typeof data !== "object" || !("accountAction" in data)) return model;

@@ -65,7 +65,6 @@ export default interface Resources {
           "resend": "Send another link",
           "submit": "Send link",
           "submitting": "Sending link…",
-          "successTitle": "Email updated",
           "title": "Change your email"
         },
         "loadErrorTitle": "Session summary unavailable",

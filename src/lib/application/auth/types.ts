@@ -72,7 +72,7 @@ export type AccountClaimsState =
 export interface AccountScreenModel {
   claims: AccountClaimsState;
   passwordState: FormState<AccountPasswordField>;
-  emailState: FormState<AccountEmailField> | PendingEmailState;
+  emailState: Exclude<FormState<AccountEmailField>, { status: "success" }> | PendingEmailState;
   logoutState: "ready" | "submitting" | { status: "service-error"; feedback: AuthenticationFeedback };
 }
 

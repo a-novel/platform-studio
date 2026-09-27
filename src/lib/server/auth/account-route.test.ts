@@ -7,7 +7,11 @@ import { AuthenticationSession, AuthenticationUnavailableError } from "./session
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "@a-novel-kit/nodelib-browser/http";
-import { AuthenticationApi, credentialsUpdatePassword } from "@a-novel/service-authentication-rest";
+import {
+  AuthenticationApi,
+  credentialsUpdatePassword,
+  shortCodeCreateEmailUpdate,
+} from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
 
@@ -89,5 +93,27 @@ describe("account route", () => {
       status: 403,
       data: { accountAction: { kind: "password", state: { feedback: "invalidCurrentPassword" } } },
     });
+  });
+
+  it("leaves an email change pending after sending its confirmation link", async () => {
+    authenticated.mockResolvedValue({
+      status: "available",
+      accessToken: "fixture-access",
+      claims: { userID: "test-user", refreshTokenID: "test-refresh", roles: [] },
+    });
+    vi.mocked(shortCodeCreateEmailUpdate).mockResolvedValue(undefined);
+    const request = event();
+    request.request = new Request("https://studio.test/account?/email", {
+      method: "POST",
+      body: new URLSearchParams({ email: "new@example.test" }),
+    });
+
+    await expect(accountActions.email(request)).resolves.toEqual({
+      accountAction: {
+        kind: "email",
+        state: { status: "pending-email", targetHint: "new@example.test" },
+      },
+    });
+    expect(shortCodeCreateEmailUpdate).toHaveBeenCalledOnce();
   });
 });

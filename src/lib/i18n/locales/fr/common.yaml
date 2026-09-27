@@ -52,7 +52,6 @@ authUi:
       resend: Envoyer un autre lien
       submit: Envoyer le lien
       submitting: Envoi du lien…
-      successTitle: Courriel mis à jour
       title: Changez votre courriel
     loadErrorTitle: Récapitulatif de session indisponible
     loadingDescription: Vérification de votre session en cours.
