@@ -37,10 +37,8 @@ authUi:
   account:
     claims:
       accessExpiresAt: Expiration de l’accès
-      description: Informations vérifiées pour votre connexion actuelle.
       noRoles: Aucun rôle indiqué
       privacyDescription: Votre courriel ne fait pas partie des informations de session disponibles.
-      privacyTitle: Pourquoi votre courriel n’apparaît pas
       refreshExpiresAt: Expiration de la session
       roles: Rôles
       title: Résumé de la session

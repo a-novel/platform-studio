@@ -19,8 +19,8 @@
     Button,
     Card,
     Container,
-    DescriptionList,
     Field,
+    InlineMessage,
     Input,
     PageHeader,
     Stack,
@@ -65,14 +65,11 @@
     <PageHeader title={t("authUi.account.title")} description={t("authUi.account.description")} />
 
     <Stack gap="4">
-      <Card surface="subtle" padding="lg">
+      <Card surface="subtle" padding="md">
         <section id="account-claims" class="card-section" aria-labelledby={`${componentId}-claims-title`}>
           <div class="section-heading">
             <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
-            <div>
-              <h2 id={`${componentId}-claims-title`}>{t("authUi.account.claims.title")}</h2>
-              <p>{t("authUi.account.claims.description")}</p>
-            </div>
+            <h2 id={`${componentId}-claims-title`}>{t("authUi.account.claims.title")}</h2>
           </div>
 
           {#if model.claims.status === "loading"}
@@ -84,7 +81,7 @@
               <p class="feedback-message">{translateAuthenticationFeedback(t, model.claims.feedback)}</p>
             </Alert>
           {:else}
-            <DescriptionList columns={2} density="compact">
+            <dl class="session-details">
               <div>
                 <dt>{t("authUi.account.claims.userId")}</dt>
                 <dd class="monospace">{model.claims.userId}</dd>
@@ -109,11 +106,9 @@
                 <dt>{t("authUi.account.claims.refreshExpiresAt")}</dt>
                 <dd>{model.claims.refreshExpiresAt}</dd>
               </div>
-            </DescriptionList>
+            </dl>
 
-            <Alert tone="info" title={t("authUi.account.claims.privacyTitle")}>
-              <p class="feedback-message">{t("authUi.account.claims.privacyDescription")}</p>
-            </Alert>
+            <InlineMessage tone="info" role="note">{t("authUi.account.claims.privacyDescription")}</InlineMessage>
           {/if}
         </section>
       </Card>
@@ -335,6 +330,7 @@
 
   .section-heading > :global(svg) {
     flex: none;
+    align-self: center;
     color: var(--color-text-accent);
   }
 
@@ -346,9 +342,11 @@
   }
 
   h2 {
+    min-inline-size: 0;
     color: var(--color-text-primary);
     font-size: var(--font-size-xl);
     font-family: var(--font-family-display);
+    overflow-wrap: anywhere;
   }
 
   .section-heading p,
@@ -365,10 +363,38 @@
   }
 
   @media (min-width: 35rem) {
+    .session-details {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     form > :global(button) {
       justify-self: start;
       inline-size: auto;
     }
+  }
+
+  .session-details {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .session-details > div {
+    display: grid;
+    align-content: start;
+    gap: var(--space-1);
+    min-inline-size: 0;
+  }
+
+  .session-details dt {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .session-details dd {
+    margin: 0;
+    line-height: var(--line-height-normal);
+    overflow-wrap: anywhere;
   }
 
   .roles {
@@ -378,6 +404,7 @@
   }
 
   .monospace {
+    font-size: var(--font-size-sm);
     font-family: var(--font-family-mono);
   }
 

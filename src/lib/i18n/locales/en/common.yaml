@@ -37,10 +37,8 @@ authUi:
   account:
     claims:
       accessExpiresAt: Access expires
-      description: Verified information about your current login.
       noRoles: No roles reported
       privacyDescription: Your email isn’t included in the available session information.
-      privacyTitle: Why your email isn’t shown
       refreshExpiresAt: Session expires
       roles: Roles
       title: Session summary

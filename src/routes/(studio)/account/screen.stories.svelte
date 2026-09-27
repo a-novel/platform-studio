@@ -30,6 +30,29 @@
     },
   });
 
+  async function verifySessionFits({
+    canvasElement,
+    globals,
+  }: {
+    canvasElement: HTMLElement;
+    globals: Record<string, unknown>;
+  }) {
+    const t = createStorybookTranslator(globals);
+    const recap = within(canvasElement).getByRole("region", { name: t("authUi.account.claims.title") });
+    const bounds = recap.getBoundingClientRect();
+    const summary = within(recap);
+    for (const value of [
+      summary.getByRole("heading"),
+      ...summary.getAllByRole("definition"),
+      summary.getByRole("note"),
+    ]) {
+      const box = value.getBoundingClientRect();
+      await expect(box.left).toBeGreaterThanOrEqual(bounds.left);
+      await expect(box.right).toBeLessThanOrEqual(bounds.right);
+      await expect(value.scrollWidth).toBeLessThanOrEqual(value.clientWidth);
+    }
+  }
+
   async function verifyReadyAccount({
     canvasElement,
     globals,
@@ -39,6 +62,7 @@
   }) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
+    await verifySessionFits({ canvasElement, globals });
     await expect(canvas.getByRole("heading", { name: t("authUi.account.title"), level: 1 })).toBeVisible();
     await expect(canvas.getByText("2f798f4a-0694-4f68-9928-42f3e906e871")).toBeVisible();
     const locale = globals.locale === "fr" ? "fr" : "en";
@@ -229,7 +253,7 @@
   />
 </Story>
 
-<Story name="Long content — mobile" globals={reviewStoryGlobals.mobile} asChild>
+<Story name="Long content — mobile" globals={reviewStoryGlobals.mobile} asChild play={verifySessionFits}>
   <StoryHarness
     initialModel={{
       ...ready,
