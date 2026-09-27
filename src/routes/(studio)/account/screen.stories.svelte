@@ -72,7 +72,15 @@
       timeZone: "UTC",
     }).format(new Date(ready.claims.accessExpiresAt));
     await expect(canvas.getByText(accessExpiry)).toBeVisible();
-    await expect(canvas.getByRole("textbox", { name: t("authUi.account.email.label") })).toBeVisible();
+    const emailInput = canvas.getByRole("textbox", { name: t("authUi.account.email.label") });
+    await expect(emailInput).toBeVisible();
+    if (window.matchMedia("(width < 35rem)").matches) {
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const submit = canvas.getByRole("button", { name: t("authUi.account.email.submit") });
+      await expect(submit.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+        document.documentElement.clientWidth - 2 * rem
+      );
+    }
 
     const password = canvas.getByRole("region", { name: t("authUi.account.password.title") }).getBoundingClientRect();
     const email = canvas.getByRole("region", { name: t("authUi.account.email.title") }).getBoundingClientRect();

@@ -692,20 +692,20 @@
     }
 
     :global(dialog.authentication-dialog > .panel > header) {
-      padding-inline: var(--space-4) calc(var(--space-4) + var(--control-height-sm));
-      padding-block-start: var(--space-4);
+      padding-inline: var(--space-2) calc(var(--space-3) + var(--control-height-sm));
+      padding-block-start: var(--space-3);
     }
 
     :global(dialog.authentication-dialog > .panel > .content) {
-      padding-inline: var(--space-4);
+      padding-inline: var(--space-2);
     }
 
     :global(dialog.authentication-dialog > .panel > footer) {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-1);
-      padding-inline: var(--space-4);
-      padding-block-end: var(--space-4);
+      padding-inline: var(--space-2);
+      padding-block-end: var(--space-3);
     }
 
     :global(dialog.authentication-dialog > .panel > footer > .authentication-secondary-action) {

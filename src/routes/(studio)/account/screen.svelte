@@ -60,12 +60,12 @@
   }
 </script>
 
-<Container size="lg">
+<Container size="lg" gutter={false} class="account-screen">
   <Stack gap="6">
     <PageHeader title={t("authUi.account.title")} description={t("authUi.account.description")} />
 
     <Stack gap="4">
-      <Card surface="subtle" padding="md">
+      <Card surface="subtle" padding="none">
         <section id="account-claims" class="card-section" aria-labelledby={`${componentId}-claims-title`}>
           <div class="section-heading">
             <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
@@ -98,11 +98,11 @@
                   </div>
                 </dd>
               </div>
-              <div>
+              <div class="session-expiry">
                 <dt>{t("authUi.account.claims.accessExpiresAt")}</dt>
                 <dd>{model.claims.accessExpiresAt}</dd>
               </div>
-              <div>
+              <div class="session-expiry">
                 <dt>{t("authUi.account.claims.refreshExpiresAt")}</dt>
                 <dd>{model.claims.refreshExpiresAt}</dd>
               </div>
@@ -113,7 +113,7 @@
         </section>
       </Card>
 
-      <Card surface="raised" padding="lg">
+      <Card surface="raised" padding="none">
         <section id="account-password" class="card-section" aria-labelledby={`${componentId}-password-title`}>
           <div class="section-heading">
             <div>
@@ -204,7 +204,7 @@
         </section>
       </Card>
 
-      <Card surface="raised" padding="lg">
+      <Card surface="raised" padding="none">
         <section id="account-email" class="card-section" aria-labelledby={`${componentId}-email-title`}>
           <div class="section-heading">
             <div>
@@ -271,7 +271,7 @@
         </section>
       </Card>
 
-      <Card surface="subtle" padding="lg">
+      <Card surface="subtle" padding="none">
         <section id="account-session" class="logout-section" aria-labelledby={`${componentId}-logout-title`}>
           <div class="section-heading">
             <div>
@@ -305,7 +305,8 @@
 </Container>
 
 <style>
-  :global(.container) {
+  :global(.account-screen) {
+    padding-inline: var(--layout-gutter);
     padding-block: var(--space-6) var(--space-12);
   }
 
@@ -319,7 +320,12 @@
 
   .card-section,
   .logout-section {
+    padding: var(--space-6);
     scroll-margin-block-start: var(--space-5);
+  }
+
+  #account-claims {
+    padding: var(--space-4);
   }
 
   .section-heading {
@@ -418,9 +424,29 @@
     padding: var(--space-2) var(--space-3);
   }
 
-  @media (max-width: 35rem) {
-    :global(.container) {
+  @media (max-width: 34.999rem) {
+    :global(.account-screen) {
+      padding-inline: var(--space-2);
       padding-block-start: var(--space-3);
+    }
+
+    .card-section,
+    .logout-section,
+    #account-claims {
+      padding: var(--space-3) var(--space-2);
+    }
+
+    .session-details {
+      gap: var(--space-3);
+    }
+
+    .session-details > .session-expiry {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-1) var(--space-3);
+      font-size: var(--font-size-sm);
     }
   }
 </style>

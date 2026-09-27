@@ -188,6 +188,12 @@
     }
   }
 
+  @media (max-width: 34.999rem) {
+    .standalone-page {
+      padding: var(--space-2);
+    }
+  }
+
   :global(.compact-form-error.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
