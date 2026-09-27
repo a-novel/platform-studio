@@ -71,7 +71,6 @@ export default interface Resources {
           "successTitle": "Email updated",
           "title": "Change your email"
         },
-        "eyebrow": "Account",
         "loadErrorTitle": "Session summary unavailable",
         "loadingDescription": "Checking your session.",
         "loadingTitle": "Loading session",

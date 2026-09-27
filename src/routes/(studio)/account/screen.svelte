@@ -62,11 +62,7 @@
 
 <Container size="lg">
   <Stack gap="6">
-    <PageHeader
-      eyebrow={t("authUi.account.eyebrow")}
-      title={t("authUi.account.title")}
-      description={t("authUi.account.description")}
-    />
+    <PageHeader title={t("authUi.account.title")} description={t("authUi.account.description")} />
 
     <Stack gap="4">
       <Card surface="subtle" padding="lg">
