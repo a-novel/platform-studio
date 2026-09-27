@@ -14,7 +14,13 @@
 
   import { onMount, untrack } from "svelte";
 
+  import { AuthorizationProvider } from "@a-novel-kit/uikit";
+  import { createAuthorizationController } from "@a-novel-kit/uikit/authorization";
+
   let { children, data } = $props();
+  const authorization = createAuthorizationController({
+    getStatus: () => page.data.authorization ?? data.authorization,
+  });
 
   let currentHref = $state(page.url.href);
   const initialRoute = untrack(() => ({
@@ -65,27 +71,28 @@
     );
   });
 
-  afterNavigate(() => {
-    currentHref = window.location.href;
+  afterNavigate(async ({ complete }) => {
+    // History updates require the router to finish initial hydration.
+    await complete;
+    synchronizeUrl();
   });
 
   onMount(() => {
     controller.synchronizeRail(readRailCollapsed(window.localStorage) ? "collapsed" : "expanded");
 
-    function synchronizeUrl() {
-      const normalized = normalizeAuthUrl(new URL(window.location.href));
-      if (normalized.href !== window.location.href) {
-        // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
-        replaceState(normalized, page.state);
-      }
-      currentHref = normalized.href;
-    }
-
-    synchronizeUrl();
     window.addEventListener("popstate", synchronizeUrl);
 
     return () => window.removeEventListener("popstate", synchronizeUrl);
   });
+
+  function synchronizeUrl() {
+    const normalized = normalizeAuthUrl(new URL(window.location.href));
+    if (normalized.href !== window.location.href) {
+      // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
+      replaceState(normalized, page.state);
+    }
+    currentHref = normalized.href;
+  }
 
   function authenticationModel(view: AuthDialogView): AuthenticationPanelModel {
     return readAuthenticationActionModel(page.form, view) ?? readyAuthenticationModel(view);
@@ -116,6 +123,8 @@
   }
 </script>
 
-<Screen {controller}>
-  {@render children()}
-</Screen>
+<AuthorizationProvider controller={authorization}>
+  <Screen {controller}>
+    {@render children()}
+  </Screen>
+</AuthorizationProvider>

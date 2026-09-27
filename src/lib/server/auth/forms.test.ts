@@ -1,4 +1,4 @@
-import { parseShortCodeLink, safeReturnTo, validateLogin, validateNewPassword, validatePasswordChange } from "./forms";
+import { parseShortCodeLink, validateLogin, validateNewPassword, validatePasswordChange } from "./forms";
 
 import { describe, expect, it } from "vitest";
 
@@ -56,17 +56,6 @@ describe("auth form validation", () => {
       success: true,
       value: { password: "replacement-password" },
     });
-  });
-});
-
-describe("safe URL helpers", () => {
-  it.each([
-    ["/account?panel=password#change", "/account?panel=password#change"],
-    ["https://attacker.invalid/account", "/"],
-    ["//attacker.invalid/account", "/"],
-    ["javascript:alert(1)", "/"],
-  ])("normalizes return target %s", (value, expected) => {
-    expect(safeReturnTo(value)).toBe(expected);
   });
 });
 

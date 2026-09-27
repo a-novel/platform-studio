@@ -22,5 +22,5 @@ export function withAuthView(url: URL, view: AuthDialogView | null): URL {
 
 /** Removes invalid or duplicate authentication values from a shareable URL. */
 export function normalizeAuthUrl(url: URL): URL {
-  return withAuthView(url, readAuthView(url.searchParams));
+  return readAuthView(url.searchParams) ? new URL(url) : withAuthView(url, null);
 }

@@ -9,7 +9,9 @@ export const loadStudioShell = async ({ cookies, locals, url }: Pick<RequestEven
   const t = locals.i18n.getFixedT(locals.locale, "common");
   let session: ShellSession = { status: "anonymous" };
 
-  const resolved = await createAuthenticationContext(cookies, url).session.current();
+  const resolved = await Promise.resolve()
+    .then(() => createAuthenticationContext(cookies, url).session.current())
+    .catch(() => ({ status: "unavailable" as const }));
 
   if (resolved.status === "unavailable") {
     session = { status: "error" };
@@ -23,5 +25,11 @@ export const loadStudioShell = async ({ cookies, locals, url }: Pick<RequestEven
   return {
     activeNavigation,
     session,
+    authorization:
+      session.status === "authenticated"
+        ? ("allowed" as const)
+        : session.status === "error"
+          ? ("unavailable" as const)
+          : ("anonymous" as const),
   };
 };

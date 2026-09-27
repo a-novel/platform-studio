@@ -15,7 +15,7 @@
   import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, Input, Link } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, Input, Link, StatusState } from "@a-novel-kit/uikit";
 
   let { controller }: ShortCodeScreenProps = $props();
 
@@ -61,13 +61,16 @@
     </header>
 
     {#if unavailableStatus}
-      <Alert tone="error" title={translateShortCodeStatus(t, unavailableStatus, "title")}>
-        <div class="status-copy">
-          <p>{translateShortCodeStatus(t, unavailableStatus, "description")}</p>
+      <StatusState
+        tone="error"
+        title={translateShortCodeStatus(t, unavailableStatus, "title")}
+        description={translateShortCodeStatus(t, unavailableStatus, "description")}
+      >
+        {#snippet actions()}
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
           <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
-        </div>
-      </Alert>
+        {/snippet}
+      </StatusState>
     {:else if model.state.status === "success"}
       <AuthenticationCompletion feedback={model.state.feedback} {continueHref} />
     {:else}
@@ -136,8 +139,7 @@
   }
 
   .secure-action,
-  form,
-  .status-copy {
+  form {
     display: grid;
     gap: var(--space-4);
     min-inline-size: 0;
@@ -155,8 +157,7 @@
   }
 
   .page-heading h1,
-  .page-heading p,
-  .status-copy p {
+  .page-heading p {
     margin: 0;
   }
 
@@ -166,8 +167,7 @@
     font-family: var(--font-family-display);
   }
 
-  .page-heading p,
-  .status-copy p {
+  .page-heading p {
     line-height: var(--line-height-normal);
   }
 
@@ -188,16 +188,8 @@
     }
   }
 
-  :global(.alert.compact-form-error.compact-form-error) {
+  :global(.compact-form-error.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
-  }
-
-  :global(.compact-form-error .content) {
-    gap: 0;
-  }
-
-  :global(.compact-form-error .message:empty) {
-    display: none;
   }
 </style>

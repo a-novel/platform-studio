@@ -112,18 +112,6 @@ export function validateNewPassword(form: FormData): ValidationResult<{ password
   return issues.length > 0 ? { success: false, issues } : { success: true, value: { password } };
 }
 
-export function safeReturnTo(value: string | null | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
-
-  try {
-    const target = new URL(value, "https://studio.invalid");
-    if (target.origin !== "https://studio.invalid") return "/";
-    return `${target.pathname}${target.search}${target.hash}`;
-  } catch {
-    return "/";
-  }
-}
-
 export function parseShortCodeLink(journey: ShortCodeJourney, url: URL): ParsedShortCodeLink {
   const code = readParameter(url.searchParams, "shortCode");
   const target = readParameter(url.searchParams, "target");

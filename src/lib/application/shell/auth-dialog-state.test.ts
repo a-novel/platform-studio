@@ -3,6 +3,11 @@ import { normalizeAuthUrl, readAuthView, withAuthView } from "./auth-dialog-stat
 import { describe, expect, it } from "vitest";
 
 describe("authentication URL state", () => {
+  it("leaves valid login return parameters in their original order", () => {
+    const source = new URL("https://studio.example.test/?auth=login&returnTo=%2Faccount%3Fpanel%3Demail");
+    expect(normalizeAuthUrl(source).href).toBe(source.href);
+  });
+
   it.each(["login", "register", "reset"] as const)("round-trips the %s view", (view) => {
     const source = new URL("https://studio.example.test/work?document=42#selection");
     const encoded = withAuthView(source, view);

@@ -1,3 +1,20 @@
+access:
+  anonymous:
+    description: Cette page est réservée aux membres connectés.
+    title: Compte Agora requis
+  error:
+    description: Cette page n’a pas pu être affichée.
+    title: Page indisponible
+  forbidden:
+    description: Votre compte ne permet pas de consulter cette page.
+    title: Accès refusé
+  home: Retour à l’accueil
+  pending:
+    title: Vérification de l’accès
+  retry: Réessayer
+  unavailable:
+    description: Nous n’avons pas pu vérifier votre compte. Votre session est conservée.
+    title: Accès temporairement indisponible
 authFlow:
   expiryUnavailable: Non renseignée
   feedback:

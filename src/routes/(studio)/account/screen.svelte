@@ -23,11 +23,10 @@
     Field,
     Input,
     PageHeader,
-    Spinner,
     Stack,
   } from "@a-novel-kit/uikit";
 
-  import { CircleCheck, Info, ShieldCheck } from "@lucide/svelte";
+  import { ShieldCheck } from "@lucide/svelte";
 
   let { controller }: AccountScreenProps = $props();
 
@@ -61,8 +60,6 @@
   }
 </script>
 
-{#snippet infoIcon()}<Info size="var(--icon-size-md)" />{/snippet}
-{#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
 <Container size="lg">
   <Stack gap="6">
     <PageHeader
@@ -83,11 +80,8 @@
           </div>
 
           {#if model.claims.status === "loading"}
-            <Alert tone="info" title={t("authUi.account.loadingTitle")}>
-              <div class="loading-message">
-                <Spinner label={t("authUi.account.loadingTitle")} size="sm" />
-                <span>{t("authUi.account.loadingDescription")}</span>
-              </div>
+            <Alert tone="loading" title={t("authUi.account.loadingTitle")}>
+              <p class="feedback-message">{t("authUi.account.loadingDescription")}</p>
             </Alert>
           {:else if model.claims.status === "error"}
             <Alert tone="error" title={t("authUi.account.loadErrorTitle")}>
@@ -121,7 +115,7 @@
               </div>
             </DescriptionList>
 
-            <Alert tone="info" title={t("authUi.account.claims.privacyTitle")} icon={infoIcon}>
+            <Alert tone="info" title={t("authUi.account.claims.privacyTitle")}>
               <p class="feedback-message">{t("authUi.account.claims.privacyDescription")}</p>
             </Alert>
           {/if}
@@ -138,7 +132,7 @@
           </div>
 
           {#if model.passwordState.status === "success"}
-            <Alert tone="success" title={t("authUi.account.password.successTitle")} icon={successIcon}>
+            <Alert tone="success" title={t("authUi.account.password.successTitle")}>
               <p class="feedback-message">
                 {translateAuthenticationFeedback(t, model.passwordState.feedback)}
               </p>
@@ -229,7 +223,7 @@
           </div>
 
           {#if model.emailState.status === "success"}
-            <Alert tone="success" title={t("authUi.account.email.successTitle")} icon={successIcon}>
+            <Alert tone="success" title={t("authUi.account.email.successTitle")}>
               <p class="feedback-message">{translateAuthenticationFeedback(t, model.emailState.feedback)}</p>
             </Alert>
           {:else if model.emailState.status === "pending-email"}
@@ -396,23 +390,9 @@
     overflow-wrap: anywhere;
   }
 
-  :global(.alert.compact-form-error.compact-form-error) {
+  :global(.compact-form-error.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
-  }
-
-  :global(.compact-form-error .content) {
-    gap: 0;
-  }
-
-  :global(.compact-form-error .message:empty) {
-    display: none;
-  }
-
-  .loading-message {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
   }
 
   @media (max-width: 35rem) {

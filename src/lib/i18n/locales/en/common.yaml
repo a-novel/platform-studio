@@ -1,3 +1,20 @@
+access:
+  anonymous:
+    description: This page is available to signed-in members.
+    title: Agora account required
+  error:
+    description: This page could not be displayed.
+    title: Page unavailable
+  forbidden:
+    description: Your account does not have permission to view this page.
+    title: Access denied
+  home: Back to home
+  pending:
+    title: Checking access
+  retry: Try again
+  unavailable:
+    description: We couldn’t check your account. Your session has been kept.
+    title: Access temporarily unavailable
 authFlow:
   expiryUnavailable: Not provided
   feedback:

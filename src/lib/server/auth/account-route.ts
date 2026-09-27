@@ -1,5 +1,5 @@
 import { createAccountModel } from "$lib/application/auth/account-action";
-import { createAuthenticationContext } from "$lib/server/auth/context";
+import { requireAuthorization } from "$lib/server/auth/authorization";
 import { validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
 import { logoutAuthentication } from "$lib/server/auth/logout";
 import { readTokenExpiry } from "$lib/server/auth/session";
@@ -8,9 +8,7 @@ import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import { Lang, credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
-import { fail, isRedirect, redirect } from "@sveltejs/kit";
-
-const loginRedirect = "/?auth=login&returnTo=%2Faccount";
+import { fail, isHttpError, isRedirect } from "@sveltejs/kit";
 
 function formatExpiry(token: string | undefined, locale: string, fallback: string): string {
   const expiry = token ? readTokenExpiry(token) : null;
@@ -22,22 +20,14 @@ function formatExpiry(token: string | undefined, locale: string, fallback: strin
   }).format(expiry);
 }
 
-async function authenticated(event: RequestEvent) {
-  const authentication = createAuthenticationContext(event.cookies, event.url);
-  const session = await authentication.session.authenticated();
-  if (!session) redirect(303, loginRedirect);
-  return { authentication, session };
-}
-
 export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "cookies" | "locals" | "url">) => {
   const t = locals.i18n.getFixedT(locals.locale, "common");
 
   try {
-    const authentication = createAuthenticationContext(cookies, url);
-    const session = await authentication.session.authenticated();
-    if (!session) redirect(303, loginRedirect);
+    const { session } = await requireAuthorization({ cookies, url });
 
     return {
+      authorization: "allowed" as const,
       accountModel: createAccountModel({
         status: "ready",
         userId: session.claims.userID,
@@ -47,9 +37,10 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
       }),
     };
   } catch (error) {
-    if (isRedirect(error)) throw error;
+    if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
     return {
+      authorization: "unavailable" as const,
       accountModel: createAccountModel({
         status: "error",
         feedback: "sessionUnavailable",
@@ -72,10 +63,10 @@ export const accountActions = {
     }
 
     try {
-      const { authentication, session } = await authenticated(event);
+      const { authentication, session } = await requireAuthorization(event);
       await credentialsUpdatePassword(authentication.api, session.accessToken, input.value);
     } catch (error) {
-      if (isRedirect(error)) throw error;
+      if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
       return fail(isHttpStatusError(error, 403) ? 403 : 503, {
         accountAction: {
@@ -109,13 +100,13 @@ export const accountActions = {
     }
 
     try {
-      const { authentication, session } = await authenticated(event);
+      const { authentication, session } = await requireAuthorization(event);
       await shortCodeCreateEmailUpdate(authentication.api, session.accessToken, {
         email: input.value.email,
         lang: event.locals.locale === "fr" ? Lang.Fr : Lang.En,
       });
     } catch (error) {
-      if (isRedirect(error)) throw error;
+      if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
       return fail(503, {
         accountAction: {

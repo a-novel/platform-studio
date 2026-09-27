@@ -1,6 +1,10 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
+  import { page } from "$app/state";
   import { mergeAccountAction } from "$lib/application/auth/account-action";
+  import { loginHref } from "$lib/application/auth/navigation";
 
+  import ProtectedPage from "../(access)/screen.svelte";
   import { createAccountScreenController } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
@@ -30,4 +34,14 @@
   <title>{t("authUi.account.title")} — {t("shell.brand")}</title>
 </svelte:head>
 
-<Screen {controller} />
+{#snippet account()}
+  <Screen {controller} />
+{/snippet}
+
+<ProtectedPage
+  loginHref={loginHref(page.url.pathname + page.url.search)}
+  homeHref={resolve("/")}
+  retryHref={page.url.pathname + page.url.search}
+  children={account}
+  unavailable={account}
+/>

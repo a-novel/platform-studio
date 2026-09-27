@@ -6,6 +6,7 @@ import { AuthenticationSession, AuthenticationUnavailableError } from "./session
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HttpError } from "@a-novel-kit/nodelib-browser/http";
 import { AuthenticationApi, credentialsUpdatePassword } from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
@@ -48,6 +49,7 @@ describe("account route", () => {
   it("limits a retrieval failure to the recap and initializes usable actions", async () => {
     authenticated.mockRejectedValue(new AuthenticationUnavailableError());
     await expect(loadAccount(event())).resolves.toEqual({
+      authorization: "unavailable",
       accountModel: {
         claims: { status: "error", feedback: "sessionUnavailable" },
         passwordState: { status: "ready" },
@@ -74,5 +76,18 @@ describe("account route", () => {
       data: { accountAction: { kind: "password", state: { status: "service-error", feedback: "serviceUnavailable" } } },
     });
     expect(credentialsUpdatePassword).not.toHaveBeenCalled();
+  });
+
+  it("keeps a rejected current password in the form instead of showing the generic access-denied page", async () => {
+    authenticated.mockResolvedValue({
+      status: "available",
+      accessToken: "fixture-access",
+      claims: { userID: "test-user", refreshTokenID: "test-refresh", roles: [] },
+    });
+    vi.mocked(credentialsUpdatePassword).mockRejectedValue(new HttpError(403, "incorrect current password"));
+    await expect(accountActions.password(event())).resolves.toMatchObject({
+      status: 403,
+      data: { accountAction: { kind: "password", state: { feedback: "invalidCurrentPassword" } } },
+    });
   });
 });

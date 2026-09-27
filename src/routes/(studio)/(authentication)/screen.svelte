@@ -14,7 +14,7 @@
   import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, Input } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, Input, StatusState } from "@a-novel-kit/uikit";
 
   let { controller }: AuthenticationPanelProps = $props();
 
@@ -42,10 +42,12 @@
 </script>
 
 {#if model.state.status === "pending-email"}
-  <section class="completion-state" role="status">
-    <p class="completion-title">{t("authUi.authentication.pendingTitle")}</p>
-    <p class="pending-copy">{pendingDescription} <strong>{model.state.targetHint}</strong></p>
-  </section>
+  {@const targetHint = model.state.targetHint}
+  <StatusState tone="success" title={t("authUi.authentication.pendingTitle")}>
+    {#snippet description()}
+      {pendingDescription} <strong class="pending-target">{targetHint}</strong>
+    {/snippet}
+  </StatusState>
 {:else if model.state.status === "success"}
   <AuthenticationCompletion feedback={model.state.feedback} />
 {:else}
@@ -115,38 +117,13 @@
     }
   }
 
-  .completion-state {
-    display: grid;
-    gap: var(--space-2);
-  }
-
-  .pending-copy {
-    margin: 0;
-    line-height: var(--line-height-normal);
-  }
-
-  .completion-title {
-    margin: 0;
-    color: var(--color-feedback-success-text);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-sm);
-  }
-
-  .pending-copy strong {
+  .pending-target {
     color: var(--color-text-primary);
     overflow-wrap: anywhere;
   }
 
-  :global(.alert.compact-form-error.compact-form-error) {
+  :global(.compact-form-error.compact-form-error) {
     border-radius: var(--radius-md);
     padding: var(--space-2) var(--space-3);
-  }
-
-  :global(.compact-form-error .content) {
-    gap: 0;
-  }
-
-  :global(.compact-form-error .message:empty) {
-    display: none;
   }
 </style>

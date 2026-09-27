@@ -1,7 +1,8 @@
+import { safeReturnTo } from "$lib/application/auth/navigation";
 import type { AuthenticationFeedback, AuthenticationPanelModel } from "$lib/application/auth/types";
 import { readAuthView } from "$lib/application/shell/auth-dialog-state";
 import { createAuthenticationContext } from "$lib/server/auth/context";
-import { safeReturnTo, validateEmailRequest, validateLogin } from "$lib/server/auth/forms";
+import { validateEmailRequest, validateLogin } from "$lib/server/auth/forms";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import { Lang, shortCodeCreatePasswordReset, shortCodeCreateRegister } from "@a-novel/service-authentication-rest";

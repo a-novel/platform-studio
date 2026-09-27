@@ -16,13 +16,13 @@
   import AuthenticationPanel from "./(authentication)/screen.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Avatar, Button, Dialog, IconButton, NavList, SkipLink, Spinner } from "@a-novel-kit/uikit";
+  import { Avatar, Button, Dialog, IconButton, InlineMessage, NavList, SkipLink } from "@a-novel-kit/uikit";
   import agoraBanner320 from "@a-novel-kit/uikit-images/files/banner/320w/agora-banner.png";
   import agoraBanner640 from "@a-novel-kit/uikit-images/files/banner/640w/agora-banner.png";
   import agoraIcon48 from "@a-novel-kit/uikit-images/files/icon/48x48/agora-icon.png";
   import agoraIcon96 from "@a-novel-kit/uikit-images/files/icon/96x96/agora-icon.png";
 
-  import { CircleAlert, House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
+  import { House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 
   let { controller, children }: StudioShellProps = $props();
 
@@ -107,27 +107,21 @@
 {#snippet accountWidget(compact: boolean, surface: "rail" | "drawer")}
   <div class="account-widget" data-session={model.session.status}>
     {#if model.session.status === "loading"}
-      <div
-        class="account-status"
-        class:compact
-        role="status"
-        aria-label={compact ? t("shell.sessionLoading") : undefined}
-        title={compact ? t("shell.sessionLoading") : undefined}
-      >
-        <Spinner label={t("shell.sessionLoading")} size="sm" />
-        {#if !compact}<span>{t("shell.sessionLoading")}</span>{/if}
+      <div class="account-status" class:compact title={compact ? t("shell.sessionLoading") : undefined}>
+        <InlineMessage tone="loading" aria-label={compact ? t("shell.sessionLoading") : undefined}>
+          {#if !compact}{t("shell.sessionLoading")}{/if}
+        </InlineMessage>
       </div>
     {:else if model.session.status === "error"}
       <div
         id={`${componentId}-${surface}-session-error`}
         class="account-status error"
         class:compact
-        role="alert"
-        aria-label={compact ? t("shell.sessionUnavailable") : undefined}
         title={compact ? t("shell.sessionUnavailable") : undefined}
       >
-        <CircleAlert size="var(--icon-size-sm)" aria-hidden="true" />
-        {#if !compact}<span>{t("shell.sessionUnavailable")}</span>{/if}
+        <InlineMessage tone="error" aria-label={compact ? t("shell.sessionUnavailable") : undefined}>
+          {#if !compact}{t("shell.sessionUnavailable")}{/if}
+        </InlineMessage>
       </div>
     {:else if authenticatedSession}
       <!-- eslint-disable svelte/no-navigation-without-resolve -- The pure shell receives an app-resolved URL. -->
