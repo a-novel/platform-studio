@@ -594,8 +594,6 @@
   }
 
   :global(dialog.authentication-dialog .authentication-secondary-action) {
-    border: 0;
-    padding-inline: 0;
     min-inline-size: 0;
     max-inline-size: 100%;
     white-space: normal;

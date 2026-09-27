@@ -255,7 +255,8 @@ describe("studio shell screen", () => {
     const submit = dialog.getByRole("button", { name: t("shell.signIn"), exact: true }).element() as HTMLButtonElement;
     if (!submit.form) throw new Error("Submit button must belong to a form");
     const form = submit.form.getBoundingClientRect();
-    const secondary = dialog.getByText(t("shell.auth.forgotPassword")).element().getBoundingClientRect();
+    const secondaryButton = dialog.getByRole("button", { name: t("shell.auth.forgotPassword") }).element();
+    const secondary = secondaryButton.getBoundingClientRect();
     const outer = dialog.element().getBoundingClientRect();
 
     if (width < 768) expect(outer.left).toBe(8);
@@ -265,6 +266,8 @@ describe("studio shell screen", () => {
     expect(close.top).toBeCloseTo(heading.top);
     expect(close.right).toBeCloseTo(form.right);
     expect(secondary.left).toBeCloseTo(form.left);
+    expect(getComputedStyle(secondaryButton).paddingInlineStart).toBe("12px");
+    expect(getComputedStyle(secondaryButton).paddingInlineEnd).toBe("12px");
     expect(secondary.top - submit.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(24);
     expect(dialog.element().scrollWidth).toBeLessThanOrEqual(dialog.element().clientWidth);
   });
