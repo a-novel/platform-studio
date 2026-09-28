@@ -78,6 +78,7 @@
     }
 
     const password = canvas.getByRole("region", { name: t("authUi.account.password.title") }).getBoundingClientRect();
+    await expect(password.width).toBeLessThanOrEqual(640);
     const email = canvas.getByRole("region", { name: t("authUi.account.email.title") }).getBoundingClientRect();
     const logout = canvas.getByRole("region", { name: t("authUi.account.logout.title") }).getBoundingClientRect();
     await expect(email.top).toBeGreaterThan(password.bottom);

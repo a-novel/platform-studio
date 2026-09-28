@@ -129,9 +129,4 @@
     color: var(--color-text-primary);
     overflow-wrap: anywhere;
   }
-
-  form > :global(.compact-form-error) {
-    border-radius: var(--radius-md);
-    padding: var(--space-2) var(--space-3);
-  }
 </style>

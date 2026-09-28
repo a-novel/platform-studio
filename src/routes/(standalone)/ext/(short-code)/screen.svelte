@@ -208,9 +208,4 @@
       padding: var(--space-2);
     }
   }
-
-  form > :global(.compact-form-error) {
-    border-radius: var(--radius-md);
-    padding: var(--space-2) var(--space-3);
-  }
 </style>

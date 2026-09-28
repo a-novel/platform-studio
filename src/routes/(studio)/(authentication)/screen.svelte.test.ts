@@ -255,11 +255,12 @@ describe("pure authentication screens", () => {
       await expectFormActionLayout(form);
       const section = form.closest("section");
       if (!section) throw new Error("Account forms must belong to a section");
-      const outer = section.getBoundingClientRect();
+      const outer = page.getByRole("region", { name: "Session summary" }).element().getBoundingClientRect();
       const inner = form.getBoundingClientRect();
       expect(outer.left).toBe(8);
       expect(inner.left - outer.left).toBe(16);
       expect(outer.right - inner.right).toBe(16);
+      expect(section.getBoundingClientRect().left).toBe(inner.left);
     }
     expect(controller.state.model).toMatchObject({
       passwordState: { status: "submitting" },

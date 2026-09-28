@@ -660,12 +660,6 @@
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .rail {
-      transition: none;
-    }
-  }
-
   @media (forced-colors: active) {
     .rail,
     .mobile-header {
