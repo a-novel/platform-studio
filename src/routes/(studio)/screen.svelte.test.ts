@@ -28,7 +28,7 @@ function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel 
 
 function controller(
   patch: Partial<StudioShellViewModel> = {},
-  options: { authenticationModel?: AuthenticationPanelModel; lockAuthentication?: boolean } = {}
+  options: { authenticationModel?: AuthenticationPanelModel } = {}
 ) {
   const shellModel = model(patch);
   const authentication = createAuthenticationPanelController({
@@ -44,7 +44,6 @@ function controller(
     logoutAction: "/auth/logout",
     authentication,
     resolveAuthentication: (view) => ({ model: readyAuthenticationModel(view), action: "/auth" }),
-    lockAuthentication: options.lockAuthentication,
     allowNativeLogout: false,
   });
 }
@@ -274,7 +273,8 @@ describe("studio shell screen", () => {
   });
 
   it("keeps a review dialog open when its controller rejects dismissal", async () => {
-    const shell = controller({ authView: "login" }, { lockAuthentication: true });
+    const shell = controller({ authView: "login" });
+    shell.authenticationDialog.close = () => {};
     render(Screen, { controller: shell }, withLocale());
 
     await page.getByRole("button", { name: "Close dialog" }).click();

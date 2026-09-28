@@ -1,27 +1,25 @@
 <script module lang="ts">
   import type { ShortCodeScreenModel } from "$lib/application/auth/types";
 
-  /** Controllable Storybook harness around the pure secure-link screen. */
+  /** Fixed-state Storybook harness around the pure secure-link screen. */
   export interface ShortCodeScreenStoryProps {
     initialModel: ShortCodeScreenModel;
   }
 </script>
 
 <script lang="ts">
-  import { createShortCodeScreenController } from "./controller.svelte";
+  import type { ShortCodeScreenController } from "./controller.svelte";
   import ShortCodeScreen from "./screen.svelte";
-
-  import { untrack } from "svelte";
 
   let { initialModel }: ShortCodeScreenStoryProps = $props();
 
-  const controller = createShortCodeScreenController({
-    model: untrack(() => structuredClone(initialModel)),
-    action: "/storybook/complete",
-    restartHref: "/?auth=reset",
-    continueHref: "/",
-    allowNativeSubmission: false,
-  });
+  const controller: ShortCodeScreenController = {
+    get state() {
+      return { model: initialModel, action: "#complete", restartHref: "#restart", continueHref: "#continue" };
+    },
+    synchronize: () => {},
+    submit: () => false,
+  };
 </script>
 
 <div class="story-frame">

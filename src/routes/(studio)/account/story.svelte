@@ -1,7 +1,7 @@
 <script module lang="ts">
   import type { AccountScreenModel } from "$lib/application/auth/types";
 
-  /** Controllable Storybook harness around the pure account screen. */
+  /** Fixed-state Storybook harness around the pure account screen. */
   export interface AccountScreenStoryProps {
     /** Initial controller state rendered by the story. */
     initialModel: AccountScreenModel;
@@ -9,10 +9,8 @@
 </script>
 
 <script lang="ts">
-  import { createAccountScreenController } from "./controller.svelte";
+  import type { AccountScreenController } from "./controller.svelte";
   import AccountScreen from "./screen.svelte";
-
-  import { untrack } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
 
@@ -40,11 +38,15 @@
     email: "/storybook/account/email",
     logout: "/storybook/account/logout",
   };
-  const controller = createAccountScreenController({
-    model: untrack(() => localizeClaimExpiries(structuredClone(initialModel))),
-    actions,
-    allowNativeSubmission: false,
-  });
+  const controller: AccountScreenController = {
+    get state() {
+      return { model: localizeClaimExpiries(structuredClone(initialModel)), actions };
+    },
+    synchronize: () => {},
+    submitPassword: () => false,
+    submitEmail: () => false,
+    submitLogout: () => false,
+  };
 </script>
 
 <div class="story-frame">

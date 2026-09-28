@@ -126,7 +126,7 @@ describe("platform controllers", () => {
     });
   });
 
-  it("accepts semantic shell transitions and can pin a review state", () => {
+  it("accepts semantic shell transitions", () => {
     const onAuthViewChange = vi.fn();
     const onRailChange = vi.fn();
     const authentication = createAuthenticationPanelController({
@@ -146,16 +146,15 @@ describe("platform controllers", () => {
       accountHref: "/account",
       logoutAction: "/logout",
       authentication,
-      lockAuthentication: true,
       allowNativeLogout: false,
       onAuthViewChange,
       onRailChange,
     });
 
     controller.authenticationDialog.close();
-    expect(controller.state.model.authView).toBe("login");
-    expect(controller.authenticationDialog.state.open).toBe(true);
-    expect(onAuthViewChange).not.toHaveBeenCalled();
+    expect(controller.state.model.authView).toBeNull();
+    expect(controller.authenticationDialog.state.open).toBe(false);
+    expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith(null);
 
     controller.navigationDialog.open();
     controller.toggleRail();
