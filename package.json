@@ -33,10 +33,10 @@
     "preview": "vite preview",
     "storybook": "BROWSER=none storybook dev --port 6006 --no-open",
     "test": "pnpm test:ci",
-    "test:browser": "vitest run --project=browser --coverage.enabled=false",
+    "test:browser": "vitest run --project=browser --coverage.reportsDirectory=coverage/browser",
     "test:ci": "pnpm test:unit && pnpm test:browser && pnpm test:storybook",
     "test:storybook": "vitest run --project=storybook --coverage.enabled=false",
-    "test:unit": "vitest run --project=unit"
+    "test:unit": "vitest run --project=unit --coverage.reportsDirectory=coverage/unit"
   },
   "dependencies": {
     "@a-novel-kit/nodelib-browser": "1.6.3",

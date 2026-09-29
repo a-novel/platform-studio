@@ -10,6 +10,9 @@ The creative workspace for building and managing stories in Agora Storyverse.
 ![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/a-novel/platform-studio)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/a-novel/platform-studio)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/a-novel/platform-studio/main.yaml)
+[![codecov](https://codecov.io/gh/a-novel/platform-studio/graph/badge.svg)](https://codecov.io/gh/a-novel/platform-studio)
+
+![Coverage graph](https://codecov.io/gh/a-novel/platform-studio/graphs/sunburst.svg)
 
 ## What it does
 
