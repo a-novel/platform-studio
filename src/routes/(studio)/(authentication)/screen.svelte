@@ -14,7 +14,7 @@
   import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, FormActions, Input, StatusState } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
 
   let { controller }: AuthenticationPanelProps = $props();
 
@@ -43,11 +43,9 @@
 
 {#if model.state.status === "pending-email"}
   {@const targetHint = model.state.targetHint}
-  <StatusState tone="success" title={t("authUi.authentication.pendingTitle")}>
-    {#snippet description()}
-      {pendingDescription} <strong class="pending-target">{targetHint}</strong>
-    {/snippet}
-  </StatusState>
+  <InlineMessage tone="success">
+    {pendingDescription} <strong class="pending-target">{targetHint}</strong>
+  </InlineMessage>
 {:else if model.state.status === "success"}
   <AuthenticationCompletion feedback={model.state.feedback} />
 {:else}

@@ -30,47 +30,43 @@ authFlow:
     confirmPassword: Confirmez votre nouveau mot de passe.
     currentPassword: Saisissez votre mot de passe actuel.
     email: Saisissez un courriel valide.
-    newPassword: Choisissez un nouveau mot de passe valide.
+    newPassword: Utilisez entre 4 et 1 024 caractères.
     password: Saisissez votre mot de passe.
     passwordMismatch: Les mots de passe ne correspondent pas.
 authUi:
   account:
     claims:
       accessExpiresAt: Expiration de l’accès
-      noRoles: Aucun rôle indiqué
+      noRoles: Aucun rôle attribué
       refreshExpiresAt: Expiration de la session
       roles: Rôles
-      title: Résumé de la session
-      userId: Identifiant utilisateur
+      title: Votre session
+      userId: Identifiant du compte
     description: Vos informations personnelles et vos paramètres de sécurité.
     email:
-      description: Vous recevrez un lien pour confirmer ce changement.
-      hint: Votre courriel actuel reste inchangé jusqu’à la confirmation.
+      description: Un lien de confirmation sera envoyé à votre nouveau courriel.
+      hint: Votre courriel actuel reste actif jusqu’à confirmation.
       label: Nouveau courriel
       pendingDescription: Lien de confirmation envoyé à
       pendingTitle: Confirmation en attente
       resend: Envoyer un autre lien
       submit: Envoyer le lien
       submitting: Envoi du lien…
-      title: Changez votre courriel
-    loadErrorTitle: Récapitulatif de session indisponible
-    loadingDescription: Vérification de votre session en cours.
+      title: Courriel
+    loadErrorTitle: Détails de la session indisponibles
     loadingTitle: Chargement de la session
     logout:
       description: Vous serez déconnecté de Studio sur cet appareil.
       submit: Se déconnecter
       submitting: Déconnexion en cours…
-      title: Déconnectez-vous de Studio
     password:
       confirmLabel: Confirmez le nouveau mot de passe
       currentLabel: Mot de passe actuel
-      description: Saisissez votre mot de passe actuel pour le modifier.
       hint: Choisissez un mot de passe long et facile à retenir.
       newLabel: Nouveau mot de passe
       submit: Changer le mot de passe
       submitting: Modification du mot de passe…
-      successTitle: Mot de passe modifié
-      title: Changez votre mot de passe
+      title: Mot de passe
     title: Gérez votre compte
   authentication:
     emailLabel: Courriel
@@ -79,11 +75,11 @@ authUi:
         submit: Connexion
         submitting: Connexion…
       register:
-        pendingDescription: Ouvrez le lien envoyé à
+        pendingDescription: Un lien d’inscription a été envoyé à
         submit: Envoyer le lien
         submitting: Envoi du lien…
       reset:
-        pendingDescription: Si ce courriel est associé à un compte, un lien a été envoyé à
+        pendingDescription: Si ce courriel est associé à un compte, vous recevrez un lien de réinitialisation à
         submit: Envoyer le lien
         submitting: Envoi du lien…
     passwordLabel: Mot de passe
@@ -99,23 +95,23 @@ authUi:
         submitting: Mise à jour du courriel…
         unavailableTitle: Mise à jour du courriel indisponible
       passwordReset:
-        description: Définissez un mot de passe pour retrouver l’accès à votre compte.
+        description: Choisissez un nouveau mot de passe pour retrouver l’accès à votre compte.
         submit: Réinitialiser le mot de passe
         submitting: Réinitialisation du mot de passe…
-        title: Choisissez un nouveau mot de passe Agora
+        title: Réinitialisez votre mot de passe Agora
       register:
-        description: Définissez un mot de passe pour accéder à votre compte.
+        description: Choisissez un mot de passe pour vous connecter.
         submit: Créer le compte
         submitting: Création du compte…
-        title: Terminez la création de votre compte Agora
+        title: Créez votre compte Agora
     newPasswordLabel: Nouveau mot de passe
     restart: Demander un nouveau lien
     states:
       expired:
-        description: Demandez un nouveau lien pour continuer.
+        description: Pour votre sécurité, les liens reçus par courriel ont une durée de validité limitée.
         title: Ce lien a expiré
       invalid:
-        description: Il est peut-être incomplet ou déjà utilisé. Demandez-en un nouveau.
+        description: Ce lien a peut-être déjà été utilisé ou mal copié.
         title: Ce lien n’est pas valide
       missing:
         description: Ouvrez le lien complet reçu par courriel ou demandez-en un nouveau.
@@ -129,8 +125,10 @@ shell:
     login:
       title: Connexion
     register:
+      description: Vous recevrez un lien par courriel pour choisir votre mot de passe et finaliser votre inscription.
       title: Créez votre compte
     reset:
+      description: Vous recevrez un lien par courriel pour choisir un nouveau mot de passe.
       title: Réinitialisez votre mot de passe
     signInInstead: Connexion
   brand: Studio

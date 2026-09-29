@@ -40,7 +40,20 @@
   const compactRail = $derived(model.rail === "collapsed");
   const { t } = getI18nContext();
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
-  const authDialogTitle = $derived(getAuthDialogTitle(model.authView));
+  const authDialogTitle = $derived(
+    authenticationState === "pending-email"
+      ? t("authUi.authentication.pendingTitle")
+      : getAuthDialogTitle(model.authView)
+  );
+  const authDialogDescription = $derived(
+    !authActionsVisible
+      ? undefined
+      : model.authView === "register"
+        ? t("shell.auth.register.description")
+        : model.authView === "reset"
+          ? t("shell.auth.reset.description")
+          : undefined
+  );
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
     if (event.target instanceof Element && event.target.closest("a")) controller.navigationDialog.close();
@@ -276,6 +289,7 @@
     id={authenticationId}
     controller={controller.authenticationDialog}
     title={authDialogTitle}
+    description={authDialogDescription}
     actions={authActionsVisible ? authActions : undefined}
   >
     {#snippet headerActions()}

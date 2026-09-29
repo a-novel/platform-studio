@@ -40,7 +40,7 @@ export default interface Resources {
         "confirmPassword": "Confirm your new password.",
         "currentPassword": "Enter your current password.",
         "email": "Enter a valid email address.",
-        "newPassword": "Choose a valid new password.",
+        "newPassword": "Use between 4 and 1,024 characters.",
         "password": "Enter your password.",
         "passwordMismatch": "The passwords do not match."
       }
@@ -49,43 +49,39 @@ export default interface Resources {
       "account": {
         "claims": {
           "accessExpiresAt": "Access expires",
-          "noRoles": "No roles reported",
+          "noRoles": "No roles assigned",
           "refreshExpiresAt": "Session expires",
           "roles": "Roles",
-          "title": "Session summary",
-          "userId": "User ID"
+          "title": "Your session",
+          "userId": "Account ID"
         },
         "description": "Your personal information and security settings.",
         "email": {
-          "description": "You’ll receive a link to confirm this change.",
-          "hint": "Your current email stays unchanged until you confirm.",
+          "description": "A confirmation link will be sent to your new email.",
+          "hint": "Your current email remains active until you confirm.",
           "label": "New email address",
           "pendingDescription": "Confirmation link sent to",
           "pendingTitle": "Confirmation pending",
           "resend": "Send another link",
           "submit": "Send link",
           "submitting": "Sending link…",
-          "title": "Change your email"
+          "title": "Email"
         },
-        "loadErrorTitle": "Session summary unavailable",
-        "loadingDescription": "Checking your session.",
+        "loadErrorTitle": "Session details unavailable",
         "loadingTitle": "Loading session",
         "logout": {
           "description": "You’ll be logged out of Studio on this device.",
           "submit": "Log out",
-          "submitting": "Logging out…",
-          "title": "Log out of Studio"
+          "submitting": "Logging out…"
         },
         "password": {
           "confirmLabel": "Confirm new password",
           "currentLabel": "Current password",
-          "description": "Enter your current password to change it.",
           "hint": "Choose a long, memorable password.",
           "newLabel": "New password",
           "submit": "Change password",
           "submitting": "Changing password…",
-          "successTitle": "Password changed",
-          "title": "Change your password"
+          "title": "Password"
         },
         "title": "Manage your account"
       },
@@ -97,18 +93,18 @@ export default interface Resources {
             "submitting": "Logging in…"
           },
           "register": {
-            "pendingDescription": "Open the link sent to",
+            "pendingDescription": "A registration link has been sent to",
             "submit": "Send link",
             "submitting": "Sending link…"
           },
           "reset": {
-            "pendingDescription": "If this email is linked to an account, a link was sent to",
+            "pendingDescription": "If this email is registered, you’ll receive a password reset link at",
             "submit": "Send link",
             "submitting": "Sending link…"
           }
         },
         "passwordLabel": "Password",
-        "pendingTitle": "Check your email",
+        "pendingTitle": "Check your inbox",
         "successTitle": "You’re all set"
       },
       "shortCode": {
@@ -122,27 +118,27 @@ export default interface Resources {
             "unavailableTitle": "Email update unavailable"
           },
           "passwordReset": {
-            "description": "Set a password to regain access to your account.",
+            "description": "Choose a new password to regain access to your account.",
             "submit": "Reset password",
             "submitting": "Resetting password…",
-            "title": "Choose a new Agora password"
+            "title": "Reset your Agora password"
           },
           "register": {
-            "description": "Set a password to access your account.",
+            "description": "Choose a password to sign in.",
             "submit": "Create account",
             "submitting": "Creating account…",
-            "title": "Finish creating your Agora account"
+            "title": "Create your Agora account"
           }
         },
         "newPasswordLabel": "New password",
         "restart": "Request a new link",
         "states": {
           "expired": {
-            "description": "Request a new link to continue.",
+            "description": "For your security, email links are valid for a limited time.",
             "title": "This link has expired"
           },
           "invalid": {
-            "description": "It may be incomplete or already used. Request a new one.",
+            "description": "This link may have already been used or copied incorrectly.",
             "title": "This link is not valid"
           },
           "missing": {
@@ -162,9 +158,11 @@ export default interface Resources {
           "title": "Login"
         },
         "register": {
+          "description": "You’ll receive an email link to choose your password and finish setting up your account.",
           "title": "Create your account"
         },
         "reset": {
+          "description": "You’ll receive an email link to choose a new password.",
           "title": "Reset your password"
         },
         "signInInstead": "Login"

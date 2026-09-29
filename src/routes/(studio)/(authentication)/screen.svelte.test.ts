@@ -78,7 +78,7 @@ async function expectFormActionLayout(form: HTMLFormElement) {
       expect(bounds.left).toBeCloseTo(formBounds.left);
       if (width < 560) expect(bounds.width).toBeCloseTo(formBounds.width);
       else expect(bounds.width).toBeLessThan(formBounds.width);
-      const feedback = form.querySelector('[role="alert"]');
+      const feedback = form.querySelector('[role="alert"], [role="status"]');
       if (feedback) expect(bounds.top - feedback.getBoundingClientRect().bottom).toBe(16);
       const lastInput = Array.from(form.querySelectorAll("input")).at(-1);
       if (lastInput)
@@ -252,11 +252,12 @@ describe("pure authentication screens", () => {
       await expectFormActionLayout(form);
       const section = form.closest("section");
       if (!section) throw new Error("Account forms must belong to a section");
-      const outer = page.getByRole("region", { name: "Session summary" }).element().getBoundingClientRect();
+      const outer = page.getByRole("region", { name: "Your session" }).element().getBoundingClientRect();
       const inner = form.getBoundingClientRect();
       expect(outer.left).toBe(8);
-      expect(inner.left - outer.left).toBe(16);
-      expect(outer.right - inner.right).toBe(16);
+      const inset = label === "Log out" ? 0 : 16;
+      expect(inner.left - outer.left).toBe(inset);
+      expect(outer.right - inner.right).toBe(inset);
       expect(section.getBoundingClientRect().left).toBe(inner.left);
     }
     expect(controller.state.model).toMatchObject({
@@ -276,7 +277,7 @@ describe("pure authentication screens", () => {
       allowNativeSubmission: false,
     });
     render(AccountScreen, { controller }, withLocale());
-    const recap = page.getByRole("region", { name: "Session summary" });
+    const recap = page.getByRole("region", { name: "Your session" });
     await expect.element(recap).toBeVisible();
     await expect.element(page.getByLabelText(/Current password/)).toBeEnabled();
     await expect.element(page.getByLabelText(/New email address/)).toBeEnabled();
@@ -287,6 +288,38 @@ describe("pure authentication screens", () => {
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeEnabled();
     expect(controller.state.model.claims.status).toBe(status);
   });
+
+  it.each(["password", "email"] as const)(
+    "places %s confirmation between the fields and submit button",
+    async (setting) => {
+      const model: AccountScreenModel = {
+        ...readyAccount,
+        ...(setting === "password"
+          ? { passwordState: { status: "success", feedback: "passwordChanged" } }
+          : { emailState: { status: "pending-email", targetHint: "creator@example.test" } }),
+      };
+      render(
+        AccountScreen,
+        {
+          controller: createAccountScreenController({
+            model,
+            actions: { password: "/account?/password", email: "/account?/email", logout: "/account?/logout" },
+            allowNativeSubmission: false,
+          }),
+        },
+        withLocale()
+      );
+
+      const status = page.getByRole("status");
+      await expect.element(status).toBeVisible();
+      const feedback = status.element();
+      const form = feedback.closest("form");
+      expect(form?.getAttribute("action")).toBe(`/account?/${setting}`);
+      if (setting === "password") expect(feedback.textContent?.trim()).toBe("Your password was changed.");
+      if (!form) throw new Error("Confirmation must stay inside its form");
+      await expectFormActionLayout(form);
+    }
+  );
 
   it("never renders secure-link material and locks completion while submitting", async () => {
     render(

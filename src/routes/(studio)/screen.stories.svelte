@@ -226,6 +226,8 @@
     const status = canvas.getByRole("status");
     const dialog = canvas.getByRole("dialog");
     await expect(status).toBeVisible();
+    await expect(within(dialog).getAllByRole("heading")).toHaveLength(1);
+    await expect(within(dialog).getByRole("heading", { name: t("authUi.authentication.pendingTitle") })).toBeVisible();
     expect(getComputedStyle(status).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     await expect(within(dialog).queryByRole("button", { name: t("shell.auth.signInInstead") })).not.toBeInTheDocument();
   }

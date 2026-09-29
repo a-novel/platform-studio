@@ -6,11 +6,10 @@ import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
 
 # Account screen
 
-Account management is a full route rather than a dialog. Its forms and session details are shown
-at the canonical desktop and mobile review sizes.
-
-Session details sit directly on the page background, with compact, wrapping rows on mobile.
-Loading and errors remain local to the summary. Forms retain their own panels and compact mobile insets.
+Account settings follow one reading column: password, email, then session details and logout.
+Forms use shared panels and action spacing, with feedback immediately before their submit button.
+Session details sit directly on the page background; a retrieval failure never blocks the forms.
+Short section names identify the setting, while descriptions explain only what happens next.
 
 ## Account status
 
@@ -20,11 +19,21 @@ Loading and errors remain local to the summary. Forms retain their own panels an
 
 ### Loading
 
-<ResponsiveStoryPair desktop={AccountStories.Loading} mobile={AccountStories.Loading} meta={AccountStories} />
+<ResponsiveStoryPair
+  desktop={AccountStories.Loading}
+  mobile={AccountStories.Loading}
+  meta={AccountStories}
+  startAt="account-claims"
+/>
 
 ### Load error
 
-<ResponsiveStoryPair desktop={AccountStories.LoadError} mobile={AccountStories.LoadError} meta={AccountStories} />
+<ResponsiveStoryPair
+  desktop={AccountStories.LoadError}
+  mobile={AccountStories.LoadError}
+  meta={AccountStories}
+  startAt="account-claims"
+/>
 
 ## Password
 
@@ -132,4 +141,5 @@ This form sends a confirmation link. The email change completes on the secure em
   desktop={AccountStories.LongContentMobile}
   mobile={AccountStories.LongContentMobile}
   meta={AccountStories}
+  startAt="account-claims"
 />

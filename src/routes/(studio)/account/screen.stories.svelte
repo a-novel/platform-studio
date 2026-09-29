@@ -80,9 +80,10 @@
     const password = canvas.getByRole("region", { name: t("authUi.account.password.title") }).getBoundingClientRect();
     await expect(password.width).toBeLessThanOrEqual(640);
     const email = canvas.getByRole("region", { name: t("authUi.account.email.title") }).getBoundingClientRect();
-    const logout = canvas.getByRole("region", { name: t("authUi.account.logout.title") }).getBoundingClientRect();
+    const session = canvas.getByRole("region", { name: t("authUi.account.claims.title") });
     await expect(email.top).toBeGreaterThan(password.bottom);
-    await expect(logout.top).toBeGreaterThan(email.bottom);
+    await expect(session.getBoundingClientRect().top).toBeGreaterThan(email.bottom);
+    await expect(within(session).getByRole("button", { name: t("authUi.account.logout.submit") })).toBeVisible();
   }
 
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {

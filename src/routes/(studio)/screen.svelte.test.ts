@@ -302,8 +302,9 @@ describe("studio shell screen", () => {
       withLocale()
     );
 
-    const registrationDialog = page.getByRole("dialog", { name: "Create your account" });
+    const registrationDialog = page.getByRole("dialog", { name: "Check your inbox" });
     await expect.element(registrationDialog).toBeVisible();
+    expect(registrationDialog.element().querySelectorAll("h2")).toHaveLength(1);
     await expect.element(registrationDialog.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
   });
 
