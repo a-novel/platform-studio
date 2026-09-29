@@ -71,25 +71,20 @@ async function expectFormActionLayout(form: HTMLFormElement) {
 
   const originalViewport = { width: window.innerWidth, height: window.innerHeight };
   try {
-    for (const width of [390, 1280]) {
+    for (const width of [320, 390, 1280]) {
       await page.viewport(width, 844);
       const bounds = button.getBoundingClientRect();
       const formBounds = form.getBoundingClientRect();
       expect(bounds.left).toBeCloseTo(formBounds.left);
-      if (width === 390) expect(bounds.width).toBeCloseTo(formBounds.width);
+      if (width < 560) expect(bounds.width).toBeCloseTo(formBounds.width);
       else expect(bounds.width).toBeLessThan(formBounds.width);
-      const preceding = button.previousElementSibling;
-      if (preceding) {
-        const gap = bounds.top - preceding.getBoundingClientRect().bottom;
-        if (preceding.getAttribute("role") === "alert") {
-          expect(gap).toBe(16);
-          const fields = preceding.previousElementSibling;
-          if (fields)
-            expect(
-              preceding.getBoundingClientRect().top - fields.getBoundingClientRect().bottom
-            ).toBeGreaterThanOrEqual(32);
-        } else expect(gap).toBeGreaterThanOrEqual(32);
-      }
+      const feedback = form.querySelector('[role="alert"]');
+      if (feedback) expect(bounds.top - feedback.getBoundingClientRect().bottom).toBe(16);
+      const lastInput = Array.from(form.querySelectorAll("input")).at(-1);
+      if (lastInput)
+        expect(
+          (feedback ?? button).getBoundingClientRect().top - lastInput.getBoundingClientRect().bottom
+        ).toBeGreaterThanOrEqual(32);
     }
   } finally {
     await page.viewport(originalViewport.width, originalViewport.height);

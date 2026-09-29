@@ -99,10 +99,10 @@
   {@render brand(false)}
 {/snippet}
 
-{#snippet primaryNavigation(onNavigate?: (event: MouseEvent) => void)}
+{#snippet primaryNavigation(compact: boolean, onNavigate?: (event: MouseEvent) => void)}
   <nav aria-label={t("shell.navigation")}>
     <NavList
-      class="shell-navigation"
+      {compact}
       onclick={onNavigate}
       items={[
         {
@@ -129,7 +129,7 @@
       {/if}
     {:else if authenticatedSession}
       <NavList
-        class="shell-navigation"
+        {compact}
         title={compact ? authenticatedSession.displayName : t("shell.manageAccount")}
         items={[
           {
@@ -172,7 +172,7 @@
         <span class="account-action-icon" aria-hidden="true">
           <LogIn size="var(--icon-size-sm)" />
         </span>
-        <span class="control-label">{t("shell.signIn")}</span>
+        {#if !compact}<span>{t("shell.signIn")}</span>{/if}
       </Button>
     {/if}
   </div>
@@ -180,43 +180,19 @@
 
 {#snippet authActions()}
   {#if model.authView === "login"}
-    <Button
-      class="authentication-secondary-action"
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      onclick={() => controller.openAuthentication("reset")}
-    >
-      <span class="authentication-secondary-action-label">{t("shell.auth.forgotPassword")}</span>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("reset")}>
+      {t("shell.auth.forgotPassword")}
     </Button>
-    <Button
-      class="authentication-secondary-action"
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      onclick={() => controller.openAuthentication("register")}
-    >
-      <span class="authentication-secondary-action-label">{t("shell.auth.createAccount")}</span>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("register")}>
+      {t("shell.auth.createAccount")}
     </Button>
   {:else if model.authView === "register"}
-    <Button
-      class="authentication-secondary-action"
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      onclick={() => controller.openAuthentication("login")}
-    >
-      <span class="authentication-secondary-action-label">{t("shell.auth.signInInstead")}</span>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
+      {t("shell.auth.signInInstead")}
     </Button>
   {:else if model.authView === "reset"}
-    <Button
-      class="authentication-secondary-action"
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      onclick={() => controller.openAuthentication("login")}
-    >
-      <span class="authentication-secondary-action-label">{t("shell.auth.backToSignIn")}</span>
+    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
+      {t("shell.auth.backToSignIn")}
     </Button>
   {/if}
 {/snippet}
@@ -246,7 +222,7 @@
       </div>
 
       <div id={desktopNavigationId} class="rail-navigation">
-        {@render primaryNavigation()}
+        {@render primaryNavigation(compactRail)}
       </div>
 
       <div class="rail-account">
@@ -276,50 +252,46 @@
     </div>
   </div>
 
-  <Dialog
-    id={drawerId}
-    class="studio-navigation-dialog"
-    controller={controller.navigationDialog}
-    title={navigationTitle}
-    closeOnBackdrop
-  >
-    <IconButton
-      class="navigation-dialog-close"
-      label={t("shell.closeNavigation")}
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      onclick={() => controller.navigationDialog.close()}
-    >
-      <X size="var(--icon-size-sm)" aria-hidden="true" />
-    </IconButton>
-    <div class="drawer-navigation">{@render primaryNavigation(closeDrawerAfterNavigation)}</div>
-    <div class="drawer-account">
-      {@render accountWidget(false)}
+  <Dialog id={drawerId} controller={controller.navigationDialog} title={navigationTitle} presentation="fullscreen">
+    {#snippet headerActions()}
+      <IconButton
+        label={t("shell.closeNavigation")}
+        variant="ghost"
+        tone="neutral"
+        size="sm"
+        onclick={() => controller.navigationDialog.close()}
+      >
+        <X size="var(--icon-size-sm)" aria-hidden="true" />
+      </IconButton>
+    {/snippet}
+    <div class="drawer-content">
+      <div class="drawer-navigation">{@render primaryNavigation(false, closeDrawerAfterNavigation)}</div>
+      <div class="drawer-account">
+        {@render accountWidget(false)}
+      </div>
     </div>
   </Dialog>
 
   <Dialog
     id={authenticationId}
-    class="authentication-dialog"
     controller={controller.authenticationDialog}
     title={authDialogTitle}
     actions={authActionsVisible ? authActions : undefined}
-    closeOnBackdrop
   >
+    {#snippet headerActions()}
+      <IconButton
+        label={t("shell.closeAuthentication")}
+        variant="ghost"
+        tone="neutral"
+        size="sm"
+        onclick={() => controller.authenticationDialog.close()}
+      >
+        <X size="var(--icon-size-sm)" aria-hidden="true" />
+      </IconButton>
+    {/snippet}
     {#if model.authView}
       <AuthenticationPanel controller={controller.authentication} />
     {/if}
-    <IconButton
-      class="authentication-dialog-close"
-      label={t("shell.closeAuthentication")}
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      onclick={() => controller.authenticationDialog.close()}
-    >
-      <X size="var(--icon-size-sm)" aria-hidden="true" />
-    </IconButton>
   </Dialog>
 </div>
 
@@ -358,8 +330,7 @@
   }
 
   .rail,
-  .mobile-header,
-  .shell-viewport :global(dialog.studio-navigation-dialog) {
+  .mobile-header {
     background: var(--color-surface-island-strong);
   }
 
@@ -379,7 +350,7 @@
   .brand {
     display: flex;
     align-items: center;
-    padding: var(--space-2);
+    padding-inline: var(--space-2);
     min-inline-size: 0;
   }
 
@@ -409,34 +380,6 @@
     min-block-size: 0;
     overflow-y: auto;
     overscroll-behavior-block: contain;
-  }
-
-  :global(.shell-navigation) {
-    inline-size: 100%;
-    min-inline-size: 0;
-  }
-
-  :global(.shell-navigation .item) {
-    inline-size: 100%;
-  }
-
-  :global(.shell-navigation .icon) {
-    justify-content: center;
-    inline-size: var(--control-height-sm);
-  }
-
-  .collapsed :global(.shell-navigation .item) {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .collapsed :global(.shell-navigation .label) {
-    position: absolute;
-    clip-path: inset(50%);
-    inline-size: var(--border-width-thin);
-    block-size: var(--border-width-thin);
-    overflow: hidden;
-    white-space: nowrap;
   }
 
   .rail-account,
@@ -483,15 +426,6 @@
     text-align: start;
   }
 
-  :global(.shell-account-button.compact-control .control-label) {
-    position: absolute;
-    clip-path: inset(50%);
-    inline-size: var(--border-width-thin);
-    block-size: var(--border-width-thin);
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
   .workspace {
     display: grid;
     grid-template-rows: minmax(0, 1fr);
@@ -519,91 +453,12 @@
     overscroll-behavior-block: contain;
   }
 
-  .drawer-account {
-    margin-block-start: var(--space-2);
-  }
-
-  :global(.navigation-dialog-close) {
-    position: fixed;
-    z-index: 1;
-    inset-block-start: var(--space-4);
-    inset-inline-end: var(--space-2);
-  }
-
-  :global(dialog.authentication-dialog) {
-    --authentication-padding-inline: var(--space-5);
-    --authentication-padding-block: var(--space-5);
-  }
-
-  :global(.authentication-dialog-close) {
-    position: absolute;
-    z-index: 1;
-    inset-block-start: var(--authentication-padding-block);
-    inset-inline-end: var(--authentication-padding-inline);
-  }
-
-  :global(dialog.authentication-dialog > .panel > header) {
-    padding: var(--authentication-padding-block) var(--authentication-padding-inline) var(--space-4);
-    padding-inline-end: calc(var(--authentication-padding-inline) + var(--control-height-sm) + var(--space-2));
-  }
-
-  :global(dialog.authentication-dialog > .panel > header > h2) {
-    display: flex;
-    align-items: center;
-    min-block-size: var(--control-height-sm);
-  }
-
-  :global(dialog.authentication-dialog > .panel > .content) {
-    padding: 0 var(--authentication-padding-inline) var(--space-6);
-  }
-
-  :global(dialog.authentication-dialog > .panel > footer) {
-    justify-content: flex-start;
-    gap: var(--space-2) var(--space-6);
-    padding: 0 var(--authentication-padding-inline) var(--authentication-padding-block);
-  }
-
-  :global(dialog.authentication-dialog .authentication-secondary-action) {
-    min-inline-size: 0;
-    max-inline-size: 100%;
-    white-space: normal;
-  }
-
-  .authentication-secondary-action-label {
-    min-inline-size: 0;
-    overflow-wrap: anywhere;
-  }
-
-  :global(dialog.studio-navigation-dialog.studio-navigation-dialog) {
-    margin: 0;
-    box-shadow: none;
-    border-radius: 0;
-    inline-size: 100vi;
-    max-inline-size: 100vi;
-    block-size: 100dvb;
-    max-block-size: 100dvb;
-    overflow: hidden;
-  }
-
-  :global(dialog.studio-navigation-dialog > .panel) {
-    grid-template-rows: auto minmax(0, 1fr);
-    inline-size: 100%;
-    min-inline-size: 0;
-    block-size: 100%;
-    min-block-size: 100%;
-  }
-
-  :global(dialog.studio-navigation-dialog > .panel > header) {
-    padding: var(--space-2);
-    padding-inline-end: calc(var(--space-4) + var(--control-height-sm));
-  }
-
-  :global(dialog.studio-navigation-dialog > .panel > .content) {
+  .drawer-content {
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
     gap: var(--space-2);
+    min-inline-size: 0;
     min-block-size: 0;
-    overflow: visible;
   }
 
   @container studio-shell (max-width: 47.999rem) {
@@ -627,36 +482,7 @@
       gap: var(--space-2);
       z-index: var(--layer-sticky);
       inset-block-start: 0;
-      padding: var(--space-2);
-    }
-
-    :global(dialog.studio-navigation-dialog > .panel > .content) {
-      padding: var(--space-2);
-    }
-
-    :global(dialog.authentication-dialog.authentication-dialog) {
-      --authentication-padding-inline: var(--space-4);
-      --authentication-padding-block: var(--space-4);
-
-      inline-size: calc(100vi - var(--space-4));
-      max-inline-size: calc(100vi - var(--space-4));
-      max-block-size: calc(100dvb - var(--space-4));
-    }
-
-    :global(dialog.authentication-dialog > .panel) {
-      min-inline-size: 0;
-    }
-
-    :global(dialog.authentication-dialog > .panel > footer) {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--space-1);
-    }
-
-    :global(dialog.authentication-dialog > .panel > footer > .authentication-secondary-action) {
-      justify-content: flex-start;
-      inline-size: 100%;
-      text-align: start;
+      padding: var(--space-4);
     }
   }
 

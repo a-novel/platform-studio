@@ -15,7 +15,7 @@
   import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, Input, Link, StatusState } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, FormActions, Input, Link, StatusState } from "@a-novel-kit/uikit";
 
   let { controller }: ShortCodeScreenProps = $props();
 
@@ -116,17 +116,16 @@
           </Field>
         {/if}
 
-        {#if model.state.status === "service-error"}
-          <Alert
-            class="compact-form-error"
-            tone="error"
-            title={translateAuthenticationFeedback(t, model.state.feedback)}
-          />
-        {/if}
-
-        <Button type="submit" disabled={submitting}>
-          {submitting ? journeySubmitting : journeySubmit}
-        </Button>
+        <FormActions>
+          {#snippet feedback()}
+            {#if model.state.status === "service-error"}
+              <Alert tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)} />
+            {/if}
+          {/snippet}
+          <Button type="submit" disabled={submitting}>
+            {submitting ? journeySubmitting : journeySubmit}
+          </Button>
+        </FormActions>
       </form>
     {/if}
   </section>
@@ -180,27 +179,6 @@
   .page-heading p {
     color: var(--color-text-muted);
     line-height: var(--line-height-normal);
-  }
-
-  form > :global(button) {
-    justify-content: center;
-    margin-block-start: var(--space-4);
-    inline-size: 100%;
-  }
-
-  form > :global(.compact-form-error:not(:first-child)) {
-    margin-block-start: var(--space-4);
-  }
-
-  form > :global(.compact-form-error + button) {
-    margin-block-start: 0;
-  }
-
-  @media (min-width: 35rem) {
-    form > :global(button) {
-      justify-self: start;
-      inline-size: auto;
-    }
   }
 
   @media (max-width: 34.999rem) {

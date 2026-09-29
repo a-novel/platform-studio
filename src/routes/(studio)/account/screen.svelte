@@ -13,7 +13,18 @@
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Badge, Button, Card, Container, Field, Input, PageHeader, Stack } from "@a-novel-kit/uikit";
+  import {
+    Alert,
+    Badge,
+    Button,
+    Card,
+    Container,
+    Field,
+    FormActions,
+    Input,
+    PageHeader,
+    Stack,
+  } from "@a-novel-kit/uikit";
 
   import { ShieldCheck } from "@lucide/svelte";
 
@@ -172,18 +183,18 @@
                   />
                 {/snippet}
               </Field>
-              {#if model.passwordState.status === "service-error"}
-                <Alert
-                  class="compact-form-error"
-                  tone="error"
-                  title={translateAuthenticationFeedback(t, model.passwordState.feedback)}
-                />
-              {/if}
-              <Button type="submit" disabled={model.passwordState.status === "submitting"}>
-                {model.passwordState.status === "submitting"
-                  ? t("authUi.account.password.submitting")
-                  : t("authUi.account.password.submit")}
-              </Button>
+              <FormActions>
+                {#snippet feedback()}
+                  {#if model.passwordState.status === "service-error"}
+                    <Alert tone="error" title={translateAuthenticationFeedback(t, model.passwordState.feedback)} />
+                  {/if}
+                {/snippet}
+                <Button type="submit" disabled={model.passwordState.status === "submitting"}>
+                  {model.passwordState.status === "submitting"
+                    ? t("authUi.account.password.submitting")
+                    : t("authUi.account.password.submit")}
+                </Button>
+              </FormActions>
             </form>
           </section>
         </Card>
@@ -229,22 +240,22 @@
                   />
                 {/snippet}
               </Field>
-              {#if model.emailState.status === "service-error"}
-                <Alert
-                  class="compact-form-error"
-                  tone="error"
-                  title={translateAuthenticationFeedback(t, model.emailState.feedback)}
-                />
-              {/if}
-              <Button type="submit" disabled={model.emailState.status === "submitting"}>
-                {#if model.emailState.status === "submitting"}
-                  {t("authUi.account.email.submitting")}
-                {:else if model.emailState.status === "pending-email"}
-                  {t("authUi.account.email.resend")}
-                {:else}
-                  {t("authUi.account.email.submit")}
-                {/if}
-              </Button>
+              <FormActions>
+                {#snippet feedback()}
+                  {#if model.emailState.status === "service-error"}
+                    <Alert tone="error" title={translateAuthenticationFeedback(t, model.emailState.feedback)} />
+                  {/if}
+                {/snippet}
+                <Button type="submit" disabled={model.emailState.status === "submitting"}>
+                  {#if model.emailState.status === "submitting"}
+                    {t("authUi.account.email.submitting")}
+                  {:else if model.emailState.status === "pending-email"}
+                    {t("authUi.account.email.resend")}
+                  {:else}
+                    {t("authUi.account.email.submit")}
+                  {/if}
+                </Button>
+              </FormActions>
             </form>
           </section>
         </Card>
@@ -261,18 +272,18 @@
               aria-busy={model.logoutState === "submitting"}
               onsubmit={submitLogout}
             >
-              {#if typeof model.logoutState === "object"}
-                <Alert
-                  class="compact-form-error"
-                  tone="error"
-                  title={translateAuthenticationFeedback(t, model.logoutState.feedback)}
-                />
-              {/if}
-              <Button type="submit" variant="outline" tone="danger" disabled={model.logoutState === "submitting"}>
-                {model.logoutState === "submitting"
-                  ? t("authUi.account.logout.submitting")
-                  : t("authUi.account.logout.submit")}
-              </Button>
+              <FormActions>
+                {#snippet feedback()}
+                  {#if typeof model.logoutState === "object"}
+                    <Alert tone="error" title={translateAuthenticationFeedback(t, model.logoutState.feedback)} />
+                  {/if}
+                {/snippet}
+                <Button type="submit" variant="outline" tone="danger" disabled={model.logoutState === "submitting"}>
+                  {model.logoutState === "submitting"
+                    ? t("authUi.account.logout.submitting")
+                    : t("authUi.account.logout.submit")}
+                </Button>
+              </FormActions>
             </form>
           </section>
         </Card>
@@ -340,28 +351,9 @@
     line-height: var(--line-height-normal);
   }
 
-  form > :global(button) {
-    justify-content: center;
-    margin-block-start: var(--space-4);
-    inline-size: 100%;
-  }
-
-  form > :global(.compact-form-error:not(:first-child)) {
-    margin-block-start: var(--space-4);
-  }
-
-  form > :global(.compact-form-error + button) {
-    margin-block-start: 0;
-  }
-
   @media (min-width: 35rem) {
     .session-details {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    form > :global(button) {
-      justify-self: start;
-      inline-size: auto;
     }
   }
 

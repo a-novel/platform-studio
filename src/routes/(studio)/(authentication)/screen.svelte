@@ -14,7 +14,7 @@
   import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, Input, StatusState } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, FormActions, Input, StatusState } from "@a-novel-kit/uikit";
 
   let { controller }: AuthenticationPanelProps = $props();
 
@@ -87,13 +87,16 @@
       </Field>
     {/if}
 
-    {#if model.state.status === "service-error"}
-      <Alert class="compact-form-error" tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)} />
-    {/if}
-
-    <Button type="submit" disabled={submitting}>
-      {submitting ? submittingLabel : submitLabel}
-    </Button>
+    <FormActions>
+      {#snippet feedback()}
+        {#if model.state.status === "service-error"}
+          <Alert tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)} />
+        {/if}
+      {/snippet}
+      <Button type="submit" disabled={submitting}>
+        {submitting ? submittingLabel : submitLabel}
+      </Button>
+    </FormActions>
   </form>
 {/if}
 
@@ -102,27 +105,6 @@
     display: grid;
     gap: var(--space-4);
     min-inline-size: 0;
-  }
-
-  form > :global(button) {
-    justify-content: center;
-    margin-block-start: var(--space-4);
-    inline-size: 100%;
-  }
-
-  form > :global(.compact-form-error:not(:first-child)) {
-    margin-block-start: var(--space-4);
-  }
-
-  form > :global(.compact-form-error + button) {
-    margin-block-start: 0;
-  }
-
-  @media (min-width: 35rem) {
-    form > :global(button) {
-      justify-self: start;
-      inline-size: auto;
-    }
   }
 
   .pending-target {

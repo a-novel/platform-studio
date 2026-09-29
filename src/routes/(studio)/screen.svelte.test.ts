@@ -265,7 +265,9 @@ describe("studio shell screen", () => {
     expect(heading.left).toBeCloseTo(form.left);
     expect(close.top).toBeCloseTo(heading.top);
     expect(close.right).toBeCloseTo(form.right);
-    expect(secondary.left).toBeCloseTo(form.left);
+    if (width < 560) expect(secondary.left).toBeCloseTo(form.left);
+    else expect(secondary.left).toBeGreaterThanOrEqual(form.left);
+    expect(secondary.right).toBeLessThanOrEqual(form.right);
     expect(getComputedStyle(secondaryButton).paddingInlineStart).toBe("12px");
     expect(getComputedStyle(secondaryButton).paddingInlineEnd).toBe("12px");
     expect(secondary.top - submit.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(24);
