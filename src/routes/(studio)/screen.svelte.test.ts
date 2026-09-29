@@ -160,6 +160,11 @@ describe("studio shell screen", () => {
           await control.hover();
           hovered.push(await styles(control.element()));
         }
+        if (status === "authenticated") {
+          expect(hovered[1]?.background).toBe(hovered[2]?.background);
+          expect(hovered[1]?.background).not.toBe(resting[1]?.background);
+          expect(hovered[1]?.background).not.toBe(getComputedStyle(surface.element()).backgroundColor);
+        }
         presentations.push({ background: getComputedStyle(surface.element()).backgroundColor, resting, hovered });
         await view.unmount();
       }
