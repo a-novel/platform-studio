@@ -321,6 +321,41 @@ describe("pure authentication screens", () => {
     });
   });
 
+  it.each(["en", "fr"] as const)("groups the %s logout explanation with its action", async (locale) => {
+    await render(
+      AccountScreen,
+      {
+        controller: createAccountScreenController({
+          model: readyAccount,
+          actions: { password: "/account?/password", email: "/account?/email", logout: "/account?/logout" },
+          allowNativeSubmission: false,
+        }),
+      },
+      withLocale(locale)
+    );
+    const button = page.getByRole("button", { name: locale === "fr" ? "Se déconnecter" : "Log out" });
+    const description =
+      locale === "fr"
+        ? "Vous serez déconnecté de Studio sur cet appareil."
+        : "You’ll be logged out of Studio on this device.";
+    await expect.element(button).toHaveAccessibleDescription(description);
+    const note = page.getByText(description).element();
+    const details = page.getByRole("definition").elements().at(-1);
+    if (!details) throw new Error("Expected session details");
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    try {
+      for (const width of [320, 390, 1280]) {
+        await page.viewport(width, 844);
+        const noteBounds = note.getBoundingClientRect();
+        const actionGap = button.element().getBoundingClientRect().top - noteBounds.bottom;
+        expect(actionGap).toBe(16);
+        expect(noteBounds.top - details.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(actionGap * 2);
+      }
+    } finally {
+      await page.viewport(originalViewport.width, originalViewport.height);
+    }
+  });
+
   it.each(["loading", "error"] as const)("keeps account forms usable while the recap is %s", async (status) => {
     const controller = createAccountScreenController({
       model: {

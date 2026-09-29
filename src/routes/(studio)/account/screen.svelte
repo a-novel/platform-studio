@@ -72,7 +72,7 @@
 
 <div class="account-screen">
   <Container size="sm" gutter={false}>
-    <Stack gap="6">
+    <Stack gap="4">
       <PageHeader title={t("authUi.account.title")} description={t("authUi.account.description")} />
 
       <Stack gap="4">
@@ -267,14 +267,22 @@
             aria-busy={model.logoutState === "submitting"}
             onsubmit={submitLogout}
           >
-            <p class="feedback-message">{t("authUi.account.logout.description")}</p>
             <FormActions>
               {#snippet feedback()}
+                <p id={`${componentId}-logout-description`} class="feedback-message">
+                  {t("authUi.account.logout.description")}
+                </p>
                 {#if typeof model.logoutState === "object"}
                   <Alert tone="error" title={translateAuthenticationFeedback(t, model.logoutState.feedback)} />
                 {/if}
               {/snippet}
-              <Button type="submit" variant="outline" tone="neutral" disabled={model.logoutState === "submitting"}>
+              <Button
+                type="submit"
+                variant="outline"
+                tone="neutral"
+                aria-describedby={`${componentId}-logout-description`}
+                disabled={model.logoutState === "submitting"}
+              >
                 {model.logoutState === "submitting"
                   ? t("authUi.account.logout.submitting")
                   : t("authUi.account.logout.submit")}
@@ -307,7 +315,8 @@
     scroll-margin-block-start: var(--space-5);
   }
 
-  .session-summary {
+  .session-summary,
+  #account-session {
     padding-block-start: var(--space-4);
   }
 

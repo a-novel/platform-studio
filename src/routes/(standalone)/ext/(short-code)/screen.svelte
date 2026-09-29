@@ -178,6 +178,7 @@
 
   .secure-action {
     align-self: center;
+    gap: var(--space-6);
     margin-inline: auto;
     inline-size: 100%;
     max-inline-size: var(--layout-readable-measure);
