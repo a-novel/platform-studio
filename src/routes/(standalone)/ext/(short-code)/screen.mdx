@@ -13,6 +13,10 @@ The current outcome is the page’s only heading and its browser-tab title. Pass
 only while a password is needed. Failures explain the next useful step: wait during an outage or request
 a fresh link when the current one cannot be used.
 
+Validation examples use the API package’s password schema, including both length boundaries.
+Rejected, expired, and already-used links share the same error because the API does not distinguish
+them. Email confirmation has no editable form; account creation signs in before continuing to Studio.
+
 ## Supported journeys
 
 ### Complete registration
@@ -60,25 +64,25 @@ and failure appear below. Registration and password reset still require a passwo
   meta={SecureLinkStories}
 />
 
-### Expired
-
-<ResponsiveStoryPair
-  desktop={SecureLinkStories.ExpiredLink}
-  mobile={SecureLinkStories.ExpiredLink}
-  meta={SecureLinkStories}
-/>
-
 ## Submission
 
-### Submitting
+### Registration submitting
 
 <ResponsiveStoryPair
-  desktop={SecureLinkStories.SubmittingOnce}
-  mobile={SecureLinkStories.SubmittingOnce}
+  desktop={SecureLinkStories.RegistrationSubmitting}
+  mobile={SecureLinkStories.RegistrationSubmitting}
   meta={SecureLinkStories}
 />
 
-### Validation error
+### Password reset submitting
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.PasswordResetSubmitting}
+  mobile={SecureLinkStories.PasswordResetSubmitting}
+  meta={SecureLinkStories}
+/>
+
+### Registration validation errors
 
 <ResponsiveStoryPair
   desktop={SecureLinkStories.ValidationError}
@@ -86,7 +90,31 @@ and failure appear below. Registration and password reset still require a passwo
   meta={SecureLinkStories}
 />
 
-### Service error
+### Password length limit
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.PasswordLengthLimit}
+  mobile={SecureLinkStories.PasswordLengthLimit}
+  meta={SecureLinkStories}
+/>
+
+### Password reset validation errors
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.PasswordResetValidationError}
+  mobile={SecureLinkStories.PasswordResetValidationError}
+  meta={SecureLinkStories}
+/>
+
+### Registration unavailable
+
+<ResponsiveStoryPair
+  desktop={SecureLinkStories.RegistrationUnavailable}
+  mobile={SecureLinkStories.RegistrationUnavailable}
+  meta={SecureLinkStories}
+/>
+
+### Password reset unavailable
 
 <ResponsiveStoryPair
   desktop={SecureLinkStories.ServiceError}

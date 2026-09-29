@@ -54,7 +54,6 @@ describe("automatic email validation", () => {
     { status: "success", feedback: "emailUpdated" },
     { status: "invalid" },
     { status: "missing" },
-    { status: "expired" },
   ])("does not post a $status link", async (state) => {
     const request = vi.spyOn(window, "fetch");
     await render(EmailPage, { data: data(state), form: null }, wrapper);
@@ -71,14 +70,14 @@ describe("automatic email validation", () => {
       shortCode: data({ status: "service-error", feedback: "serviceUnavailable" }).model,
     };
     await render(EmailPage, { data: data(), form }, wrapper);
-    await expect.element(page.getByRole("alert")).toHaveTextContent("The service is temporarily unavailable.");
+    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
     expect(request).not.toHaveBeenCalled();
   });
 
   it("shows a sanitized error on network failure without retrying", async () => {
     const request = vi.spyOn(window, "fetch").mockRejectedValue(new Error("private transport detail"));
     await render(EmailPage, { data: data(), form: null }, wrapper);
-    await expect.element(page.getByRole("alert")).toHaveTextContent("The service is temporarily unavailable.");
+    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
     expect(document.body.textContent).not.toContain("private transport detail");
     expect(request).toHaveBeenCalledOnce();
   });

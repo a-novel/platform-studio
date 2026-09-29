@@ -38,10 +38,6 @@ const shortCodeJourneyKeys = {
 } as const;
 
 const shortCodeStatusKeys = {
-  expired: {
-    description: (t: TFunction<"common">) => t("authUi.shortCode.states.expired.description"),
-    title: (t: TFunction<"common">) => t("authUi.shortCode.states.expired.title"),
-  },
   invalid: {
     description: (t: TFunction<"common">) => t("authUi.shortCode.states.invalid.description"),
     title: (t: TFunction<"common">) => t("authUi.shortCode.states.invalid.title"),
@@ -86,7 +82,6 @@ export function translateShortCodeTitle(t: TFunction<"common">, { journey, state
   switch (state.status) {
     case "missing":
     case "invalid":
-    case "expired":
       return translateShortCodeStatus(t, state.status, "title");
     case "success":
       return translateAuthenticationFeedback(t, state.feedback);

@@ -64,6 +64,17 @@ Short section names identify the setting, while descriptions explain only what h
   startAt="account-password"
 />
 
+### Incorrect current password
+
+The service rejects the current password beside its field, without a duplicate form-level alert.
+
+<ResponsiveStoryPair
+  desktop={AccountStories.IncorrectCurrentPassword}
+  mobile={AccountStories.IncorrectCurrentPassword}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
 ### Success
 
 <ResponsiveStoryPair
@@ -120,15 +131,6 @@ This form sends a confirmation link. The email change completes on the secure em
 <ResponsiveStoryPair
   desktop={AccountStories.LogoutSubmitting}
   mobile={AccountStories.LogoutSubmitting}
-  meta={AccountStories}
-  startAt="account-session"
-/>
-
-### Logout error
-
-<ResponsiveStoryPair
-  desktop={AccountStories.LogoutError}
-  mobile={AccountStories.LogoutError}
   meta={AccountStories}
   startAt="account-session"
 />

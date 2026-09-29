@@ -93,6 +93,32 @@ async function expectFormActionLayout(form: HTMLFormElement) {
 }
 
 describe("pure authentication screens", () => {
+  it.each([
+    ["en", "Current password", "Your current password is incorrect."],
+    ["fr", "Mot de passe actuel", "Votre mot de passe actuel est incorrect."],
+  ] as const)("associates the %s current-password rejection with its field only", async (locale, label, message) => {
+    render(
+      AccountScreen,
+      {
+        controller: createAccountScreenController({
+          model: {
+            ...readyAccount,
+            passwordState: {
+              status: "validation-error",
+              issues: [{ field: "currentPassword", feedback: "invalidCurrentPassword" }],
+            },
+          },
+          actions: { password: "?/password", email: "?/email", logout: "?/logout" },
+        }),
+      },
+      withLocale(locale)
+    );
+    const field = page.getByLabelText(label, { exact: false });
+    await expect.element(field).toHaveAttribute("aria-invalid", "true");
+    await expect.element(field).toHaveAccessibleDescription(message);
+    expect(page.getByText(message).elements()).toHaveLength(1);
+    expect(page.getByRole("alert").elements()).toHaveLength(0);
+  });
   it.each(["en", "fr"] as const)("shows localized API length errors on real %s submissions", async (locale) => {
     const controller = shortCodeController({ journey: "register", state: { status: "ready" } });
     await render(ShortCodeScreen, { controller }, withLocale(locale));
@@ -202,9 +228,8 @@ describe("pure authentication screens", () => {
     const alert = page.getByRole("alert").element();
     const submit = page.getByRole("button", { name: "Login" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
-    expect(alert.textContent?.trim()).toBe(
-      "The service is temporarily unavailable. Please try again in a few minutes."
-    );
+    await expect.element(page.getByRole("alert")).toHaveTextContent("Temporarily unavailable");
+    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
     const form = (submit as HTMLButtonElement).form;
     if (!form) throw new Error("Submit button must belong to a form");
     await expectFormActionLayout(form);
@@ -469,7 +494,6 @@ describe("pure authentication screens", () => {
             ...readyAccount,
             passwordState: { status: "service-error", feedback: "serviceUnavailable" },
             emailState: { status: "service-error", feedback: "serviceUnavailable" },
-            logoutState: { status: "service-error", feedback: "serviceUnavailable" },
           },
           actions: { password: "/account?/password", email: "/account?/email", logout: "/account?/logout" },
           allowNativeSubmission: false,
@@ -525,7 +549,6 @@ describe("pure authentication screens", () => {
       },
       withLocale()
     );
-    await expect.element(page.getByRole("alert")).toHaveTextContent("The service is temporarily unavailable.");
     await expect.element(page.getByRole("heading", { level: 1, name: "Email update unavailable" })).toBeVisible();
     await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
     await expect.element(page.getByRole("link", { name: "Request a new link" })).toBeVisible();

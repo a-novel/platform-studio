@@ -6,6 +6,7 @@ import {
   validateNewPassword,
   validatePasswordChange,
 } from "$lib/application/auth/forms";
+import type { AccountScreenModel, ShortCodeState } from "$lib/application/auth/types";
 
 import {
   createShortCodeScreenController,
@@ -110,6 +111,18 @@ describe("platform controllers", () => {
     });
   });
 
+  it.each(["register", "reset"] as const)("keeps a completed %s request fixed until navigation", (journey) => {
+    const model = { journey, state: { status: "pending-email", targetHint: "creator@example.test" } } as const;
+    const controller = createAuthenticationPanelController({ model, action: "/" });
+    expect(controller.submit(validForm())).toBe(false);
+    expect(controller.state.model).toEqual(model);
+
+    controller.synchronize({ journey, state: { status: "service-error", feedback: "serviceUnavailable" } }, "/retry");
+    expect(controller.submit(validForm())).toBe(true);
+    expect(controller.submit(validForm())).toBe(false);
+    expect(controller.state).toEqual({ model: { journey, state: { status: "submitting" } }, action: "/retry" });
+  });
+
   it("keeps account actions independent while sharing one controller", () => {
     const controller = createAccountScreenController({
       model: {
@@ -166,6 +179,62 @@ describe("platform controllers", () => {
     }
   });
 
+  it.each(["completed", "unavailable"] as const)("allows another account change after %s actions", (outcome) => {
+    const model: AccountScreenModel = {
+      ...createAccountModel({ status: "error", feedback: "sessionUnavailable" }),
+      passwordState:
+        outcome === "completed"
+          ? { status: "success", feedback: "passwordChanged" }
+          : { status: "service-error", feedback: "serviceUnavailable" },
+      emailState:
+        outcome === "completed"
+          ? { status: "pending-email", targetHint: "creator@example.test" }
+          : { status: "service-error", feedback: "serviceUnavailable" },
+    };
+    const controller = createAccountScreenController({ model, actions });
+    expect(controller.submitPassword(validForm())).toBe(true);
+    expect(controller.state.model).toEqual({ ...model, passwordState: { status: "submitting" } });
+    controller.synchronize(model, actions);
+    expect(controller.submitEmail(validForm())).toBe(true);
+    expect(controller.state.model).toEqual({ ...model, emailState: { status: "submitting" } });
+    expect(JSON.stringify(controller.state)).not.toContain("new-password");
+  });
+
+  it.each<ShortCodeState>([
+    { status: "missing" },
+    { status: "invalid" },
+    { status: "submitting" },
+    { status: "success", feedback: "registrationCompleted" },
+  ])("preserves a secure link in $status state", (state) => {
+    const controller = createShortCodeScreenController({
+      model: { journey: "register", state },
+      action: "",
+      restartHref: "/register",
+      continueHref: "/",
+    });
+    expect(controller.submit(validForm())).toBe(false);
+    expect(controller.state.model.state).toEqual(state);
+  });
+
+  it("confirms email without password fields and recovers from an outage", () => {
+    const controller = createShortCodeScreenController({
+      model: { journey: "email-update", state: { status: "ready" } },
+      action: "",
+      restartHref: "/account",
+      continueHref: "/account",
+    });
+    expect(controller.submit()).toBe(true);
+    expect(controller.submit()).toBe(false);
+    const next = shortCodeControllerState({
+      model: { journey: "email-update", state: { status: "service-error", feedback: "serviceUnavailable" } },
+      links: { restartHref: "/?auth=login", continueHref: "/account?panel=email" },
+    });
+    controller.synchronize(next);
+    expect(controller.state).toEqual(next);
+    expect(controller.submit()).toBe(true);
+    expect(controller.state).toEqual({ ...next, model: { journey: "email-update", state: { status: "submitting" } } });
+  });
+
   it("owns secure-link submission and rejects unavailable states", () => {
     const controller = createShortCodeScreenController({
       model: { journey: "password-reset", state: { status: "ready" } },
@@ -180,10 +249,10 @@ describe("platform controllers", () => {
 
     controller.synchronize({
       ...controller.state,
-      model: { journey: "password-reset", state: { status: "expired" } },
+      model: { journey: "password-reset", state: { status: "invalid" } },
     });
     expect(controller.submit(validForm())).toBe(false);
-    expect(controller.state.model.state.status).toBe("expired");
+    expect(controller.state.model.state.status).toBe("invalid");
 
     expect(
       shortCodeControllerState(
@@ -239,6 +308,27 @@ describe("platform controllers", () => {
 
     controller.navigationDialog.close();
     expect(controller.state.model.drawerOpen).toBe(false);
+    controller.navigationDialog.toggle();
+    controller.navigationDialog.open();
+    expect(controller.navigationDialog.state.open).toBe(true);
+    controller.navigationDialog.toggle();
+    expect(controller.navigationDialog.state.open).toBe(false);
+
+    controller.authenticationDialog.open();
+    controller.authenticationDialog.open();
+    expect(controller.authenticationDialog.state.open).toBe(true);
+    expect(onAuthViewChange).toHaveBeenCalledTimes(2);
+    controller.authenticationDialog.toggle();
+    expect(controller.authenticationDialog.state.open).toBe(false);
+    controller.authenticationDialog.toggle();
+    expect(controller.state.model.authView).toBe("login");
+    expect(onAuthViewChange.mock.calls).toEqual([[null], ["login"], [null], ["login"]]);
+
+    for (const session of [{ status: "anonymous" }, { status: "loading" }, { status: "error" }] as const) {
+      controller.synchronizeRoute({ activeNavigation: "home", authView: null, session });
+      expect(controller.logout()).toBe(false);
+      expect(controller.state.model.session).toEqual(session);
+    }
   });
 
   it("synchronizes route state around accepted shell transitions", () => {
@@ -282,6 +372,7 @@ describe("platform controllers", () => {
 
     controller.synchronizeRail("collapsed");
     controller.synchronizeRail("collapsed");
+    controller.navigationDialog.open();
     expect(controller.state.model.rail).toBe("collapsed");
 
     controller.synchronizeRoute({
@@ -296,9 +387,12 @@ describe("platform controllers", () => {
     expect(controller.state.model).toMatchObject({
       activeNavigation: null,
       authView: "reset",
+      rail: "collapsed",
+      drawerOpen: true,
       session: { status: "authenticated", displayName: "Maya Chen" },
     });
     expect(controller.authentication.state.action).toBe("/auth/reset");
+    expect(onAuthViewChange.mock.calls).toEqual([["register"], [null]]);
 
     expect(controller.logout()).toBe(false);
     expect(controller.state.model.session.status).toBe("anonymous");

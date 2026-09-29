@@ -10,13 +10,13 @@
 <script lang="ts">
   import type { AuthenticationField } from "$lib/application/auth/types";
   import { translateAuthenticationJourney } from "$lib/i18n/auth-copy";
-  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
-  import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
+  import { translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
+  import AuthenticationError from "$lib/ui/auth/AuthenticationError.svelte";
 
   import { tick } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
+  import { Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
 
   let { controller }: AuthenticationPanelProps = $props();
 
@@ -52,8 +52,6 @@
   <InlineMessage tone="success">
     {pendingDescription} <strong class="pending-target">{targetHint}</strong>
   </InlineMessage>
-{:else if model.state.status === "success"}
-  <AuthenticationCompletion feedback={model.state.feedback} />
 {:else}
   <form method="POST" {action} aria-busy={submitting} novalidate onsubmit={submit}>
     <Field controlId={emailId} label={t("authUi.authentication.emailLabel")} error={fieldError("email")} required>
@@ -94,7 +92,7 @@
     <FormActions>
       {#snippet feedback()}
         {#if model.state.status === "service-error"}
-          <Alert tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)} />
+          <AuthenticationError feedback={model.state.feedback} />
         {/if}
       {/snippet}
       <Button type="submit" disabled={submitting}>

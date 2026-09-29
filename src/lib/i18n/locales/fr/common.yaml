@@ -24,7 +24,7 @@ authFlow:
     passwordChanged: Votre mot de passe a été modifié.
     passwordReset: Votre mot de passe a été réinitialisé.
     registrationCompleted: Votre compte est prêt.
-    serviceUnavailable: Le service est temporairement indisponible. Veuillez réessayer dans quelques minutes.
+    serviceUnavailable: Veuillez réessayer dans quelques minutes.
     sessionUnavailable: Impossible de vérifier votre session. Veuillez recharger la page dans quelques minutes.
   validation:
     confirmPassword: Confirmez votre nouveau mot de passe.
@@ -89,7 +89,7 @@ authUi:
         submitting: Envoi du lien…
     passwordLabel: Mot de passe
     pendingTitle: Consultez votre messagerie
-    successTitle: Tout est prêt
+  serviceUnavailable: Service indisponible
   shortCode:
     brand: Studio
     confirmPasswordLabel: Confirmez le nouveau mot de passe
@@ -112,11 +112,8 @@ authUi:
     newPasswordLabel: Nouveau mot de passe
     restart: Demander un nouveau lien
     states:
-      expired:
-        description: Pour votre sécurité, les liens reçus par courriel ont une durée de validité limitée.
-        title: Ce lien a expiré
       invalid:
-        description: Ce lien a peut-être déjà été utilisé ou mal copié.
+        description: Ce lien a peut-être expiré ou a déjà été utilisé. Il peut aussi être incomplet.
         title: Ce lien n’est pas valide
       missing:
         description: Ouvrez le lien complet reçu par courriel ou demandez-en un nouveau.

@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import { validateLogin } from "$lib/application/auth/forms";
+  import { validateEmailRequest, validateLogin } from "$lib/application/auth/forms";
   import { validationFixture } from "$lib/application/auth/forms.fixture";
   import type { StudioShellViewModel } from "$lib/application/shell/types";
   import { createStorybookTranslator } from "$lib/i18n/storybook";
@@ -422,6 +422,60 @@
         status: "service-error",
         feedback: "serviceUnavailable",
       },
+    }}
+  />
+</Story>
+
+<Story name="Registration submitting" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "register" }}
+    initialAuthenticationModel={{ journey: "register", state: { status: "submitting" } }}
+  />
+</Story>
+
+<Story name="Registration validation error" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "register" }}
+    initialAuthenticationModel={{
+      journey: "register",
+      state: validationFixture(validateEmailRequest, { email: "not-an-email" }),
+    }}
+  />
+</Story>
+
+<Story name="Registration service unavailable" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "register" }}
+    initialAuthenticationModel={{
+      journey: "register",
+      state: { status: "service-error", feedback: "serviceUnavailable" },
+    }}
+  />
+</Story>
+
+<Story name="Password reset submitting" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "reset" }}
+    initialAuthenticationModel={{ journey: "reset", state: { status: "submitting" } }}
+  />
+</Story>
+
+<Story name="Password reset validation error" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "reset" }}
+    initialAuthenticationModel={{
+      journey: "reset",
+      state: validationFixture(validateEmailRequest, { email: "not-an-email" }),
+    }}
+  />
+</Story>
+
+<Story name="Password reset service unavailable" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "reset" }}
+    initialAuthenticationModel={{
+      journey: "reset",
+      state: { status: "service-error", feedback: "serviceUnavailable" },
     }}
   />
 </Story>

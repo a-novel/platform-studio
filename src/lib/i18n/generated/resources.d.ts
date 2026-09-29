@@ -33,7 +33,7 @@ export default interface Resources {
         "passwordChanged": "Your password was changed.",
         "passwordReset": "Your password was reset.",
         "registrationCompleted": "Your account is ready.",
-        "serviceUnavailable": "The service is temporarily unavailable. Please try again in a few minutes.",
+        "serviceUnavailable": "Please try again in a few minutes.",
         "sessionUnavailable": "We couldn’t verify your session. Please reload the page in a few minutes."
       },
       "validation": {
@@ -107,9 +107,9 @@ export default interface Resources {
           }
         },
         "passwordLabel": "Password",
-        "pendingTitle": "Check your inbox",
-        "successTitle": "You’re all set"
+        "pendingTitle": "Check your inbox"
       },
+      "serviceUnavailable": "Temporarily unavailable",
       "shortCode": {
         "brand": "Studio",
         "confirmPasswordLabel": "Confirm new password",
@@ -136,12 +136,8 @@ export default interface Resources {
         "newPasswordLabel": "New password",
         "restart": "Request a new link",
         "states": {
-          "expired": {
-            "description": "For your security, email links are valid for a limited time.",
-            "title": "This link has expired"
-          },
           "invalid": {
-            "description": "This link may have already been used or copied incorrectly.",
+            "description": "This link may have expired, already been used, or been copied incorrectly.",
             "title": "This link is not valid"
           },
           "missing": {

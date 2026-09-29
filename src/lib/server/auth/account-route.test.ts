@@ -91,7 +91,15 @@ describe("account route", () => {
     vi.mocked(credentialsUpdatePassword).mockRejectedValue(new HttpError(403, "incorrect current password"));
     await expect(accountActions.password(event())).resolves.toMatchObject({
       status: 403,
-      data: { accountAction: { kind: "password", state: { feedback: "invalidCurrentPassword" } } },
+      data: {
+        accountAction: {
+          kind: "password",
+          state: {
+            status: "validation-error",
+            issues: [{ field: "currentPassword", feedback: "invalidCurrentPassword" }],
+          },
+        },
+      },
     });
   });
 

@@ -12,11 +12,12 @@
 <script lang="ts">
   import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "$lib/i18n/auth-copy";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
+  import AuthenticationError from "$lib/ui/auth/AuthenticationError.svelte";
 
   import { tick } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, FormActions, Input, Link, StatusState } from "@a-novel-kit/uikit";
+  import { Button, Field, FormActions, Input, Link, StatusState } from "@a-novel-kit/uikit";
 
   let { controller }: ShortCodeScreenProps = $props();
 
@@ -33,9 +34,7 @@
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
   const title = $derived(translateShortCodeTitle(t, model));
   const unavailableStatus = $derived(
-    model.state.status === "missing" || model.state.status === "invalid" || model.state.status === "expired"
-      ? model.state.status
-      : null
+    model.state.status === "missing" || model.state.status === "invalid" ? model.state.status : null
   );
   const hasOutcome = $derived(
     model.journey === "email-update" || unavailableStatus !== null || model.state.status === "success"
@@ -147,7 +146,7 @@
         <FormActions>
           {#snippet feedback()}
             {#if model.state.status === "service-error"}
-              <Alert tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)} />
+              <AuthenticationError feedback={model.state.feedback} />
             {/if}
           {/snippet}
           <Button type="submit" disabled={submitting}>

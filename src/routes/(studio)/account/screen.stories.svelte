@@ -15,7 +15,7 @@
     claims: {
       status: "ready",
       userId: "2f798f4a-0694-4f68-9928-42f3e906e871",
-      roles: ["auth:user", "studio:creator"],
+      roles: ["auth:user"],
       accessExpiresAt: "2026-08-18T19:30:00Z",
       refreshExpiresAt: "2026-08-25T18:30:00Z",
     },
@@ -184,7 +184,19 @@
       ...ready,
       passwordState: {
         status: "service-error",
-        feedback: "invalidCurrentPassword",
+        feedback: "serviceUnavailable",
+      },
+    }}
+  />
+</Story>
+
+<Story name="Incorrect current password" asChild>
+  <StoryHarness
+    initialModel={{
+      ...ready,
+      passwordState: {
+        status: "validation-error",
+        issues: [{ field: "currentPassword", feedback: "invalidCurrentPassword" }],
       },
     }}
   />
@@ -237,22 +249,13 @@
   <StoryHarness initialModel={{ ...ready, logoutState: "submitting" }} />
 </Story>
 
-<Story name="Logout error" asChild>
-  <StoryHarness
-    initialModel={{
-      ...ready,
-      logoutState: { status: "service-error", feedback: "serviceUnavailable" },
-    }}
-  />
-</Story>
-
 <Story name="Long content — mobile" globals={reviewStoryGlobals.mobile} asChild play={verifySessionFits}>
   <StoryHarness
     initialModel={{
       ...ready,
       claims: {
         ...ready.claims,
-        roles: ["auth:user", "studio:collaborative-story-creator"],
+        roles: ["auth:user", "auth:admin"],
         accessExpiresAt: "2026-09-18T19:30:00Z",
         refreshExpiresAt: "2026-09-25T18:30:00Z",
       },

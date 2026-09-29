@@ -52,8 +52,7 @@ export function createShortCodeScreenController({
         state.model.state.status === "submitting" ||
         state.model.state.status === "success" ||
         state.model.state.status === "missing" ||
-        state.model.state.status === "invalid" ||
-        state.model.state.status === "expired"
+        state.model.state.status === "invalid"
       ) {
         return false;
       }

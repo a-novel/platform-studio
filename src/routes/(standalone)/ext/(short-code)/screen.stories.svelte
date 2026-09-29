@@ -183,12 +183,39 @@
   <StoryHarness initialModel={{ journey: "email-update", state: { status: "invalid" } }} />
 </Story>
 
-<Story name="Expired link" asChild>
-  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "expired" } }} />
+<Story name="Password reset submitting" asChild play={verifySubmittingLocked}>
+  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "submitting" } }} />
 </Story>
 
-<Story name="Submitting once" asChild play={verifySubmittingLocked}>
-  <StoryHarness initialModel={{ journey: "password-reset", state: { status: "submitting" } }} />
+<Story name="Registration submitting" asChild>
+  <StoryHarness initialModel={{ journey: "register", state: { status: "submitting" } }} />
+</Story>
+
+<Story name="Registration unavailable" asChild>
+  <StoryHarness
+    initialModel={{ journey: "register", state: { status: "service-error", feedback: "serviceUnavailable" } }}
+  />
+</Story>
+
+<Story name="Password reset validation error" asChild>
+  <StoryHarness
+    initialModel={{
+      journey: "password-reset",
+      state: validationFixture(validateNewPassword, { password: "", confirmPassword: "" }),
+    }}
+  />
+</Story>
+
+<Story name="Password length limit" asChild>
+  <StoryHarness
+    initialModel={{
+      journey: "register",
+      state: validationFixture(validateNewPassword, {
+        password: "x".repeat((PasswordSchema.maxLength ?? 0) + 1),
+        confirmPassword: "x".repeat((PasswordSchema.maxLength ?? 0) + 1),
+      }),
+    }}
+  />
 </Story>
 
 <Story name="Validation error" asChild play={verifyValidationFeedback}>

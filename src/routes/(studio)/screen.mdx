@@ -22,6 +22,12 @@ natural width, with secondary actions at the end of the dialog footer. Completio
 Email-link requests explain the next step before submission. Once sent, the dialog heading becomes
 the outcome, with one compact status message and the submitted address below it.
 
+Validation previews come from the same API schemas as the controllers. Invalid credentials stay
+distinct from service outages, whose short heading and recovery guidance are shared across forms.
+Successful login redirects; registration and recovery acknowledge delivery without disclosing
+whether an account exists. Controller transitions and duplicate-submission guards are covered by tests,
+not interactive documentation.
+
 ## Navigation and account
 
 ### Anonymous — expanded
@@ -116,6 +122,30 @@ the outcome, with one compact status message and the submitted address below it.
   meta={ShellStories}
 />
 
+### Submitting
+
+<ResponsiveStoryPair
+  desktop={ShellStories.RegistrationSubmitting}
+  mobile={ShellStories.RegistrationSubmitting}
+  meta={ShellStories}
+/>
+
+### Validation errors
+
+<ResponsiveStoryPair
+  desktop={ShellStories.RegistrationValidationError}
+  mobile={ShellStories.RegistrationValidationError}
+  meta={ShellStories}
+/>
+
+### Service unavailable
+
+<ResponsiveStoryPair
+  desktop={ShellStories.RegistrationServiceUnavailable}
+  mobile={ShellStories.RegistrationServiceUnavailable}
+  meta={ShellStories}
+/>
+
 ### Confirmation pending
 
 <ResponsiveStoryPair
@@ -131,6 +161,30 @@ the outcome, with one compact status message and the submitted address below it.
 <ResponsiveStoryPair
   desktop={ShellStories.PasswordResetModalDesktop}
   mobile={ShellStories.PasswordResetModalMobile}
+  meta={ShellStories}
+/>
+
+### Submitting
+
+<ResponsiveStoryPair
+  desktop={ShellStories.PasswordResetSubmitting}
+  mobile={ShellStories.PasswordResetSubmitting}
+  meta={ShellStories}
+/>
+
+### Validation errors
+
+<ResponsiveStoryPair
+  desktop={ShellStories.PasswordResetValidationError}
+  mobile={ShellStories.PasswordResetValidationError}
+  meta={ShellStories}
+/>
+
+### Service unavailable
+
+<ResponsiveStoryPair
+  desktop={ShellStories.PasswordResetServiceUnavailable}
+  mobile={ShellStories.PasswordResetServiceUnavailable}
   meta={ShellStories}
 />
 

@@ -9,8 +9,6 @@ export function translateAuthenticationFeedback(t: TFunction<"common">, feedback
       return t("authFlow.feedback.emailUpdated");
     case "invalidCredentials":
       return t("authFlow.feedback.invalidCredentials");
-    case "invalidCurrentPassword":
-      return t("authFlow.feedback.invalidCurrentPassword");
     case "passwordChanged":
       return t("authFlow.feedback.passwordChanged");
     case "passwordReset":
@@ -27,6 +25,8 @@ export function translateAuthenticationFeedback(t: TFunction<"common">, feedback
 /** Resolves a stable form-validation category through the active locale. */
 export function translateAuthenticationValidation(t: TFunction<"common">, issue: AuthenticationValidation): string {
   switch (issue.feedback) {
+    case "invalidCurrentPassword":
+      return t("authFlow.feedback.invalidCurrentPassword");
     case "confirmPassword":
       return t("authFlow.validation.confirmPassword");
     case "currentPassword":

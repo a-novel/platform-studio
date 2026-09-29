@@ -68,12 +68,24 @@ export const accountActions = {
     } catch (error) {
       if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
-      return fail(isHttpStatusError(error, 403) ? 403 : 503, {
+      if (isHttpStatusError(error, 403)) {
+        return fail(403, {
+          accountAction: {
+            kind: "password" as const,
+            state: {
+              status: "validation-error" as const,
+              issues: [{ field: "currentPassword" as const, feedback: "invalidCurrentPassword" as const }],
+            },
+          },
+        });
+      }
+
+      return fail(503, {
         accountAction: {
           kind: "password" as const,
           state: {
             status: "service-error" as const,
-            feedback: isHttpStatusError(error, 403) ? "invalidCurrentPassword" : "serviceUnavailable",
+            feedback: "serviceUnavailable" as const,
           },
         },
       });

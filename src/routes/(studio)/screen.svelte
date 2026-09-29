@@ -31,7 +31,7 @@
   const accountHref = $derived(controller.state.accountHref);
   const logoutAction = $derived(controller.state.logoutAction);
   const authenticationState = $derived(controller.authentication.state.model.state.status);
-  const authActionsVisible = $derived(authenticationState !== "pending-email" && authenticationState !== "success");
+  const authActionsVisible = $derived(authenticationState !== "pending-email");
 
   const componentId = $props.id();
   const desktopNavigationId = `${componentId}-desktop-navigation`;

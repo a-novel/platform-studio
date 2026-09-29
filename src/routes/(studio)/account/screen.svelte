@@ -11,6 +11,7 @@
 
 <script lang="ts">
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
+  import AuthenticationError from "$lib/ui/auth/AuthenticationError.svelte";
 
   import { tick } from "svelte";
 
@@ -144,7 +145,7 @@
               <FormActions>
                 {#snippet feedback()}
                   {#if model.passwordState.status === "service-error"}
-                    <Alert tone="error" title={translateAuthenticationFeedback(t, model.passwordState.feedback)} />
+                    <AuthenticationError feedback={model.passwordState.feedback} />
                   {:else if model.passwordState.status === "success"}
                     <Alert tone="success" title={translateAuthenticationFeedback(t, model.passwordState.feedback)} />
                   {/if}
@@ -196,7 +197,7 @@
               <FormActions>
                 {#snippet feedback()}
                   {#if model.emailState.status === "service-error"}
-                    <Alert tone="error" title={translateAuthenticationFeedback(t, model.emailState.feedback)} />
+                    <AuthenticationError feedback={model.emailState.feedback} />
                   {:else if model.emailState.status === "pending-email"}
                     <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
                       <p class="pending-copy">
@@ -272,9 +273,6 @@
                 <p id={`${componentId}-logout-description`} class="feedback-message">
                   {t("authUi.account.logout.description")}
                 </p>
-                {#if typeof model.logoutState === "object"}
-                  <Alert tone="error" title={translateAuthenticationFeedback(t, model.logoutState.feedback)} />
-                {/if}
               {/snippet}
               <Button
                 type="submit"

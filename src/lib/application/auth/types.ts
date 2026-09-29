@@ -2,7 +2,6 @@
 export type AuthenticationFeedback =
   | "emailUpdated"
   | "invalidCredentials"
-  | "invalidCurrentPassword"
   | "passwordChanged"
   | "passwordReset"
   | "registrationCompleted"
@@ -11,7 +10,10 @@ export type AuthenticationFeedback =
 
 /** Stable validation categories translated only at the rendering boundary. */
 export type AuthenticationValidation =
-  | { feedback: "confirmPassword" | "currentPassword" | "email" | "password" | "passwordMismatch" }
+  | {
+      feedback:
+        "confirmPassword" | "currentPassword" | "email" | "invalidCurrentPassword" | "password" | "passwordMismatch";
+    }
   | { feedback: "minLength" | "maxLength"; limit: number };
 
 /** A validation problem tied to one named form control. */
@@ -39,13 +41,13 @@ export interface PendingEmailState {
 /** Pure login form state. */
 export interface LoginPanelModel {
   journey: "login";
-  state: FormState<AuthenticationField>;
+  state: Exclude<FormState<AuthenticationField>, { status: "success" }>;
 }
 
 /** Pure registration or password-recovery request state. */
 export interface EmailRequestPanelModel {
   journey: "register" | "reset";
-  state: FormState<"email"> | PendingEmailState;
+  state: Exclude<FormState<"email">, { status: "success" }> | PendingEmailState;
 }
 
 /** Every state rendered inside the shell authentication dialog. */
@@ -73,7 +75,7 @@ export interface AccountScreenModel {
   claims: AccountClaimsState;
   passwordState: FormState<AccountPasswordField>;
   emailState: Exclude<FormState<AccountEmailField>, { status: "success" }> | PendingEmailState;
-  logoutState: "ready" | "submitting" | { status: "service-error"; feedback: AuthenticationFeedback };
+  logoutState: "ready" | "submitting";
 }
 
 /** POST destinations supplied by the SvelteKit account route. */
@@ -87,8 +89,7 @@ export type ShortCodeJourney = "register" | "email-update" | "password-reset";
 export type ShortCodePasswordField = "newPassword" | "confirmPassword";
 
 /** A secure email-link state. No short code or raw target is part of this model. */
-export type ShortCodeState =
-  FormState<ShortCodePasswordField> | { status: "missing" } | { status: "invalid" } | { status: "expired" };
+export type ShortCodeState = FormState<ShortCodePasswordField> | { status: "missing" } | { status: "invalid" };
 
 /** Pure standalone completion screen driven by a sanitized server model. */
 export interface ShortCodeScreenModel {

@@ -40,11 +40,7 @@ export function createAuthenticationPanelController({
       action = nextAction;
     },
     submit(form) {
-      if (
-        model.state.status === "submitting" ||
-        model.state.status === "pending-email" ||
-        model.state.status === "success"
-      ) {
+      if (model.state.status === "submitting" || model.state.status === "pending-email") {
         return false;
       }
 
