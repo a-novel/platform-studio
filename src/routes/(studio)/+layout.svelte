@@ -7,17 +7,21 @@
   import { normalizeAuthUrl, readAuthView, withAuthView } from "$lib/application/shell/auth-dialog-state";
   import type { AuthDialogView } from "$lib/application/shell/types";
   import { readRailCollapsed, writeRailCollapsed } from "$lib/client/shell/rail-preference";
+  import { authenticationPageTitle } from "$lib/i18n/page-titles";
+  import { authenticationTitleContext } from "$lib/ui/PageTitle.svelte";
 
   import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
   import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
-  import { onMount, untrack } from "svelte";
+  import { onMount, setContext, untrack } from "svelte";
 
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { AuthorizationProvider } from "@a-novel-kit/uikit";
   import { createAuthorizationController } from "@a-novel-kit/uikit/authorization";
 
   let { children, data } = $props();
+  const { t } = getI18nContext();
   const authorization = createAuthorizationController({
     getStatus: () => page.data.authorization ?? data.authorization,
   });
@@ -52,6 +56,12 @@
     onAuthViewChange: changeAuthView,
     onRailChange: (rail) => writeRailCollapsed(window.localStorage, rail === "collapsed"),
   });
+
+  setContext(authenticationTitleContext, () =>
+    !page.error && controller.state.model.authView
+      ? authenticationPageTitle(t, controller.authentication.state.model)
+      : undefined
+  );
 
   $effect(() => {
     const authView = readAuthView(new URL(currentHref).searchParams);

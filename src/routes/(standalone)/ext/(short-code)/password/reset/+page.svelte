@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { translateShortCodeTitle } from "$lib/i18n/auth-copy";
+  import { shortCodePageTitle } from "$lib/i18n/page-titles";
+  import PageTitle from "$lib/ui/PageTitle.svelte";
 
   import { createShortCodeScreenController, shortCodeControllerState } from "../../controller.svelte";
   import Screen from "../../screen.svelte";
@@ -18,8 +19,6 @@
   });
 </script>
 
-<svelte:head>
-  <title>{translateShortCodeTitle(t, controller.state.model)} — {t("authUi.shortCode.brand")}</title>
-</svelte:head>
+<PageTitle title={shortCodePageTitle(t, controller.state.model)} />
 
 <Screen {controller} />

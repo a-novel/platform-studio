@@ -91,7 +91,6 @@ authUi:
     pendingTitle: Consultez votre messagerie
   serviceUnavailable: Service indisponible
   shortCode:
-    brand: Studio
     confirmPasswordLabel: Confirmez le nouveau mot de passe
     continue: Continuer vers Studio
     journeys:
@@ -118,6 +117,19 @@ authUi:
       missing:
         description: Ouvrez le lien complet reçu par courriel ou demandez-en un nouveau.
         title: Ce lien est incomplet
+pageTitles:
+  account: Paramètres du compte
+  accountCreated: Compte créé
+  brand: Agora Studio
+  confirmEmail: Confirmer le courriel
+  createAccount: Créer un compte
+  emailUpdated: Courriel mis à jour
+  incompleteLink: Lien incomplet
+  invalidLink: Lien invalide
+  notFound: Page introuvable
+  passwordReset: Mot de passe réinitialisé
+  resetPassword: Réinitialiser le mot de passe
+  withState: "{{title}} : {{status}}"
 shell:
   accountFallback: Compte
   auth:
