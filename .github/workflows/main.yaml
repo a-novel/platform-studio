@@ -56,23 +56,50 @@ jobs:
   test-browser:
     needs: [lint-node]
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    timeout-minutes: 20
     permissions:
       contents: read
       packages: read
+    env:
+      COMPOSE_PROJECT_NAME: studio-e2e-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       artifact-id: ${{ steps.test.outputs.artifact-id }}
     steps:
-      - uses: a-novel-kit/workflows/node-actions/test-node@v1.31.0
-        id: test
+      - uses: a-novel-kit/workflows/node-actions/setup-node@v1.31.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
           client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
-          test_action: "test:browser"
-          coverage_artifact: browsercover
-          coverage_file: coverage/browser/lcov.info
+      - name: Install Chromium and system dependencies
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run browser component tests
+        run: pnpm run test:browser
+      - uses: actions/upload-artifact@v7
+        id: test
+        with:
+          name: browsercover
+          path: coverage/browser/lcov.info
+          if-no-files-found: error
+      - name: Run live browser journeys
+        run: pnpm run test:e2e
+      - name: Collect service logs
+        if: always()
+        run: |
+          if [ ! -f integration-services.log ]; then
+            docker compose --file builds/compose.e2e.yaml logs --no-color > integration-services.log
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: studio-browser-report
+          path: |
+            playwright-report/
+            test-results/
+            integration-services.log
+          retention-days: 7
+      - name: Remove integration services and data
+        if: always()
+        run: docker compose --file builds/compose.e2e.yaml down --volumes --remove-orphans
 
   test-storybook:
     needs: [lint-node]
