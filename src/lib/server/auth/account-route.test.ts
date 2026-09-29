@@ -116,4 +116,27 @@ describe("account route", () => {
     });
     expect(shortCodeCreateEmailUpdate).toHaveBeenCalledOnce();
   });
+
+  it("rejects invalid email before calling the service and names the account control", async () => {
+    const request = event();
+    request.request = new Request("https://studio.test/account?/email", {
+      method: "POST",
+      body: new URLSearchParams({ email: "invalid-private-value" }),
+    });
+    const result = await accountActions.email(request);
+    expect(result).toMatchObject({
+      status: 400,
+      data: {
+        accountAction: {
+          kind: "email",
+          state: {
+            status: "validation-error",
+            issues: [{ field: "newEmail", feedback: "email" }],
+          },
+        },
+      },
+    });
+    expect(JSON.stringify(result)).not.toContain("invalid-private-value");
+    expect(shortCodeCreateEmailUpdate).not.toHaveBeenCalled();
+  });
 });

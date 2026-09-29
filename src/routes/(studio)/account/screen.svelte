@@ -12,6 +12,8 @@
 <script lang="ts">
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
+  import { tick } from "svelte";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
     Alert,
@@ -44,15 +46,23 @@
   const emailIssues = $derived(model.emailState.status === "validation-error" ? model.emailState.issues : []);
   function issueMessage<Field extends string>(issues: readonly FormIssue<Field>[], field: Field): string | undefined {
     const issue = issues.find((candidate) => candidate.field === field);
-    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
+    return issue ? translateAuthenticationValidation(t, issue) : undefined;
   }
 
-  function submitPassword(event: SubmitEvent) {
-    if (!controller.submitPassword()) event.preventDefault();
+  async function submitPassword(event: SubmitEvent) {
+    const form = event.currentTarget as HTMLFormElement;
+    if (controller.submitPassword(new FormData(form))) return;
+    event.preventDefault();
+    await tick();
+    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }
 
-  function submitEmail(event: SubmitEvent) {
-    if (!controller.submitEmail()) event.preventDefault();
+  async function submitEmail(event: SubmitEvent) {
+    const form = event.currentTarget as HTMLFormElement;
+    if (controller.submitEmail(new FormData(form))) return;
+    event.preventDefault();
+    await tick();
+    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }
 
   function submitLogout(event: SubmitEvent) {
@@ -76,6 +86,7 @@
               method="POST"
               action={actions.password}
               aria-busy={model.passwordState.status === "submitting"}
+              novalidate
               onsubmit={submitPassword}
             >
               <Field
@@ -90,7 +101,7 @@
                     name="currentPassword"
                     type="password"
                     autocomplete="current-password"
-                    disabled={model.passwordState.status === "submitting"}
+                    readonly={model.passwordState.status === "submitting"}
                     invalid={Boolean(issueMessage(passwordIssues, "currentPassword"))}
                   />
                 {/snippet}
@@ -108,7 +119,7 @@
                     name="password"
                     type="password"
                     autocomplete="new-password"
-                    disabled={model.passwordState.status === "submitting"}
+                    readonly={model.passwordState.status === "submitting"}
                     invalid={Boolean(issueMessage(passwordIssues, "newPassword"))}
                   />
                 {/snippet}
@@ -125,7 +136,7 @@
                     name="confirmPassword"
                     type="password"
                     autocomplete="new-password"
-                    disabled={model.passwordState.status === "submitting"}
+                    readonly={model.passwordState.status === "submitting"}
                     invalid={Boolean(issueMessage(passwordIssues, "confirmPassword"))}
                   />
                 {/snippet}
@@ -159,6 +170,7 @@
               method="POST"
               action={actions.email}
               aria-busy={model.emailState.status === "submitting"}
+              novalidate
               onsubmit={submitEmail}
             >
               <Field
@@ -176,7 +188,7 @@
                     autocomplete="email"
                     autocapitalize="none"
                     spellcheck="false"
-                    disabled={model.emailState.status === "submitting"}
+                    readonly={model.emailState.status === "submitting"}
                     invalid={Boolean(issueMessage(emailIssues, "newEmail"))}
                   />
                 {/snippet}

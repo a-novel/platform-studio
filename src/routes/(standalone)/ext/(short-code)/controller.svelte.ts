@@ -1,3 +1,4 @@
+import { validateNewPassword } from "$lib/application/auth/forms";
 import type { ShortCodeActionData, ShortCodePageData } from "$lib/application/auth/short-code-route";
 import type { ShortCodeScreenModel } from "$lib/application/auth/types";
 
@@ -14,8 +15,8 @@ export interface ShortCodeScreenController {
   readonly state: ShortCodeScreenControllerState;
   /** Reconciles a completed route load or action with the rendered secure-link state. */
   synchronize(state: ShortCodeScreenControllerState): void;
-  /** Starts secure-link completion. */
-  submit(): boolean;
+  /** Validates password forms into state before submission; email confirmation needs no form values. */
+  submit(form?: FormData): boolean;
 }
 
 /** Configuration for the default secure-link controller. */
@@ -46,7 +47,7 @@ export function createShortCodeScreenController({
     synchronize(nextState) {
       state = nextState;
     },
-    submit() {
+    submit(form = new FormData()) {
       if (
         state.model.state.status === "submitting" ||
         state.model.state.status === "success" ||
@@ -57,6 +58,13 @@ export function createShortCodeScreenController({
         return false;
       }
 
+      if (state.model.journey !== "email-update") {
+        const result = validateNewPassword(form);
+        if (!result.success) {
+          state = { ...state, model: { ...state.model, state: { status: "validation-error", issues: result.issues } } };
+          return false;
+        }
+      }
       state = {
         ...state,
         model: { ...state.model, state: { status: "submitting" } },

@@ -13,6 +13,8 @@
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
   import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
+  import { tick } from "svelte";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
 
@@ -33,11 +35,15 @@
 
   function fieldError(field: AuthenticationField): string | undefined {
     const issue = issues.find((candidate) => candidate.field === field);
-    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
+    return issue ? translateAuthenticationValidation(t, issue) : undefined;
   }
 
-  function submit(event: SubmitEvent) {
-    if (!controller.submit()) event.preventDefault();
+  async function submit(event: SubmitEvent) {
+    const form = event.currentTarget as HTMLFormElement;
+    if (controller.submit(new FormData(form))) return;
+    event.preventDefault();
+    await tick();
+    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }
 </script>
 
@@ -49,7 +55,7 @@
 {:else if model.state.status === "success"}
   <AuthenticationCompletion feedback={model.state.feedback} />
 {:else}
-  <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
+  <form method="POST" {action} aria-busy={submitting} novalidate onsubmit={submit}>
     <Field controlId={emailId} label={t("authUi.authentication.emailLabel")} error={fieldError("email")} required>
       {#snippet children(control)}
         <Input
@@ -59,7 +65,7 @@
           autocomplete={model.journey === "login" ? "username" : "email"}
           autocapitalize="none"
           spellcheck="false"
-          disabled={submitting}
+          readonly={submitting}
           invalid={Boolean(fieldError("email"))}
         />
       {/snippet}
@@ -78,7 +84,7 @@
             name="password"
             type="password"
             autocomplete="current-password"
-            disabled={submitting}
+            readonly={submitting}
             invalid={Boolean(fieldError("password"))}
           />
         {/snippet}

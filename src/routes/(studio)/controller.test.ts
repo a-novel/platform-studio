@@ -1,4 +1,11 @@
 import { createAccountModel } from "$lib/application/auth/account-action";
+import {
+  validateEmailRequest,
+  validateEmailUpdate,
+  validateLogin,
+  validateNewPassword,
+  validatePasswordChange,
+} from "$lib/application/auth/forms";
 
 import {
   createShortCodeScreenController,
@@ -16,7 +23,75 @@ const actions = {
   logout: "?/logout",
 };
 
+function validForm() {
+  const form = new FormData();
+  for (const [name, value] of Object.entries({
+    email: "creator@example.test",
+    password: "new-password",
+    confirmPassword: "new-password",
+    currentPassword: "old-password",
+  }))
+    form.set(name, value);
+  return form;
+}
+
 describe("platform controllers", () => {
+  it.each(["login", "register", "reset"] as const)(
+    "returns shared validation for %s before accepting corrected input",
+    (journey) => {
+      const controller = createAuthenticationPanelController({ model: readyAuthenticationModel(journey), action: "/" });
+      const invalid = new FormData();
+      const expected = journey === "login" ? validateLogin(invalid) : validateEmailRequest(invalid);
+      expect(controller.submit(invalid)).toBe(false);
+      if (expected.success) throw new Error("Expected invalid form");
+      expect(controller.state.model.state).toEqual({ status: "validation-error", issues: expected.issues });
+      expect(controller.submit(validForm())).toBe(true);
+      expect(controller.state.model.state).toEqual({ status: "submitting" });
+      expect(JSON.stringify(controller.state)).not.toContain("new-password");
+    }
+  );
+
+  it("validates independent account forms without changing other actions", () => {
+    const model = createAccountModel({ status: "error", feedback: "sessionUnavailable" });
+    const controller = createAccountScreenController({ model, actions });
+    const invalid = new FormData();
+    for (const [submit, validate, key] of [
+      [controller.submitPassword, validatePasswordChange, "passwordState"],
+      [controller.submitEmail, validateEmailUpdate, "emailState"],
+    ] as const) {
+      controller.synchronize(model, actions);
+      expect(submit(invalid)).toBe(false);
+      const result = validate(invalid);
+      if (result.success) throw new Error("Expected invalid form");
+      expect(controller.state.model).toEqual({
+        ...model,
+        [key]: { status: "validation-error", issues: result.issues },
+      });
+      expect(submit(validForm())).toBe(true);
+    }
+  });
+
+  it.each(["register", "password-reset"] as const)(
+    "validates %s confirmation without retaining passwords",
+    (journey) => {
+      const controller = createShortCodeScreenController({
+        model: { journey, state: { status: "ready" } },
+        action: "",
+        restartHref: "/",
+        continueHref: "/",
+      });
+      const invalid = validForm();
+      invalid.set("confirmPassword", "different-password");
+      const result = validateNewPassword(invalid);
+      expect(controller.submit(invalid)).toBe(false);
+      if (result.success) throw new Error("Expected invalid confirmation");
+      expect(controller.state.model.state).toEqual({ status: "validation-error", issues: result.issues });
+      expect(controller.submit(validForm())).toBe(true);
+      expect(JSON.stringify(controller.state)).not.toContain("new-password");
+      expect(JSON.stringify(controller.state)).not.toContain("different-password");
+    }
+  );
+
   it("owns authentication submission without owning form fields", () => {
     const controller = createAuthenticationPanelController({
       model: readyAuthenticationModel("login"),
@@ -24,9 +99,9 @@ describe("platform controllers", () => {
       allowNativeSubmission: false,
     });
 
-    expect(controller.submit()).toBe(false);
+    expect(controller.submit(validForm())).toBe(false);
     expect(controller.state.model).toEqual({ journey: "login", state: { status: "submitting" } });
-    expect(controller.submit()).toBe(false);
+    expect(controller.submit(validForm())).toBe(false);
 
     controller.synchronize(readyAuthenticationModel("register"), "/register");
     expect(controller.state).toEqual({
@@ -53,8 +128,8 @@ describe("platform controllers", () => {
       allowNativeSubmission: false,
     });
 
-    expect(controller.submitPassword()).toBe(false);
-    expect(controller.submitEmail()).toBe(false);
+    expect(controller.submitPassword(validForm())).toBe(false);
+    expect(controller.submitEmail(validForm())).toBe(false);
     expect(controller.submitLogout()).toBe(false);
     expect(controller.state.model).toMatchObject({
       passwordState: { status: "submitting" },
@@ -69,8 +144,8 @@ describe("platform controllers", () => {
       model: unavailable,
       actions: nextActions,
     });
-    expect(controller.submitPassword()).toBe(false);
-    expect(controller.submitEmail()).toBe(false);
+    expect(controller.submitPassword(validForm())).toBe(false);
+    expect(controller.submitEmail(validForm())).toBe(false);
     expect(controller.submitLogout()).toBe(false);
     expect(controller.state.model).toMatchObject({
       claims: unavailable.claims,
@@ -86,8 +161,8 @@ describe("platform controllers", () => {
       actions,
     });
     for (const submit of [controller.submitPassword, controller.submitEmail, controller.submitLogout]) {
-      expect(submit()).toBe(true);
-      expect(submit()).toBe(false);
+      expect(submit(validForm())).toBe(true);
+      expect(submit(validForm())).toBe(false);
     }
   });
 
@@ -100,14 +175,14 @@ describe("platform controllers", () => {
       allowNativeSubmission: false,
     });
 
-    expect(controller.submit()).toBe(false);
+    expect(controller.submit(validForm())).toBe(false);
     expect(controller.state.model.state.status).toBe("submitting");
 
     controller.synchronize({
       ...controller.state,
       model: { journey: "password-reset", state: { status: "expired" } },
     });
-    expect(controller.submit()).toBe(false);
+    expect(controller.submit(validForm())).toBe(false);
     expect(controller.state.model.state.status).toBe("expired");
 
     expect(

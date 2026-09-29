@@ -1,4 +1,6 @@
 <script module lang="ts">
+  import { validateLogin } from "$lib/application/auth/forms";
+  import { validationFixture } from "$lib/application/auth/forms.fixture";
   import type { StudioShellViewModel } from "$lib/application/shell/types";
   import { createStorybookTranslator } from "$lib/i18n/storybook";
 
@@ -211,7 +213,9 @@
     await expect(
       canvas.getByRole("button", { name: t("authUi.authentication.journeys.login.submitting") })
     ).toBeDisabled();
-    await expect(canvas.getByRole("textbox", { name: t("authUi.authentication.emailLabel") })).toBeDisabled();
+    await expect(canvas.getByRole("textbox", { name: t("authUi.authentication.emailLabel") })).toHaveAttribute(
+      "readonly"
+    );
   }
 
   async function verifyPendingAuthentication({
@@ -335,13 +339,7 @@
     initialModel={{ ...anonymous, authView: "login" }}
     initialAuthenticationModel={{
       journey: "login",
-      state: {
-        status: "validation-error",
-        issues: [
-          { field: "email", feedback: "email" },
-          { field: "password", feedback: "password" },
-        ],
-      },
+      state: validationFixture(validateLogin, { email: "not-an-email", password: "" }),
     }}
   />
 </Story>

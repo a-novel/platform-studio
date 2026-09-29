@@ -1,63 +1,10 @@
-import { parseShortCodeLink, validateLogin, validateNewPassword, validatePasswordChange } from "./forms";
+import { parseShortCodeLink } from "./forms";
 
 import { describe, expect, it } from "vitest";
 
 function encoded(value: string): string {
   return Buffer.from(value).toString("base64url");
 }
-
-describe("auth form validation", () => {
-  it("normalizes a valid login without returning secrets in issues", () => {
-    const form = new FormData();
-    form.set("email", "  Creator@Example.com ");
-    form.set("password", "a-secure-password");
-
-    expect(validateLogin(form)).toEqual({
-      success: true,
-      value: {
-        email: "creator@example.com",
-        password: "a-secure-password",
-      },
-    });
-  });
-
-  it("maps invalid login values to stable field-safe feedback codes", () => {
-    const form = new FormData();
-    form.set("email", "not an email");
-    form.set("password", "");
-
-    expect(validateLogin(form)).toEqual({
-      success: false,
-      issues: [
-        { field: "email", feedback: "email" },
-        { field: "password", feedback: "password" },
-      ],
-    });
-  });
-
-  it("requires every password-change field and matching replacements", () => {
-    const form = new FormData();
-    form.set("currentPassword", "current-password");
-    form.set("password", "replacement-password");
-    form.set("confirmPassword", "different-password");
-
-    expect(validatePasswordChange(form)).toEqual({
-      success: false,
-      issues: [{ field: "confirmPassword", feedback: "passwordMismatch" }],
-    });
-  });
-
-  it("validates a matching new password for secure-link flows", () => {
-    const form = new FormData();
-    form.set("password", "replacement-password");
-    form.set("confirmPassword", "replacement-password");
-
-    expect(validateNewPassword(form)).toEqual({
-      success: true,
-      value: { password: "replacement-password" },
-    });
-  });
-});
 
 describe("parseShortCodeLink", () => {
   it("parses a registration link and keeps the raw values server-side", () => {

@@ -1,3 +1,4 @@
+import { validateEmailUpdate, validatePasswordChange } from "$lib/application/auth/forms";
 import type { AccountFormActions, AccountScreenModel } from "$lib/application/auth/types";
 
 /** State rendered by the account-management component. */
@@ -11,10 +12,10 @@ export interface AccountScreenController {
   readonly state: AccountScreenControllerState;
   /** Reconciles a completed route load or action with the rendered account state. */
   synchronize(model: AccountScreenModel, actions: AccountFormActions): void;
-  /** Starts a password-change submission. */
-  submitPassword(): boolean;
-  /** Starts an email-change submission. */
-  submitEmail(): boolean;
+  /** Validates password fields into state and reports whether native submission may continue. */
+  submitPassword(form: FormData): boolean;
+  /** Validates the new email into state and reports whether native submission may continue. */
+  submitEmail(form: FormData): boolean;
   /** Starts a logout submission. */
   submitLogout(): boolean;
 }
@@ -47,12 +48,22 @@ export function createAccountScreenController({
       model = nextModel;
       actions = nextActions;
     },
-    submitPassword() {
+    submitPassword(form) {
       if (model.passwordState.status === "submitting") return false;
+      const result = validatePasswordChange(form);
+      if (!result.success) {
+        update({ passwordState: { status: "validation-error", issues: result.issues } });
+        return false;
+      }
       return update({ passwordState: { status: "submitting" } });
     },
-    submitEmail() {
+    submitEmail(form) {
       if (model.emailState.status === "submitting") return false;
+      const result = validateEmailUpdate(form);
+      if (!result.success) {
+        update({ emailState: { status: "validation-error", issues: result.issues } });
+        return false;
+      }
       return update({ emailState: { status: "submitting" } });
     },
     submitLogout() {

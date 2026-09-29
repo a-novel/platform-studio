@@ -1,9 +1,12 @@
 <script module lang="ts">
+  import { validateNewPassword } from "$lib/application/auth/forms";
+  import { validationFixture } from "$lib/application/auth/forms.fixture";
   import { createStorybookTranslator } from "$lib/i18n/storybook";
 
   import StoryHarness from "./story.svelte";
 
   import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
+  import { PasswordSchema } from "@a-novel/service-authentication-rest";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, within } from "storybook/test";
@@ -89,7 +92,7 @@
         exact: false,
         selector: 'input[name="password"]',
       })
-    ).toBeDisabled();
+    ).toHaveAttribute("readonly");
   }
 
   async function verifySuccess({
@@ -192,13 +195,10 @@
   <StoryHarness
     initialModel={{
       journey: "register",
-      state: {
-        status: "validation-error",
-        issues: [
-          { field: "newPassword", feedback: "newPassword" },
-          { field: "confirmPassword", feedback: "passwordMismatch" },
-        ],
-      },
+      state: validationFixture(validateNewPassword, {
+        password: "x".repeat((PasswordSchema.minLength ?? 1) - 1),
+        confirmPassword: "different-example-password",
+      }),
     }}
   />
 </Story>

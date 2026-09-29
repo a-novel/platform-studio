@@ -11,13 +11,13 @@ export type AuthenticationFeedback =
 
 /** Stable validation categories translated only at the rendering boundary. */
 export type AuthenticationValidation =
-  "confirmPassword" | "currentPassword" | "email" | "newPassword" | "password" | "passwordMismatch";
+  | { feedback: "confirmPassword" | "currentPassword" | "email" | "password" | "passwordMismatch" }
+  | { feedback: "minLength" | "maxLength"; limit: number };
 
 /** A validation problem tied to one named form control. */
-export interface FormIssue<Field extends string> {
+export type FormIssue<Field extends string> = AuthenticationValidation & {
   field: Field;
-  feedback: AuthenticationValidation;
-}
+};
 
 /** Serializable states shared by progressively enhanced forms. */
 export type FormState<Field extends string> =

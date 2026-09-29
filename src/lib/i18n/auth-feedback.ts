@@ -25,16 +25,18 @@ export function translateAuthenticationFeedback(t: TFunction<"common">, feedback
 }
 
 /** Resolves a stable form-validation category through the active locale. */
-export function translateAuthenticationValidation(t: TFunction<"common">, feedback: AuthenticationValidation): string {
-  switch (feedback) {
+export function translateAuthenticationValidation(t: TFunction<"common">, issue: AuthenticationValidation): string {
+  switch (issue.feedback) {
     case "confirmPassword":
       return t("authFlow.validation.confirmPassword");
     case "currentPassword":
       return t("authFlow.validation.currentPassword");
     case "email":
       return t("authFlow.validation.email");
-    case "newPassword":
-      return t("authFlow.validation.newPassword");
+    case "minLength":
+      return t("authFlow.validation.minLength", { count: issue.limit });
+    case "maxLength":
+      return t("authFlow.validation.maxLength", { count: issue.limit });
     case "password":
       return t("authFlow.validation.password");
     case "passwordMismatch":

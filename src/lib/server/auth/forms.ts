@@ -1,17 +1,8 @@
-import type {
-  AccountPasswordField,
-  AuthenticationField,
-  FormIssue,
-  ShortCodeJourney,
-  ShortCodePasswordField,
-} from "$lib/application/auth/types";
+import type { ShortCodeJourney } from "$lib/application/auth/types";
 
-import { EmailSchema, PasswordSchema, ShortCodeSchema } from "@a-novel/service-authentication-rest";
+import { EmailSchema, ShortCodeSchema } from "@a-novel/service-authentication-rest";
 
 import { z } from "zod";
-
-export type ValidationResult<Value, Field extends string> =
-  { success: true; value: Value } | { success: false; issues: readonly FormIssue<Field>[] };
 
 export type ParsedShortCodeLink =
   | { status: "missing" }
@@ -38,78 +29,8 @@ export type ParsedShortCodeLink =
 
 const userIdSchema = z.uuid();
 
-function readText(form: FormData, name: string): string {
-  const value = form.get(name);
-  return typeof value === "string" ? value : "";
-}
-
 function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
-}
-
-function issue<Field extends string>(field: Field, feedback: FormIssue<Field>["feedback"]): FormIssue<Field> {
-  return { field, feedback };
-}
-
-export function validateLogin(
-  form: FormData
-): ValidationResult<{ email: string; password: string }, AuthenticationField> {
-  const email = normalizeEmail(readText(form, "email"));
-  const password = readText(form, "password");
-  const issues: FormIssue<AuthenticationField>[] = [];
-
-  if (!EmailSchema.safeParse(email).success) issues.push(issue("email", "email"));
-  if (!PasswordSchema.safeParse(password).success) issues.push(issue("password", "password"));
-
-  return issues.length > 0 ? { success: false, issues } : { success: true, value: { email, password } };
-}
-
-export function validateEmailRequest(form: FormData): ValidationResult<{ email: string }, "email"> {
-  const email = normalizeEmail(readText(form, "email"));
-
-  return EmailSchema.safeParse(email).success
-    ? { success: true, value: { email } }
-    : { success: false, issues: [issue("email", "email")] };
-}
-
-export function validatePasswordChange(
-  form: FormData
-): ValidationResult<{ currentPassword: string; password: string }, AccountPasswordField> {
-  const currentPassword = readText(form, "currentPassword");
-  const password = readText(form, "password");
-  const confirmPassword = readText(form, "confirmPassword");
-  const issues: FormIssue<AccountPasswordField>[] = [];
-
-  if (!PasswordSchema.safeParse(currentPassword).success) {
-    issues.push(issue("currentPassword", "currentPassword"));
-  }
-  if (!PasswordSchema.safeParse(password).success) {
-    issues.push(issue("newPassword", "newPassword"));
-  }
-  if (!PasswordSchema.safeParse(confirmPassword).success) {
-    issues.push(issue("confirmPassword", "confirmPassword"));
-  } else if (password !== confirmPassword) {
-    issues.push(issue("confirmPassword", "passwordMismatch"));
-  }
-
-  return issues.length > 0 ? { success: false, issues } : { success: true, value: { currentPassword, password } };
-}
-
-export function validateNewPassword(form: FormData): ValidationResult<{ password: string }, ShortCodePasswordField> {
-  const password = readText(form, "password");
-  const confirmPassword = readText(form, "confirmPassword");
-  const issues: FormIssue<ShortCodePasswordField>[] = [];
-
-  if (!PasswordSchema.safeParse(password).success) {
-    issues.push(issue("newPassword", "newPassword"));
-  }
-  if (!PasswordSchema.safeParse(confirmPassword).success) {
-    issues.push(issue("confirmPassword", "confirmPassword"));
-  } else if (password !== confirmPassword) {
-    issues.push(issue("confirmPassword", "passwordMismatch"));
-  }
-
-  return issues.length > 0 ? { success: false, issues } : { success: true, value: { password } };
 }
 
 export function parseShortCodeLink(journey: ShortCodeJourney, url: URL): ParsedShortCodeLink {

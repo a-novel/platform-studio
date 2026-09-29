@@ -1,3 +1,4 @@
+import { validateEmailRequest, validateLogin } from "$lib/application/auth/forms";
 import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 
 /** State rendered by the authentication form component. */
@@ -11,8 +12,8 @@ export interface AuthenticationPanelController {
   readonly state: AuthenticationPanelControllerState;
   /** Reconciles a completed route load or action with the rendered form. */
   synchronize(model: AuthenticationPanelModel, action: string): void;
-  /** Requests form submission and reports whether native submission should continue. */
-  submit(): boolean;
+  /** Validates submitted values, exposes field issues in state, and allows valid native submission. */
+  submit(form: FormData): boolean;
 }
 
 /** Configuration for the default authentication-form controller. */
@@ -38,7 +39,7 @@ export function createAuthenticationPanelController({
       model = nextModel;
       action = nextAction;
     },
-    submit() {
+    submit(form) {
       if (
         model.state.status === "submitting" ||
         model.state.status === "pending-email" ||
@@ -47,6 +48,11 @@ export function createAuthenticationPanelController({
         return false;
       }
 
+      const result = model.journey === "login" ? validateLogin(form) : validateEmailRequest(form);
+      if (!result.success) {
+        model = { ...model, state: { status: "validation-error", issues: result.issues } } as AuthenticationPanelModel;
+        return false;
+      }
       model = { ...model, state: { status: "submitting" } } as AuthenticationPanelModel;
       return allowNativeSubmission;
     },

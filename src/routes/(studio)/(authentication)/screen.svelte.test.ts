@@ -14,6 +14,7 @@ import { page } from "vitest/browser";
 
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
+import { PasswordSchema } from "@a-novel/service-authentication-rest";
 
 const readyAccount: AccountScreenModel = {
   claims: {
@@ -92,17 +93,58 @@ async function expectFormActionLayout(form: HTMLFormElement) {
 }
 
 describe("pure authentication screens", () => {
+  it.each(["en", "fr"] as const)("shows localized API length errors on real %s submissions", async (locale) => {
+    const controller = shortCodeController({ journey: "register", state: { status: "ready" } });
+    await render(ShortCodeScreen, { controller }, withLocale(locale));
+    const form = document.querySelector("form");
+    if (!form) throw new Error("Expected password form");
+    expect(form.noValidate).toBe(true);
+    const minimum = Number(PasswordSchema.minLength);
+    const password = "x".repeat(minimum - 1);
+    await page.getByLabelText(locale === "fr" ? /^Nouveau mot de passe/ : /^New password/).fill(password);
+    await page
+      .getByLabelText(locale === "fr" ? /Confirmez le nouveau mot de passe/ : /Confirm new password/)
+      .fill("different-password");
+    await page.getByRole("button").click();
+    const message =
+      locale === "fr" ? `Utilisez au moins ${minimum} caractères.` : `Use at least ${minimum} characters.`;
+    await expect.element(page.getByText(message)).toBeVisible();
+    await expect
+      .element(page.getByLabelText(locale === "fr" ? /^Nouveau mot de passe/ : /^New password/))
+      .toHaveFocus();
+    expect(controller.state.model.state.status).toBe("validation-error");
+    expect(document.querySelectorAll('[aria-invalid="true"]')).toHaveLength(2);
+    expect(form.elements.namedItem("password")).toHaveValue(password);
+    await page.getByLabelText(locale === "fr" ? /^Nouveau mot de passe/ : /^New password/).fill("valid-password");
+    await page
+      .getByLabelText(locale === "fr" ? /Confirmez le nouveau mot de passe/ : /Confirm new password/)
+      .fill("valid-password");
+    await page.getByRole("button").click();
+    await expect.element(page.getByRole("button")).toBeDisabled();
+    expect(controller.state.model.state).toEqual({ status: "submitting" });
+    expect(Object.fromEntries(new FormData(form))).toEqual({
+      password: "valid-password",
+      confirmPassword: "valid-password",
+    });
+  });
+
   it("delegates login submission without owning credential state", async () => {
     const controller = authenticationController({ journey: "login", state: { status: "ready" } });
 
     render(AuthenticationPanel, { controller }, withLocale());
 
+    await page.getByLabelText(/Email address/).fill("creator@example.test");
+    await page.getByLabelText(/Password/).fill("valid-example-password");
     const form = await submitForm("Login");
 
     await expectFormActionLayout(form);
     expect(form.getAttribute("action")).toBe("/auth?/login");
     expect(form.getAttribute("method")).toBe("POST");
     expect(controller.state.model.state.status).toBe("submitting");
+    expect(Object.fromEntries(new FormData(form))).toEqual({
+      email: "creator@example.test",
+      password: "valid-example-password",
+    });
     await expect.element(page.getByLabelText(/Email address/)).toHaveAttribute("name", "email");
     await expect.element(page.getByLabelText(/Password/)).toHaveAttribute("name", "password");
   });
@@ -119,8 +161,8 @@ describe("pure authentication screens", () => {
     const button = page.getByRole("button", { name: /Logging in/ });
     await expect.element(button).toBeDisabled();
     expect(button.element().querySelector('[role="status"]')).toBeNull();
-    await expect.element(page.getByLabelText(/Email address/)).toBeDisabled();
-    await expect.element(page.getByLabelText(/Password/)).toBeDisabled();
+    await expect.element(page.getByLabelText(/Email address/)).toHaveAttribute("readonly");
+    await expect.element(page.getByLabelText(/Password/)).toHaveAttribute("readonly");
   });
 
   it("keeps validation feedback beside fields and places service failures before submit", async () => {
@@ -242,6 +284,10 @@ describe("pure authentication screens", () => {
 
     render(AccountScreen, { controller }, withLocale());
 
+    await page.getByLabelText(/Current password/).fill("old-password");
+    await page.getByLabelText(/^New password/).fill("new-password");
+    await page.getByLabelText(/Confirm new password/).fill("new-password");
+    await page.getByLabelText(/New email address/).fill("creator@example.test");
     for (const [label, action] of [
       ["Change password", "/account?/password"],
       ["Send link", "/account?/email"],
@@ -249,6 +295,14 @@ describe("pure authentication screens", () => {
     ] as const) {
       const form = await submitForm(label);
       expect(form.getAttribute("action")).toBe(action);
+      if (label === "Change password")
+        expect(Object.fromEntries(new FormData(form))).toEqual({
+          currentPassword: "old-password",
+          password: "new-password",
+          confirmPassword: "new-password",
+        });
+      if (label === "Send link")
+        expect(Object.fromEntries(new FormData(form))).toEqual({ email: "creator@example.test" });
       await expectFormActionLayout(form);
       const section = form.closest("section");
       if (!section) throw new Error("Account forms must belong to a section");
@@ -339,8 +393,8 @@ describe("pure authentication screens", () => {
     expect(form).not.toBeNull();
     if (form) await expectFormActionLayout(form);
     expect(button.element().querySelector('[role="status"]')).toBeNull();
-    await expect.element(page.getByLabelText(/New password/)).toBeDisabled();
-    await expect.element(page.getByLabelText(/Confirm new password/)).toBeDisabled();
+    await expect.element(page.getByLabelText(/New password/)).toHaveAttribute("readonly");
+    await expect.element(page.getByLabelText(/Confirm new password/)).toHaveAttribute("readonly");
     expect(document.querySelector('[name="shortCode"]')).toBeNull();
     expect(document.querySelector('[name="target"]')).toBeNull();
   });

@@ -1,6 +1,6 @@
 import { createAccountModel } from "$lib/application/auth/account-action";
+import { validateEmailUpdate, validatePasswordChange } from "$lib/application/auth/forms";
 import { requireAuthorization } from "$lib/server/auth/authorization";
-import { validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
 import { logoutAuthentication } from "$lib/server/auth/logout";
 import { readTokenExpiry } from "$lib/server/auth/session";
 
@@ -88,7 +88,7 @@ export const accountActions = {
   },
 
   email: async (event: RequestEvent) => {
-    const input = validateEmailRequest(await event.request.formData());
+    const input = validateEmailUpdate(await event.request.formData());
 
     if (!input.success) {
       return fail(400, {

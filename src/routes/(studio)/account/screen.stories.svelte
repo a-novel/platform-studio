@@ -1,4 +1,6 @@
 <script module lang="ts">
+  import { validateEmailUpdate, validatePasswordChange } from "$lib/application/auth/forms";
+  import { validationFixture } from "$lib/application/auth/forms.fixture";
   import type { AccountScreenModel } from "$lib/application/auth/types";
   import { createStorybookTranslator } from "$lib/i18n/storybook";
 
@@ -127,7 +129,7 @@
         exact: false,
         selector: 'input[name="currentPassword"]',
       })
-    ).toBeDisabled();
+    ).toHaveAttribute("readonly");
   }
 </script>
 
@@ -163,13 +165,11 @@
   <StoryHarness
     initialModel={{
       ...ready,
-      passwordState: {
-        status: "validation-error",
-        issues: [
-          { field: "currentPassword", feedback: "currentPassword" },
-          { field: "confirmPassword", feedback: "passwordMismatch" },
-        ],
-      },
+      passwordState: validationFixture(validatePasswordChange, {
+        currentPassword: "",
+        password: "a-long-example-password",
+        confirmPassword: "different-example-password",
+      }),
     }}
   />
 </Story>
@@ -203,10 +203,7 @@
   <StoryHarness
     initialModel={{
       ...ready,
-      emailState: {
-        status: "validation-error",
-        issues: [{ field: "newEmail", feedback: "email" }],
-      },
+      emailState: validationFixture(validateEmailUpdate, { email: "not-an-email" }),
     }}
   />
 </Story>

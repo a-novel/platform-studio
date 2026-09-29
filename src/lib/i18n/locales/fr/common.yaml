@@ -30,7 +30,12 @@ authFlow:
     confirmPassword: Confirmez votre nouveau mot de passe.
     currentPassword: Saisissez votre mot de passe actuel.
     email: Saisissez un courriel valide.
-    newPassword: Utilisez entre 4 et 1 024 caractères.
+    maxLength_one: Utilisez au maximum {{count}} caractère.
+    maxLength_many: Utilisez au maximum {{count}} caractères.
+    maxLength_other: Utilisez au maximum {{count}} caractères.
+    minLength_one: Utilisez au moins {{count}} caractère.
+    minLength_many: Utilisez au moins {{count}} caractères.
+    minLength_other: Utilisez au moins {{count}} caractères.
     password: Saisissez votre mot de passe.
     passwordMismatch: Les mots de passe ne correspondent pas.
 authUi:

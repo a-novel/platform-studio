@@ -1,3 +1,4 @@
+import { validateNewPassword } from "$lib/application/auth/forms";
 import type {
   AuthenticationFeedback,
   ShortCodeJourney,
@@ -5,7 +6,7 @@ import type {
   ShortCodeState,
 } from "$lib/application/auth/types";
 
-import { parseShortCodeLink, validateNewPassword } from "./forms";
+import { parseShortCodeLink } from "./forms";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {

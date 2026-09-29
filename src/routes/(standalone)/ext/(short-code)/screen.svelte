@@ -13,6 +13,8 @@
   import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "$lib/i18n/auth-copy";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
 
+  import { tick } from "svelte";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, FormActions, Input, Link, StatusState } from "@a-novel-kit/uikit";
 
@@ -44,11 +46,15 @@
     field: ShortCodePasswordField
   ): string | undefined {
     const issue = currentIssues.find((candidate) => candidate.field === field);
-    return issue ? translateAuthenticationValidation(t, issue.feedback) : undefined;
+    return issue ? translateAuthenticationValidation(t, issue) : undefined;
   }
 
-  function submit(event: SubmitEvent) {
-    if (!controller.submit()) event.preventDefault();
+  async function submit(event: SubmitEvent) {
+    const form = event.currentTarget as HTMLFormElement;
+    if (controller.submit(new FormData(form))) return;
+    event.preventDefault();
+    await tick();
+    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }
 </script>
 
@@ -102,7 +108,7 @@
         </noscript>
       {/if}
     {:else}
-      <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
+      <form method="POST" {action} aria-busy={submitting} novalidate onsubmit={submit}>
         <Field
           controlId={newPasswordId}
           label={t("authUi.shortCode.newPasswordLabel")}
@@ -115,7 +121,7 @@
               name="password"
               type="password"
               autocomplete="new-password"
-              disabled={submitting}
+              readonly={submitting}
               invalid={Boolean(issueMessage(issues, "newPassword"))}
             />
           {/snippet}
@@ -132,7 +138,7 @@
               name="confirmPassword"
               type="password"
               autocomplete="new-password"
-              disabled={submitting}
+              readonly={submitting}
               invalid={Boolean(issueMessage(issues, "confirmPassword"))}
             />
           {/snippet}

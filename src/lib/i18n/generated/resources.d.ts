@@ -40,7 +40,10 @@ export default interface Resources {
         "confirmPassword": "Confirm your new password.",
         "currentPassword": "Enter your current password.",
         "email": "Enter a valid email address.",
-        "newPassword": "Use between 4 and 1,024 characters.",
+        "maxLength_one": "Use no more than {{count}} character.",
+        "maxLength_other": "Use no more than {{count}} characters.",
+        "minLength_one": "Use at least {{count}} character.",
+        "minLength_other": "Use at least {{count}} characters.",
         "password": "Enter your password.",
         "passwordMismatch": "The passwords do not match."
       }
