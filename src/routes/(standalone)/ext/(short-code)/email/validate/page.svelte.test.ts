@@ -59,6 +59,10 @@ describe("automatic email validation", () => {
     const request = vi.spyOn(window, "fetch");
     await render(EmailPage, { data: data(state), form: null }, wrapper);
     expect(request).not.toHaveBeenCalled();
+    const heading = page.getByRole("heading", { level: 1 });
+    await expect.element(heading).toBeVisible();
+    expect(page.getByRole("heading").elements()).toHaveLength(1);
+    expect(document.title).toBe(`${heading.element().textContent} — Studio`);
   });
 
   it("keeps a failed server action visible without restarting it on mount", async () => {

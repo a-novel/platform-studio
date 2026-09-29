@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { translateShortCodeTitle } from "$lib/i18n/auth-copy";
+
   import { createShortCodeScreenController, shortCodeControllerState } from "../../controller.svelte";
   import Screen from "../../screen.svelte";
 
@@ -17,7 +19,7 @@
 </script>
 
 <svelte:head>
-  <title>{t("authUi.shortCode.journeys.passwordReset.title")} — {t("authUi.shortCode.brand")}</title>
+  <title>{translateShortCodeTitle(t, controller.state.model)} — {t("authUi.shortCode.brand")}</title>
 </svelte:head>
 
 <Screen {controller} />

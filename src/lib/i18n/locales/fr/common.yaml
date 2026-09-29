@@ -11,9 +11,9 @@ access:
   home: Retour à l’accueil
   pending:
     title: Vérification de l’accès
-  retry: Réessayer
+  retry: Recharger la page
   unavailable:
-    description: Nous n’avons pas pu vérifier votre compte. Votre session est conservée.
+    description: Votre session est conservée. Veuillez recharger cette page dans quelques minutes.
     title: Accès temporairement indisponible
 authFlow:
   expiryUnavailable: Non renseignée
@@ -24,8 +24,8 @@ authFlow:
     passwordChanged: Votre mot de passe a été modifié.
     passwordReset: Votre mot de passe a été réinitialisé.
     registrationCompleted: Votre compte est prêt.
-    serviceUnavailable: Le service est temporairement indisponible. Réessayez.
-    sessionUnavailable: Impossible de vérifier votre session. Réessayez.
+    serviceUnavailable: Le service est temporairement indisponible. Veuillez réessayer dans quelques minutes.
+    sessionUnavailable: Impossible de vérifier votre session. Veuillez recharger la page dans quelques minutes.
   validation:
     confirmPassword: Confirmez votre nouveau mot de passe.
     currentPassword: Saisissez votre mot de passe actuel.
@@ -97,7 +97,7 @@ authUi:
       emailUpdate:
         submit: Mettre à jour le courriel
         submitting: Mise à jour du courriel…
-        title: Votre courriel Agora
+        unavailableTitle: Mise à jour du courriel indisponible
       passwordReset:
         description: Définissez un mot de passe pour retrouver l’accès à votre compte.
         submit: Réinitialiser le mot de passe

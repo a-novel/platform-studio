@@ -29,7 +29,7 @@ describe("protected page presentation", () => {
           .toHaveAttribute("href", links.loginHref);
       if (status === "unavailable")
         await expect
-          .element(page.getByRole("link", { name: "Try again" }))
+          .element(page.getByRole("link", { name: "Reload page" }))
           .toHaveAttribute("data-sveltekit-reload", "true");
     }
   );

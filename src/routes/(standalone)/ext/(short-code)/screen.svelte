@@ -10,9 +10,8 @@
 </script>
 
 <script lang="ts">
-  import { translateShortCodeJourney, translateShortCodeStatus } from "$lib/i18n/auth-copy";
+  import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "$lib/i18n/auth-copy";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
-  import AuthenticationCompletion from "$lib/ui/auth/AuthenticationCompletion.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, FormActions, Input, Link, StatusState } from "@a-novel-kit/uikit";
@@ -30,15 +29,14 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const journeyTitle = $derived(
-    model.journey === "email-update"
-      ? t("authUi.shortCode.journeys.emailUpdate.title")
-      : translateShortCodeJourney(t, model.journey, "title")
-  );
+  const title = $derived(translateShortCodeTitle(t, model));
   const unavailableStatus = $derived(
     model.state.status === "missing" || model.state.status === "invalid" || model.state.status === "expired"
       ? model.state.status
       : null
+  );
+  const hasOutcome = $derived(
+    model.journey === "email-update" || unavailableStatus !== null || model.state.status === "success"
   );
 
   function issueMessage(
@@ -55,22 +53,19 @@
 </script>
 
 <main class="standalone-page">
-  <section
-    class="secure-action"
-    class:outcome={model.journey === "email-update" || unavailableStatus !== null || model.state.status === "success"}
-    aria-labelledby={`${componentId}-title`}
-  >
-    <header class="page-heading">
-      <h1 id={`${componentId}-title`}>{journeyTitle}</h1>
-      {#if model.journey !== "email-update" && !unavailableStatus && model.state.status !== "success"}
+  <section class="secure-action" aria-labelledby={hasOutcome ? undefined : `${componentId}-title`}>
+    {#if !hasOutcome && model.journey !== "email-update"}
+      <header class="page-heading">
+        <h1 id={`${componentId}-title`}>{title}</h1>
         <p>{translateShortCodeJourney(t, model.journey, "description")}</p>
-      {/if}
-    </header>
+      </header>
+    {/if}
 
     {#if unavailableStatus}
       <StatusState
         tone="error"
-        title={translateShortCodeStatus(t, unavailableStatus, "title")}
+        {title}
+        headingLevel={1}
         description={translateShortCodeStatus(t, unavailableStatus, "description")}
       >
         {#snippet actions()}
@@ -79,17 +74,27 @@
         {/snippet}
       </StatusState>
     {:else if model.state.status === "success"}
-      <AuthenticationCompletion feedback={model.state.feedback} {continueHref} />
+      <StatusState tone="success" {title} headingLevel={1}>
+        {#snippet actions()}
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
+          <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
+        {/snippet}
+      </StatusState>
     {:else if model.journey === "email-update"}
       {#if model.state.status === "service-error"}
-        <StatusState tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)}>
+        <StatusState
+          tone="error"
+          {title}
+          description={translateAuthenticationFeedback(t, model.state.feedback)}
+          headingLevel={1}
+        >
           {#snippet actions()}
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
             <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
           {/snippet}
         </StatusState>
       {:else}
-        <StatusState tone="loading" title={t("authUi.shortCode.journeys.emailUpdate.submitting")} />
+        <StatusState tone="loading" {title} headingLevel={1} />
         <noscript>
           <form method="POST" {action}>
             <Button type="submit">{t("authUi.shortCode.journeys.emailUpdate.submit")}</Button>
@@ -170,11 +175,6 @@
     margin-inline: auto;
     inline-size: 100%;
     max-inline-size: var(--layout-readable-measure);
-  }
-
-  .secure-action.outcome {
-    gap: var(--space-6);
-    text-align: center;
   }
 
   .page-heading {

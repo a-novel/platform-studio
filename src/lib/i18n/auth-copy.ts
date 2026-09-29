@@ -1,4 +1,6 @@
-import type { AuthenticationJourney, ShortCodeJourney } from "$lib/application/auth/types";
+import type { AuthenticationJourney, ShortCodeJourney, ShortCodeScreenModel } from "$lib/application/auth/types";
+
+import { translateAuthenticationFeedback } from "./auth-feedback";
 
 import type { TFunction } from "i18next";
 
@@ -77,4 +79,22 @@ export function translateShortCodeStatus(
   message: ShortCodeStatusMessage
 ): string {
   return shortCodeStatusKeys[status][message](t);
+}
+
+/** Names the current secure-link step in the page and browser tab. */
+export function translateShortCodeTitle(t: TFunction<"common">, { journey, state }: ShortCodeScreenModel): string {
+  switch (state.status) {
+    case "missing":
+    case "invalid":
+    case "expired":
+      return translateShortCodeStatus(t, state.status, "title");
+    case "success":
+      return translateAuthenticationFeedback(t, state.feedback);
+    default:
+      return journey === "email-update"
+        ? state.status === "service-error"
+          ? t("authUi.shortCode.journeys.emailUpdate.unavailableTitle")
+          : t("authUi.shortCode.journeys.emailUpdate.submitting")
+        : translateShortCodeJourney(t, journey, "title");
+  }
 }

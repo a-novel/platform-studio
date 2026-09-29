@@ -160,7 +160,9 @@ describe("pure authentication screens", () => {
     const alert = page.getByRole("alert").element();
     const submit = page.getByRole("button", { name: "Login" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
-    expect(alert.textContent?.trim()).toBe("The service is temporarily unavailable. Try again.");
+    expect(alert.textContent?.trim()).toBe(
+      "The service is temporarily unavailable. Please try again in a few minutes."
+    );
     const form = (submit as HTMLButtonElement).form;
     if (!form) throw new Error("Submit button must belong to a form");
     await expectFormActionLayout(form);
@@ -310,13 +312,17 @@ describe("pure authentication screens", () => {
     expect(document.querySelector('[name="target"]')).toBeNull();
   });
 
-  it("presents secure-link completion as a clear success state", async () => {
+  it.each([
+    ["register", "registrationCompleted", "Your account is ready."],
+    ["email-update", "emailUpdated", "Your email address was updated."],
+    ["password-reset", "passwordReset", "Your password was reset."],
+  ] as const)("uses the %s outcome as the only page heading", async (journey, feedback, title) => {
     render(
       ShortCodeScreen,
       {
         controller: shortCodeController({
-          journey: "register",
-          state: { status: "success", feedback: "registrationCompleted" },
+          journey,
+          state: { status: "success", feedback },
         }),
       },
       withLocale()
@@ -324,7 +330,8 @@ describe("pure authentication screens", () => {
 
     const status = page.getByRole("status");
     await expect.element(status).toBeVisible();
-    await expect.element(page.getByText("Your account is ready.")).toBeVisible();
+    await expect.element(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+    expect(page.getByRole("heading").elements()).toHaveLength(1);
     await expect.element(page.getByRole("link", { name: "Continue to Studio" })).toHaveAttribute("href", "/");
     expect(document.querySelector("form")).toBeNull();
     const heading = page.getByRole("heading", { level: 1 }).element();
@@ -378,6 +385,7 @@ describe("pure authentication screens", () => {
       render(ShortCodeScreen, { controller }, withLocale());
 
       await expect.element(page.getByRole("status")).toHaveTextContent("Updating email…");
+      await expect.element(page.getByRole("heading", { level: 1, name: "Updating email…" })).toBeVisible();
       await expect.element(page.getByRole("button")).not.toBeInTheDocument();
       expect(document.querySelector('input[type="password"]')).toBeNull();
       expect(controller.state.model.state.status).toBe(status);
@@ -396,6 +404,8 @@ describe("pure authentication screens", () => {
       withLocale()
     );
     await expect.element(page.getByRole("alert")).toHaveTextContent("The service is temporarily unavailable.");
+    await expect.element(page.getByRole("heading", { level: 1, name: "Email update unavailable" })).toBeVisible();
+    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
     await expect.element(page.getByRole("link", { name: "Request a new link" })).toBeVisible();
     await expect.element(page.getByRole("button")).not.toBeInTheDocument();
   });

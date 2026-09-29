@@ -18,9 +18,9 @@ export default interface Resources {
       "pending": {
         "title": "Checking access"
       },
-      "retry": "Try again",
+      "retry": "Reload page",
       "unavailable": {
-        "description": "We couldn’t check your account. Your session has been kept.",
+        "description": "Your session has been kept. Please reload this page in a few minutes.",
         "title": "Access temporarily unavailable"
       }
     },
@@ -33,8 +33,8 @@ export default interface Resources {
         "passwordChanged": "Your password was changed.",
         "passwordReset": "Your password was reset.",
         "registrationCompleted": "Your account is ready.",
-        "serviceUnavailable": "The service is temporarily unavailable. Try again.",
-        "sessionUnavailable": "We couldn’t verify your session. Try again."
+        "serviceUnavailable": "The service is temporarily unavailable. Please try again in a few minutes.",
+        "sessionUnavailable": "We couldn’t verify your session. Please reload the page in a few minutes."
       },
       "validation": {
         "confirmPassword": "Confirm your new password.",
@@ -119,7 +119,7 @@ export default interface Resources {
           "emailUpdate": {
             "submit": "Update email",
             "submitting": "Updating email…",
-            "title": "Your Agora email"
+            "unavailableTitle": "Email update unavailable"
           },
           "passwordReset": {
             "description": "Set a password to regain access to your account.",
