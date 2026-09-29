@@ -176,17 +176,17 @@ importers:
         specifier: 1.6.3
         version: 1.6.3
       '@a-novel-kit/uikit':
-        specifier: 0.6.2
-        version: 0.6.2(svelte@5.57.1(@typescript-eslint/types@8.69.0))
+        specifier: 0.6.3
+        version: 0.6.3(svelte@5.57.1(@typescript-eslint/types@8.69.0))
       '@a-novel-kit/uikit-fonts':
-        specifier: 0.6.2
-        version: 0.6.2
+        specifier: 0.6.3
+        version: 0.6.3
       '@a-novel-kit/uikit-images':
-        specifier: 0.6.2
-        version: 0.6.2
+        specifier: 0.6.3
+        version: 0.6.3
       '@a-novel-kit/uikit-tokens':
-        specifier: 0.6.2
-        version: 0.6.2
+        specifier: 0.6.3
+        version: 0.6.3
       '@a-novel/service-authentication-rest':
         specifier: 2.9.1
         version: 2.9.1(@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.5))(zod@4.6.5)
@@ -204,8 +204,8 @@ importers:
         specifier: 1.6.3
         version: 1.6.3(950ef4e77f3ac9db92bb480fb3ef8efe)
       '@a-novel-kit/uikit-storybook':
-        specifier: 0.6.2
-        version: 0.6.2(@storybook/svelte@10.6.0(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(svelte@5.57.1(@typescript-eslint/types@8.69.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(@vitest/browser-playwright@4.1.11)(@vitest/browser@4.1.11)(@vitest/runner@4.1.11)(react@19.3.0)(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(supports-color@7.2.0)(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.11)
+        specifier: 0.6.3
+        version: 0.6.3(@storybook/svelte@10.6.0(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(svelte@5.57.1(@typescript-eslint/types@8.69.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(@vitest/browser-playwright@4.1.11)(@vitest/browser@4.1.11)(@vitest/runner@4.1.11)(react@19.3.0)(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(supports-color@7.2.0)(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.11)
       '@eslint/compat':
         specifier: 2.1.1
         version: 2.1.1(eslint@10.11.0(jiti@2.7.0)(supports-color@7.2.0))
@@ -382,23 +382,23 @@ packages:
     resolution: {integrity: sha512-A+CfNOUQJIzGR24xbCOJZVp3nPf0Y1AcDbpjLL4JoSsmyKKrZwNuBv57M1vL37/egSQo4qsyg2EVzjJip3OTEw==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-server/1.6.3/070a638b6eb983d6533fc1135786f28e57b1d2cf}
     engines: {node: '>=24.0.0', npm: '>=10.9.2'}
 
-  '@a-novel-kit/uikit-fonts@0.6.2':
-    resolution: {integrity: sha512-JWyBG/kK6+zcjmxkkah+rQRa0oQpRrw/iZz9hftD/aL2D2R8eOPBQU3d0g/QIS0+0ZT6OA7bN7WA4qoAYh0Wnw==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-fonts/0.6.2/f17ba72391596d18062cd22271c857483755bcdf}
+  '@a-novel-kit/uikit-fonts@0.6.3':
+    resolution: {integrity: sha512-Xy7PVw77JdNsGV3fsW7Zf66x0d3CkzhaFHEfoCIehyFN5kH2iF9HKYAQbQJigJr8ZiFj0iDVJacwPfTvTGBBtA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-fonts/0.6.3/627b1758ce094b645ceb5df2137091a2473e8b9e}
 
-  '@a-novel-kit/uikit-images@0.6.2':
-    resolution: {integrity: sha512-nPH5zCRbpLiTMeOZl4Sax82aRMwajgiMvFz/TqEVtVoF9H6hNcgi22gc3pTge/tyC9l/yKE12kvYK+QVKZLuPQ==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-images/0.6.2/7464b387a5307f4d928de0f2dfb94a33d6463d5a}
+  '@a-novel-kit/uikit-images@0.6.3':
+    resolution: {integrity: sha512-SUHTCz356/B6mquPwZXREnhk4AVfoqIFO7d7ffW07FeRy/bzMquwiNXj/pibZ/y3jrZST9zXIU1ZpUbSKLbUEg==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-images/0.6.3/834f1e689a65b38e9aea91f5e68cfa8b46212fb7}
 
-  '@a-novel-kit/uikit-storybook@0.6.2':
-    resolution: {integrity: sha512-hFLu03jXyiKZOIrSYTcDMo5euGsOyn77y7DlcsoMXU8zqE/GPNTtzxtzkVJkCdVGgWZcIwpkOdsv5Rsbygdygw==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-storybook/0.6.2/1712c62c817e8d7e39f638cacf4338c33de33e78}
+  '@a-novel-kit/uikit-storybook@0.6.3':
+    resolution: {integrity: sha512-umulArGYtYhFpqqW9yg8vOM0rt1sBVQZwlOSRJWbq7fmyLWTe2kNqsWmNXAqdaJj91QoMvfNRRhNz0OOAK7NAA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-storybook/0.6.3/3d684b3bc484b8a838ddf0d432ec560024fb3f70}
     peerDependencies:
       react: ^19.3.0
       storybook: ^10.6.0
 
-  '@a-novel-kit/uikit-tokens@0.6.2':
-    resolution: {integrity: sha512-OfNqdmXIDU38RQK9Zs3O8UJXl2koqvcJgWNEqnXrGX/AUz+lqNZzjixiEe0RV73F0fuvJUkF9Tt5mUjKwYaRUw==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-tokens/0.6.2/ebe2bc1506516005303e656eaf268c1e63376827}
+  '@a-novel-kit/uikit-tokens@0.6.3':
+    resolution: {integrity: sha512-txbMkhCwPft1eMSTd0YBrkxZOuYGDfRabWA64MzDIoF4sWodbQNqnIOmOCU4DuuEbzbNG37YD5E7WLjG37C/QA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-tokens/0.6.3/657649dd04ddff41ff3a330cdda5468b126aa4d7}
 
-  '@a-novel-kit/uikit@0.6.2':
-    resolution: {integrity: sha512-xTRQ53FD1Dg8NXLiqcTjOx0faIGziXhv9CTHZwIYcURK68maln0Z5ooYYmOhGMd2oPRowqd2B7UhCIBRUH/A8Q==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit/0.6.2/6d109d97f17b166865f37a885c03635604d5c59b}
+  '@a-novel-kit/uikit@0.6.3':
+    resolution: {integrity: sha512-bAzFHhQBzQzkgNfddF9FZtNZ2j5yV2dn27G3joVg5/sXKd8ii/mCPhxwunCac2iY9i4Hx/xqKl/ANWgXR4bSJg==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit/0.6.3/b2cf16a99d0ebf90c6062b7a0f9713fc401ae3bd}
     peerDependencies:
       svelte: ^5.57.1
 
@@ -3722,14 +3722,14 @@ snapshots:
 
   '@a-novel-kit/nodelib-server@1.6.3': {}
 
-  '@a-novel-kit/uikit-fonts@0.6.2': {}
+  '@a-novel-kit/uikit-fonts@0.6.3': {}
 
-  '@a-novel-kit/uikit-images@0.6.2': {}
+  '@a-novel-kit/uikit-images@0.6.3': {}
 
-  '@a-novel-kit/uikit-storybook@0.6.2(@storybook/svelte@10.6.0(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(svelte@5.57.1(@typescript-eslint/types@8.69.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(@vitest/browser-playwright@4.1.11)(@vitest/browser@4.1.11)(@vitest/runner@4.1.11)(react@19.3.0)(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(supports-color@7.2.0)(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.11)':
+  '@a-novel-kit/uikit-storybook@0.6.3(@storybook/svelte@10.6.0(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(svelte@5.57.1(@typescript-eslint/types@8.69.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(@vitest/browser-playwright@4.1.11)(@vitest/browser@4.1.11)(@vitest/runner@4.1.11)(react@19.3.0)(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(supports-color@7.2.0)(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(vitest@4.1.11)':
     dependencies:
-      '@a-novel-kit/uikit-fonts': 0.6.2
-      '@a-novel-kit/uikit-tokens': 0.6.2
+      '@a-novel-kit/uikit-fonts': 0.6.3
+      '@a-novel-kit/uikit-tokens': 0.6.3
       '@storybook/addon-a11y': 10.6.0(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))
       '@storybook/addon-docs': 10.6.0(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))
       '@storybook/addon-svelte-csf': 5.1.3(@storybook/svelte@10.6.0(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(svelte@5.57.1(@typescript-eslint/types@8.69.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)))(storybook@10.6.0(prettier@3.9.9)(react@19.3.0))(svelte@5.57.1(@typescript-eslint/types@8.69.0))(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))
@@ -3752,12 +3752,12 @@ snapshots:
       - vite
       - vitest
 
-  '@a-novel-kit/uikit-tokens@0.6.2': {}
+  '@a-novel-kit/uikit-tokens@0.6.3': {}
 
-  '@a-novel-kit/uikit@0.6.2(svelte@5.57.1(@typescript-eslint/types@8.69.0))':
+  '@a-novel-kit/uikit@0.6.3(svelte@5.57.1(@typescript-eslint/types@8.69.0))':
     dependencies:
-      '@a-novel-kit/uikit-fonts': 0.6.2
-      '@a-novel-kit/uikit-tokens': 0.6.2
+      '@a-novel-kit/uikit-fonts': 0.6.3
+      '@a-novel-kit/uikit-tokens': 0.6.3
       '@lucide/svelte': 1.48.0(svelte@5.57.1(@typescript-eslint/types@8.69.0))
       svelte: 5.57.1(@typescript-eslint/types@8.69.0)
 

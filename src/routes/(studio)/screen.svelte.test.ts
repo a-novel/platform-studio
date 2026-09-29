@@ -263,7 +263,7 @@ describe("studio shell screen", () => {
     expect(form.left - outer.left).toBe(width < 768 ? 16 : 20);
     expect(outer.right - form.right).toBe(width < 768 ? 16 : 20);
     expect(heading.left).toBeCloseTo(form.left);
-    expect(close.top).toBeCloseTo(heading.top);
+    expect(close.top + close.height / 2).toBeCloseTo(heading.top + heading.height / 2);
     expect(close.right).toBeCloseTo(form.right);
     if (width < 560) expect(secondary.left).toBeCloseTo(form.left);
     else expect(secondary.left).toBeGreaterThanOrEqual(form.left);
@@ -271,6 +271,27 @@ describe("studio shell screen", () => {
     expect(getComputedStyle(secondaryButton).paddingInlineStart).toBe("12px");
     expect(getComputedStyle(secondaryButton).paddingInlineEnd).toBe("12px");
     expect(secondary.top - submit.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(24);
+    expect(dialog.element().scrollWidth).toBeLessThanOrEqual(dialog.element().clientWidth);
+  });
+
+  it("centers the close control beside a wrapped French reset heading", async () => {
+    await page.viewport(320, 568);
+    const { t } = createStudioI18n("fr");
+    render(Screen, { controller: controller({ authView: "reset" }) }, withLocale("fr"));
+
+    const dialog = page.getByRole("dialog", { name: t("shell.auth.reset.title") });
+    await expect.element(dialog).toBeVisible();
+    await document.fonts.ready;
+    const title = dialog.getByRole("heading").element();
+    const heading = title.getBoundingClientRect();
+    const close = dialog
+      .getByRole("button", { name: t("shell.closeAuthentication") })
+      .element()
+      .getBoundingClientRect();
+
+    expect(heading.height).toBeGreaterThan(parseFloat(getComputedStyle(title).lineHeight));
+    expect(close.top + close.height / 2).toBeCloseTo(heading.top + heading.height / 2);
+    expect(close.left - heading.right).toBeGreaterThanOrEqual(16);
     expect(dialog.element().scrollWidth).toBeLessThanOrEqual(dialog.element().clientWidth);
   });
 
