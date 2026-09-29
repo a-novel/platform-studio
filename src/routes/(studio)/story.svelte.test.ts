@@ -53,8 +53,10 @@ describe("fixed visual review controllers", () => {
   });
 
   it("pins secure-link completion instead of leaving the review page submitting", async () => {
-    const initialModel: ShortCodeScreenModel = { journey: "email-update", state: { status: "ready" } };
+    const initialModel: ShortCodeScreenModel = { journey: "password-reset", state: { status: "ready" } };
     render(ShortCodeStory, { initialModel }, wrapper);
+    await page.getByLabelText(/^New password/).fill("long memorable test password");
+    await page.getByLabelText("Confirm new password", { exact: false }).fill("long memorable test password");
     await page.getByRole("button").click();
     await expect.element(page.getByRole("button")).toBeEnabled();
   });

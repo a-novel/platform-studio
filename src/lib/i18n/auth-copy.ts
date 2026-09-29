@@ -21,12 +21,6 @@ const authenticationJourneyKeys = {
 } as const;
 
 const shortCodeJourneyKeys = {
-  "email-update": {
-    description: (t: TFunction<"common">) => t("authUi.shortCode.journeys.emailUpdate.description"),
-    submit: (t: TFunction<"common">) => t("authUi.shortCode.journeys.emailUpdate.submit"),
-    submitting: (t: TFunction<"common">) => t("authUi.shortCode.journeys.emailUpdate.submitting"),
-    title: (t: TFunction<"common">) => t("authUi.shortCode.journeys.emailUpdate.title"),
-  },
   "password-reset": {
     description: (t: TFunction<"common">) => t("authUi.shortCode.journeys.passwordReset.description"),
     submit: (t: TFunction<"common">) => t("authUi.shortCode.journeys.passwordReset.submit"),
@@ -71,7 +65,7 @@ export function translateAuthenticationJourney(
 
 export function translateShortCodeJourney(
   t: TFunction<"common">,
-  journey: ShortCodeJourney,
+  journey: Exclude<ShortCodeJourney, "email-update">,
   message: ShortCodeJourneyMessage
 ): string {
   return shortCodeJourneyKeys[journey][message](t);

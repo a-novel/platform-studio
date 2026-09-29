@@ -95,10 +95,9 @@ authUi:
     continue: Continuer vers Studio
     journeys:
       emailUpdate:
-        description: Un changement de courriel a été demandé pour votre compte. Si vous n’êtes pas à l’origine de cette demande, ignorez ce lien.
         submit: Mettre à jour le courriel
         submitting: Mise à jour du courriel…
-        title: Confirmez votre nouveau courriel Agora
+        title: Votre courriel Agora
       passwordReset:
         description: Définissez un mot de passe pour retrouver l’accès à votre compte.
         submit: Réinitialiser le mot de passe

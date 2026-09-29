@@ -117,10 +117,9 @@ export default interface Resources {
         "continue": "Continue to Studio",
         "journeys": {
           "emailUpdate": {
-            "description": "Someone requested an email change for your account. If it wasn’t you, ignore this link.",
             "submit": "Update email",
             "submitting": "Updating email…",
-            "title": "Confirm your new Agora email"
+            "title": "Your Agora email"
           },
           "passwordReset": {
             "description": "Set a password to regain access to your account.",

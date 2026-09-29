@@ -62,7 +62,8 @@
   }) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    await expect(canvas.getByRole("button", { name: t("authUi.shortCode.journeys.emailUpdate.submit") })).toBeVisible();
+    await expect(canvas.getByRole("status")).toHaveTextContent(t("authUi.shortCode.journeys.emailUpdate.submitting"));
+    await expect(canvas.queryByRole("button")).not.toBeInTheDocument();
     await expect(canvas.queryByLabelText(t("authUi.shortCode.newPasswordLabel"))).not.toBeInTheDocument();
   }
 
@@ -126,22 +127,29 @@
 </Story>
 
 <Story
-  name="Confirm email update — desktop"
-  exportName="ConfirmEmailUpdateDesktop"
+  name="Updating email — desktop"
+  exportName="UpdatingEmailDesktop"
   globals={reviewStoryGlobals.desktop}
   asChild
   play={verifyEmailConfirmation}
 >
-  <StoryHarness initialModel={{ journey: "email-update", state: { status: "ready" } }} />
+  <StoryHarness initialModel={{ journey: "email-update", state: { status: "submitting" } }} />
 </Story>
 
 <Story
-  name="Confirm email update — mobile"
-  exportName="ConfirmEmailUpdateMobile"
+  name="Updating email — mobile"
+  exportName="UpdatingEmailMobile"
   globals={reviewStoryGlobals.mobile}
   asChild
+  play={verifyEmailConfirmation}
 >
-  <StoryHarness initialModel={{ journey: "email-update", state: { status: "ready" } }} />
+  <StoryHarness initialModel={{ journey: "email-update", state: { status: "submitting" } }} />
+</Story>
+
+<Story name="Email update unavailable" asChild>
+  <StoryHarness
+    initialModel={{ journey: "email-update", state: { status: "service-error", feedback: "serviceUnavailable" } }}
+  />
 </Story>
 
 <Story

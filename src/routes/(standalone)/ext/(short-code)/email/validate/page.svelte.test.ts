@@ -1,0 +1,94 @@
+import { applyAction } from "$app/forms";
+import { goto } from "$app/navigation";
+import type { ShortCodeState } from "$lib/application/auth/types";
+import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
+
+import type { ActionData, PageData } from "./$types";
+import EmailPage from "./+page.svelte";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { render } from "vitest-browser-svelte";
+import { page } from "vitest/browser";
+
+vi.mock("$app/forms", async (original) => ({
+  ...(await original<typeof import("$app/forms")>()),
+  applyAction: vi.fn(),
+}));
+vi.mock("$app/navigation", async (original) => ({
+  ...(await original<typeof import("$app/navigation")>()),
+  goto: vi.fn(),
+}));
+
+const wrapper = { wrapper: StudioI18nProvider, wrapperProps: { locale: "en" as const } };
+
+function data(state: ShortCodeState = { status: "ready" }): PageData {
+  return {
+    locale: "en",
+    model: { journey: "email-update", state },
+    links: { restartHref: "/account", continueHref: "/account" },
+  };
+}
+
+afterEach(() => vi.restoreAllMocks());
+beforeEach(() => vi.clearAllMocks());
+
+describe("automatic email validation", () => {
+  it("posts once to the current URL and replaces the secret-bearing history entry", async () => {
+    const result = { type: "redirect", status: 303, location: "/ext/email/validate?result=success" };
+    const request = vi.spyOn(window, "fetch").mockResolvedValue(Response.json(result));
+    await render(EmailPage, { data: data(), form: null }, wrapper);
+
+    await expect
+      .poll(() => vi.mocked(goto).mock.calls)
+      .toEqual([[result.location, { replaceState: true, invalidateAll: true }]]);
+    expect(request).toHaveBeenCalledOnce();
+    const [url, options] = request.mock.calls[0] ?? [];
+    expect(url).toBe("");
+    expect(options).toMatchObject({ method: "POST", headers: { "x-sveltekit-action": "true" } });
+    expect(options?.body).toBeInstanceOf(FormData);
+    if (options?.body instanceof FormData) expect(Array.from(options.body.keys())).toEqual([]);
+    await expect.element(page.getByRole("status")).toHaveTextContent("Updating email…");
+  });
+
+  it.each<ShortCodeState>([
+    { status: "success", feedback: "emailUpdated" },
+    { status: "invalid" },
+    { status: "missing" },
+    { status: "expired" },
+  ])("does not post a $status link", async (state) => {
+    const request = vi.spyOn(window, "fetch");
+    await render(EmailPage, { data: data(state), form: null }, wrapper);
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it("keeps a failed server action visible without restarting it on mount", async () => {
+    const request = vi.spyOn(window, "fetch");
+    const form: ActionData = {
+      shortCode: data({ status: "service-error", feedback: "serviceUnavailable" }).model,
+    };
+    await render(EmailPage, { data: data(), form }, wrapper);
+    await expect.element(page.getByRole("alert")).toHaveTextContent("The service is temporarily unavailable.");
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it("shows a sanitized error on network failure without retrying", async () => {
+    const request = vi.spyOn(window, "fetch").mockRejectedValue(new Error("private transport detail"));
+    await render(EmailPage, { data: data(), form: null }, wrapper);
+    await expect.element(page.getByRole("alert")).toHaveTextContent("The service is temporarily unavailable.");
+    expect(document.body.textContent).not.toContain("private transport detail");
+    expect(request).toHaveBeenCalledOnce();
+  });
+
+  it("aborts on navigation and ignores a late response", async () => {
+    const { promise, resolve } = Promise.withResolvers<Response>();
+    const request = vi.spyOn(window, "fetch").mockReturnValue(promise);
+    const view = await render(EmailPage, { data: data(), form: null }, wrapper);
+    const signal = request.mock.calls[0]?.[1]?.signal;
+    await view.unmount();
+    expect(signal?.aborted).toBe(true);
+    resolve(Response.json({ type: "redirect", status: 303, location: "/ext/email/validate?result=success" }));
+    await request.mock.results[0]?.value;
+    expect(applyAction).not.toHaveBeenCalled();
+    expect(goto).not.toHaveBeenCalled();
+  });
+});

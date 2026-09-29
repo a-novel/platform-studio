@@ -364,21 +364,39 @@ describe("pure authentication screens", () => {
     for (const form of document.querySelectorAll("form")) await expectFormActionLayout(form);
   });
 
-  it("renders email confirmation without password controls", async () => {
-    const controller = createShortCodeScreenController({
-      model: { journey: "email-update", state: { status: "ready" } },
-      action: "/ext/email/validate",
-      restartHref: "/account",
-      continueHref: "/account",
-      allowNativeSubmission: false,
-    });
+  it.each(["ready", "submitting"] as const)(
+    "renders %s email validation without a confirmation form",
+    async (status) => {
+      const controller = createShortCodeScreenController({
+        model: { journey: "email-update", state: { status } },
+        action: "/ext/email/validate",
+        restartHref: "/account",
+        continueHref: "/account",
+        allowNativeSubmission: false,
+      });
 
-    render(ShortCodeScreen, { controller }, withLocale());
+      render(ShortCodeScreen, { controller }, withLocale());
 
-    const form = await submitForm("Update email");
+      await expect.element(page.getByRole("status")).toHaveTextContent("Updating email…");
+      await expect.element(page.getByRole("button")).not.toBeInTheDocument();
+      expect(document.querySelector('input[type="password"]')).toBeNull();
+      expect(controller.state.model.state.status).toBe(status);
+    }
+  );
 
-    expect(form.querySelector('input[type="password"]')).toBeNull();
-    await expectFormActionLayout(form);
-    expect(controller.state.model.state.status).toBe("submitting");
+  it("renders failed automatic email validation as a page outcome", async () => {
+    render(
+      ShortCodeScreen,
+      {
+        controller: shortCodeController({
+          journey: "email-update",
+          state: { status: "service-error", feedback: "serviceUnavailable" },
+        }),
+      },
+      withLocale()
+    );
+    await expect.element(page.getByRole("alert")).toHaveTextContent("The service is temporarily unavailable.");
+    await expect.element(page.getByRole("link", { name: "Request a new link" })).toBeVisible();
+    await expect.element(page.getByRole("button")).not.toBeInTheDocument();
   });
 });

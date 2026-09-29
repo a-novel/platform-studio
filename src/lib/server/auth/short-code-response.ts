@@ -1,6 +1,7 @@
 const shortCodeResponseHeaders = {
   "cache-control": "no-store",
-  "referrer-policy": "no-referrer",
+  // Strip link secrets while preserving the Origin header used to check native form submissions.
+  "referrer-policy": "strict-origin",
   "x-robots-tag": "noindex, nofollow",
 } as const;
 

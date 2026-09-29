@@ -30,10 +30,11 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const journeyTitle = $derived(translateShortCodeJourney(t, model.journey, "title"));
-  const journeyDescription = $derived(translateShortCodeJourney(t, model.journey, "description"));
-  const journeySubmit = $derived(translateShortCodeJourney(t, model.journey, "submit"));
-  const journeySubmitting = $derived(translateShortCodeJourney(t, model.journey, "submitting"));
+  const journeyTitle = $derived(
+    model.journey === "email-update"
+      ? t("authUi.shortCode.journeys.emailUpdate.title")
+      : translateShortCodeJourney(t, model.journey, "title")
+  );
   const unavailableStatus = $derived(
     model.state.status === "missing" || model.state.status === "invalid" || model.state.status === "expired"
       ? model.state.status
@@ -56,12 +57,14 @@
 <main class="standalone-page">
   <section
     class="secure-action"
-    class:outcome={unavailableStatus !== null || model.state.status === "success"}
+    class:outcome={model.journey === "email-update" || unavailableStatus !== null || model.state.status === "success"}
     aria-labelledby={`${componentId}-title`}
   >
     <header class="page-heading">
       <h1 id={`${componentId}-title`}>{journeyTitle}</h1>
-      {#if !unavailableStatus && model.state.status !== "success"}<p>{journeyDescription}</p>{/if}
+      {#if model.journey !== "email-update" && !unavailableStatus && model.state.status !== "success"}
+        <p>{translateShortCodeJourney(t, model.journey, "description")}</p>
+      {/if}
     </header>
 
     {#if unavailableStatus}
@@ -77,44 +80,58 @@
       </StatusState>
     {:else if model.state.status === "success"}
       <AuthenticationCompletion feedback={model.state.feedback} {continueHref} />
+    {:else if model.journey === "email-update"}
+      {#if model.state.status === "service-error"}
+        <StatusState tone="error" title={translateAuthenticationFeedback(t, model.state.feedback)}>
+          {#snippet actions()}
+            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
+            <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
+          {/snippet}
+        </StatusState>
+      {:else}
+        <StatusState tone="loading" title={t("authUi.shortCode.journeys.emailUpdate.submitting")} />
+        <noscript>
+          <form method="POST" {action}>
+            <Button type="submit">{t("authUi.shortCode.journeys.emailUpdate.submit")}</Button>
+          </form>
+        </noscript>
+      {/if}
     {:else}
       <form method="POST" {action} aria-busy={submitting} onsubmit={submit}>
-        {#if model.journey !== "email-update"}
-          <Field
-            controlId={newPasswordId}
-            label={t("authUi.shortCode.newPasswordLabel")}
-            error={issueMessage(issues, "newPassword")}
-            required
-          >
-            {#snippet children(control)}
-              <Input
-                {...control}
-                name="password"
-                type="password"
-                autocomplete="new-password"
-                disabled={submitting}
-                invalid={Boolean(issueMessage(issues, "newPassword"))}
-              />
-            {/snippet}
-          </Field>
-          <Field
-            controlId={confirmPasswordId}
-            label={t("authUi.shortCode.confirmPasswordLabel")}
-            error={issueMessage(issues, "confirmPassword")}
-            required
-          >
-            {#snippet children(control)}
-              <Input
-                {...control}
-                name="confirmPassword"
-                type="password"
-                autocomplete="new-password"
-                disabled={submitting}
-                invalid={Boolean(issueMessage(issues, "confirmPassword"))}
-              />
-            {/snippet}
-          </Field>
-        {/if}
+        <Field
+          controlId={newPasswordId}
+          label={t("authUi.shortCode.newPasswordLabel")}
+          error={issueMessage(issues, "newPassword")}
+          required
+        >
+          {#snippet children(control)}
+            <Input
+              {...control}
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              disabled={submitting}
+              invalid={Boolean(issueMessage(issues, "newPassword"))}
+            />
+          {/snippet}
+        </Field>
+        <Field
+          controlId={confirmPasswordId}
+          label={t("authUi.shortCode.confirmPasswordLabel")}
+          error={issueMessage(issues, "confirmPassword")}
+          required
+        >
+          {#snippet children(control)}
+            <Input
+              {...control}
+              name="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              disabled={submitting}
+              invalid={Boolean(issueMessage(issues, "confirmPassword"))}
+            />
+          {/snippet}
+        </Field>
 
         <FormActions>
           {#snippet feedback()}
@@ -123,7 +140,7 @@
             {/if}
           {/snippet}
           <Button type="submit" disabled={submitting}>
-            {submitting ? journeySubmitting : journeySubmit}
+            {translateShortCodeJourney(t, model.journey, submitting ? "submitting" : "submit")}
           </Button>
         </FormActions>
       </form>
