@@ -1,16 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "postUpdateOptions": ["pnpmDedupe"],
+  "extends": ["github>a-novel-kit/workflows//renovate/platform#v1.31.0"],
   "packageRules": [
     {
       "description": ["Stay on Vitest 4 while @storybook/addon-vitest 10.6 supports only Vitest 3 and 4."],
       "matchPackageNames": ["vitest", "/^@vitest\\//"],
       "allowedVersions": "<5"
-    },
-    {
-      "matchDepTypes": ["peerDependencies"],
-      "rangeStrategy": "bump",
-      "enabled": true
     }
   ]
 }
