@@ -146,6 +146,63 @@ describe("AuthenticationSession", () => {
     expect(cookies.values.size).toBe(0);
   });
 
+  it.each(["studio_refresh_token", "studio_identity_handle"])(
+    "clears a stale %s when the access token is missing",
+    async (name) => {
+      cookies.values.set(name, "stale-cookie");
+      const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+      await expect(session.current()).resolves.toEqual({ status: "none" });
+      expect(cookies.values.size).toBe(0);
+      expect(client.claims).not.toHaveBeenCalled();
+      expect(client.refresh).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([401, 403])("clears an access token rejected with %s when it cannot be refreshed", async (status) => {
+    cookies.values.set("studio_access_token", "expired-access");
+    cookies.values.set("studio_identity_handle", "maya.chen");
+    client.claims.mockRejectedValue(new HttpError(status, "expired"));
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await expect(session.current()).resolves.toEqual({ status: "none" });
+    expect(cookies.values.size).toBe(0);
+    expect(client.refresh).not.toHaveBeenCalled();
+  });
+
+  it("does not store a refreshed token whose claims cannot be verified", async () => {
+    cookies.values.set("studio_access_token", "expired-access");
+    cookies.values.set("studio_refresh_token", "refresh");
+    client.claims.mockRejectedValue(new HttpError(401, "invalid claims"));
+    client.refresh.mockResolvedValue({ accessToken: "unverified-access", refreshToken: "new-refresh" });
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await expect(session.current()).resolves.toEqual({ status: "none" });
+    expect(client.claims).toHaveBeenLastCalledWith("unverified-access");
+    expect(cookies.writes).toHaveLength(0);
+    expect(cookies.values.size).toBe(0);
+  });
+
+  it("reuses an existing verified session for a short-code operation", async () => {
+    cookies.values.set("studio_access_token", "access");
+    client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await expect(session.anonymousAccessToken()).resolves.toBe("access");
+    expect(client.createAnonymous).not.toHaveBeenCalled();
+    expect(cookies.writes).toHaveLength(0);
+  });
+
+  it("refuses to replace an unavailable session with an anonymous one", async () => {
+    cookies.values.set("studio_access_token", "access");
+    client.claims.mockRejectedValue(new Error("network unavailable"));
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await expect(session.anonymousAccessToken()).rejects.toBeInstanceOf(AuthenticationUnavailableError);
+    expect(client.createAnonymous).not.toHaveBeenCalled();
+    expect(cookies.values.get("studio_access_token")).toBe("access");
+  });
+
   it("creates an anonymous token only when a protected anonymous operation needs it", async () => {
     client.createAnonymous.mockResolvedValue({
       accessToken: "anonymous-access",
