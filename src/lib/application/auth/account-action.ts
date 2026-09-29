@@ -1,22 +1,16 @@
-import type {
-  AccountEmailField,
-  AccountPasswordField,
-  AccountScreenModel,
-  FormState,
-  ReadyAccountScreenModel,
-} from "./types";
+import type { AccountClaimsState, AccountScreenModel } from "./types";
 
 export type AccountActionData =
   | {
       accountAction: {
         kind: "email";
-        state: FormState<AccountEmailField> | { status: "pending-email"; targetHint: string };
+        state: AccountScreenModel["emailState"];
       };
     }
-  | { accountAction: { kind: "password"; state: FormState<AccountPasswordField> } };
+  | { accountAction: { kind: "password"; state: AccountScreenModel["passwordState"] } };
 
 export function mergeAccountAction(model: AccountScreenModel, data: unknown): AccountScreenModel {
-  if (model.status !== "ready" || !data || typeof data !== "object" || !("accountAction" in data)) return model;
+  if (!data || typeof data !== "object" || !("accountAction" in data)) return model;
 
   const action = (data as AccountActionData).accountAction;
   if (action.kind === "password") return { ...model, passwordState: action.state };
@@ -25,11 +19,10 @@ export function mergeAccountAction(model: AccountScreenModel, data: unknown): Ac
   return model;
 }
 
-export function readyAccountModel(
-  model: Omit<ReadyAccountScreenModel, "emailState" | "logoutState" | "passwordState">
-): ReadyAccountScreenModel {
+/** Initializes account actions independently of session recap availability. */
+export function createAccountModel(claims: AccountClaimsState): AccountScreenModel {
   return {
-    ...model,
+    claims,
     emailState: { status: "ready" },
     logoutState: "ready",
     passwordState: { status: "ready" },

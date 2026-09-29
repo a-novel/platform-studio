@@ -21,5 +21,6 @@
   :global(body) {
     margin: 0;
     min-block-size: 100dvb;
+    font-family: var(--font-family-interface);
   }
 </style>

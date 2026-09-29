@@ -1,15 +1,13 @@
-import { mergeAccountAction, readyAccountModel } from "./account-action";
+import { createAccountModel, mergeAccountAction } from "./account-action";
 
 import { describe, expect, it } from "vitest";
 
-const ready = readyAccountModel({
+const ready = createAccountModel({
   status: "ready",
-  claims: {
-    userId: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
-    roles: ["auth:user"],
-    accessExpiresAt: "soon",
-    refreshExpiresAt: "later",
-  },
+  userId: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
+  roles: ["auth:user"],
+  accessExpiresAt: "soon",
+  refreshExpiresAt: "later",
 });
 
 describe("mergeAccountAction", () => {
@@ -18,12 +16,12 @@ describe("mergeAccountAction", () => {
       mergeAccountAction(ready, {
         accountAction: {
           kind: "password",
-          state: { status: "success", message: "Changed" },
+          state: { status: "success", feedback: "passwordChanged" },
         },
       })
     ).toEqual({
       ...ready,
-      passwordState: { status: "success", message: "Changed" },
+      passwordState: { status: "success", feedback: "passwordChanged" },
     });
   });
 
@@ -32,24 +30,24 @@ describe("mergeAccountAction", () => {
       mergeAccountAction(ready, {
         accountAction: {
           kind: "email",
-          state: { status: "pending-email", targetHint: "c•••@example.com" },
+          state: { status: "pending-email", targetHint: "creator@example.com" },
         },
       })
     ).toEqual({
       ...ready,
-      emailState: { status: "pending-email", targetHint: "c•••@example.com" },
+      emailState: { status: "pending-email", targetHint: "creator@example.com" },
     });
   });
 
-  it("does not attach action state to an unavailable account model", () => {
-    const unavailable = { status: "error", message: "Unavailable" } as const;
+  it("preserves action feedback when the session recap is unavailable", () => {
+    const unavailable = createAccountModel({ status: "error", feedback: "sessionUnavailable" });
     expect(
       mergeAccountAction(unavailable, {
         accountAction: {
           kind: "password",
-          state: { status: "success", message: "Changed" },
+          state: { status: "success", feedback: "passwordChanged" },
         },
       })
-    ).toBe(unavailable);
+    ).toEqual({ ...unavailable, passwordState: { status: "success", feedback: "passwordChanged" } });
   });
 });

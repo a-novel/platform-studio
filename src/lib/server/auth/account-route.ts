@@ -1,6 +1,6 @@
-import type { AccountScreenModel } from "$lib/application/auth/types";
-import { createAuthenticationContext } from "$lib/server/auth/context";
-import { maskEmail, validateEmailRequest, validatePasswordChange } from "$lib/server/auth/forms";
+import { createAccountModel } from "$lib/application/auth/account-action";
+import { validateEmailUpdate, validatePasswordChange } from "$lib/application/auth/forms";
+import { requireAuthorization } from "$lib/server/auth/authorization";
 import { logoutAuthentication } from "$lib/server/auth/logout";
 import { readTokenExpiry } from "$lib/server/auth/session";
 
@@ -8,9 +8,7 @@ import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import { Lang, credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
-import { fail, isRedirect, redirect } from "@sveltejs/kit";
-
-const loginRedirect = "/?auth=login&returnTo=%2Faccount";
+import { fail, isHttpError, isRedirect } from "@sveltejs/kit";
 
 function formatExpiry(token: string | undefined, locale: string, fallback: string): string {
   const expiry = token ? readTokenExpiry(token) : null;
@@ -22,51 +20,38 @@ function formatExpiry(token: string | undefined, locale: string, fallback: strin
   }).format(expiry);
 }
 
-async function authenticated(event: RequestEvent) {
-  const authentication = createAuthenticationContext(event.cookies, event.url);
-  const session = await authentication.session.authenticated();
-  if (!session) redirect(303, loginRedirect);
-  return { authentication, session };
-}
-
 export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "cookies" | "locals" | "url">) => {
   const t = locals.i18n.getFixedT(locals.locale, "common");
 
   try {
-    const authentication = createAuthenticationContext(cookies, url);
-    const session = await authentication.session.authenticated();
-    if (!session) redirect(303, loginRedirect);
+    const { session } = await requireAuthorization({ cookies, url });
 
     return {
-      accountModel: {
+      authorization: "allowed" as const,
+      accountModel: createAccountModel({
         status: "ready",
-        claims: {
-          userId: session.claims.userID,
-          roles: session.claims.roles ?? [],
-          accessExpiresAt: formatExpiry(session.accessToken, locals.locale, t("authFlow.expiryUnavailable")),
-          refreshExpiresAt: formatExpiry(session.refreshToken, locals.locale, t("authFlow.expiryUnavailable")),
-        },
-        passwordState: { status: "ready" },
-        emailState: { status: "ready" },
-        logoutState: "ready",
-      } satisfies AccountScreenModel,
+        userId: session.claims.userID,
+        roles: session.claims.roles ?? [],
+        accessExpiresAt: formatExpiry(session.accessToken, locals.locale, t("authFlow.expiryUnavailable")),
+        refreshExpiresAt: formatExpiry(session.refreshToken, locals.locale, t("authFlow.expiryUnavailable")),
+      }),
     };
   } catch (error) {
-    if (isRedirect(error)) throw error;
+    if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
     return {
-      accountModel: {
+      authorization: "unavailable" as const,
+      accountModel: createAccountModel({
         status: "error",
-        message: t("authFlow.feedback.sessionUnavailable"),
-      } satisfies AccountScreenModel,
+        feedback: "sessionUnavailable",
+      }),
     };
   }
 };
 
 export const accountActions = {
   password: async (event: RequestEvent) => {
-    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-    const input = validatePasswordChange(await event.request.formData(), t);
+    const input = validatePasswordChange(await event.request.formData());
 
     if (!input.success) {
       return fail(400, {
@@ -78,19 +63,29 @@ export const accountActions = {
     }
 
     try {
-      const { authentication, session } = await authenticated(event);
+      const { authentication, session } = await requireAuthorization(event);
       await credentialsUpdatePassword(authentication.api, session.accessToken, input.value);
     } catch (error) {
-      if (isRedirect(error)) throw error;
+      if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
-      return fail(isHttpStatusError(error, 403) ? 403 : 503, {
+      if (isHttpStatusError(error, 403)) {
+        return fail(403, {
+          accountAction: {
+            kind: "password" as const,
+            state: {
+              status: "validation-error" as const,
+              issues: [{ field: "currentPassword" as const, feedback: "invalidCurrentPassword" as const }],
+            },
+          },
+        });
+      }
+
+      return fail(503, {
         accountAction: {
           kind: "password" as const,
           state: {
             status: "service-error" as const,
-            message: isHttpStatusError(error, 403)
-              ? t("authFlow.feedback.invalidCurrentPassword")
-              : t("authFlow.feedback.serviceUnavailable"),
+            feedback: "serviceUnavailable" as const,
           },
         },
       });
@@ -99,14 +94,13 @@ export const accountActions = {
     return {
       accountAction: {
         kind: "password" as const,
-        state: { status: "success" as const, message: t("authFlow.feedback.passwordChanged") },
+        state: { status: "success" as const, feedback: "passwordChanged" as const },
       },
     };
   },
 
   email: async (event: RequestEvent) => {
-    const t = event.locals.i18n.getFixedT(event.locals.locale, "common");
-    const input = validateEmailRequest(await event.request.formData(), t);
+    const input = validateEmailUpdate(await event.request.formData());
 
     if (!input.success) {
       return fail(400, {
@@ -118,20 +112,20 @@ export const accountActions = {
     }
 
     try {
-      const { authentication, session } = await authenticated(event);
+      const { authentication, session } = await requireAuthorization(event);
       await shortCodeCreateEmailUpdate(authentication.api, session.accessToken, {
         email: input.value.email,
         lang: event.locals.locale === "fr" ? Lang.Fr : Lang.En,
       });
     } catch (error) {
-      if (isRedirect(error)) throw error;
+      if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
       return fail(503, {
         accountAction: {
           kind: "email" as const,
           state: {
             status: "service-error" as const,
-            message: t("authFlow.feedback.serviceUnavailable"),
+            feedback: "serviceUnavailable" as const,
           },
         },
       });
@@ -142,7 +136,7 @@ export const accountActions = {
         kind: "email" as const,
         state: {
           status: "pending-email" as const,
-          targetHint: maskEmail(input.value.email),
+          targetHint: input.value.email,
         },
       },
     };

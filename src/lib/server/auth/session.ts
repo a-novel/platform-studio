@@ -13,6 +13,7 @@ import type { Cookies } from "@sveltejs/kit";
 
 const accessTokenCookie = "studio_access_token";
 const refreshTokenCookie = "studio_refresh_token";
+const identityHandleCookie = "studio_identity_handle";
 const rejectedSessionStatuses = [401, 403] as const;
 
 export interface SessionCookies {
@@ -35,6 +36,7 @@ export type ResolvedSession =
       status: "available";
       accessToken: string;
       refreshToken?: string;
+      identityHandle?: string;
       claims: Claims;
     };
 export type AuthenticatedSession = Omit<Extract<ResolvedSession, { status: "available" }>, "claims"> & {
@@ -60,7 +62,7 @@ export class AuthenticationSession {
     const refreshToken = this.cookies.get(refreshTokenCookie);
 
     if (!accessToken) {
-      if (refreshToken) this.clear();
+      if (refreshToken || this.cookies.get(identityHandleCookie)) this.clear();
       return { status: "none" };
     }
 
@@ -70,6 +72,7 @@ export class AuthenticationSession {
         status: "available",
         accessToken,
         refreshToken,
+        identityHandle: this.readIdentityHandle(),
         claims,
       };
     } catch (error) {
@@ -92,6 +95,7 @@ export class AuthenticationSession {
         status: "available",
         accessToken: refreshed.accessToken,
         refreshToken: refreshed.refreshToken || undefined,
+        identityHandle: this.readIdentityHandle(),
         claims,
       };
     } catch (error) {
@@ -126,10 +130,10 @@ export class AuthenticationSession {
   }
 
   async login(email: string, password: string): Promise<void> {
-    this.accept(await this.client.login(email, password));
+    this.accept(await this.client.login(email, password), email);
   }
 
-  accept(token: Token): void {
+  accept(token: Token, identityEmail?: string): void {
     const options = this.cookieOptions();
     this.cookies.set(accessTokenCookie, token.accessToken, options);
 
@@ -138,11 +142,31 @@ export class AuthenticationSession {
     } else {
       this.cookies.delete(refreshTokenCookie, { path: "/" });
     }
+
+    if (identityEmail) this.rememberIdentity(identityEmail);
+  }
+
+  rememberIdentity(email: string): void {
+    const separator = email.lastIndexOf("@");
+    const handle = separator > 0 ? email.slice(0, separator) : "";
+
+    if (handle.length === 0 || handle.length > 64) {
+      this.cookies.delete(identityHandleCookie, { path: "/" });
+      return;
+    }
+
+    this.cookies.set(identityHandleCookie, handle, this.cookieOptions());
   }
 
   clear(): void {
     this.cookies.delete(accessTokenCookie, { path: "/" });
     this.cookies.delete(refreshTokenCookie, { path: "/" });
+    this.cookies.delete(identityHandleCookie, { path: "/" });
+  }
+
+  private readIdentityHandle(): string | undefined {
+    const handle = this.cookies.get(identityHandleCookie);
+    return handle && handle.length <= 64 && !handle.includes("@") ? handle : undefined;
   }
 
   private cookieOptions(): Parameters<Cookies["set"]>[2] {

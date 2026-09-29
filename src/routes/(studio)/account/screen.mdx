@@ -1,0 +1,147 @@
+import * as AccountStories from "./screen.stories.svelte";
+
+import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
+
+<Meta of={AccountStories} />
+
+# Account screen
+
+Account settings follow one reading column: password, email, then session details and logout.
+Forms use shared panels and action spacing, with feedback immediately before their submit button.
+Session details sit directly on the page background; a retrieval failure never blocks the forms.
+Short section names identify the setting, while descriptions explain only what happens next.
+
+## Account status
+
+### Ready
+
+<ResponsiveStoryPair desktop={AccountStories.ReadyDesktop} mobile={AccountStories.ReadyMobile} meta={AccountStories} />
+
+### Loading
+
+<ResponsiveStoryPair
+  desktop={AccountStories.Loading}
+  mobile={AccountStories.Loading}
+  meta={AccountStories}
+  startAt="account-claims"
+/>
+
+### Load error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.LoadError}
+  mobile={AccountStories.LoadError}
+  meta={AccountStories}
+  startAt="account-claims"
+/>
+
+## Password
+
+### Validation errors
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordValidationError}
+  mobile={AccountStories.PasswordValidationError}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+### Submitting
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordSubmitting}
+  mobile={AccountStories.PasswordSubmitting}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+### Service error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordServiceError}
+  mobile={AccountStories.PasswordServiceError}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+### Incorrect current password
+
+The service rejects the current password beside its field, without a duplicate form-level alert.
+
+<ResponsiveStoryPair
+  desktop={AccountStories.IncorrectCurrentPassword}
+  mobile={AccountStories.IncorrectCurrentPassword}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+### Success
+
+<ResponsiveStoryPair
+  desktop={AccountStories.PasswordSuccess}
+  mobile={AccountStories.PasswordSuccess}
+  meta={AccountStories}
+  startAt="account-password"
+/>
+
+## Email
+
+This form sends a confirmation link. The email change completes on the secure email-link page.
+
+### Validation error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailValidationError}
+  mobile={AccountStories.EmailValidationError}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+### Submitting
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailSubmitting}
+  mobile={AccountStories.EmailSubmitting}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+### Service error
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailServiceError}
+  mobile={AccountStories.EmailServiceError}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+### Confirmation pending
+
+<ResponsiveStoryPair
+  desktop={AccountStories.EmailConfirmationPending}
+  mobile={AccountStories.EmailConfirmationPending}
+  meta={AccountStories}
+  startAt="account-email"
+/>
+
+## Session
+
+### Logout submitting
+
+<ResponsiveStoryPair
+  desktop={AccountStories.LogoutSubmitting}
+  mobile={AccountStories.LogoutSubmitting}
+  meta={AccountStories}
+  startAt="account-session"
+/>
+
+## Responsive content
+
+### Long content
+
+<ResponsiveStoryPair
+  desktop={AccountStories.LongContentMobile}
+  mobile={AccountStories.LongContentMobile}
+  meta={AccountStories}
+  startAt="account-claims"
+/>

@@ -1,43 +1,34 @@
 <script module lang="ts">
   import type { ShortCodeScreenModel } from "$lib/application/auth/types";
 
-  /** Controllable Storybook harness around the pure secure-link screen. */
+  /** Fixed-state Storybook harness around the pure secure-link screen. */
   export interface ShortCodeScreenStoryProps {
     initialModel: ShortCodeScreenModel;
-    frameWidth?: string;
   }
 </script>
 
 <script lang="ts">
+  import type { ShortCodeScreenController } from "./controller.svelte";
   import ShortCodeScreen from "./screen.svelte";
 
-  import { untrack } from "svelte";
+  let { initialModel }: ShortCodeScreenStoryProps = $props();
 
-  let { initialModel, frameWidth }: ShortCodeScreenStoryProps = $props();
-
-  let model = $state<ShortCodeScreenModel>(untrack(() => structuredClone(initialModel)));
-
-  function submit(event: SubmitEvent) {
-    event.preventDefault();
-    if (model.state.status === "submitting") return;
-    model = { ...model, state: { status: "submitting" } };
-  }
+  const controller: ShortCodeScreenController = {
+    get state() {
+      return { model: initialModel, action: "#complete", restartHref: "#restart", continueHref: "#continue" };
+    },
+    synchronize: () => {},
+    submit: () => false,
+  };
 </script>
 
-<div class="story-frame" style:--story-frame-width={frameWidth}>
-  <ShortCodeScreen
-    {model}
-    action="/storybook/complete"
-    homeHref="/"
-    restartHref="/?auth=reset"
-    continueHref="/"
-    onSubmit={submit}
-  />
+<div class="story-frame">
+  <ShortCodeScreen {controller} />
 </div>
 
 <style>
   .story-frame {
-    inline-size: var(--story-frame-width, 100%);
+    inline-size: 100%;
     min-block-size: 100dvb;
   }
 </style>

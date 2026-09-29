@@ -69,6 +69,7 @@ describe("AuthenticationSession", () => {
   it("returns verified authenticated claims without exposing cookies to the browser", async () => {
     cookies.values.set("studio_access_token", "access");
     cookies.values.set("studio_refresh_token", "refresh");
+    cookies.values.set("studio_identity_handle", "maya.chen");
     client.claims.mockResolvedValue({
       userID: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
       roles: [Role.User],
@@ -80,7 +81,23 @@ describe("AuthenticationSession", () => {
       status: "available",
       accessToken: "access",
       refreshToken: "refresh",
+      identityHandle: "maya.chen",
       claims: { roles: [Role.User] },
+    });
+  });
+
+  it("stores only the email handle in an HTTP-only identity cookie", async () => {
+    client.login.mockResolvedValue({ accessToken: "access", refreshToken: "refresh" });
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await session.login("maya.chen@example.com", "valid-password");
+
+    expect(cookies.values.get("studio_identity_handle")).toBe("maya.chen");
+    expect(cookies.writes.at(-1)?.options).toMatchObject({
+      httpOnly: true,
+      path: "/",
+      sameSite: "lax",
+      secure: true,
     });
   });
 
@@ -120,6 +137,7 @@ describe("AuthenticationSession", () => {
   it("clears a token pair rejected during refresh", async () => {
     cookies.values.set("studio_access_token", "expired-access");
     cookies.values.set("studio_refresh_token", "expired-refresh");
+    cookies.values.set("studio_identity_handle", "maya.chen");
     client.claims.mockRejectedValue(new HttpError(403, "expired"));
     client.refresh.mockRejectedValue(new HttpError(403, "expired"));
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));

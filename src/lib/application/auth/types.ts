@@ -1,16 +1,33 @@
+/** Stable product feedback categories translated only at the rendering boundary. */
+export type AuthenticationFeedback =
+  | "emailUpdated"
+  | "invalidCredentials"
+  | "passwordChanged"
+  | "passwordReset"
+  | "registrationCompleted"
+  | "serviceUnavailable"
+  | "sessionUnavailable";
+
+/** Stable validation categories translated only at the rendering boundary. */
+export type AuthenticationValidation =
+  | {
+      feedback:
+        "confirmPassword" | "currentPassword" | "email" | "invalidCurrentPassword" | "password" | "passwordMismatch";
+    }
+  | { feedback: "minLength" | "maxLength"; limit: number };
+
 /** A validation problem tied to one named form control. */
-export interface FormIssue<Field extends string> {
+export type FormIssue<Field extends string> = AuthenticationValidation & {
   field: Field;
-  message: string;
-}
+};
 
 /** Serializable states shared by progressively enhanced forms. */
 export type FormState<Field extends string> =
   | { status: "ready" }
   | { status: "submitting" }
   | { status: "validation-error"; issues: readonly FormIssue<Field>[] }
-  | { status: "service-error"; message: string }
-  | { status: "success"; message: string };
+  | { status: "service-error"; feedback: AuthenticationFeedback }
+  | { status: "success"; feedback: AuthenticationFeedback };
 
 export type AuthenticationJourney = "login" | "register" | "reset";
 export type AuthenticationField = "email" | "password";
@@ -24,13 +41,13 @@ export interface PendingEmailState {
 /** Pure login form state. */
 export interface LoginPanelModel {
   journey: "login";
-  state: FormState<AuthenticationField>;
+  state: Exclude<FormState<AuthenticationField>, { status: "success" }>;
 }
 
 /** Pure registration or password-recovery request state. */
 export interface EmailRequestPanelModel {
   journey: "register" | "reset";
-  state: FormState<"email"> | PendingEmailState;
+  state: Exclude<FormState<"email">, { status: "success" }> | PendingEmailState;
 }
 
 /** Every state rendered inside the shell authentication dialog. */
@@ -47,17 +64,19 @@ export interface AccountClaimsSummary {
   refreshExpiresAt: string;
 }
 
-/** Ready account data and independently controlled actions. */
-export interface ReadyAccountScreenModel {
-  status: "ready";
-  claims: AccountClaimsSummary;
-  passwordState: FormState<AccountPasswordField>;
-  emailState: FormState<AccountEmailField> | PendingEmailState;
-  logoutState: "ready" | "submitting" | { status: "service-error"; message: string };
-}
+/** Session recap availability, independent of account form state. */
+export type AccountClaimsState =
+  | ({ status: "ready" } & AccountClaimsSummary)
+  | { status: "loading" }
+  | { status: "error"; feedback: AuthenticationFeedback };
 
-/** Every protected account-screen state. */
-export type AccountScreenModel = { status: "loading" } | { status: "error"; message: string } | ReadyAccountScreenModel;
+/** Account recap and independently controlled actions. */
+export interface AccountScreenModel {
+  claims: AccountClaimsState;
+  passwordState: FormState<AccountPasswordField>;
+  emailState: Exclude<FormState<AccountEmailField>, { status: "success" }> | PendingEmailState;
+  logoutState: "ready" | "submitting";
+}
 
 /** POST destinations supplied by the SvelteKit account route. */
 export interface AccountFormActions {
@@ -70,12 +89,10 @@ export type ShortCodeJourney = "register" | "email-update" | "password-reset";
 export type ShortCodePasswordField = "newPassword" | "confirmPassword";
 
 /** A secure email-link state. No short code or raw target is part of this model. */
-export type ShortCodeState =
-  FormState<ShortCodePasswordField> | { status: "missing" } | { status: "invalid" } | { status: "expired" };
+export type ShortCodeState = FormState<ShortCodePasswordField> | { status: "missing" } | { status: "invalid" };
 
 /** Pure standalone completion screen driven by a sanitized server model. */
 export interface ShortCodeScreenModel {
   journey: ShortCodeJourney;
   state: ShortCodeState;
-  targetHint?: string;
 }

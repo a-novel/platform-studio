@@ -1,12 +1,17 @@
+import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 import type { StudioShellViewModel } from "$lib/application/shell/types";
 import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
+import { createStudioI18n } from "$lib/i18n/instance";
 
+import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
+import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
 import Screen from "./screen.svelte";
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
-import { page, userEvent } from "vitest/browser";
+import { page } from "vitest/browser";
 
+import { Alert } from "@a-novel-kit/uikit";
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
 
@@ -19,6 +24,28 @@ function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel 
     session: { status: "anonymous" },
     ...patch,
   };
+}
+
+function controller(
+  patch: Partial<StudioShellViewModel> = {},
+  options: { authenticationModel?: AuthenticationPanelModel } = {}
+) {
+  const shellModel = model(patch);
+  const authentication = createAuthenticationPanelController({
+    model: options.authenticationModel ?? readyAuthenticationModel(shellModel.authView ?? "login"),
+    action: "/auth",
+    allowNativeSubmission: false,
+  });
+
+  return createStudioShellController({
+    model: shellModel,
+    homeHref: "/",
+    accountHref: "/account",
+    logoutAction: "/auth/logout",
+    authentication,
+    resolveAuthentication: (view) => ({ model: readyAuthenticationModel(view), action: "/auth" }),
+    allowNativeLogout: false,
+  });
 }
 
 function withLocale(locale: "en" | "fr" = "en") {
@@ -34,98 +61,323 @@ describe("studio shell screen", () => {
   });
 
   it("exposes the empty workspace, current Home destination, and anonymous authentication action", async () => {
-    const onAuthViewChange = vi.fn();
-    render(
-      Screen,
-      {
-        model: model(),
-        onAuthViewChange,
-      },
-      withLocale()
-    );
+    const shell = controller();
+    render(Screen, { controller: shell }, withLocale());
 
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "96");
+    const signIn = page.getByRole("button", { name: "Login" });
+    expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
+    await signIn.click();
 
-    expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("login");
+    expect(shell.state.model.authView).toBe("login");
   });
 
   it("keeps the collapsed Home destination accessible by name", async () => {
     render(
       Screen,
       {
-        model: model({ rail: "collapsed" }),
+        controller: controller({ rail: "collapsed" }),
       },
       withLocale("fr")
     );
 
     await expect.element(page.getByRole("link", { name: "Accueil" })).toBeVisible();
+    await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "24");
     await expect
       .element(page.getByRole("button", { name: "Développer la navigation" }))
       .toHaveAttribute("aria-expanded", "false");
   });
 
-  it("supports keyboard account-menu focus and logout", async () => {
-    const onLogout = vi.fn();
+  it("links the account name directly and keeps logout visible", async () => {
+    const shell = controller({
+      session: {
+        status: "authenticated",
+        displayName: "Maya Chen",
+        initials: "MC",
+      },
+    });
     render(
       Screen,
       {
-        model: model({
-          session: {
-            status: "authenticated",
-            displayName: "Maya Chen",
-            initials: "MC",
-          },
-        }),
-        onLogout,
+        controller: shell,
       },
       withLocale()
     );
 
-    const trigger = page.getByRole("button", { name: "Account menu" });
-    await expect.element(trigger).toBeVisible();
-    trigger.element().focus();
-    await userEvent.keyboard("{ArrowDown}");
-    await expect.element(page.getByRole("menuitem", { name: "Manage account" })).toHaveFocus();
+    const accountLink = page.getByRole("link", { name: "Maya Chen" });
+    await expect.element(accountLink).toHaveAttribute("href", "/account");
+    expect(getComputedStyle(accountLink.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    expect(getComputedStyle(accountLink.element()).borderTopStyle).toBe("none");
+    await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    await expect.element(page.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
 
-    await page.getByRole("menuitem", { name: "Log out" }).click();
-    expect(onLogout).toHaveBeenCalledOnce();
+    await page.getByRole("button", { name: "Log out" }).click();
+    expect(shell.state.model.session.status).toBe("anonymous");
+  });
+
+  it.each(["anonymous", "authenticated"] as const)(
+    "preserves %s navigation surfaces and control styles across desktop and mobile",
+    async (status) => {
+      const presentations = [];
+      for (const width of [1280, 390, 320]) {
+        await page.viewport(width, 844);
+        const view = await render(
+          Screen,
+          {
+            controller: controller({
+              drawerOpen: width < 768,
+              session: status === "authenticated" ? { status, displayName: "Maya Chen", initials: "MC" } : { status },
+            }),
+          },
+          withLocale()
+        );
+        const surface = page.getByRole(width < 768 ? "dialog" : "complementary", { name: /Studio/ });
+        await expect.element(surface).toBeVisible();
+        await surface.getByRole("img", { name: "Studio" }).hover();
+        const controls = [surface.getByRole("link", { name: "Home" })];
+        if (status === "authenticated") controls.push(surface.getByRole("link", { name: "Maya Chen" }));
+        controls.push(surface.getByRole("button", { name: status === "authenticated" ? "Log out" : "Login" }));
+
+        const styles = async (element: Element) => {
+          await new Promise(requestAnimationFrame);
+          for (const animation of element.getAnimations()) animation.finish();
+          await new Promise(requestAnimationFrame);
+          const style = getComputedStyle(element);
+          return {
+            background: style.backgroundColor,
+            color: style.color,
+            opacity: style.opacity,
+            weight: style.fontWeight,
+            lineHeight: style.lineHeight,
+            padding: style.padding,
+          };
+        };
+        const resting = await Promise.all(controls.map((control) => styles(control.element())));
+        const hovered = [];
+        for (const control of controls) {
+          await control.hover();
+          hovered.push(await styles(control.element()));
+        }
+        if (status === "authenticated") {
+          expect(hovered[1]?.background).toBe(hovered[2]?.background);
+          expect(hovered[1]?.background).not.toBe(resting[1]?.background);
+          expect(hovered[1]?.background).not.toBe(getComputedStyle(surface.element()).backgroundColor);
+        }
+        presentations.push({ background: getComputedStyle(surface.element()).backgroundColor, resting, hovered });
+        await view.unmount();
+      }
+      expect(presentations[1]).toEqual(presentations[0]);
+      expect(presentations[2]).toEqual(presentations[0]);
+    }
+  );
+
+  it.each([320, 390, 767])("keeps mobile branding and controls aligned at %ipx", async (width) => {
+    await page.viewport(width, 844);
+    render(Screen, { controller: controller({ rail: "collapsed" }) }, withLocale());
+
+    const logo = page.getByRole("img", { name: "Studio" });
+    await expect.element(logo).toHaveAttribute("width", "96");
+    const logoBounds = logo.element().getBoundingClientRect();
+    const source = logo.element().getAttribute("src");
+    const open = page.getByRole("button", { name: "Open navigation" });
+    const controlBounds = open.element().getBoundingClientRect();
+    expect(logoBounds.left).toBeGreaterThanOrEqual(16);
+    expect(controlBounds.left).toBeGreaterThan(logoBounds.right);
+    expect(
+      Math.abs(logoBounds.top + logoBounds.height / 2 - controlBounds.top - controlBounds.height / 2)
+    ).toBeLessThanOrEqual(1);
+
+    await open.click();
+    const menu = page.getByRole("dialog", { name: "Studio" });
+    const menuLogo = menu.getByRole("img", { name: "Studio" });
+    await expect.element(menuLogo).toHaveAttribute("src", source);
+    const menuLogoBounds = menuLogo.element().getBoundingClientRect();
+    const closeBounds = menu.getByRole("button", { name: "Close navigation" }).element().getBoundingClientRect();
+    for (const key of ["x", "y", "width", "height"] as const) {
+      expect(menuLogoBounds[key]).toBeCloseTo(logoBounds[key], 0);
+      expect(closeBounds[key]).toBeCloseTo(controlBounds[key], 0);
+    }
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+  });
+
+  it("aligns mobile drawer labels and contains a long account name", async () => {
+    await page.viewport(390, 844);
+    const displayName = "Alexandrine de la Bibliothèque des Mondes Imaginaires";
+    render(
+      Screen,
+      {
+        controller: controller({
+          drawerOpen: true,
+          session: {
+            status: "authenticated",
+            displayName,
+            initials: "AB",
+          },
+        }),
+      },
+      withLocale()
+    );
+
+    const navigation = page.getByRole("dialog", { name: "Studio" });
+    await expect.element(navigation).toBeVisible();
+
+    const accountName = navigation.getByText(displayName).element();
+    const labelStarts = [
+      navigation.getByText("Home").element().getBoundingClientRect().left,
+      accountName.getBoundingClientRect().left,
+      navigation.getByText("Log out").element().getBoundingClientRect().left,
+    ];
+
+    expect(Math.max(...labelStarts) - Math.min(...labelStarts)).toBeLessThanOrEqual(1);
+    expect(accountName.scrollWidth).toBeGreaterThan(accountName.clientWidth);
   });
 
   it("renders URL-controlled auth views and delegates view changes", async () => {
-    const onAuthViewChange = vi.fn();
-    render(
-      Screen,
-      {
-        model: model({ authView: "register" }),
-        onAuthViewChange,
-      },
-      withLocale()
-    );
+    const shell = controller({ authView: "register" });
+    render(Screen, { controller: shell }, withLocale());
 
-    await expect.element(page.getByRole("dialog", { name: "Create your account" })).toBeVisible();
-    await page.getByRole("button", { name: "Sign in instead" }).click();
+    const registrationDialog = page.getByRole("dialog", { name: "Create your account" });
+    await expect.element(registrationDialog).toBeVisible();
+    await registrationDialog.getByRole("button", { name: "Login" }).click();
 
-    expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("login");
+    expect(shell.state.model.authView).toBe("login");
   });
 
-  it("surfaces session errors and delegates a retry without leaking state into the component", async () => {
-    const onRetrySession = vi.fn();
+  it.each([320, 390, 768, 1280])("aligns dialog headings, close controls, and actions at %ipx", async (width) => {
+    await page.viewport(width, 568);
+    const { t } = createStudioI18n("fr");
+    render(Screen, { controller: controller({ authView: "login" }) }, withLocale("fr"));
+
+    const dialog = page.getByRole("dialog");
+    await expect.element(dialog).toBeVisible();
+    const heading = dialog.getByRole("heading").element().getBoundingClientRect();
+    const close = dialog
+      .getByRole("button", { name: t("shell.closeAuthentication") })
+      .element()
+      .getBoundingClientRect();
+    const submit = dialog.getByRole("button", { name: t("shell.signIn"), exact: true }).element() as HTMLButtonElement;
+    if (!submit.form) throw new Error("Submit button must belong to a form");
+    const form = submit.form.getBoundingClientRect();
+    const secondaryButton = dialog.getByRole("button", { name: t("shell.auth.forgotPassword") }).element();
+    const secondary = secondaryButton.getBoundingClientRect();
+    const outer = dialog.element().getBoundingClientRect();
+
+    if (width < 768) expect(outer.left).toBe(8);
+    expect(form.left - outer.left).toBe(width < 768 ? 16 : 20);
+    expect(outer.right - form.right).toBe(width < 768 ? 16 : 20);
+    expect(heading.left).toBeCloseTo(form.left);
+    expect(close.top + close.height / 2).toBeCloseTo(heading.top + heading.height / 2);
+    expect(close.right).toBeCloseTo(form.right);
+    if (width < 560) expect(secondary.left).toBeCloseTo(form.left);
+    else expect(secondary.left).toBeGreaterThanOrEqual(form.left);
+    expect(secondary.right).toBeLessThanOrEqual(form.right);
+    expect(getComputedStyle(secondaryButton).paddingInlineStart).toBe("12px");
+    expect(getComputedStyle(secondaryButton).paddingInlineEnd).toBe("12px");
+    expect(secondary.top - submit.getBoundingClientRect().bottom).toBeGreaterThanOrEqual(24);
+    expect(dialog.element().scrollWidth).toBeLessThanOrEqual(dialog.element().clientWidth);
+  });
+
+  it("centers the close control beside a wrapped French reset heading", async () => {
+    await page.viewport(320, 568);
+    const { t } = createStudioI18n("fr");
+    render(Screen, { controller: controller({ authView: "reset" }) }, withLocale("fr"));
+
+    const dialog = page.getByRole("dialog", { name: t("shell.auth.reset.title") });
+    await expect.element(dialog).toBeVisible();
+    await document.fonts.ready;
+    const title = dialog.getByRole("heading").element();
+    const heading = title.getBoundingClientRect();
+    const close = dialog
+      .getByRole("button", { name: t("shell.closeAuthentication") })
+      .element()
+      .getBoundingClientRect();
+
+    expect(heading.height).toBeGreaterThan(parseFloat(getComputedStyle(title).lineHeight));
+    expect(close.top + close.height / 2).toBeCloseTo(heading.top + heading.height / 2);
+    expect(close.left - heading.right).toBeGreaterThanOrEqual(16);
+    expect(dialog.element().scrollWidth).toBeLessThanOrEqual(dialog.element().clientWidth);
+  });
+
+  it("keeps a review dialog open when its controller rejects dismissal", async () => {
+    const shell = controller({ authView: "login" });
+    shell.authenticationDialog.close = () => {};
+    render(Screen, { controller: shell }, withLocale());
+
+    await page.getByRole("button", { name: "Close dialog" }).click();
+
+    expect(shell.state.model.authView).toBe("login");
+    await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
+  });
+
+  it("omits journey actions from completed authentication dialogs", async () => {
     render(
       Screen,
       {
-        model: model({
-          session: { status: "error" },
-        }),
-        onRetrySession,
+        controller: controller(
+          { authView: "register" },
+          {
+            authenticationModel: {
+              journey: "register",
+              state: { status: "pending-email", targetHint: "maya.chen@example.test" },
+            },
+          }
+        ),
       },
       withLocale()
     );
 
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Account status is temporarily unavailable.");
-    await page.getByRole("button", { name: "Retry account status" }).click();
+    const registrationDialog = page.getByRole("dialog", { name: "Check your inbox" });
+    await expect.element(registrationDialog).toBeVisible();
+    expect(registrationDialog.element().querySelectorAll("h2")).toHaveLength(1);
+    await expect.element(registrationDialog.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
+  });
 
-    expect(onRetrySession).toHaveBeenCalledOnce();
+  it("presents session errors as a compact status without a retry action", async () => {
+    render(
+      Screen,
+      {
+        controller: controller({
+          session: { status: "error" },
+        }),
+      },
+      withLocale()
+    );
+
+    await expect.element(page.getByRole("alert")).toHaveTextContent("Account details are unavailable.");
+    await expect.element(page.getByRole("button", { name: /Retry account status/i })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [320, "loading"],
+    [320, "error"],
+    [1280, "loading"],
+    [1280, "error"],
+  ] as const)("uses the shared section message for %s px %s feedback", async (width, status) => {
+    await page.viewport(width, 800);
+    render(Screen, { controller: controller({ session: { status }, drawerOpen: width < 1280 }) }, withLocale());
+    const role = status === "error" ? "alert" : "status";
+    const message = page.getByRole(role);
+    await expect.element(message).toBeVisible();
+    const actual = getComputedStyle(message.element());
+    render(Alert, { tone: status, title: "Reference", "aria-label": "Reference" });
+    const reference = getComputedStyle(page.getByRole(role, { name: "Reference" }).element());
+
+    for (const property of ["background-color", "border-width", "padding", "border-radius", "gap"]) {
+      expect(actual.getPropertyValue(property)).toBe(reference.getPropertyValue(property));
+    }
+  });
+
+  it.each(["loading", "error"] as const)("keeps collapsed %s feedback named without a custom box", async (status) => {
+    render(Screen, { controller: controller({ session: { status }, rail: "collapsed" }) }, withLocale());
+    const message = page.getByRole(status === "error" ? "alert" : "status", {
+      name: status === "error" ? "Account details are unavailable." : "Loading account",
+    });
+    await expect.element(message).toBeVisible();
+    const wrapper = message.element().parentElement;
+    if (!wrapper) throw new Error("Missing compact feedback layout");
+    expect(getComputedStyle(wrapper).borderWidth).toBe("0px");
+    expect(getComputedStyle(wrapper).backgroundColor).toBe("rgba(0, 0, 0, 0)");
   });
 });

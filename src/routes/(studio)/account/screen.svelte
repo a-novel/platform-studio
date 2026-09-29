@@ -1,23 +1,20 @@
 <script module lang="ts">
-  import type {
-    AccountFormActions,
-    AccountPasswordField,
-    AccountScreenModel,
-    FormIssue,
-  } from "$lib/application/auth/types";
+  import type { FormIssue } from "$lib/application/auth/types";
+
+  import type { AccountScreenController } from "./controller.svelte";
 
   /** Props for the pure protected account-management screen. */
   export interface AccountScreenProps {
-    model: AccountScreenModel;
-    actions: AccountFormActions;
-    onRetry?: () => void;
-    onPasswordSubmit?: (event: SubmitEvent) => void;
-    onEmailSubmit?: (event: SubmitEvent) => void;
-    onLogoutSubmit?: (event: SubmitEvent) => void;
+    controller: AccountScreenController;
   }
 </script>
 
 <script lang="ts">
+  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
+  import AuthenticationError from "$lib/ui/auth/AuthenticationError.svelte";
+
+  import { tick } from "svelte";
+
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
     Alert,
@@ -25,19 +22,19 @@
     Button,
     Card,
     Container,
-    DescriptionList,
-    ErrorSummary,
     Field,
-    Grid,
+    FormActions,
     Input,
     PageHeader,
-    Spinner,
     Stack,
   } from "@a-novel-kit/uikit";
 
-  import { CircleCheck, Info, ShieldCheck } from "@lucide/svelte";
+  import { ShieldCheck } from "@lucide/svelte";
 
-  let { model, actions, onRetry, onPasswordSubmit, onEmailSubmit, onLogoutSubmit }: AccountScreenProps = $props();
+  let { controller }: AccountScreenProps = $props();
+
+  const model = $derived(controller.state.model);
+  const actions = $derived(controller.state.actions);
 
   const componentId = $props.id();
   const { t } = getI18nContext();
@@ -46,139 +43,52 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const newEmailId = `${componentId}-new-email`;
 
-  const passwordIssues = $derived(
-    model.status === "ready" && model.passwordState.status === "validation-error" ? model.passwordState.issues : []
-  );
-  const emailIssues = $derived(
-    model.status === "ready" && model.emailState.status === "validation-error" ? model.emailState.issues : []
-  );
-  const passwordSummary = $derived(
-    passwordIssues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${passwordControlId(issue.field)}`,
-      message: issue.message,
-    }))
-  );
-  const emailSummary = $derived(
-    emailIssues.map((issue, index) => ({
-      id: `${issue.field}-${index}`,
-      href: `#${newEmailId}`,
-      message: issue.message,
-    }))
-  );
-
+  const passwordIssues = $derived(model.passwordState.status === "validation-error" ? model.passwordState.issues : []);
+  const emailIssues = $derived(model.emailState.status === "validation-error" ? model.emailState.issues : []);
   function issueMessage<Field extends string>(issues: readonly FormIssue<Field>[], field: Field): string | undefined {
-    return issues.find((issue) => issue.field === field)?.message;
+    const issue = issues.find((candidate) => candidate.field === field);
+    return issue ? translateAuthenticationValidation(t, issue) : undefined;
   }
 
-  function passwordControlId(field: AccountPasswordField): string {
-    if (field === "currentPassword") return currentPasswordId;
-    if (field === "newPassword") return newPasswordId;
-    return confirmPasswordId;
+  async function submitPassword(event: SubmitEvent) {
+    const form = event.currentTarget as HTMLFormElement;
+    if (controller.submitPassword(new FormData(form))) return;
+    event.preventDefault();
+    await tick();
+    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }
+
+  async function submitEmail(event: SubmitEvent) {
+    const form = event.currentTarget as HTMLFormElement;
+    if (controller.submitEmail(new FormData(form))) return;
+    event.preventDefault();
+    await tick();
+    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }
+
+  function submitLogout(event: SubmitEvent) {
+    if (!controller.submitLogout()) event.preventDefault();
   }
 </script>
 
-{#snippet infoIcon()}<Info size="var(--icon-size-md)" />{/snippet}
-{#snippet successIcon()}<CircleCheck size="var(--icon-size-md)" />{/snippet}
-{#snippet retryAction()}
-  <Button variant="outline" tone="neutral" size="sm" onclick={() => onRetry?.()}>{t("authUi.account.retry")}</Button>
-{/snippet}
+<div class="account-screen">
+  <Container size="sm" gutter={false}>
+    <Stack gap="4">
+      <PageHeader title={t("authUi.account.title")} description={t("authUi.account.description")} />
 
-<Container size="lg">
-  <Stack gap="6">
-    <PageHeader
-      eyebrow={t("authUi.account.eyebrow")}
-      title={t("authUi.account.title")}
-      description={t("authUi.account.description")}
-    />
-
-    {#if model.status === "loading"}
-      <Alert tone="info" title={t("authUi.account.loadingTitle")}>
-        <div class="loading-message">
-          <Spinner label={t("authUi.account.loadingTitle")} size="sm" />
-          <span>{t("authUi.account.loadingDescription")}</span>
-        </div>
-      </Alert>
-    {:else if model.status === "error"}
-      <Alert tone="error" title={t("authUi.account.loadErrorTitle")} actions={retryAction}>
-        <p class="feedback-message">{model.message}</p>
-      </Alert>
-    {:else}
-      <Grid minItemWidth="lg" gap="4">
-        <Card class="claims-card" surface="subtle" padding="lg">
-          <section class="card-section" aria-labelledby={`${componentId}-claims-title`}>
-            <div class="section-heading">
-              <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
-              <div>
-                <h2 id={`${componentId}-claims-title`}>{t("authUi.account.claims.title")}</h2>
-                <p>{t("authUi.account.claims.description")}</p>
-              </div>
-            </div>
-
-            <DescriptionList columns={2} density="compact">
-              <div>
-                <dt>{t("authUi.account.claims.userId")}</dt>
-                <dd class="monospace">{model.claims.userId}</dd>
-              </div>
-              <div>
-                <dt>{t("authUi.account.claims.roles")}</dt>
-                <dd>
-                  <div class="roles">
-                    {#each model.claims.roles as role (role)}
-                      <Badge tone="brand">{role}</Badge>
-                    {:else}
-                      <span>{t("authUi.account.claims.noRoles")}</span>
-                    {/each}
-                  </div>
-                </dd>
-              </div>
-              <div>
-                <dt>{t("authUi.account.claims.accessExpiresAt")}</dt>
-                <dd>{model.claims.accessExpiresAt}</dd>
-              </div>
-              <div>
-                <dt>{t("authUi.account.claims.refreshExpiresAt")}</dt>
-                <dd>{model.claims.refreshExpiresAt}</dd>
-              </div>
-            </DescriptionList>
-
-            <Alert tone="info" title={t("authUi.account.claims.privacyTitle")} icon={infoIcon}>
-              <p class="feedback-message">{t("authUi.account.claims.privacyDescription")}</p>
-            </Alert>
-          </section>
-        </Card>
-
-        <Card surface="raised" padding="lg">
-          <section class="card-section" aria-labelledby={`${componentId}-password-title`}>
-            <div class="section-heading">
-              <div>
-                <h2 id={`${componentId}-password-title`}>{t("authUi.account.password.title")}</h2>
-                <p>{t("authUi.account.password.description")}</p>
-              </div>
-            </div>
-
-            {#if model.passwordState.status === "validation-error"}
-              <ErrorSummary
-                title={t("authUi.account.password.validationTitle")}
-                errors={passwordSummary}
-                headingLevel={3}
-                focusOnMount
-              />
-            {:else if model.passwordState.status === "service-error"}
-              <Alert tone="error" title={t("authUi.account.password.serviceErrorTitle")}>
-                <p class="feedback-message">{model.passwordState.message}</p>
-              </Alert>
-            {:else if model.passwordState.status === "success"}
-              <Alert tone="success" title={t("authUi.account.password.successTitle")} icon={successIcon}>
-                <p class="feedback-message">{model.passwordState.message}</p>
-              </Alert>
-            {/if}
+      <Stack gap="4">
+        <Card surface="raised">
+          <section id="account-password" class="card-section" aria-labelledby={`${componentId}-password-title`}>
+            <header class="section-heading">
+              <h2 id={`${componentId}-password-title`}>{t("authUi.account.password.title")}</h2>
+            </header>
 
             <form
               method="POST"
               action={actions.password}
               aria-busy={model.passwordState.status === "submitting"}
-              onsubmit={onPasswordSubmit}
+              novalidate
+              onsubmit={submitPassword}
             >
               <Field
                 controlId={currentPasswordId}
@@ -192,7 +102,7 @@
                     name="currentPassword"
                     type="password"
                     autocomplete="current-password"
-                    disabled={model.passwordState.status === "submitting"}
+                    readonly={model.passwordState.status === "submitting"}
                     invalid={Boolean(issueMessage(passwordIssues, "currentPassword"))}
                   />
                 {/snippet}
@@ -210,7 +120,7 @@
                     name="password"
                     type="password"
                     autocomplete="new-password"
-                    disabled={model.passwordState.status === "submitting"}
+                    readonly={model.passwordState.status === "submitting"}
                     invalid={Boolean(issueMessage(passwordIssues, "newPassword"))}
                   />
                 {/snippet}
@@ -227,65 +137,42 @@
                     name="confirmPassword"
                     type="password"
                     autocomplete="new-password"
-                    disabled={model.passwordState.status === "submitting"}
+                    readonly={model.passwordState.status === "submitting"}
                     invalid={Boolean(issueMessage(passwordIssues, "confirmPassword"))}
                   />
                 {/snippet}
               </Field>
-              <Button type="submit" disabled={model.passwordState.status === "submitting"}>
-                {#if model.passwordState.status === "submitting"}
-                  <Spinner label={t("authUi.account.password.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.password.submitting")}</span>
-                {:else}
-                  {t("authUi.account.password.submit")}
-                {/if}
-              </Button>
+              <FormActions>
+                {#snippet feedback()}
+                  {#if model.passwordState.status === "service-error"}
+                    <AuthenticationError feedback={model.passwordState.feedback} />
+                  {:else if model.passwordState.status === "success"}
+                    <Alert tone="success" title={translateAuthenticationFeedback(t, model.passwordState.feedback)} />
+                  {/if}
+                {/snippet}
+                <Button type="submit" disabled={model.passwordState.status === "submitting"}>
+                  {model.passwordState.status === "submitting"
+                    ? t("authUi.account.password.submitting")
+                    : t("authUi.account.password.submit")}
+                </Button>
+              </FormActions>
             </form>
           </section>
         </Card>
 
-        <Card surface="raised" padding="lg">
-          <section class="card-section" aria-labelledby={`${componentId}-email-title`}>
-            <div class="section-heading">
-              <div>
-                <h2 id={`${componentId}-email-title`}>{t("authUi.account.email.title")}</h2>
-                <p>{t("authUi.account.email.description")}</p>
-              </div>
-            </div>
-
-            {#if model.emailState.status === "validation-error"}
-              <ErrorSummary
-                title={t("authUi.account.email.validationTitle")}
-                errors={emailSummary}
-                headingLevel={3}
-                focusOnMount
-              />
-            {:else if model.emailState.status === "service-error"}
-              <Alert tone="error" title={t("authUi.account.email.serviceErrorTitle")}>
-                <p class="feedback-message">{model.emailState.message}</p>
-              </Alert>
-            {:else if model.emailState.status === "success"}
-              <Alert tone="success" title={t("authUi.account.email.successTitle")} icon={successIcon}>
-                <p class="feedback-message">{model.emailState.message}</p>
-              </Alert>
-            {:else if model.emailState.status === "pending-email"}
-              <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
-                <div class="pending-copy">
-                  <p>{t("authUi.account.email.pendingDescription")}</p>
-                  <dl class="pending-target">
-                    <dt>{t("authUi.account.email.pendingTargetLabel")}</dt>
-                    <dd>{model.emailState.targetHint}</dd>
-                  </dl>
-                  <p>{t("authUi.account.email.pendingPrivacy")}</p>
-                </div>
-              </Alert>
-            {/if}
+        <Card surface="raised">
+          <section id="account-email" class="card-section" aria-labelledby={`${componentId}-email-title`}>
+            <header class="section-heading">
+              <h2 id={`${componentId}-email-title`}>{t("authUi.account.email.title")}</h2>
+              <p>{t("authUi.account.email.description")}</p>
+            </header>
 
             <form
               method="POST"
               action={actions.email}
               aria-busy={model.emailState.status === "submitting"}
-              onsubmit={onEmailSubmit}
+              novalidate
+              onsubmit={submitEmail}
             >
               <Field
                 controlId={newEmailId}
@@ -302,77 +189,133 @@
                     autocomplete="email"
                     autocapitalize="none"
                     spellcheck="false"
-                    disabled={model.emailState.status === "submitting"}
+                    readonly={model.emailState.status === "submitting"}
                     invalid={Boolean(issueMessage(emailIssues, "newEmail"))}
                   />
                 {/snippet}
               </Field>
-              <Button type="submit" disabled={model.emailState.status === "submitting"}>
-                {#if model.emailState.status === "submitting"}
-                  <Spinner label={t("authUi.account.email.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.email.submitting")}</span>
-                {:else if model.emailState.status === "pending-email"}
-                  {t("authUi.account.email.resend")}
-                {:else}
-                  {t("authUi.account.email.submit")}
-                {/if}
-              </Button>
+              <FormActions>
+                {#snippet feedback()}
+                  {#if model.emailState.status === "service-error"}
+                    <AuthenticationError feedback={model.emailState.feedback} />
+                  {:else if model.emailState.status === "pending-email"}
+                    <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
+                      <p class="pending-copy">
+                        {t("authUi.account.email.pendingDescription")} <strong>{model.emailState.targetHint}</strong>
+                      </p>
+                    </Alert>
+                  {/if}
+                {/snippet}
+                <Button type="submit" disabled={model.emailState.status === "submitting"}>
+                  {#if model.emailState.status === "submitting"}
+                    {t("authUi.account.email.submitting")}
+                  {:else if model.emailState.status === "pending-email"}
+                    {t("authUi.account.email.resend")}
+                  {:else}
+                    {t("authUi.account.email.submit")}
+                  {/if}
+                </Button>
+              </FormActions>
             </form>
           </section>
         </Card>
 
-        <Card class="logout-card" surface="subtle" padding="lg">
-          <section class="logout-section" aria-labelledby={`${componentId}-logout-title`}>
-            <div class="section-heading">
-              <div>
-                <h2 id={`${componentId}-logout-title`}>{t("authUi.account.logout.title")}</h2>
-                <p>{t("authUi.account.logout.description")}</p>
+        <section id="account-claims" class="session-summary" aria-labelledby={`${componentId}-claims-title`}>
+          <div class="section-heading">
+            <ShieldCheck size="var(--icon-size-md)" aria-hidden="true" />
+            <h2 id={`${componentId}-claims-title`}>{t("authUi.account.claims.title")}</h2>
+          </div>
+
+          {#if model.claims.status === "loading"}
+            <Alert tone="loading" title={t("authUi.account.loadingTitle")} />
+          {:else if model.claims.status === "error"}
+            <Alert tone="error" title={t("authUi.account.loadErrorTitle")}>
+              <p class="feedback-message">{translateAuthenticationFeedback(t, model.claims.feedback)}</p>
+            </Alert>
+          {:else}
+            <dl class="session-details">
+              <div class="session-identity">
+                <dt>{t("authUi.account.claims.userId")}</dt>
+                <dd class="monospace">{model.claims.userId}</dd>
               </div>
-            </div>
-            {#if typeof model.logoutState === "object"}
-              <Alert tone="error" title={t("authUi.account.logout.serviceErrorTitle")}>
-                <p class="feedback-message">{model.logoutState.message}</p>
-              </Alert>
-            {/if}
-            <form
-              method="POST"
-              action={actions.logout}
-              aria-busy={model.logoutState === "submitting"}
-              onsubmit={onLogoutSubmit}
-            >
-              <Button type="submit" variant="outline" tone="danger" disabled={model.logoutState === "submitting"}>
-                {#if model.logoutState === "submitting"}
-                  <Spinner label={t("authUi.account.logout.submitting")} size="sm" />
-                  <span aria-hidden="true">{t("authUi.account.logout.submitting")}</span>
-                {:else}
-                  {t("authUi.account.logout.submit")}
-                {/if}
+              <div class="session-identity">
+                <dt>{t("authUi.account.claims.roles")}</dt>
+                <dd>
+                  <div class="roles">
+                    {#each model.claims.roles as role (role)}
+                      <Badge tone="brand">{role}</Badge>
+                    {:else}
+                      <span>{t("authUi.account.claims.noRoles")}</span>
+                    {/each}
+                  </div>
+                </dd>
+              </div>
+              <div class="session-expiry">
+                <dt>{t("authUi.account.claims.accessExpiresAt")}</dt>
+                <dd>{model.claims.accessExpiresAt}</dd>
+              </div>
+              <div class="session-expiry">
+                <dt>{t("authUi.account.claims.refreshExpiresAt")}</dt>
+                <dd>{model.claims.refreshExpiresAt}</dd>
+              </div>
+            </dl>
+          {/if}
+
+          <form
+            id="account-session"
+            method="POST"
+            action={actions.logout}
+            aria-busy={model.logoutState === "submitting"}
+            onsubmit={submitLogout}
+          >
+            <FormActions>
+              {#snippet feedback()}
+                <p id={`${componentId}-logout-description`} class="feedback-message">
+                  {t("authUi.account.logout.description")}
+                </p>
+              {/snippet}
+              <Button
+                type="submit"
+                variant="outline"
+                tone="neutral"
+                aria-describedby={`${componentId}-logout-description`}
+                disabled={model.logoutState === "submitting"}
+              >
+                {model.logoutState === "submitting"
+                  ? t("authUi.account.logout.submitting")
+                  : t("authUi.account.logout.submit")}
               </Button>
-            </form>
-          </section>
-        </Card>
-      </Grid>
-    {/if}
-  </Stack>
-</Container>
+            </FormActions>
+          </form>
+        </section>
+      </Stack>
+    </Stack>
+  </Container>
+</div>
 
 <style>
-  :global(.container) {
+  .account-screen {
+    padding-inline: var(--layout-gutter);
     padding-block: var(--space-6) var(--space-12);
   }
 
-  :global(.claims-card),
-  :global(.logout-card) {
-    grid-column: 1 / -1;
-  }
-
+  .session-summary,
   .card-section,
-  .logout-section,
-  form,
-  .pending-copy {
+  form {
     display: grid;
     gap: var(--space-4);
     min-inline-size: 0;
+  }
+
+  .card-section,
+  .session-summary,
+  #account-session {
+    scroll-margin-block-start: var(--space-5);
+  }
+
+  .session-summary,
+  #account-session {
+    padding-block-start: var(--space-4);
   }
 
   .section-heading {
@@ -383,32 +326,69 @@
 
   .section-heading > :global(svg) {
     flex: none;
+    align-self: center;
     color: var(--color-text-accent);
+  }
+
+  header.section-heading {
+    display: grid;
+    gap: var(--space-2);
   }
 
   h2,
   .section-heading p,
   .feedback-message,
-  .pending-copy p,
-  .pending-target {
+  .pending-copy {
     margin: 0;
   }
 
   h2 {
+    min-inline-size: 0;
     color: var(--color-text-primary);
     font-size: var(--font-size-xl);
     font-family: var(--font-family-display);
+    overflow-wrap: anywhere;
   }
 
   .section-heading p,
   .feedback-message,
-  .pending-copy p {
+  .pending-copy {
     color: var(--color-text-secondary);
     line-height: var(--line-height-normal);
   }
 
-  form > :global(button) {
-    justify-self: start;
+  @media (min-width: 35rem) {
+    .session-details {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .session-details {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .session-details > div {
+    display: grid;
+    align-content: start;
+    gap: var(--space-1);
+    min-inline-size: 0;
+  }
+
+  .session-identity {
+    grid-column: 1 / -1;
+  }
+
+  .session-details dt {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .session-details dd {
+    margin: 0;
+    line-height: var(--line-height-normal);
+    overflow-wrap: anywhere;
   }
 
   .roles {
@@ -417,40 +397,33 @@
     gap: var(--space-1);
   }
 
-  .monospace,
-  .pending-target dd {
+  .monospace {
+    font-size: var(--font-size-sm);
     font-family: var(--font-family-mono);
   }
 
-  .pending-target {
-    display: grid;
-    gap: var(--space-1);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-island-subtle);
-    padding: var(--space-3);
-  }
-
-  .pending-target dt {
-    color: var(--color-text-muted);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xs);
-    text-transform: uppercase;
-  }
-
-  .pending-target dd {
-    margin: 0;
+  .pending-copy strong {
+    color: var(--color-text-primary);
     overflow-wrap: anywhere;
   }
 
-  .loading-message {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
-  @media (max-width: 35rem) {
-    :global(.container) {
+  @media (max-width: 34.999rem) {
+    .account-screen {
+      padding-inline: var(--space-2);
       padding-block-start: var(--space-3);
+    }
+
+    .session-details {
+      gap: var(--space-3);
+    }
+
+    .session-details > .session-expiry {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-1) var(--space-3);
+      font-size: var(--font-size-sm);
     }
   }
 </style>

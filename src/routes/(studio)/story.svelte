@@ -1,48 +1,68 @@
 <script module lang="ts">
+  import type { AuthenticationPanelModel } from "$lib/application/auth/types";
   import type { StudioShellViewModel } from "$lib/application/shell/types";
 
-  /** Controllable Storybook harness around the pure shell. */
+  /** Fixed-state Storybook harness around the pure shell. */
   export interface StudioShellStoryProps {
     initialModel: StudioShellViewModel;
-    frameWidth?: string;
+    initialAuthenticationModel?: AuthenticationPanelModel;
   }
 </script>
 
 <script lang="ts">
   import HomeScreen from "./(home)/screen.svelte";
+  import { type StudioShellController, readyAuthenticationModel } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
-  import { untrack } from "svelte";
+  let { initialModel, initialAuthenticationModel }: StudioShellStoryProps = $props();
 
-  let { initialModel, frameWidth }: StudioShellStoryProps = $props();
-
-  let model = $state<StudioShellViewModel>(untrack(() => structuredClone(initialModel)));
-
-  function updateModel(patch: Partial<StudioShellViewModel>) {
-    model = { ...model, ...patch };
-  }
+  const controller: StudioShellController = {
+    get state() {
+      return { model: initialModel, homeHref: "#home", accountHref: "#account", logoutAction: "#logout" };
+    },
+    authentication: {
+      get state() {
+        return {
+          model: initialAuthenticationModel ?? readyAuthenticationModel(initialModel.authView ?? "login"),
+          action: "#auth",
+        };
+      },
+      synchronize: () => {},
+      submit: () => false,
+    },
+    navigationDialog: {
+      get state() {
+        return { open: initialModel.drawerOpen };
+      },
+      open: () => {},
+      close: () => {},
+      toggle: () => {},
+    },
+    authenticationDialog: {
+      get state() {
+        return { open: initialModel.authView !== null };
+      },
+      open: () => {},
+      close: () => {},
+      toggle: () => {},
+    },
+    openAuthentication: () => {},
+    toggleRail: () => {},
+    logout: () => false,
+    synchronizeRoute: () => {},
+    synchronizeRail: () => {},
+  };
 </script>
 
-<div class="story-frame" style:--story-frame-width={frameWidth}>
-  <Screen
-    {model}
-    onAuthViewChange={(authView) => updateModel({ authView })}
-    onDrawerOpenChange={(drawerOpen) => updateModel({ drawerOpen })}
-    onLogout={() => updateModel({ session: { status: "anonymous" } })}
-    onManageAccount={() => undefined}
-    onRetrySession={() => updateModel({ session: { status: "loading" } })}
-    onToggleRail={() =>
-      updateModel({
-        rail: model.rail === "expanded" ? "collapsed" : "expanded",
-      })}
-  >
+<div class="story-frame">
+  <Screen {controller}>
     <HomeScreen />
   </Screen>
 </div>
 
 <style>
   .story-frame {
-    inline-size: var(--story-frame-width, 100%);
+    inline-size: 100%;
     min-block-size: 100dvb;
   }
 </style>

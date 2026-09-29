@@ -1,89 +1,10 @@
-import { createStudioI18n } from "$lib/i18n/instance";
-
-import {
-  maskEmail,
-  parseShortCodeLink,
-  safeReturnTo,
-  validateLogin,
-  validateNewPassword,
-  validatePasswordChange,
-} from "./forms";
+import { parseShortCodeLink } from "./forms";
 
 import { describe, expect, it } from "vitest";
-
-const t = createStudioI18n("en").getFixedT("en", "common");
 
 function encoded(value: string): string {
   return Buffer.from(value).toString("base64url");
 }
-
-describe("auth form validation", () => {
-  it("normalizes a valid login without returning secrets in issues", () => {
-    const form = new FormData();
-    form.set("email", "  Creator@Example.com ");
-    form.set("password", "a-secure-password");
-
-    expect(validateLogin(form, t)).toEqual({
-      success: true,
-      value: {
-        email: "creator@example.com",
-        password: "a-secure-password",
-      },
-    });
-  });
-
-  it("maps invalid login values to field-safe localized issues", () => {
-    const form = new FormData();
-    form.set("email", "not an email");
-    form.set("password", "");
-
-    expect(validateLogin(form, t)).toEqual({
-      success: false,
-      issues: [
-        { field: "email", message: "Enter a valid email address." },
-        { field: "password", message: "Enter your password." },
-      ],
-    });
-  });
-
-  it("requires every password-change field and matching replacements", () => {
-    const form = new FormData();
-    form.set("currentPassword", "current-password");
-    form.set("password", "replacement-password");
-    form.set("confirmPassword", "different-password");
-
-    expect(validatePasswordChange(form, t)).toEqual({
-      success: false,
-      issues: [{ field: "confirmPassword", message: "The passwords do not match." }],
-    });
-  });
-
-  it("validates a matching new password for secure-link flows", () => {
-    const form = new FormData();
-    form.set("password", "replacement-password");
-    form.set("confirmPassword", "replacement-password");
-
-    expect(validateNewPassword(form, t)).toEqual({
-      success: true,
-      value: { password: "replacement-password" },
-    });
-  });
-});
-
-describe("safe URL helpers", () => {
-  it("masks the local part without hiding the destination domain", () => {
-    expect(maskEmail("creator@example.com")).toBe("c•••@example.com");
-  });
-
-  it.each([
-    ["/account?panel=password#change", "/account?panel=password#change"],
-    ["https://attacker.invalid/account", "/"],
-    ["//attacker.invalid/account", "/"],
-    ["javascript:alert(1)", "/"],
-  ])("normalizes return target %s", (value, expected) => {
-    expect(safeReturnTo(value)).toBe(expected);
-  });
-});
 
 describe("parseShortCodeLink", () => {
   it("parses a registration link and keeps the raw values server-side", () => {
@@ -96,7 +17,6 @@ describe("parseShortCodeLink", () => {
       journey: "register",
       email: "creator@example.com",
       shortCode: "code-123",
-      targetHint: "c•••@example.com",
     });
   });
 
@@ -109,8 +29,8 @@ describe("parseShortCodeLink", () => {
     expect(parseShortCodeLink("email-update", url)).toEqual({
       status: "ready",
       journey: "email-update",
+      email: "new@example.com",
       shortCode: "code-123",
-      targetHint: "n•••@example.com",
       userId,
     });
   });

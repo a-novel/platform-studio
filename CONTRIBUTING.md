@@ -19,6 +19,10 @@ Dependencies point inward: routes compose the runtime layers; client and server 
 
 A screen starts as pure UI with its behavior supplied through typed props. Add its Storybook states first so reviewers can inspect empty, loading, error, and populated states without live services.
 
+Prefer a single top-to-bottom flow across screen sizes. Stack independent forms and task sections vertically so visual order follows reading and keyboard order; reserve columns for content that benefits from comparison.
+
+Form submit buttons span the form width on mobile and use their content width, aligned to the start, on desktop. Separate them from the preceding fields with twice the normal field gap, keeping secondary actions distinct.
+
 Once those states render correctly, add the logic behind a mockable boundary. Unit tests cover the logic, browser tests cover behavior that needs the DOM, and the route or layout supplies the production wiring.
 
 Keep reusable controls in UIKit. Studio owns screen composition and product-specific behavior.
@@ -26,6 +30,8 @@ Keep reusable controls in UIKit. Studio owns screen composition and product-spec
 ## Working with translations
 
 Messages live in the YAML locale catalogs under `src/lib/i18n/locales`. Call the typed translation function with static keys so extraction can keep source and locale files aligned.
+
+For languages with formal and informal address, use the formal form in static text (`vous` in French, `usted` in Spanish). Use the language’s conventional action-label form for buttons, links, and other controls; French uses infinitives such as `Créer le compte`.
 
 Run `pnpm i18n:extract` after adding or removing messages. Review both languages, then run `pnpm i18n:check` before committing. The check covers extraction drift, generated types, missing translations, and unused translations.
 
