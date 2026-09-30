@@ -56,11 +56,32 @@ Playwright starts the isolated services, waits for readiness, and removes their 
 afterward. For a focused run, use `E2E_CONTAINER_ENGINE=podman pnpm test:e2e`. Install the pinned browser once with `pnpm exec playwright install --with-deps chromium`. Ports 4173, 14100
 and 14825 must be free. With Docker Compose, use `docker` and omit `E2E_CONTAINER_ENGINE`.
 
-Actions runs these journeys in the required `test-browser` check. Download `studio-browser-report`
-for the HTML report, checkpoint screenshots, failure screenshots/traces and service logs; artifacts
-expire after seven days. Open a local report with `pnpm exec playwright show-report`. Screenshots
-are diagnostic evidence; assertions check visible behavior and real service outcomes. Codecov
-continues reporting unit/component coverage as an advisory check.
+Actions runs these journeys in the required `test-browser` check. With Drive configured, the job
+summary links a private batch containing the HTML report, screenshot diffs, traces and service logs.
+Download and extract it, then open `playwright-report` with `pnpm exec playwright show-report`.
+The latest successful master reference is retained indefinitely; each live branch keeps one completed
+batch, removed after merge or deletion. Codecov continues reporting unit/component coverage as an
+advisory check using small GitHub artifacts. Until Drive activation, `studio-browser-report` remains
+a seven-day GitHub artifact.
+
+Screenshot checkpoints use native Playwright comparisons in CI. Review an intentional change's diff,
+then apply `allow-screenshot-change` to the PR; only a human with repository write access can approve.
+The label approves the current commit and reruns CI. New commits require removing and reapplying it
+after review. Functional failures, capture failures and upload errors remain blocking. Approved runs
+also retain their original diff report in `.visual/comparison-report` inside the private archive.
+
+Local runs attach checkpoint screenshots for diagnosis. To compare locally, extract `snapshots/`
+from the current reference archive into `.visual/snapshots`, then run
+`PLAYWRIGHT_SNAPSHOT_DIR=.visual/snapshots E2E_CONTAINER_ENGINE=podman pnpm test:e2e --update-snapshots=none`.
+Compare using the same Ubuntu/Chromium/font environment as CI to avoid rendering differences.
+Account identifiers and expiry timestamps are masked; roles, labels, forms and layout stay visible.
+
+Studio stores evidence under `studio/ci/references` and `studio/ci/results` in Agorastoryverse's
+existing **Platform** Shared Drive. Shared actions own folder-scoped storage, approval and cleanup; other
+platforms reuse those actions with their own folders and the same `VISUAL_*` repository variable names.
+Provision and activate them using the
+[infrastructure runbook](https://github.com/a-novel/infra/blob/master/docs/runbooks/visual-test-storage.md)
+and [shared adoption guide](https://github.com/a-novel-kit/workflows/blob/master/docs/migrations/v1.33.0.md).
 
 The no-JavaScript cases cover standalone invitation and account forms. The login dialog currently
 requires hydration; see [the tracked fallback issue](https://github.com/a-novel/platform-studio/issues/82).

@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { screenshot } from "./screenshots";
 
 const locales = [
   {
@@ -53,7 +54,7 @@ for (const { locale, routes } of locales) {
               ["/", "/?auth=login", "/?auth=register", "/?auth=reset"].includes(route)
             ) {
               if (route !== "/") await expect(page.getByRole("dialog")).toBeVisible();
-              await info.attach(title, { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
+              await screenshot(page, info, title.toLowerCase().replaceAll(" ", "-"));
             }
           });
         }

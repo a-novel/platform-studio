@@ -1,6 +1,7 @@
 import { compose, emailLink, expect, test } from "./fixtures";
+import { screenshot } from "./screenshots";
 
-import type { Page, TestInfo } from "playwright/test";
+import type { Page } from "playwright/test";
 
 async function login(page: Page, account: { email: string; password: string }) {
   await page.getByLabel(/^Email address/).fill(account.email);
@@ -11,10 +12,6 @@ async function login(page: Page, account: { email: string; password: string }) {
 async function choosePassword(page: Page, password: string) {
   await page.getByLabel(/^New password/).fill(password);
   await page.getByLabel(/^Confirm new password/).fill(password);
-}
-
-async function screenshot(page: Page, info: TestInfo, name: string) {
-  await info.attach(name, { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
 }
 
 test("login returns to the protected account, survives reload and logout protects it again", async ({
@@ -38,7 +35,11 @@ test("login returns to the protected account, survives reload and logout protect
   await page.reload();
   await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
   await expect(page).toHaveTitle("Account settings — Agora Studio");
-  await screenshot(page, info, "authenticated-account");
+  await screenshot(page, info, "authenticated-account", [
+    ...["Account ID", "Access expires", "Session expires"].map((label) =>
+      page.getByText(label, { exact: true }).locator("+ dd")
+    ),
+  ]);
   await page.getByRole("button", { name: "Log out", exact: true }).last().click();
   await expect(page).toHaveURL("/");
   await expect(page).toHaveTitle("Home — Agora Studio");

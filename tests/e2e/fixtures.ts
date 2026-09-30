@@ -97,7 +97,8 @@ export const test = base.extend<{ invitation: Invitation; account: Account }, { 
     { scope: "worker" },
   ],
   invitation: async ({ administrator }, use) => {
-    const email = `studio-${randomUUID()}@example.com`;
+    // The plus suffix isolates accounts while keeping the displayed handle stable.
+    const email = `studio.tester+${randomUUID()}@example.com`;
     await shortCodeCreateRegister(api, administrator, { email, lang: Lang.En });
     await use({ email, link: await emailLink(email, "/ext/account/create") });
   },
