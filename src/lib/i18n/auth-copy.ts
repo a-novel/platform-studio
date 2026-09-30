@@ -77,7 +77,7 @@ export function translateShortCodeStatus(
   return shortCodeStatusKeys[status][message](t);
 }
 
-/** Names the current secure-link step in the page and browser tab. */
+/** Names the current secure-link step in the page heading. */
 export function translateShortCodeTitle(t: TFunction<"common">, { journey, state }: ShortCodeScreenModel): string {
   switch (state.status) {
     case "missing":

@@ -111,7 +111,6 @@ export default interface Resources {
       },
       "serviceUnavailable": "Temporarily unavailable",
       "shortCode": {
-        "brand": "Studio",
         "confirmPasswordLabel": "Confirm new password",
         "continue": "Continue to Studio",
         "journeys": {
@@ -146,6 +145,20 @@ export default interface Resources {
           }
         }
       }
+    },
+    "pageTitles": {
+      "account": "Account settings",
+      "accountCreated": "Account created",
+      "brand": "Agora Studio",
+      "confirmEmail": "Confirm email",
+      "createAccount": "Create account",
+      "emailUpdated": "Email updated",
+      "incompleteLink": "Incomplete link",
+      "invalidLink": "Invalid link",
+      "notFound": "Page not found",
+      "passwordReset": "Password reset",
+      "resetPassword": "Reset password",
+      "withState": "{{title}}: {{status}}"
     },
     "shell": {
       "accountFallback": "Account",

@@ -41,6 +41,30 @@ Use Storybook for screen review and the development server for route wiring. The
 
 The server runtime reads private configuration. Values exposed through `VITE_` become part of the browser bundle and must be public.
 
+## Browser integration tests
+
+The browser journeys run against the production Studio build and disposable authentication,
+JSON-key, PostgreSQL and Mailpit containers. They create accounts from real invitation emails.
+Run them with the dedicated test stack; the outage case stops and restarts its authentication
+container, so the suite runs one worker at a time.
+
+```bash
+E2E_CONTAINER_ENGINE=podman a-novel test --type=pnpm -y
+```
+
+Playwright starts the isolated services, waits for readiness, and removes their containers and data
+afterward. For a focused run, use `E2E_CONTAINER_ENGINE=podman pnpm test:e2e`. Install the pinned browser once with `pnpm exec playwright install --with-deps chromium`. Ports 4173, 14100
+and 14825 must be free. With Docker Compose, use `docker` and omit `E2E_CONTAINER_ENGINE`.
+
+Actions runs these journeys in the required `test-browser` check. Download `studio-browser-report`
+for the HTML report, checkpoint screenshots, failure screenshots/traces and service logs; artifacts
+expire after seven days. Open a local report with `pnpm exec playwright show-report`. Screenshots
+are diagnostic evidence; assertions check visible behavior and real service outcomes. Codecov
+continues reporting unit/component coverage as an advisory check.
+
+The no-JavaScript cases cover standalone invitation and account forms. The login dialog currently
+requires hydration; see [the tracked fallback issue](https://github.com/a-novel/platform-studio/issues/82).
+
 ## Questions?
 
 [Open an issue](https://github.com/a-novel/platform-studio/issues) and include the relevant logs and environment details.

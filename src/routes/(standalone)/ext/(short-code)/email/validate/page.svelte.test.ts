@@ -50,18 +50,18 @@ describe("automatic email validation", () => {
     await expect.element(page.getByRole("status")).toHaveTextContent("Updating email…");
   });
 
-  it.each<ShortCodeState>([
-    { status: "success", feedback: "emailUpdated" },
-    { status: "invalid" },
-    { status: "missing" },
-  ])("does not post a $status link", async (state) => {
+  it.each<{ state: ShortCodeState; title: string }>([
+    { state: { status: "success", feedback: "emailUpdated" }, title: "Email updated" },
+    { state: { status: "invalid" }, title: "Confirm email: Invalid link" },
+    { state: { status: "missing" }, title: "Confirm email: Incomplete link" },
+  ])("does not post a $state.status link", async ({ state, title }) => {
     const request = vi.spyOn(window, "fetch");
     await render(EmailPage, { data: data(state), form: null }, wrapper);
     expect(request).not.toHaveBeenCalled();
     const heading = page.getByRole("heading", { level: 1 });
     await expect.element(heading).toBeVisible();
     expect(page.getByRole("heading").elements()).toHaveLength(1);
-    expect(document.title).toBe(`${heading.element().textContent} — Studio`);
+    expect(document.title).toBe(`${title} — Agora Studio`);
   });
 
   it("keeps a failed server action visible without restarting it on mount", async () => {

@@ -3,6 +3,7 @@
   import { page } from "$app/state";
   import { mergeAccountAction } from "$lib/application/auth/account-action";
   import { loginHref } from "$lib/application/auth/navigation";
+  import PageTitle from "$lib/ui/PageTitle.svelte";
 
   import ProtectedPage from "../(access)/screen.svelte";
   import { createAccountScreenController } from "./controller.svelte";
@@ -30,9 +31,11 @@
   });
 </script>
 
-<svelte:head>
-  <title>{t("authUi.account.title")} — {t("shell.brand")}</title>
-</svelte:head>
+<PageTitle
+  title={controller.state.model.claims.status === "error"
+    ? t("pageTitles.withState", { title: t("pageTitles.account"), status: t("authUi.account.loadErrorTitle") })
+    : t("pageTitles.account")}
+/>
 
 {#snippet account()}
   <Screen {controller} />
