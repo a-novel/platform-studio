@@ -65,6 +65,20 @@
     if (!controller.logout()) event.preventDefault();
   }
 
+  function navigate(event: MouseEvent, transition: () => void) {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    transition();
+  }
+
   function getAuthDialogTitle(view: AuthDialogView | null): string {
     switch (view) {
       case "register":
@@ -182,7 +196,8 @@
         square={compact}
         aria-label={compact ? t("shell.signIn") : undefined}
         title={compact ? t("shell.signIn") : undefined}
-        onclick={() => controller.openAuthentication("login")}
+        href={controller.authenticationHref("login")}
+        onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("login"))}
       >
         <span class="account-action-icon" aria-hidden="true">
           <LogIn size="var(--icon-size-sm)" />
@@ -195,18 +210,42 @@
 
 {#snippet authActions()}
   {#if model.authView === "login"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("reset")}>
+    <Button
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      href={controller.authenticationHref("reset")}
+      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("reset"))}
+    >
       {t("shell.auth.forgotPassword")}
     </Button>
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("register")}>
+    <Button
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      href={controller.authenticationHref("register")}
+      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("register"))}
+    >
       {t("shell.auth.createAccount")}
     </Button>
   {:else if model.authView === "register"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
+    <Button
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      href={controller.authenticationHref("login")}
+      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("login"))}
+    >
       {t("shell.auth.signInInstead")}
     </Button>
   {:else if model.authView === "reset"}
-    <Button variant="ghost" tone="neutral" size="sm" onclick={() => controller.openAuthentication("login")}>
+    <Button
+      variant="ghost"
+      tone="neutral"
+      size="sm"
+      href={controller.authenticationHref("login")}
+      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("login"))}
+    >
       {t("shell.auth.backToSignIn")}
     </Button>
   {/if}
@@ -255,7 +294,8 @@
           size="sm"
           aria-controls={drawerId}
           aria-expanded={controller.navigationDialog.state.open}
-          onclick={() => controller.navigationDialog.open()}
+          href={controller.navigationHref(true)}
+          onclick={(event: MouseEvent) => navigate(event, () => controller.navigationDialog.open())}
         >
           <Menu size="var(--icon-size-sm)" aria-hidden="true" />
         </IconButton>
@@ -274,7 +314,8 @@
         variant="ghost"
         tone="neutral"
         size="sm"
-        onclick={() => controller.navigationDialog.close()}
+        href={controller.navigationHref(false)}
+        onclick={(event: MouseEvent) => navigate(event, () => controller.navigationDialog.close())}
       >
         <X size="var(--icon-size-sm)" aria-hidden="true" />
       </IconButton>
@@ -300,7 +341,8 @@
         variant="ghost"
         tone="neutral"
         size="sm"
-        onclick={() => controller.authenticationDialog.close()}
+        href={controller.authenticationHref(null)}
+        onclick={(event: MouseEvent) => navigate(event, () => controller.authenticationDialog.close())}
       >
         <X size="var(--icon-size-sm)" aria-hidden="true" />
       </IconButton>
@@ -433,7 +475,7 @@
     max-inline-size: 100%;
   }
 
-  :global(button.shell-account-button:not(.compact-control)) {
+  :global(:is(a, button).shell-account-button:not(.compact-control)) {
     justify-content: flex-start;
     border: 0;
     padding: var(--space-2) var(--space-3);

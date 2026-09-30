@@ -124,19 +124,19 @@ test("account forms change the password and confirm an email update", async ({ p
 test("dialog history and keyboard dismissal restore the shell focus", async ({ page, isMobile }) => {
   await page.goto("/");
   await expect(page).toHaveTitle("Home — Agora Studio");
-  if (isMobile) await page.getByRole("button", { name: "Open navigation", exact: true }).click();
-  const trigger = page.getByRole("button", { name: "Login", exact: true });
+  if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+  const trigger = page.getByRole("link", { name: "Login", exact: true });
   await trigger.click();
   await expect(page.getByRole("dialog", { name: "Login", exact: true })).toBeVisible();
   await expect(page).toHaveTitle("Login — Agora Studio");
-  await expect(page.getByRole("button", { name: "Close dialog" })).toBeFocused();
+  await expect(page.getByRole("link", { name: "Close dialog" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByLabel(/^Email address/)).toBeFocused();
-  await page.getByRole("button", { name: "Forgot password?" }).click();
-  await expect(page).toHaveURL("/?auth=reset");
+  await page.getByRole("link", { name: "Forgot password?" }).click();
+  await expect(page).toHaveURL(isMobile ? "/?menu=open&auth=reset" : "/?auth=reset");
   await expect(page).toHaveTitle("Reset password — Agora Studio");
   await page.goBack();
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL(isMobile ? "/?menu=open" : "/");
   await expect(page).toHaveTitle("Home — Agora Studio");
   await expect(page.getByRole("dialog", { name: /^(Login|Reset your password)$/ })).toHaveCount(0);
   await page.goForward();
@@ -144,22 +144,22 @@ test("dialog history and keyboard dismissal restore the shell focus", async ({ p
   await expect(page).toHaveTitle("Reset password — Agora Studio");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: /^(Login|Reset your password)$/ })).toHaveCount(0);
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL(isMobile ? "/?menu=open" : "/");
   await expect(page).toHaveTitle("Home — Agora Studio");
   await expect(trigger).toBeFocused();
   if (isMobile) {
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("button", { name: "Open navigation", exact: true })).toBeFocused();
+    await expect(page.getByRole("link", { name: "Open navigation", exact: true })).toBeFocused();
   }
 });
 
 test("navigation controls preserve the rail preference and drawer focus", async ({ page, isMobile }) => {
   await page.goto("/");
   if (isMobile) {
-    await page.getByRole("button", { name: "Open navigation", exact: true }).click();
+    await page.getByRole("link", { name: "Open navigation", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("button", { name: "Open navigation", exact: true })).toBeFocused();
+    await expect(page.getByRole("link", { name: "Open navigation", exact: true })).toBeFocused();
     return;
   }
   await page.getByRole("button", { name: "Collapse navigation", exact: true }).click();
@@ -208,6 +208,43 @@ test("an authentication outage preserves the session and recovers after reload",
 
 test.describe("native forms without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
+
+  test("shell links open, switch and close usable authentication forms", async ({ page, isMobile }) => {
+    await page.goto("/?returnTo=%2Faccount");
+    if (isMobile) {
+      await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: "Studio", exact: true })).toBeVisible();
+      await page.getByRole("link", { name: "Close navigation", exact: true }).click();
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+    }
+    await page.getByRole("link", { name: "Login", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByLabel(/^Email address/)).toBeVisible();
+    await dialog.getByRole("link", { name: "Forgot password?" }).click();
+    await expect(page).toHaveTitle("Reset password — Agora Studio");
+    await page.getByRole("button", { name: "Send link", exact: true }).click();
+    await expect(dialog.getByText("Enter a valid email address.", { exact: true })).toBeVisible();
+    await dialog.getByRole("link", { name: "Login", exact: true }).click();
+    await dialog.getByRole("link", { name: "Request an invitation", exact: true }).click();
+    await expect(page).toHaveTitle("Join the Agora invitation list — Agora Studio");
+    await dialog.getByLabel(/^Email address/).fill("invalid");
+    await dialog.getByRole("button", { name: "Join the list", exact: true }).click();
+    await expect(dialog.getByText("Enter a valid email address.", { exact: true })).toBeVisible();
+    await dialog.getByRole("link", { name: "Close dialog" }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL("/?returnTo=%2Faccount");
+  });
+
+  test("login validates on the server and returns to the protected destination", async ({ page, account }) => {
+    await page.goto("/account");
+    await expect(page.getByRole("dialog", { name: "Login", exact: true })).toBeVisible();
+    await login(page, { ...account, password: "Incorrect-password-42!" });
+    await expect(page.getByText("The email address or password is incorrect.", { exact: true })).toBeVisible();
+    await login(page, account);
+    await expect(page).toHaveURL("/account");
+    await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
+  });
 
   test("an invitation, password change and logout work with server-rendered forms", async ({ page, invitation }) => {
     const password = "Native-form-password-42!";

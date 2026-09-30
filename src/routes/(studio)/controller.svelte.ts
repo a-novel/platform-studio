@@ -1,10 +1,13 @@
 import type { AuthenticationPanelModel } from "$lib/application/auth/types";
+import { withAuthView, withNavigationOpen } from "$lib/application/shell/auth-dialog-state";
 import type { AuthDialogView, ShellSession, StudioShellViewModel } from "$lib/application/shell/types";
 
 import type {
   AuthenticationPanelController,
   AuthenticationPanelControllerState,
 } from "./(authentication)/controller.svelte";
+
+import { SvelteURL } from "svelte/reactivity";
 
 import type { OpenController } from "@a-novel-kit/uikit";
 
@@ -21,6 +24,7 @@ export interface StudioShellRouteState {
   activeNavigation: StudioShellViewModel["activeNavigation"];
   session: ShellSession;
   authView: AuthDialogView | null;
+  drawerOpen?: boolean;
   authentication?: AuthenticationPanelControllerState;
 }
 
@@ -30,6 +34,10 @@ export interface StudioShellController {
   readonly authentication: AuthenticationPanelController;
   readonly navigationDialog: OpenController;
   readonly authenticationDialog: OpenController;
+  /** Native navigation destination for an authentication view or its dismissal. */
+  authenticationHref(view: AuthDialogView | null): string;
+  /** Native navigation destination for the mobile menu. */
+  navigationHref(open: boolean): string;
   /** Shows one authentication journey. */
   openAuthentication(view: AuthDialogView): void;
   /** Switches between the expanded and collapsed navigation rail. */
@@ -53,6 +61,10 @@ export interface StudioShellControllerOptions extends StudioShellControllerState
   onAuthViewChange?: (view: AuthDialogView | null) => void;
   /** Observes accepted navigation-rail changes. */
   onRailChange?: (rail: StudioShellViewModel["rail"]) => void;
+  /** Current base-resolved route, including query and fragment state. */
+  getUrl?: () => URL;
+  /** Observes accepted mobile-menu changes. */
+  onDrawerChange?: (open: boolean) => void;
 }
 
 /** Creates a reactive controller for the Studio application shell. */
@@ -66,6 +78,8 @@ export function createStudioShellController({
   allowNativeLogout = true,
   onAuthViewChange,
   onRailChange,
+  getUrl = () => new SvelteURL(homeHref, "https://studio.invalid"),
+  onDrawerChange,
 }: StudioShellControllerOptions): StudioShellController {
   let model = $state(initialModel);
 
@@ -81,7 +95,13 @@ export function createStudioShellController({
   }
 
   function setDrawerOpen(open: boolean) {
-    if (model.drawerOpen !== open) model = { ...model, drawerOpen: open };
+    if (model.drawerOpen === open) return;
+    model = { ...model, drawerOpen: open };
+    onDrawerChange?.(open);
+  }
+
+  function href(url: URL) {
+    return url.pathname + url.search + url.hash;
   }
 
   const navigationDialog: OpenController = {
@@ -109,6 +129,8 @@ export function createStudioShellController({
     authentication,
     navigationDialog,
     authenticationDialog,
+    authenticationHref: (view) => href(withAuthView(withNavigationOpen(getUrl(), false), view)),
+    navigationHref: (open) => href(withNavigationOpen(getUrl(), open)),
     openAuthentication: setAuthentication,
     toggleRail() {
       const rail = model.rail === "expanded" ? "collapsed" : "expanded";
@@ -126,6 +148,7 @@ export function createStudioShellController({
         activeNavigation: routeState.activeNavigation,
         session: routeState.session,
         authView: routeState.authView,
+        drawerOpen: routeState.drawerOpen ?? model.drawerOpen,
       };
       if (routeState.authentication) {
         authentication.synchronize(routeState.authentication.model, routeState.authentication.action);

@@ -67,7 +67,7 @@ describe("studio shell screen", () => {
     await expect.element(page.getByRole("main")).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
     await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "96");
-    const signIn = page.getByRole("button", { name: "Login" });
+    const signIn = page.getByRole("link", { name: "Login" });
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
     await signIn.click();
 
@@ -111,7 +111,7 @@ describe("studio shell screen", () => {
     expect(getComputedStyle(accountLink.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     expect(getComputedStyle(accountLink.element()).borderTopStyle).toBe("none");
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("link", { name: "Login" })).not.toBeInTheDocument();
 
     await page.getByRole("button", { name: "Log out" }).click();
     expect(shell.state.model.session.status).toBe("anonymous");
@@ -138,7 +138,11 @@ describe("studio shell screen", () => {
         await surface.getByRole("img", { name: "Studio" }).hover();
         const controls = [surface.getByRole("link", { name: "Home" })];
         if (status === "authenticated") controls.push(surface.getByRole("link", { name: "Maya Chen" }));
-        controls.push(surface.getByRole("button", { name: status === "authenticated" ? "Log out" : "Login" }));
+        controls.push(
+          surface.getByRole(status === "authenticated" ? "button" : "link", {
+            name: status === "authenticated" ? "Log out" : "Login",
+          })
+        );
 
         const styles = async (element: Element) => {
           await new Promise(requestAnimationFrame);
@@ -181,7 +185,7 @@ describe("studio shell screen", () => {
     await expect.element(logo).toHaveAttribute("width", "96");
     const logoBounds = logo.element().getBoundingClientRect();
     const source = logo.element().getAttribute("src");
-    const open = page.getByRole("button", { name: "Open navigation" });
+    const open = page.getByRole("link", { name: "Open navigation" });
     const controlBounds = open.element().getBoundingClientRect();
     expect(logoBounds.left).toBeGreaterThanOrEqual(16);
     expect(controlBounds.left).toBeGreaterThan(logoBounds.right);
@@ -194,7 +198,7 @@ describe("studio shell screen", () => {
     const menuLogo = menu.getByRole("img", { name: "Studio" });
     await expect.element(menuLogo).toHaveAttribute("src", source);
     const menuLogoBounds = menuLogo.element().getBoundingClientRect();
-    const closeBounds = menu.getByRole("button", { name: "Close navigation" }).element().getBoundingClientRect();
+    const closeBounds = menu.getByRole("link", { name: "Close navigation" }).element().getBoundingClientRect();
     for (const key of ["x", "y", "width", "height"] as const) {
       expect(menuLogoBounds[key]).toBeCloseTo(logoBounds[key], 0);
       expect(closeBounds[key]).toBeCloseTo(controlBounds[key], 0);
@@ -240,7 +244,7 @@ describe("studio shell screen", () => {
 
     const registrationDialog = page.getByRole("dialog", { name: "Join the Agora invitation list" });
     await expect.element(registrationDialog).toBeVisible();
-    await registrationDialog.getByRole("button", { name: "Login" }).click();
+    await registrationDialog.getByRole("link", { name: "Login" }).click();
 
     expect(shell.state.model.authView).toBe("login");
   });
@@ -254,13 +258,13 @@ describe("studio shell screen", () => {
     await expect.element(dialog).toBeVisible();
     const heading = dialog.getByRole("heading").element().getBoundingClientRect();
     const close = dialog
-      .getByRole("button", { name: t("shell.closeAuthentication") })
+      .getByRole("link", { name: t("shell.closeAuthentication") })
       .element()
       .getBoundingClientRect();
     const submit = dialog.getByRole("button", { name: t("shell.signIn"), exact: true }).element() as HTMLButtonElement;
     if (!submit.form) throw new Error("Submit button must belong to a form");
     const form = submit.form.getBoundingClientRect();
-    const secondaryButton = dialog.getByRole("button", { name: t("shell.auth.forgotPassword") }).element();
+    const secondaryButton = dialog.getByRole("link", { name: t("shell.auth.forgotPassword") }).element();
     const secondary = secondaryButton.getBoundingClientRect();
     const outer = dialog.element().getBoundingClientRect();
 
@@ -290,7 +294,7 @@ describe("studio shell screen", () => {
     const title = dialog.getByRole("heading").element();
     const heading = title.getBoundingClientRect();
     const close = dialog
-      .getByRole("button", { name: t("shell.closeAuthentication") })
+      .getByRole("link", { name: t("shell.closeAuthentication") })
       .element()
       .getBoundingClientRect();
 
@@ -305,7 +309,7 @@ describe("studio shell screen", () => {
     shell.authenticationDialog.close = () => {};
     render(Screen, { controller: shell }, withLocale());
 
-    await page.getByRole("button", { name: "Close dialog" }).click();
+    await page.getByRole("link", { name: "Close dialog" }).click();
 
     expect(shell.state.model.authView).toBe("login");
     await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
@@ -331,7 +335,7 @@ describe("studio shell screen", () => {
     const registrationDialog = page.getByRole("dialog", { name: "You’re on the invitation list" });
     await expect.element(registrationDialog).toBeVisible();
     expect(registrationDialog.element().querySelectorAll("h2")).toHaveLength(1);
-    await expect.element(registrationDialog.getByRole("button", { name: "Login" })).not.toBeInTheDocument();
+    await expect.element(registrationDialog.getByRole("link", { name: "Login" })).not.toBeInTheDocument();
   });
 
   it("presents session errors as a compact status without a retry action", async () => {

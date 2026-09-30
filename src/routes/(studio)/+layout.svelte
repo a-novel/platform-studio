@@ -4,7 +4,13 @@
   import { page } from "$app/state";
   import { readAuthenticationActionModel } from "$lib/application/auth/action-data";
   import type { AuthenticationPanelModel } from "$lib/application/auth/types";
-  import { normalizeAuthUrl, readAuthView, withAuthView } from "$lib/application/shell/auth-dialog-state";
+  import {
+    normalizeAuthUrl,
+    readAuthView,
+    readNavigationOpen,
+    withAuthView,
+    withNavigationOpen,
+  } from "$lib/application/shell/auth-dialog-state";
   import type { AuthDialogView } from "$lib/application/shell/types";
   import { readRailCollapsed, writeRailCollapsed } from "$lib/client/shell/rail-preference";
   import { authenticationPageTitle } from "$lib/i18n/page-titles";
@@ -41,7 +47,7 @@
     model: {
       activeNavigation: initialRoute.activeNavigation,
       authView: initialAuthView,
-      drawerOpen: false,
+      drawerOpen: readNavigationOpen(new URL(initialRoute.href).searchParams),
       rail: "expanded",
       session: initialRoute.session,
     },
@@ -54,6 +60,13 @@
       action: authenticationAction(view),
     }),
     onAuthViewChange: changeAuthView,
+    getUrl: () => new URL(currentHref),
+    onDrawerChange: (open) => {
+      const next = withNavigationOpen(new URL(window.location.href), open);
+      // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
+      replaceState(next, page.state);
+      currentHref = next.href;
+    },
     onRailChange: (rail) => writeRailCollapsed(window.localStorage, rail === "collapsed"),
   });
 
@@ -76,6 +89,7 @@
         activeNavigation,
         session,
         authView,
+        drawerOpen: readNavigationOpen(new URL(currentHref).searchParams),
         authentication: routeAuthentication,
       })
     );

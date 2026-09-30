@@ -25,9 +25,9 @@ const shell: StudioShellViewModel = {
 describe("fixed visual review controllers", () => {
   it("keeps the login journey open and ready after dismissal, navigation, and submission", async () => {
     render(ShellStory, { initialModel: shell }, wrapper);
-    await page.getByRole("button", { name: "Close dialog" }).click();
+    await page.getByRole("link", { name: "Close dialog" }).click();
     await userEvent.keyboard("{Escape}");
-    await page.getByRole("button", { name: "Request an invitation" }).click();
+    await page.getByRole("link", { name: "Request an invitation" }).click();
     await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
     await page.getByRole("textbox", { name: "Email address" }).fill("review@example.test");
     await page.getByLabelText("Password", { exact: false }).fill("long memorable test password");
