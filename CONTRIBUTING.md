@@ -77,7 +77,7 @@ Compare using the same Ubuntu/Chromium/font environment as CI to avoid rendering
 Account identifiers and expiry timestamps are masked; roles, labels, forms and layout stay visible.
 
 Studio stores evidence under `studio/ci/references` and `studio/ci/results` in Agorastoryverse's
-existing **Platform** Shared Drive. Shared actions own folder-scoped storage, approval and cleanup; other
+dedicated **CI - Platform** Shared Drive. Shared actions own folder-scoped storage, approval and cleanup; other
 platforms reuse those actions with their own folders and the same `VISUAL_*` repository variable names.
 Provision and activate them using the
 [infrastructure runbook](https://github.com/a-novel/infra/blob/master/docs/runbooks/visual-test-storage.md)

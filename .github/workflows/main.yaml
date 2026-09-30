@@ -159,3 +159,44 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           secrets: |
             npm_token=${{ secrets.GITHUB_TOKEN }}
+
+  inspect-visual-folder-access:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: google-github-actions/auth@v3
+        id: auth
+        with:
+          workload_identity_provider: projects/232403541574/locations/global/workloadIdentityPools/github-actions/providers/studio-visual-ci
+          service_account: ${{ vars.VISUAL_CI_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/drive
+          create_credentials_file: false
+          export_environment_variables: false
+      - name: Inspect candidate folder metadata
+        env:
+          DRIVE_TOKEN: ${{ steps.auth.outputs.access_token }}
+          REFERENCES_FOLDER: ${{ vars.VISUAL_REFERENCES_FOLDER }}
+          RESULTS_FOLDER: ${{ vars.VISUAL_RESULTS_FOLDER }}
+        run: |
+          node --input-type=module <<'JS'
+          import { writeFileSync } from 'node:fs';
+          const folders = [];
+          for (const id of [process.env.REFERENCES_FOLDER, process.env.RESULTS_FOLDER]) {
+            const url = new URL(`https://www.googleapis.com/drive/v3/files/${id}`);
+            url.search = new URLSearchParams({supportsAllDrives: 'true', fields: 'id,mimeType,driveId,parents,trashed,capabilities(canListChildren,canAddChildren,canDeleteChildren)'});
+            const response = await fetch(url, {headers: {Authorization: `Bearer ${process.env.DRIVE_TOKEN}`}});
+            if (!response.ok) throw new Error(`Drive metadata status ${response.status}`);
+            folders.push(await response.json());
+          }
+          writeFileSync('visual-folder-access.json', JSON.stringify(folders, null, 2));
+          JS
+      - uses: actions/upload-artifact@v7
+        with:
+          name: visual-folder-access
+          path: visual-folder-access.json
+          retention-days: 1
+          if-no-files-found: error
