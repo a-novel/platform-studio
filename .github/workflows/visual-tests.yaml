@@ -13,7 +13,7 @@ on:
 
 jobs:
   approval:
-    if: ${{ github.event_name == 'pull_request_target' && vars.STUDIO_VISUAL_CI_PROVIDER != '' }}
+    if: ${{ github.event_name == 'pull_request_target' && vars.VISUAL_CI_PROVIDER != '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     concurrency:
@@ -25,16 +25,16 @@ jobs:
       statuses: write
       pull-requests: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@27c534cc02e30a467ec1dd77582374ca7bc441c7
+      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@3eefb49cf058df3c7126475faeb72ce90299a795
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
-    if: ${{ vars.STUDIO_VISUAL_MAINTENANCE_PROVIDER != '' }}
+    if: ${{ vars.VISUAL_MAINTENANCE_PROVIDER != '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
-      group: studio-visual-maintenance
+      group: visual-maintenance
       cancel-in-progress: false
     permissions:
       contents: read
@@ -42,10 +42,10 @@ jobs:
       pull-requests: read
       id-token: write
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@27c534cc02e30a467ec1dd77582374ca7bc441c7
+      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@3eefb49cf058df3c7126475faeb72ce90299a795
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          identity_provider: ${{ vars.STUDIO_VISUAL_MAINTENANCE_PROVIDER }}
-          service_account: ${{ vars.STUDIO_VISUAL_MAINTENANCE_ACCOUNT }}
-          references_drive: ${{ vars.STUDIO_VISUAL_REFERENCES_DRIVE }}
-          results_drive: ${{ vars.STUDIO_VISUAL_RESULTS_DRIVE }}
+          identity_provider: ${{ vars.VISUAL_MAINTENANCE_PROVIDER }}
+          service_account: ${{ vars.VISUAL_MAINTENANCE_ACCOUNT }}
+          references_folder: ${{ vars.VISUAL_REFERENCES_FOLDER }}
+          results_folder: ${{ vars.VISUAL_RESULTS_FOLDER }}

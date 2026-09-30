@@ -25,7 +25,7 @@ jobs:
       pull-requests: read
       issues: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/derive-status@27c534cc02e30a467ec1dd77582374ca7bc441c7
+      - uses: a-novel-kit/workflows/generic-actions/derive-status@3eefb49cf058df3c7126475faeb72ce90299a795
         with:
           client_id: ${{ vars.AGENT_BOT_CLIENT_ID }}
           app_private_key: ${{ secrets.AGENT_BOT_PRIVATE_KEY }}

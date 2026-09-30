@@ -76,7 +76,10 @@ from the current reference archive into `.visual/snapshots`, then run
 Compare using the same Ubuntu/Chromium/font environment as CI to avoid rendering differences.
 Account identifiers and expiry timestamps are masked; roles, labels, forms and layout stay visible.
 
-Shared actions own Drive storage, approval and cleanup. Provision and activate them using the
+Studio stores evidence under `platform-studio/references` and `platform-studio/results` in the
+dedicated test Shared Drive. Shared actions own folder-scoped storage, approval and cleanup; other
+platforms reuse those actions with their own folders and the same `VISUAL_*` repository variable names.
+Provision and activate them using the
 [infrastructure runbook](https://github.com/a-novel/infra/blob/master/docs/runbooks/visual-test-storage.md)
 and [shared adoption guide](https://github.com/a-novel-kit/workflows/blob/master/docs/migrations/v1.33.0.md).
 
