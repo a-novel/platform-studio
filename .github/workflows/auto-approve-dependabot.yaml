@@ -20,7 +20,7 @@ jobs:
     # the callee mints a scoped App token and declares permissions: {}; the caller sets the ceiling, so it must not hand down
     # the repository default.
     permissions: {}
-    uses: a-novel-kit/workflows/.github/workflows/auto-approve-dependabot-run.yaml@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
+    uses: a-novel-kit/workflows/.github/workflows/auto-approve-dependabot-run.yaml@27c534cc02e30a467ec1dd77582374ca7bc441c7
     with:
       client_id: ${{ vars.AGENT_BOT_CLIENT_ID }}
       dependency_bot_login: ${{ vars.DEPENDENCY_BOT_LOGIN }}

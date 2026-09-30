@@ -11,7 +11,7 @@ jobs:
       contents: write
       packages: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/renovate@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
+      - uses: a-novel-kit/workflows/generic-actions/renovate@27c534cc02e30a467ec1dd77582374ca7bc441c7
         with:
           repository_config: "true"
           github_token: ${{ secrets.GITHUB_TOKEN }}

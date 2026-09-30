@@ -25,7 +25,7 @@ jobs:
       statuses: write
       pull-requests: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
+      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@27c534cc02e30a467ec1dd77582374ca7bc441c7
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -42,7 +42,7 @@ jobs:
       pull-requests: read
       id-token: write
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
+      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@27c534cc02e30a467ec1dd77582374ca7bc441c7
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           identity_provider: ${{ vars.STUDIO_VISUAL_MAINTENANCE_PROVIDER }}

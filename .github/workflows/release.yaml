@@ -39,7 +39,7 @@ jobs:
       version: ${{ steps.core.outputs.version }}
     steps:
       - id: core
-        uses: a-novel-kit/workflows/publish-actions/release-core@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
+        uses: a-novel-kit/workflows/publish-actions/release-core@27c534cc02e30a467ec1dd77582374ca7bc441c7
         with:
           cli_version: "1.9.1"
           release_type: ${{ inputs.release_type }}
@@ -57,7 +57,7 @@ jobs:
       id-token: write
       packages: write
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
+      - uses: a-novel-kit/workflows/build-actions/docker@27c534cc02e30a467ec1dd77582374ca7bc441c7
         with:
           file: Dockerfile
           image_name: ${{ github.repository }}
@@ -73,7 +73,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/archive-board-items@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
+      - uses: a-novel-kit/workflows/generic-actions/archive-board-items@27c534cc02e30a467ec1dd77582374ca7bc441c7
         with:
           client_id: ${{ vars.AGENT_BOT_CLIENT_ID }}
           app_private_key: ${{ secrets.AGENT_BOT_PRIVATE_KEY }}
