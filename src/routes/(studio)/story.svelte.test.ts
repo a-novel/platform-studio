@@ -27,7 +27,7 @@ describe("fixed visual review controllers", () => {
     render(ShellStory, { initialModel: shell }, wrapper);
     await page.getByRole("button", { name: "Close dialog" }).click();
     await userEvent.keyboard("{Escape}");
-    await page.getByRole("button", { name: "Create an account" }).click();
+    await page.getByRole("button", { name: "Request an invitation" }).click();
     await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
     await page.getByRole("textbox", { name: "Email address" }).fill("review@example.test");
     await page.getByLabelText("Password", { exact: false }).fill("long memorable test password");

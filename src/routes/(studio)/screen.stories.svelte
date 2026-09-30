@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import { validateEmailRequest, validateLogin } from "$lib/application/auth/forms";
+  import { validateEmailRequest, validateInvitationRequest, validateLogin } from "$lib/application/auth/forms";
   import { validationFixture } from "$lib/application/auth/forms.fixture";
   import type { StudioShellViewModel } from "$lib/application/shell/types";
   import { createStorybookTranslator } from "$lib/i18n/storybook";
@@ -218,7 +218,7 @@
     );
   }
 
-  async function verifyPendingAuthentication({
+  async function verifyRecordedInvitation({
     canvasElement,
     globals,
   }: {
@@ -231,7 +231,9 @@
     const dialog = canvas.getByRole("dialog");
     await expect(status).toBeVisible();
     await expect(within(dialog).getAllByRole("heading")).toHaveLength(1);
-    await expect(within(dialog).getByRole("heading", { name: t("authUi.authentication.pendingTitle") })).toBeVisible();
+    await expect(
+      within(dialog).getByRole("heading", { name: t("authUi.authentication.journeys.register.recordedTitle") })
+    ).toBeVisible();
     expect(getComputedStyle(status).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     await expect(within(dialog).queryByRole("button", { name: t("shell.auth.signInInstead") })).not.toBeInTheDocument();
   }
@@ -357,30 +359,20 @@
   />
 </Story>
 
-<Story
-  name="Registration modal — desktop"
-  exportName="RegistrationModalDesktop"
-  globals={reviewStoryGlobals.desktop}
-  asChild
->
+<Story name="Invitation list — desktop" exportName="InvitationListDesktop" globals={reviewStoryGlobals.desktop} asChild>
   <StoryHarness initialModel={{ ...anonymous, authView: "register" }} />
 </Story>
 
-<Story
-  name="Registration modal — mobile"
-  exportName="RegistrationModalMobile"
-  globals={reviewStoryGlobals.mobile}
-  asChild
->
+<Story name="Invitation list — mobile" exportName="InvitationListMobile" globals={reviewStoryGlobals.mobile} asChild>
   <StoryHarness initialModel={{ ...anonymous, authView: "register" }} />
 </Story>
 
-<Story name="Registration email pending" asChild play={verifyPendingAuthentication}>
+<Story name="Invitation request recorded" asChild play={verifyRecordedInvitation}>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "register" }}
     initialAuthenticationModel={{
       journey: "register",
-      state: { status: "pending-email", targetHint: "maya.chen@example.test" },
+      state: { status: "recorded", email: "maya.chen@example.test" },
     }}
   />
 </Story>
@@ -426,29 +418,49 @@
   />
 </Story>
 
-<Story name="Registration submitting" asChild>
+<Story name="Invitation request submitting" asChild>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "register" }}
     initialAuthenticationModel={{ journey: "register", state: { status: "submitting" } }}
   />
 </Story>
 
-<Story name="Registration validation error" asChild>
+<Story name="Invitation request validation error" asChild>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "register" }}
     initialAuthenticationModel={{
       journey: "register",
-      state: validationFixture(validateEmailRequest, { email: "not-an-email" }),
+      state: validationFixture(validateInvitationRequest, { email: "not-an-email" }),
     }}
   />
 </Story>
 
-<Story name="Registration service unavailable" asChild>
+<Story name="Invitation list unavailable" asChild>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "register" }}
     initialAuthenticationModel={{
       journey: "register",
       state: { status: "service-error", feedback: "serviceUnavailable" },
+    }}
+  />
+</Story>
+
+<Story name="Invitation account exists" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "register" }}
+    initialAuthenticationModel={{
+      journey: "register",
+      state: { status: "conflict", code: "account_exists" },
+    }}
+  />
+</Story>
+
+<Story name="Invitation already requested" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "register" }}
+    initialAuthenticationModel={{
+      journey: "register",
+      state: { status: "conflict", code: "already_waitlisted" },
     }}
   />
 </Story>

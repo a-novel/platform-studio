@@ -1,6 +1,7 @@
 import {
   validateEmailRequest,
   validateEmailUpdate,
+  validateInvitationRequest,
   validateLogin,
   validateNewPassword,
   validatePasswordChange,
@@ -17,6 +18,7 @@ import {
   ShortCodeCreatePasswordResetRequestSchema,
   ShortCodeCreateRegisterRequestSchema,
   TokenCreateRequestSchema,
+  WaitlistJoinRequestSchema,
 } from "@a-novel/service-authentication-rest";
 
 function form(values: Record<string, string>) {
@@ -64,6 +66,22 @@ describe("service-derived auth validation", () => {
       }
     }
   );
+
+  it.each(["Creator@Example.test", "a+b@example.test", "not-an-email", "", `${"a".repeat(400)}@example.test`])(
+    "matches the waitlist schema for %s",
+    (email) => {
+      expect(validateInvitationRequest(form({ email })).success).toBe(
+        WaitlistJoinRequestSchema.pick({ email: true }).safeParse({ email }).success
+      );
+    }
+  );
+
+  it("trims invitation input without changing case-sensitive membership", () => {
+    expect(validateInvitationRequest(form({ email: " Creator@Example.test " }))).toEqual({
+      success: true,
+      value: { email: "Creator@Example.test" },
+    });
+  });
 
   it("normalizes email and preserves password whitespace", () => {
     expect(validateLogin(form({ email: "  Creator@Example.com ", password: "  pass  " }))).toEqual({
