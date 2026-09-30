@@ -6,17 +6,14 @@ import type { TFunction } from "i18next";
 
 const authenticationJourneyKeys = {
   login: {
-    pendingDescription: (t: TFunction<"common">) => t("authUi.authentication.journeys.reset.pendingDescription"),
     submit: (t: TFunction<"common">) => t("authUi.authentication.journeys.login.submit"),
     submitting: (t: TFunction<"common">) => t("authUi.authentication.journeys.login.submitting"),
   },
   register: {
-    pendingDescription: (t: TFunction<"common">) => t("authUi.authentication.journeys.register.pendingDescription"),
     submit: (t: TFunction<"common">) => t("authUi.authentication.journeys.register.submit"),
     submitting: (t: TFunction<"common">) => t("authUi.authentication.journeys.register.submitting"),
   },
   reset: {
-    pendingDescription: (t: TFunction<"common">) => t("authUi.authentication.journeys.reset.pendingDescription"),
     submit: (t: TFunction<"common">) => t("authUi.authentication.journeys.reset.submit"),
     submitting: (t: TFunction<"common">) => t("authUi.authentication.journeys.reset.submitting"),
   },

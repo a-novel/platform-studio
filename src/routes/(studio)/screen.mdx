@@ -19,12 +19,13 @@ Dialog titles and fields share a leading edge. UIKit owns the header controls, f
 compact navigation, and action spacing. Primary actions stay separated from inputs, with service
 errors grouped above submission. Mobile actions stack at full width; desktop actions keep their
 natural width, with secondary actions at the end of the dialog footer. Completion states omit the footer.
-Email-link requests explain the next step before submission. Once sent, the dialog heading becomes
+Requests explain the next step before submission. Once recorded or sent, the dialog heading becomes
 the outcome, with one compact status message and the submitted address below it.
 
 Validation previews come from the same API schemas as the controllers. Invalid credentials stay
 distinct from service outages, whose short heading and recovery guidance are shared across forms.
-Successful login redirects; registration and recovery acknowledge delivery without disclosing
+Successful login redirects. Invitation requests acknowledge list membership, with distinct warnings
+for existing accounts and duplicate requests. Recovery acknowledges delivery without disclosing
 whether an account exists. Controller transitions and duplicate-submission guards are covered by tests,
 not interactive documentation.
 
@@ -112,45 +113,61 @@ not interactive documentation.
   meta={ShellStories}
 />
 
-## Create account
+## Invitation list
 
 ### Default
 
 <ResponsiveStoryPair
-  desktop={ShellStories.RegistrationModalDesktop}
-  mobile={ShellStories.RegistrationModalMobile}
+  desktop={ShellStories.InvitationListDesktop}
+  mobile={ShellStories.InvitationListMobile}
   meta={ShellStories}
 />
 
 ### Submitting
 
 <ResponsiveStoryPair
-  desktop={ShellStories.RegistrationSubmitting}
-  mobile={ShellStories.RegistrationSubmitting}
+  desktop={ShellStories.InvitationRequestSubmitting}
+  mobile={ShellStories.InvitationRequestSubmitting}
   meta={ShellStories}
 />
 
 ### Validation errors
 
 <ResponsiveStoryPair
-  desktop={ShellStories.RegistrationValidationError}
-  mobile={ShellStories.RegistrationValidationError}
+  desktop={ShellStories.InvitationRequestValidationError}
+  mobile={ShellStories.InvitationRequestValidationError}
   meta={ShellStories}
 />
 
 ### Service unavailable
 
 <ResponsiveStoryPair
-  desktop={ShellStories.RegistrationServiceUnavailable}
-  mobile={ShellStories.RegistrationServiceUnavailable}
+  desktop={ShellStories.InvitationListUnavailable}
+  mobile={ShellStories.InvitationListUnavailable}
   meta={ShellStories}
 />
 
-### Confirmation pending
+### Account already exists
 
 <ResponsiveStoryPair
-  desktop={ShellStories.RegistrationEmailPending}
-  mobile={ShellStories.RegistrationEmailPending}
+  desktop={ShellStories.InvitationAccountExists}
+  mobile={ShellStories.InvitationAccountExists}
+  meta={ShellStories}
+/>
+
+### Already requested
+
+<ResponsiveStoryPair
+  desktop={ShellStories.InvitationAlreadyRequested}
+  mobile={ShellStories.InvitationAlreadyRequested}
+  meta={ShellStories}
+/>
+
+### Request recorded
+
+<ResponsiveStoryPair
+  desktop={ShellStories.InvitationRequestRecorded}
+  mobile={ShellStories.InvitationRequestRecorded}
   meta={ShellStories}
 />
 

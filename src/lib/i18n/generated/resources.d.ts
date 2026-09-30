@@ -96,9 +96,12 @@ export default interface Resources {
             "submitting": "Logging in…"
           },
           "register": {
-            "pendingDescription": "A registration link has been sent to",
-            "submit": "Send link",
-            "submitting": "Sending link…"
+            "accountExists": "This email is already registered. You can log in to your account.",
+            "alreadyWaitlisted": "This email is already on the invitation list.",
+            "recordedDescription": "Your invitation will be sent to",
+            "recordedTitle": "You’re on the invitation list",
+            "submit": "Join the list",
+            "submitting": "Joining the list…"
           },
           "reset": {
             "pendingDescription": "If this email is registered, you’ll receive a password reset link at",
@@ -164,14 +167,14 @@ export default interface Resources {
       "accountFallback": "Account",
       "auth": {
         "backToSignIn": "Login",
-        "createAccount": "Create an account",
+        "createAccount": "Request an invitation",
         "forgotPassword": "Forgot password?",
         "login": {
           "title": "Login"
         },
         "register": {
-          "description": "You’ll receive an email link to choose your password and finish setting up your account.",
-          "title": "Create your account"
+          "description": "Access is currently by invitation. We’ll contact you when yours is available.",
+          "title": "Join the Agora invitation list"
         },
         "reset": {
           "description": "You’ll receive an email link to choose a new password.",

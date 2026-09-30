@@ -16,7 +16,7 @@
   import { tick } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
 
   let { controller }: AuthenticationPanelProps = $props();
 
@@ -31,7 +31,6 @@
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
   const submitLabel = $derived(translateAuthenticationJourney(t, model.journey, "submit"));
   const submittingLabel = $derived(translateAuthenticationJourney(t, model.journey, "submitting"));
-  const pendingDescription = $derived(translateAuthenticationJourney(t, model.journey, "pendingDescription"));
 
   function fieldError(field: AuthenticationField): string | undefined {
     const issue = issues.find((candidate) => candidate.field === field);
@@ -50,7 +49,12 @@
 {#if model.state.status === "pending-email"}
   {@const targetHint = model.state.targetHint}
   <InlineMessage tone="success">
-    {pendingDescription} <strong class="pending-target">{targetHint}</strong>
+    {t("authUi.authentication.journeys.reset.pendingDescription")} <strong class="pending-target">{targetHint}</strong>
+  </InlineMessage>
+{:else if model.state.status === "recorded"}
+  <InlineMessage tone="success">
+    {t("authUi.authentication.journeys.register.recordedDescription")}
+    <strong class="pending-target">{model.state.email}</strong>
   </InlineMessage>
 {:else}
   <form method="POST" {action} aria-busy={submitting} novalidate onsubmit={submit}>
@@ -93,6 +97,13 @@
       {#snippet feedback()}
         {#if model.state.status === "service-error"}
           <AuthenticationError feedback={model.state.feedback} />
+        {:else if model.state.status === "conflict"}
+          <Alert
+            tone="warning"
+            title={model.state.code === "account_exists"
+              ? t("authUi.authentication.journeys.register.accountExists")
+              : t("authUi.authentication.journeys.register.alreadyWaitlisted")}
+          />
         {/if}
       {/snippet}
       <Button type="submit" disabled={submitting}>

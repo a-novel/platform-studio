@@ -80,9 +80,12 @@ authUi:
         submit: Connexion
         submitting: Connexion…
       register:
-        pendingDescription: Un lien d’inscription a été envoyé à
-        submit: Envoyer le lien
-        submitting: Envoi du lien…
+        accountExists: Ce courriel est déjà associé à un compte. Vous pouvez vous connecter.
+        alreadyWaitlisted: Ce courriel figure déjà sur la liste d’invitation.
+        recordedDescription: Votre invitation sera envoyée à
+        recordedTitle: Vous êtes sur la liste d’invitation
+        submit: Rejoindre la liste
+        submitting: Inscription à la liste…
       reset:
         pendingDescription: Si ce courriel est associé à un compte, vous recevrez un lien de réinitialisation à
         submit: Envoyer le lien
@@ -134,13 +137,13 @@ shell:
   accountFallback: Compte
   auth:
     backToSignIn: Connexion
-    createAccount: Créer un compte
+    createAccount: Demander une invitation
     forgotPassword: Mot de passe oublié ?
     login:
       title: Connexion
     register:
-      description: Vous recevrez un lien par courriel pour choisir votre mot de passe et finaliser votre inscription.
-      title: Créez votre compte
+      description: L’accès se fait actuellement sur invitation. Vous recevrez un courriel lorsque la vôtre sera disponible.
+      title: Rejoignez la liste d’invitation Agora
     reset:
       description: Vous recevrez un lien par courriel pour choisir un nouveau mot de passe.
       title: Réinitialisez votre mot de passe

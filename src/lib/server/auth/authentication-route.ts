@@ -1,11 +1,16 @@
-import { validateEmailRequest, validateLogin } from "$lib/application/auth/forms";
+import { validateEmailRequest, validateInvitationRequest, validateLogin } from "$lib/application/auth/forms";
 import { safeReturnTo } from "$lib/application/auth/navigation";
 import type { AuthenticationFeedback, AuthenticationPanelModel } from "$lib/application/auth/types";
 import { readAuthView } from "$lib/application/shell/auth-dialog-state";
 import { createAuthenticationContext } from "$lib/server/auth/context";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
-import { Lang, shortCodeCreatePasswordReset, shortCodeCreateRegister } from "@a-novel/service-authentication-rest";
+import {
+  Lang,
+  WaitlistJoinConflictError,
+  shortCodeCreatePasswordReset,
+  waitlistJoin,
+} from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, redirect } from "@sveltejs/kit";
@@ -44,8 +49,8 @@ async function login(event: RequestEvent, form: FormData) {
   redirect(303, safeReturnTo(event.url.searchParams.get("returnTo")));
 }
 
-async function requestRegistration(event: RequestEvent, form: FormData) {
-  const input = validateEmailRequest(form);
+async function requestInvitation(event: RequestEvent, form: FormData) {
+  const input = validateInvitationRequest(form);
 
   if (!input.success) {
     return fail(400, {
@@ -59,11 +64,19 @@ async function requestRegistration(event: RequestEvent, form: FormData) {
   try {
     const authentication = createAuthenticationContext(event.cookies, event.url);
     const accessToken = await authentication.session.anonymousAccessToken();
-    await shortCodeCreateRegister(authentication.api, accessToken, {
+    await waitlistJoin(authentication.api, accessToken, {
       email: input.value.email,
       lang: event.locals.locale === "fr" ? Lang.Fr : Lang.En,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof WaitlistJoinConflictError) {
+      return fail(409, {
+        authentication: {
+          journey: "register",
+          state: { status: "conflict", code: error.code },
+        } satisfies AuthenticationPanelModel,
+      });
+    }
     return fail(503, {
       authentication: serviceError("register", "serviceUnavailable"),
     });
@@ -73,8 +86,8 @@ async function requestRegistration(event: RequestEvent, form: FormData) {
     authentication: {
       journey: "register",
       state: {
-        status: "pending-email",
-        targetHint: input.value.email,
+        status: "recorded",
+        email: input.value.email,
       },
     } satisfies AuthenticationPanelModel,
   };
@@ -122,7 +135,7 @@ export const authenticationActions = {
     const form = await event.request.formData();
 
     if (journey === "login") return await login(event, form);
-    if (journey === "register") return await requestRegistration(event, form);
+    if (journey === "register") return await requestInvitation(event, form);
     if (journey === "reset") return await requestPasswordReset(event, form);
 
     return fail(400, {

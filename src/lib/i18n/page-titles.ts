@@ -18,7 +18,8 @@ function journeyTitle(t: TFunction<"common">, journey: AuthenticationPanelModel[
 
 /** Labels the active authentication task without exposing the submitted email address. */
 export function authenticationPageTitle(t: TFunction<"common">, { journey, state }: AuthenticationPanelModel) {
-  const title = journeyTitle(t, journey);
+  const title = journey === "register" ? t("shell.auth.register.title") : journeyTitle(t, journey);
+  if (state.status === "recorded") return t("authUi.authentication.journeys.register.recordedTitle");
   if (state.status === "pending-email")
     return t("pageTitles.withState", { title, status: t("authUi.authentication.pendingTitle") });
   if (state.status === "service-error")
