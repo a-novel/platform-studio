@@ -23,7 +23,7 @@ jobs:
       pages: write
     steps:
       - id: publish
-        uses: a-novel-kit/workflows/github-pages-actions/publish-storybook@adae9511cc82633e700e2f5a2b83245fdef25300
+        uses: a-novel-kit/workflows/github-pages-actions/publish-storybook@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
         with:
           build_action: build:storybook
           build_path: storybook-static

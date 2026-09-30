@@ -52,7 +52,7 @@ jobs:
     # the repository default.
     permissions:
       contents: read
-    uses: a-novel-kit/workflows/.github/workflows/epic-rollback-run.yaml@adae9511cc82633e700e2f5a2b83245fdef25300
+    uses: a-novel-kit/workflows/.github/workflows/epic-rollback-run.yaml@de35fd0061ce63c0184738d50dd3367ba5c0fb4b
     with:
       epic_number: ${{ inputs.epic_number }}
       confirm: ${{ inputs.confirm }}
