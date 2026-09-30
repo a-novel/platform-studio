@@ -1,0 +1,51 @@
+name: visual-tests
+run-name: Visual approval ${{ github.event.pull_request.number }} ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.base.ref }} ${{ github.event.action }}
+
+on:
+  workflow_run:
+    workflows: [main]
+    types: [completed]
+  pull_request_target:
+    types: [labeled, unlabeled, synchronize, opened, reopened, closed]
+  delete:
+  schedule:
+    - cron: "23 4 * * *"
+
+jobs:
+  approval:
+    if: ${{ github.event_name == 'pull_request_target' && vars.STUDIO_VISUAL_CI_PROVIDER != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    concurrency:
+      group: visual-approval-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+      pull-requests: read
+    steps:
+      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@adae9511cc82633e700e2f5a2b83245fdef25300
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  cleanup:
+    if: ${{ vars.STUDIO_VISUAL_MAINTENANCE_PROVIDER != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: studio-visual-maintenance
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      id-token: write
+    steps:
+      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@adae9511cc82633e700e2f5a2b83245fdef25300
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          identity_provider: ${{ vars.STUDIO_VISUAL_MAINTENANCE_PROVIDER }}
+          service_account: ${{ vars.STUDIO_VISUAL_MAINTENANCE_ACCOUNT }}
+          references_drive: ${{ vars.STUDIO_VISUAL_REFERENCES_DRIVE }}
+          results_drive: ${{ vars.STUDIO_VISUAL_RESULTS_DRIVE }}

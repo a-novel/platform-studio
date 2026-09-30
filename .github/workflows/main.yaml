@@ -15,7 +15,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: a-novel-kit/workflows/node-actions/lint-node@v1.32.0
+      - uses: a-novel-kit/workflows/node-actions/lint-node@adae9511cc82633e700e2f5a2b83245fdef25300
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: a-novel-kit/workflows/generic-actions/lint-dockerfile@v1.32.0
+      - uses: a-novel-kit/workflows/generic-actions/lint-dockerfile@adae9511cc82633e700e2f5a2b83245fdef25300
         with:
           version: "2.14.0"
 
@@ -43,7 +43,7 @@ jobs:
     outputs:
       artifact-id: ${{ steps.test.outputs.artifact-id }}
     steps:
-      - uses: a-novel-kit/workflows/node-actions/test-node@v1.32.0
+      - uses: a-novel-kit/workflows/node-actions/test-node@adae9511cc82633e700e2f5a2b83245fdef25300
         id: test
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -55,17 +55,21 @@ jobs:
 
   test-browser:
     needs: [lint-node]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: read
+      actions: read
+      pull-requests: read
+      statuses: write
+      id-token: write
     env:
       COMPOSE_PROJECT_NAME: studio-e2e-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       artifact-id: ${{ steps.test.outputs.artifact-id }}
     steps:
-      - uses: a-novel-kit/workflows/node-actions/test-playwright@v1.32.0
+      - uses: a-novel-kit/workflows/node-actions/test-playwright@adae9511cc82633e700e2f5a2b83245fdef25300
         id: test
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,6 +77,13 @@ jobs:
           client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           compose_file: builds/compose.e2e.yaml
           report_artifact: studio-browser-report
+          drive_ci_provider: ${{ vars.STUDIO_VISUAL_CI_PROVIDER }}
+          drive_ci_account: ${{ vars.STUDIO_VISUAL_CI_ACCOUNT }}
+          drive_maintenance_provider: ${{ vars.STUDIO_VISUAL_MAINTENANCE_PROVIDER }}
+          drive_maintenance_account: ${{ vars.STUDIO_VISUAL_MAINTENANCE_ACCOUNT }}
+          references_drive: ${{ vars.STUDIO_VISUAL_REFERENCES_DRIVE }}
+          results_drive: ${{ vars.STUDIO_VISUAL_RESULTS_DRIVE }}
+          seed_sha: ${{ vars.STUDIO_VISUAL_SEED_SHA }}
 
   test-storybook:
     needs: [lint-node]
@@ -83,7 +94,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: a-novel-kit/workflows/node-actions/setup-node@v1.32.0
+      - uses: a-novel-kit/workflows/node-actions/setup-node@adae9511cc82633e700e2f5a2b83245fdef25300
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
@@ -97,7 +108,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/codecov@v1.32.0
+      - uses: a-novel-kit/workflows/generic-actions/codecov@adae9511cc82633e700e2f5a2b83245fdef25300
         with:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
           coverage_files: unitcover/lcov.info,browsercover/lcov.info
@@ -110,7 +121,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: a-novel-kit/workflows/node-actions/setup-node@v1.32.0
+      - uses: a-novel-kit/workflows/node-actions/setup-node@adae9511cc82633e700e2f5a2b83245fdef25300
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
@@ -125,7 +136,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: a-novel-kit/workflows/node-actions/build-node@v1.32.0
+      - uses: a-novel-kit/workflows/node-actions/build-node@adae9511cc82633e700e2f5a2b83245fdef25300
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
@@ -141,7 +152,7 @@ jobs:
       id-token: write
       packages: write
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.32.0
+      - uses: a-novel-kit/workflows/build-actions/docker@adae9511cc82633e700e2f5a2b83245fdef25300
         with:
           file: Dockerfile
           image_name: ${{ github.repository }}
