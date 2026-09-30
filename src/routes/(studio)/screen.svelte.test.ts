@@ -238,7 +238,7 @@ describe("studio shell screen", () => {
     const shell = controller({ authView: "register" });
     render(Screen, { controller: shell }, withLocale());
 
-    const registrationDialog = page.getByRole("dialog", { name: "Create your account" });
+    const registrationDialog = page.getByRole("dialog", { name: "Join the Agora invitation list" });
     await expect.element(registrationDialog).toBeVisible();
     await registrationDialog.getByRole("button", { name: "Login" }).click();
 
@@ -320,7 +320,7 @@ describe("studio shell screen", () => {
           {
             authenticationModel: {
               journey: "register",
-              state: { status: "pending-email", targetHint: "maya.chen@example.test" },
+              state: { status: "recorded", email: "maya.chen@example.test" },
             },
           }
         ),
@@ -328,7 +328,7 @@ describe("studio shell screen", () => {
       withLocale()
     );
 
-    const registrationDialog = page.getByRole("dialog", { name: "Check your inbox" });
+    const registrationDialog = page.getByRole("dialog", { name: "You’re on the invitation list" });
     await expect.element(registrationDialog).toBeVisible();
     expect(registrationDialog.element().querySelectorAll("h2")).toHaveLength(1);
     await expect.element(registrationDialog.getByRole("button", { name: "Login" })).not.toBeInTheDocument();

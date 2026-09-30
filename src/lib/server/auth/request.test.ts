@@ -58,6 +58,72 @@ beforeEach(() => {
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe("invitation requests at the request boundary", () => {
+  const email = "Creator@Example.test";
+
+  it.each(["en", "fr"] as const)("records a request using the published client and %s locale", async (locale) => {
+    const { event, cookies } = request("/?auth=register", {}, { email });
+    event.locals.locale = locale;
+    fetchService
+      .mockResolvedValueOnce(Response.json({ accessToken: "anonymous-access", refreshToken: "anonymous-refresh" }))
+      .mockResolvedValueOnce(new Response(null, { status: 202 }));
+    await expect(authenticationActions.default(event)).resolves.toEqual({
+      authentication: { journey: "register", state: { status: "recorded", email } },
+    });
+    expect(fetchService).toHaveBeenCalledTimes(2);
+    expect(fetchService).toHaveBeenLastCalledWith("https://authentication.test/v2/waitlist", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer anonymous-access" },
+      body: JSON.stringify({ email, lang: locale }),
+    });
+    expect(cookies.set).toHaveBeenCalledWith("studio_access_token", "anonymous-access", {
+      httpOnly: true,
+      path: "/",
+      sameSite: "lax",
+      secure: true,
+    });
+  });
+
+  it.each(["account_exists", "already_waitlisted"])("returns the validated %s warning", async (code) => {
+    const { event } = request("/?auth=register", {}, { email });
+    fetchService
+      .mockResolvedValueOnce(Response.json({ accessToken: "anonymous-access", refreshToken: "anonymous-refresh" }))
+      .mockResolvedValueOnce(Response.json({ code, detail: "private service detail" }, { status: 409 }));
+    await expect(authenticationActions.default(event)).resolves.toEqual({
+      status: 409,
+      data: { authentication: { journey: "register", state: { status: "conflict", code } } },
+    });
+  });
+
+  it.each([
+    ["storage unavailable", new Response("private service detail", { status: 503 })],
+    ["unknown conflict", Response.json({ code: "private service detail" }, { status: 409 })],
+    ["malformed conflict", new Response("private service detail", { status: 409 })],
+    ["network failure", new Error("private service detail")],
+  ])("never acknowledges a request after %s", async (_, outcome) => {
+    const { event } = request("/?auth=register", {}, { email });
+    fetchService.mockResolvedValueOnce(
+      Response.json({ accessToken: "anonymous-access", refreshToken: "anonymous-refresh" })
+    );
+    if (outcome instanceof Error) fetchService.mockRejectedValueOnce(outcome);
+    else fetchService.mockResolvedValueOnce(outcome as Response);
+    await expect(authenticationActions.default(event)).resolves.toEqual({
+      status: 503,
+      data: {
+        authentication: { journey: "register", state: { status: "service-error", feedback: "serviceUnavailable" } },
+      },
+    });
+    expect(fetchService).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not contact the waitlist when the anonymous session fails", async () => {
+    const { event } = request("/?auth=register", {}, { email });
+    fetchService.mockResolvedValueOnce(new Response(null, { status: 503 }));
+    await expect(authenticationActions.default(event)).resolves.toMatchObject({ status: 503 });
+    expect(fetchService).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("Studio session at the request boundary", () => {
   it("serves an anonymous home without calling authentication", async () => {
     const { event } = request("/");

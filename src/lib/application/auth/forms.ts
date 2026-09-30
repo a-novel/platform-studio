@@ -7,6 +7,7 @@ import {
   PasswordSchema,
   ShortCodeCreateRegisterRequestSchema,
   TokenCreateRequestSchema,
+  WaitlistJoinRequestSchema,
 } from "@a-novel/service-authentication-rest";
 
 import { z } from "zod";
@@ -18,6 +19,9 @@ export type ValidationResult<Value, Field extends string> =
 const emailSchema = z.string().trim().toLowerCase().pipe(EmailSchema);
 const loginSchema = TokenCreateRequestSchema.extend({ email: emailSchema });
 const emailRequestSchema = ShortCodeCreateRegisterRequestSchema.pick({ email: true }).extend({ email: emailSchema });
+const invitationRequestSchema = WaitlistJoinRequestSchema.pick({ email: true }).extend({
+  email: z.string().trim().pipe(WaitlistJoinRequestSchema.shape.email),
+});
 const passwordSchema = CredentialsCreateRequestSchema.pick({ password: true }).extend({
   confirmPassword: PasswordSchema,
 });
@@ -74,8 +78,11 @@ function formValidator<Value, Field extends string>(schema: z.ZodType<Value>, fi
 /** Checks login fields against the service contract and normalizes the email. */
 export const validateLogin = formValidator(loginSchema, { email: "email", password: "password" } as const);
 
-/** Checks the email used by registration and password-recovery requests. */
+/** Checks the email used by password-recovery requests. */
 export const validateEmailRequest = formValidator(emailRequestSchema, { email: "email" } as const);
+
+/** Preserves email casing for the service's case-sensitive membership checks. */
+export const validateInvitationRequest = formValidator(invitationRequestSchema, { email: "email" } as const);
 
 /** Returns email-update errors under the account screen's field name. */
 export const validateEmailUpdate = formValidator(emailRequestSchema, { email: "newEmail" } as const);

@@ -9,7 +9,7 @@ import {
   AuthenticationApi,
   Lang,
   shortCodeCreatePasswordReset,
-  shortCodeCreateRegister,
+  waitlistJoin,
 } from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
@@ -67,13 +67,13 @@ describe("authentication outcomes", () => {
   });
 
   it.each([
-    ["register", shortCodeCreateRegister],
-    ["reset", shortCodeCreatePasswordReset],
-  ] as const)("acknowledges %s delivery and handles unavailability", async (journey, send) => {
+    ["register", waitlistJoin, { status: "recorded", email: "creator@example.test" }],
+    ["reset", shortCodeCreatePasswordReset, { status: "pending-email", targetHint: "creator@example.test" }],
+  ] as const)("acknowledges the %s outcome and handles unavailability", async (journey, send, state) => {
     vi.spyOn(AuthenticationSession.prototype, "anonymousAccessToken").mockResolvedValue("fixture-access");
     vi.mocked(send).mockResolvedValueOnce(undefined);
     await expect(authenticationActions.default(event(journey))).resolves.toEqual({
-      authentication: { journey, state: { status: "pending-email", targetHint: "creator@example.test" } },
+      authentication: { journey, state },
     });
     expect(send).toHaveBeenCalledWith(expect.any(AuthenticationApi), "fixture-access", {
       email: "creator@example.test",

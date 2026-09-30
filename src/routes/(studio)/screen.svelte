@@ -31,7 +31,7 @@
   const accountHref = $derived(controller.state.accountHref);
   const logoutAction = $derived(controller.state.logoutAction);
   const authenticationState = $derived(controller.authentication.state.model.state.status);
-  const authActionsVisible = $derived(authenticationState !== "pending-email");
+  const authActionsVisible = $derived(authenticationState !== "pending-email" && authenticationState !== "recorded");
 
   const componentId = $props.id();
   const desktopNavigationId = `${componentId}-desktop-navigation`;
@@ -43,7 +43,9 @@
   const authDialogTitle = $derived(
     authenticationState === "pending-email"
       ? t("authUi.authentication.pendingTitle")
-      : getAuthDialogTitle(model.authView)
+      : authenticationState === "recorded"
+        ? t("authUi.authentication.journeys.register.recordedTitle")
+        : getAuthDialogTitle(model.authView)
   );
   const authDialogDescription = $derived(
     !authActionsVisible

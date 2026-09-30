@@ -1,3 +1,5 @@
+import { mergeConfig } from "vite";
+
 import type { StorybookConfig } from "@storybook/sveltekit";
 
 const config: StorybookConfig = {
@@ -5,6 +7,7 @@ const config: StorybookConfig = {
   framework: "@storybook/sveltekit",
   staticDirs: ["../static"],
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|ts|svelte)"],
+  viteFinal: (config) => mergeConfig(config, { optimizeDeps: { include: ["@a-novel-kit/uikit-storybook"] } }),
 };
 
 export default config;

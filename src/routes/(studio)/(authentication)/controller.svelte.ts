@@ -1,4 +1,4 @@
-import { validateEmailRequest, validateLogin } from "$lib/application/auth/forms";
+import { validateEmailRequest, validateInvitationRequest, validateLogin } from "$lib/application/auth/forms";
 import type { AuthenticationPanelModel } from "$lib/application/auth/types";
 
 /** State rendered by the authentication form component. */
@@ -40,11 +40,17 @@ export function createAuthenticationPanelController({
       action = nextAction;
     },
     submit(form) {
-      if (model.state.status === "submitting" || model.state.status === "pending-email") {
+      if (["submitting", "pending-email", "recorded"].includes(model.state.status)) {
         return false;
       }
 
-      const result = model.journey === "login" ? validateLogin(form) : validateEmailRequest(form);
+      const validate =
+        model.journey === "login"
+          ? validateLogin
+          : model.journey === "register"
+            ? validateInvitationRequest
+            : validateEmailRequest;
+      const result = validate(form);
       if (!result.success) {
         model = { ...model, state: { status: "validation-error", issues: result.issues } } as AuthenticationPanelModel;
         return false;

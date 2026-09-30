@@ -1,3 +1,5 @@
+import type { WaitlistJoinConflict } from "@a-novel/service-authentication-rest";
+
 /** Stable product feedback categories translated only at the rendering boundary. */
 export type AuthenticationFeedback =
   | "emailUpdated"
@@ -44,14 +46,23 @@ export interface LoginPanelModel {
   state: Exclude<FormState<AuthenticationField>, { status: "success" }>;
 }
 
-/** Pure registration or password-recovery request state. */
+/** Pure password-recovery request state. */
 export interface EmailRequestPanelModel {
-  journey: "register" | "reset";
+  journey: "reset";
   state: Exclude<FormState<"email">, { status: "success" }> | PendingEmailState;
 }
 
+/** Invitation requests acknowledge list membership without implying email delivery. */
+export interface InvitationRequestPanelModel {
+  journey: "register";
+  state:
+    | Exclude<FormState<"email">, { status: "success" }>
+    | { status: "recorded"; email: string }
+    | ({ status: "conflict" } & WaitlistJoinConflict);
+}
+
 /** Every state rendered inside the shell authentication dialog. */
-export type AuthenticationPanelModel = LoginPanelModel | EmailRequestPanelModel;
+export type AuthenticationPanelModel = LoginPanelModel | EmailRequestPanelModel | InvitationRequestPanelModel;
 
 export type AccountPasswordField = "currentPassword" | "newPassword" | "confirmPassword";
 export type AccountEmailField = "newEmail";

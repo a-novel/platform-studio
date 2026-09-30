@@ -7,7 +7,7 @@ const locales = [
     routes: [
       ["/", "Home"],
       ["/?auth=login", "Login"],
-      ["/?auth=register", "Create account"],
+      ["/?auth=register", "Join the Agora invitation list"],
       ["/?auth=reset", "Reset password"],
       ["/account", "Login"],
       ["/?auth=unknown&email=private@example.test", "Home"],
@@ -23,7 +23,7 @@ const locales = [
     routes: [
       ["/", "Accueil"],
       ["/?auth=login", "Connexion"],
-      ["/?auth=register", "Créer un compte"],
+      ["/?auth=register", "Rejoignez la liste d’invitation Agora"],
       ["/?auth=reset", "Réinitialiser le mot de passe"],
       ["/account", "Connexion"],
       ["/?auth=unknown&email=private@example.test", "Accueil"],

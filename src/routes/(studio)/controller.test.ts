@@ -2,6 +2,7 @@ import { createAccountModel } from "$lib/application/auth/account-action";
 import {
   validateEmailRequest,
   validateEmailUpdate,
+  validateInvitationRequest,
   validateLogin,
   validateNewPassword,
   validatePasswordChange,
@@ -42,7 +43,9 @@ describe("platform controllers", () => {
     (journey) => {
       const controller = createAuthenticationPanelController({ model: readyAuthenticationModel(journey), action: "/" });
       const invalid = new FormData();
-      const expected = journey === "login" ? validateLogin(invalid) : validateEmailRequest(invalid);
+      const validate =
+        journey === "login" ? validateLogin : journey === "register" ? validateInvitationRequest : validateEmailRequest;
+      const expected = validate(invalid);
       expect(controller.submit(invalid)).toBe(false);
       if (expected.success) throw new Error("Expected invalid form");
       expect(controller.state.model.state).toEqual({ status: "validation-error", issues: expected.issues });
@@ -112,7 +115,10 @@ describe("platform controllers", () => {
   });
 
   it.each(["register", "reset"] as const)("keeps a completed %s request fixed until navigation", (journey) => {
-    const model = { journey, state: { status: "pending-email", targetHint: "creator@example.test" } } as const;
+    const model =
+      journey === "register"
+        ? ({ journey, state: { status: "recorded", email: "creator@example.test" } } as const)
+        : ({ journey, state: { status: "pending-email", targetHint: "creator@example.test" } } as const);
     const controller = createAuthenticationPanelController({ model, action: "/" });
     expect(controller.submit(validForm())).toBe(false);
     expect(controller.state.model).toEqual(model);
@@ -121,6 +127,16 @@ describe("platform controllers", () => {
     expect(controller.submit(validForm())).toBe(true);
     expect(controller.submit(validForm())).toBe(false);
     expect(controller.state).toEqual({ model: { journey, state: { status: "submitting" } }, action: "/retry" });
+  });
+
+  it.each(["account_exists", "already_waitlisted"] as const)("allows correction after %s", (code) => {
+    const controller = createAuthenticationPanelController({
+      model: { journey: "register", state: { status: "conflict", code } },
+      action: "/?auth=register",
+    });
+    expect(controller.submit(validForm())).toBe(true);
+    expect(controller.submit(validForm())).toBe(false);
+    expect(controller.state.model).toEqual({ journey: "register", state: { status: "submitting" } });
   });
 
   it("keeps account actions independent while sharing one controller", () => {
