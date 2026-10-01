@@ -3,9 +3,9 @@ import { relative, resolve } from "node:path";
 import { type Locator, type Page, type TestInfo, expect } from "playwright/test";
 
 /** Compare declared checkpoints when CI supplies a reference; attach them for local diagnosis otherwise. */
-export async function screenshot(page: Page, info: TestInfo, name: string, mask: Locator[] = []) {
+export async function screenshot(page: Page, info: TestInfo, name: string, mask: Locator[] = [], style?: string) {
   await page.evaluate(() => document.fonts.ready);
-  const options = { fullPage: true, mask, animations: "disabled" as const };
+  const options = { fullPage: true, mask, style, animations: "disabled" as const };
   const root = process.env.PLAYWRIGHT_SNAPSHOT_DIR;
   if (!root) {
     await info.attach(name, { body: await page.screenshot(options), contentType: "image/png" });
