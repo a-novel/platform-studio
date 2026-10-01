@@ -15,7 +15,10 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   timeout: 45_000,
-  expect: { timeout: 10_000 },
+  expect: {
+    timeout: 10_000,
+    toHaveScreenshot: { stylePath: "./tests/e2e/screenshots.css" },
+  },
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL,

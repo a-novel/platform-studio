@@ -35,17 +35,11 @@ test("login returns to the protected account, survives reload and logout protect
   await page.reload();
   await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
   await expect(page).toHaveTitle("Account settings — Agora Studio");
-  await screenshot(
-    page,
-    info,
-    "authenticated-account",
-    [
-      ...["Account ID", "Access expires", "Session expires"].map((label) =>
-        page.getByText(label, { exact: true }).locator("+ dd")
-      ),
-    ],
-    ".session-expiry dd { flex: 1; }"
-  );
+  await screenshot(page, info, "authenticated-account", [
+    ...["Account ID", "Access expires", "Session expires"].map((label) =>
+      page.getByText(label, { exact: true }).locator("+ dd")
+    ),
+  ]);
   await page.getByRole("button", { name: "Log out", exact: true }).last().click();
   await expect(page).toHaveURL("/");
   await expect(page).toHaveTitle("Home — Agora Studio");
