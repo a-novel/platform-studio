@@ -289,6 +289,8 @@ describe("platform controllers", () => {
   it("accepts semantic shell transitions", () => {
     const onAuthViewChange = vi.fn();
     const onRailChange = vi.fn();
+    const onDrawerChange = vi.fn();
+    let url = new URL("https://studio.example.test/base/?document=42&menu=open&returnTo=%2Faccount#selection");
     const authentication = createAuthenticationPanelController({
       model: readyAuthenticationModel("login"),
       action: "/auth",
@@ -309,7 +311,16 @@ describe("platform controllers", () => {
       allowNativeLogout: false,
       onAuthViewChange,
       onRailChange,
+      onDrawerChange,
+      getUrl: () => url,
     });
+
+    expect(controller.authenticationHref("register")).toBe(
+      "/base/?document=42&returnTo=%2Faccount&auth=register#selection"
+    );
+    expect(controller.navigationHref(false)).toBe("/base/?document=42&returnTo=%2Faccount#selection");
+    url = new URL("https://studio.example.test/base/account?auth=login");
+    expect(controller.authenticationHref(null)).toBe("/base/account");
 
     controller.authenticationDialog.close();
     expect(controller.state.model.authView).toBeNull();
@@ -317,6 +328,7 @@ describe("platform controllers", () => {
     expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith(null);
 
     controller.navigationDialog.open();
+    expect(onDrawerChange).toHaveBeenCalledExactlyOnceWith(true);
     controller.toggleRail();
     expect(controller.state.model).toMatchObject({ drawerOpen: true, rail: "collapsed" });
     expect(controller.navigationDialog.state.open).toBe(true);

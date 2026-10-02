@@ -47,6 +47,8 @@
       toggle: () => {},
     },
     openAuthentication: () => {},
+    authenticationHref: (view) => `#${view ?? "home"}`,
+    navigationHref: (open) => (open ? "#navigation" : "#home"),
     toggleRail: () => {},
     logout: () => false,
     synchronizeRoute: () => {},

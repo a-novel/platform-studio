@@ -71,7 +71,7 @@
     await expect(canvas.getByRole("link", { name: t("shell.home") })).toHaveAttribute("aria-current", "page");
     await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "96");
 
-    const signIn = canvas.getByRole("button", { name: t("shell.signIn") });
+    const signIn = canvas.getByRole("link", { name: t("shell.signIn") });
     await userEvent.click(signIn);
     await expect(canvas.queryByRole("dialog", { name: t("shell.auth.login.title") })).not.toBeInTheDocument();
     clearFocus();
@@ -108,7 +108,7 @@
     await expect(navigation).toBeVisible();
     await expect(within(navigation).getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "96");
 
-    await userEvent.click(within(navigation).getByRole("button", { name: t("shell.closeNavigation") }));
+    await userEvent.click(within(navigation).getByRole("link", { name: t("shell.closeNavigation") }));
     await expect(navigation).toBeVisible();
     clearFocus();
   }
@@ -122,7 +122,7 @@
   }) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    const openNavigation = canvas.getByRole("button", { name: t("shell.openNavigation") });
+    const openNavigation = canvas.getByRole("link", { name: t("shell.openNavigation") });
     const mobileHeader = openNavigation.closest("header");
     if (!mobileHeader) throw new Error("The mobile navigation control must live in the shell header");
     const navigationRail = canvas.getByRole("complementary", { hidden: true });
@@ -150,7 +150,7 @@
     await expect(canvas.getByRole("button", { name: t("shell.logout") })).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: t("shell.logout") }));
     await expect(canvas.getByRole("link", { name: "Maya Chen" })).toBeVisible();
-    await expect(canvas.queryByRole("button", { name: t("shell.signIn") })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("link", { name: t("shell.signIn") })).not.toBeInTheDocument();
     clearFocus();
   }
 
@@ -184,8 +184,8 @@
   }) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    const forgotPassword = canvas.getByRole("button", { name: t("shell.auth.forgotPassword") });
-    const createAccount = canvas.getByRole("button", { name: t("shell.auth.createAccount") });
+    const forgotPassword = canvas.getByRole("link", { name: t("shell.auth.forgotPassword") });
+    const createAccount = canvas.getByRole("link", { name: t("shell.auth.createAccount") });
     const forgotPasswordBounds = forgotPassword.getBoundingClientRect();
     const createAccountBounds = createAccount.getBoundingClientRect();
 
@@ -235,7 +235,7 @@
       within(dialog).getByRole("heading", { name: t("authUi.authentication.journeys.register.recordedTitle") })
     ).toBeVisible();
     expect(getComputedStyle(status).backgroundColor).toBe("rgba(0, 0, 0, 0)");
-    await expect(within(dialog).queryByRole("button", { name: t("shell.auth.signInInstead") })).not.toBeInTheDocument();
+    await expect(within(dialog).queryByRole("link", { name: t("shell.auth.signInInstead") })).not.toBeInTheDocument();
   }
 </script>
 

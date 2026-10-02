@@ -2,6 +2,19 @@ import type { AuthDialogView } from "./types";
 
 const authParameter = "auth";
 
+/** Reads the mobile navigation's canonical URL state. */
+export function readNavigationOpen(parameters: URLSearchParams): boolean {
+  return parameters.getAll("menu").length === 1 && parameters.get("menu") === "open";
+}
+
+/** Returns a URL with canonical mobile navigation state. */
+export function withNavigationOpen(url: URL, open: boolean): URL {
+  const next = new URL(url);
+  next.searchParams.delete("menu");
+  if (open) next.searchParams.set("menu", "open");
+  return next;
+}
+
 function isAuthDialogView(value: string): value is AuthDialogView {
   return value === "login" || value === "register" || value === "reset";
 }

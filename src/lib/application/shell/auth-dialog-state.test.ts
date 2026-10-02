@@ -1,8 +1,25 @@
-import { normalizeAuthUrl, readAuthView, withAuthView } from "./auth-dialog-state";
+import {
+  normalizeAuthUrl,
+  readAuthView,
+  readNavigationOpen,
+  withAuthView,
+  withNavigationOpen,
+} from "./auth-dialog-state";
 
 import { describe, expect, it } from "vitest";
 
 describe("authentication URL state", () => {
+  it("round-trips mobile navigation without losing route, return destination or fragment", () => {
+    const source = new URL("https://studio.example.test/base/?returnTo=%2Faccount#details");
+    const open = withNavigationOpen(source, true);
+    expect(readNavigationOpen(open.searchParams)).toBe(true);
+    expect(withNavigationOpen(open, false).href).toBe(source.href);
+    expect(source.searchParams.has("menu")).toBe(false);
+  });
+
+  it.each(["", "closed", "open&menu=open"])("rejects invalid menu state %s", (query) => {
+    expect(readNavigationOpen(new URLSearchParams(`menu=${query}`))).toBe(false);
+  });
   it("leaves valid login return parameters in their original order", () => {
     const source = new URL("https://studio.example.test/?auth=login&returnTo=%2Faccount%3Fpanel%3Demail");
     expect(normalizeAuthUrl(source).href).toBe(source.href);
