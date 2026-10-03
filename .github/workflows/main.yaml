@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - "**"
+      # merge_group already runs the queue; a push run on its branch would repeat every job.
+      - "!gh-readonly-queue/**"
     tags-ignore:
       - "**"
 
@@ -35,7 +37,6 @@ jobs:
           version: "2.14.0"
 
   test-unit:
-    needs: [lint-node]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -54,7 +55,6 @@ jobs:
           coverage_file: coverage/unit/lcov.info
 
   test-browser:
-    needs: [lint-node]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -86,7 +86,6 @@ jobs:
           seed_sha: ${{ vars.VISUAL_SEED_SHA }}
 
   test-storybook:
-    needs: [lint-node]
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
@@ -115,7 +114,6 @@ jobs:
           coverage_artifact_ids: ${{ needs.test-unit.outputs.artifact-id }},${{ needs.test-browser.outputs.artifact-id }}
 
   audit-node:
-    needs: [lint-node]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -130,7 +128,6 @@ jobs:
         run: pnpm run audit
 
   build-node:
-    needs: [lint-node]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -144,7 +141,6 @@ jobs:
           build_action: "build:ci"
 
   build-platform:
-    needs: [lint-dockerfile, build-node]
     runs-on: ubuntu-latest
     permissions:
       attestations: write
