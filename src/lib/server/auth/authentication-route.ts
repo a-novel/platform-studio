@@ -1,8 +1,8 @@
-import { validateEmailRequest, validateInvitationRequest, validateLogin } from "$lib/application/auth/forms";
-import { safeReturnTo } from "$lib/application/auth/navigation";
-import type { AuthenticationFeedback, AuthenticationPanelModel } from "$lib/application/auth/types";
-import { readAuthView } from "$lib/application/shell/auth-dialog-state";
-import { createAuthenticationContext } from "$lib/server/auth/context";
+import { validateEmailRequest, validateInvitationRequest, validateLogin } from "#lib/application/auth/forms.js";
+import { safeReturnTo } from "#lib/application/auth/navigation.js";
+import type { AuthenticationFeedback, AuthenticationPanelModel } from "#lib/application/auth/types.js";
+import { readAuthView } from "#lib/application/shell/auth-dialog-state.js";
+import { createAuthenticationContext } from "#lib/server/auth/context.js";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {

@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { mergeAccountAction } from "#lib/application/auth/account-action.js";
+  import { loginHref } from "#lib/application/auth/navigation.js";
+  import PageTitle from "#lib/ui/PageTitle.svelte";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
-  import { mergeAccountAction } from "$lib/application/auth/account-action";
-  import { loginHref } from "$lib/application/auth/navigation";
-  import PageTitle from "$lib/ui/PageTitle.svelte";
 
   import ProtectedPage from "../(access)/screen.svelte";
   import { createAccountScreenController } from "./controller.svelte";
@@ -43,7 +43,7 @@
 
 <ProtectedPage
   loginHref={loginHref(page.url.pathname + page.url.search)}
-  homeHref={resolve("/")}
+  homeHref={resolve("")}
   retryHref={page.url.pathname + page.url.search}
   children={account}
   unavailable={account}

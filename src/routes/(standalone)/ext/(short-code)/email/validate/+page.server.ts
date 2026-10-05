@@ -1,4 +1,4 @@
-import { loadShortCodeRoute, submitShortCodeRoute } from "$lib/server/auth/short-code-route";
+import { loadShortCodeRoute, submitShortCodeRoute } from "#lib/server/auth/short-code-route.js";
 
 import type { Actions, PageServerLoad } from "./$types";
 

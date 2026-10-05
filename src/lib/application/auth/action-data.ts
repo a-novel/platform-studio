@@ -1,4 +1,4 @@
-import type { AuthDialogView } from "$lib/application/shell/types";
+import type { AuthDialogView } from "#lib/application/shell/types.js";
 
 import type { AuthenticationPanelModel } from "./types";
 

@@ -1,6 +1,6 @@
-import { validateNewPassword } from "$lib/application/auth/forms";
-import type { ShortCodeActionData, ShortCodePageData } from "$lib/application/auth/short-code-route";
-import type { ShortCodeScreenModel } from "$lib/application/auth/types";
+import { validateNewPassword } from "#lib/application/auth/forms.js";
+import type { ShortCodeActionData, ShortCodePageData } from "#lib/application/auth/short-code-route.js";
+import type { ShortCodeScreenModel } from "#lib/application/auth/types.js";
 
 /** State rendered by a standalone secure-link component. */
 export interface ShortCodeScreenControllerState {

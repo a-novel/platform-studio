@@ -1,4 +1,4 @@
-import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
+import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
 
 import Screen from "./screen.svelte";
 

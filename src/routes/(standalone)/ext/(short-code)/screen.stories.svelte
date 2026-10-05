@@ -1,7 +1,7 @@
 <script module lang="ts">
-  import { validateNewPassword } from "$lib/application/auth/forms";
-  import { validationFixture } from "$lib/application/auth/forms.fixture";
-  import { createStorybookTranslator } from "$lib/i18n/storybook";
+  import { validationFixture } from "#lib/application/auth/forms.fixture.js";
+  import { validateNewPassword } from "#lib/application/auth/forms.js";
+  import { createStorybookTranslator } from "#lib/i18n/storybook.js";
 
   import StoryHarness from "./story.svelte";
 

@@ -1,5 +1,5 @@
-import type { ShortCodePageData } from "$lib/application/auth/short-code-route";
-import type { ShortCodeJourney } from "$lib/application/auth/types";
+import type { ShortCodePageData } from "#lib/application/auth/short-code-route.js";
+import type { ShortCodeJourney } from "#lib/application/auth/types.js";
 
 import { createAuthenticationContext } from "./context";
 import { completeShortCode, createShortCodeClient, readShortCodeModel } from "./short-code";

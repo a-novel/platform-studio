@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { afterNavigate, pushState, replaceState } from "$app/navigation";
-  import { resolve } from "$app/paths";
-  import { page } from "$app/state";
-  import { readAuthenticationActionModel } from "$lib/application/auth/action-data";
-  import type { AuthenticationPanelModel } from "$lib/application/auth/types";
+  import { readAuthenticationActionModel } from "#lib/application/auth/action-data.js";
+  import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
   import {
     normalizeAuthUrl,
     readAuthView,
     readNavigationOpen,
     withAuthView,
     withNavigationOpen,
-  } from "$lib/application/shell/auth-dialog-state";
-  import type { AuthDialogView } from "$lib/application/shell/types";
-  import { readRailCollapsed, writeRailCollapsed } from "$lib/client/shell/rail-preference";
-  import { authenticationPageTitle } from "$lib/i18n/page-titles";
-  import { authenticationTitleContext } from "$lib/ui/PageTitle.svelte";
+  } from "#lib/application/shell/auth-dialog-state.js";
+  import type { AuthDialogView } from "#lib/application/shell/types.js";
+  import { readRailCollapsed, writeRailCollapsed } from "#lib/client/shell/rail-preference.js";
+  import { authenticationPageTitle } from "#lib/i18n/page-titles.js";
+  import { authenticationTitleContext } from "#lib/ui/PageTitle.svelte";
+  import { afterNavigate, goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
+  import { page } from "$app/state";
 
   import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
   import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
@@ -51,9 +51,9 @@
       rail: "expanded",
       session: initialRoute.session,
     },
-    homeHref: resolve("/"),
-    accountHref: resolve("/account"),
-    logoutAction: resolve("/auth/logout"),
+    homeHref: resolve(""),
+    accountHref: resolve("account"),
+    logoutAction: resolve("auth/logout"),
     authentication,
     resolveAuthentication: (view) => ({
       model: authenticationModel(view),
@@ -64,7 +64,7 @@
     onDrawerChange: (open) => {
       const next = withNavigationOpen(new URL(window.location.href), open);
       // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
-      replaceState(next, page.state);
+      goto(next, { shallow: true, replace: true, state: page.state });
       currentHref = next.href;
     },
     onRailChange: (rail) => writeRailCollapsed(window.localStorage, rail === "collapsed"),
@@ -95,7 +95,9 @@
     );
   });
 
-  afterNavigate(async ({ complete }) => {
+  afterNavigate(async ({ complete, shallow }) => {
+    if (shallow) return;
+
     // History updates require the router to finish initial hydration.
     await complete;
     synchronizeUrl();
@@ -113,7 +115,7 @@
     const normalized = normalizeAuthUrl(new URL(window.location.href));
     if (normalized.href !== window.location.href) {
       // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
-      replaceState(normalized, page.state);
+      goto(normalized, { shallow: true, replace: true, state: page.state });
     }
     currentHref = normalized.href;
   }
@@ -124,7 +126,7 @@
 
   function authenticationAction(view: AuthDialogView): string {
     const current = new URL(currentHref);
-    const target = new URL(resolve("/"), current);
+    const target = new URL(resolve(""), current);
     target.searchParams.set("auth", view);
 
     const returnTo = current.searchParams.get("returnTo");
@@ -138,10 +140,10 @@
     const next = withAuthView(new URL(window.location.href), view);
     if (previousView === null && view !== null) {
       // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
-      pushState(next, page.state);
+      goto(next, { shallow: true, state: page.state });
     } else {
       // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
-      replaceState(next, page.state);
+      goto(next, { shallow: true, replace: true, state: page.state });
     }
     currentHref = next.href;
   }

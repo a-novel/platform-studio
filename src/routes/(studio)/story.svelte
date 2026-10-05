@@ -1,6 +1,6 @@
 <script module lang="ts">
-  import type { AuthenticationPanelModel } from "$lib/application/auth/types";
-  import type { StudioShellViewModel } from "$lib/application/shell/types";
+  import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
+  import type { StudioShellViewModel } from "#lib/application/shell/types.js";
 
   /** Fixed-state Storybook harness around the pure shell. */
   export interface StudioShellStoryProps {

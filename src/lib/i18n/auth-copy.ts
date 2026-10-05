@@ -1,4 +1,4 @@
-import type { AuthenticationJourney, ShortCodeJourney, ShortCodeScreenModel } from "$lib/application/auth/types";
+import type { AuthenticationJourney, ShortCodeJourney, ShortCodeScreenModel } from "#lib/application/auth/types.js";
 
 import { translateAuthenticationFeedback } from "./auth-feedback";
 

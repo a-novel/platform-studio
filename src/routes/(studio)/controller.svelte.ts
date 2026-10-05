@@ -1,6 +1,6 @@
-import type { AuthenticationPanelModel } from "$lib/application/auth/types";
-import { withAuthView, withNavigationOpen } from "$lib/application/shell/auth-dialog-state";
-import type { AuthDialogView, ShellSession, StudioShellViewModel } from "$lib/application/shell/types";
+import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
+import { withAuthView, withNavigationOpen } from "#lib/application/shell/auth-dialog-state.js";
+import type { AuthDialogView, ShellSession, StudioShellViewModel } from "#lib/application/shell/types.js";
 
 import type {
   AuthenticationPanelController,

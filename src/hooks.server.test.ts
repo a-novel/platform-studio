@@ -2,7 +2,8 @@ import { handle } from "./hooks.server";
 
 import { describe, expect, it, vi } from "vitest";
 
-import type { Handle, RequestEvent } from "@sveltejs/kit";
+import type { RequestEvent } from "@sveltejs/kit";
+import type { Handle } from "@sveltejs/kit/hooks";
 
 function event(path: string, language?: string): RequestEvent {
   const url = new URL(path, "https://studio.test");

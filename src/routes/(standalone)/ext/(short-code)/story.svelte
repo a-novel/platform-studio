@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { ShortCodeScreenModel } from "$lib/application/auth/types";
+  import type { ShortCodeScreenModel } from "#lib/application/auth/types.js";
 
   /** Fixed-state Storybook harness around the pure secure-link screen. */
   export interface ShortCodeScreenStoryProps {

@@ -1,4 +1,4 @@
-import { createStudioI18n } from "$lib/i18n/instance";
+import { createStudioI18n } from "#lib/i18n/instance.js";
 
 import { accountActions, loadAccount } from "./account-route";
 import { createAuthenticationContext } from "./context";
@@ -20,19 +20,21 @@ vi.mock("@a-novel/service-authentication-rest", { spy: true });
 
 const authenticated = vi.spyOn(AuthenticationSession.prototype, "authenticated");
 
-function event(): RequestEvent {
+function event(
+  request = new Request("https://studio.test/account?/password", {
+    method: "POST",
+    body: new URLSearchParams({
+      currentPassword: "old-password",
+      password: "new-password",
+      confirmPassword: "new-password",
+    }),
+  })
+): RequestEvent {
   return {
     url: new URL("https://studio.test/account"),
     locals: { locale: "en", i18n: createStudioI18n("en") },
     cookies: { get: vi.fn(), set: vi.fn(), delete: vi.fn() },
-    request: new Request("https://studio.test/account?/password", {
-      method: "POST",
-      body: new URLSearchParams({
-        currentPassword: "old-password",
-        password: "new-password",
-        confirmPassword: "new-password",
-      }),
-    }),
+    request,
   } as unknown as RequestEvent;
 }
 
@@ -110,11 +112,12 @@ describe("account route", () => {
       claims: { userID: "test-user", refreshTokenID: "test-refresh", roles: [] },
     });
     vi.mocked(shortCodeCreateEmailUpdate).mockResolvedValue(undefined);
-    const request = event();
-    request.request = new Request("https://studio.test/account?/email", {
-      method: "POST",
-      body: new URLSearchParams({ email: "new@example.test" }),
-    });
+    const request = event(
+      new Request("https://studio.test/account?/email", {
+        method: "POST",
+        body: new URLSearchParams({ email: "new@example.test" }),
+      })
+    );
 
     await expect(accountActions.email(request)).resolves.toEqual({
       accountAction: {
@@ -126,11 +129,12 @@ describe("account route", () => {
   });
 
   it("rejects invalid email before calling the service and names the account control", async () => {
-    const request = event();
-    request.request = new Request("https://studio.test/account?/email", {
-      method: "POST",
-      body: new URLSearchParams({ email: "invalid-private-value" }),
-    });
+    const request = event(
+      new Request("https://studio.test/account?/email", {
+        method: "POST",
+        body: new URLSearchParams({ email: "invalid-private-value" }),
+      })
+    );
     const result = await accountActions.email(request);
     expect(result).toMatchObject({
       status: 400,

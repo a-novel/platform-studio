@@ -1,8 +1,8 @@
-import { createAccountModel } from "$lib/application/auth/account-action";
-import { validateEmailUpdate, validatePasswordChange } from "$lib/application/auth/forms";
-import { requireAuthorization } from "$lib/server/auth/authorization";
-import { logoutAuthentication } from "$lib/server/auth/logout";
-import { readTokenExpiry } from "$lib/server/auth/session";
+import { createAccountModel } from "#lib/application/auth/account-action.js";
+import { validateEmailUpdate, validatePasswordChange } from "#lib/application/auth/forms.js";
+import { requireAuthorization } from "#lib/server/auth/authorization.js";
+import { logoutAuthentication } from "#lib/server/auth/logout.js";
+import { readTokenExpiry } from "#lib/server/auth/session.js";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import { Lang, credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";

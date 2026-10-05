@@ -1,7 +1,7 @@
-import { env } from "$env/dynamic/private";
+import { AUTHENTICATION_SERVICE_URL, HEALTHCHECK_TIMEOUT_MS } from "$app/env/private";
 
 import { type RuntimeConfig, parseRuntimeConfig } from "./runtime-config";
 
 export function getRuntimeConfig(): RuntimeConfig {
-  return parseRuntimeConfig(env);
+  return parseRuntimeConfig({ AUTHENTICATION_SERVICE_URL, HEALTHCHECK_TIMEOUT_MS });
 }
