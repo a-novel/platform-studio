@@ -191,8 +191,8 @@ importers:
         specifier: 2.10.0
         version: 2.10.0(@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.5))(zod@4.6.5)
       '@lucide/svelte':
-        specifier: 1.49.0
-        version: 1.49.0(svelte@5.57.1(@typescript-eslint/types@8.71.0))
+        specifier: 1.50.0
+        version: 1.50.0(svelte@5.57.1(@typescript-eslint/types@8.71.0))
       i18next:
         specifier: 26.4.2
         version: 26.4.2(typescript@6.0.3)
@@ -943,8 +943,8 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@lucide/svelte@1.49.0':
-    resolution: {integrity: sha512-RFH6Vx7dj6hshcBa1qJ0nKAWwkh385jJbDwF1WVg7yflC89310BsA55SEmJnaSRfr03dAyZMMLUC1EMGBu0Z0Q==}
+  '@lucide/svelte@1.50.0':
+    resolution: {integrity: sha512-0VGYwm1YgZd7UMv/DLZIUV0QXj9QbVds3b/ElkoTj9TwpI5GIHAV1Yk74TQ3dAzY0ShT4X/2xq7pihzBNVnvxQ==}
     peerDependencies:
       svelte: ^5
 
@@ -3492,7 +3492,7 @@ snapshots:
     dependencies:
       '@a-novel-kit/uikit-fonts': 0.6.7
       '@a-novel-kit/uikit-tokens': 0.6.7
-      '@lucide/svelte': 1.49.0(svelte@5.57.1(@typescript-eslint/types@8.71.0))
+      '@lucide/svelte': 1.50.0(svelte@5.57.1(@typescript-eslint/types@8.71.0))
       svelte: 5.57.1(@typescript-eslint/types@8.71.0)
 
   '@a-novel/service-authentication-rest@2.10.0(@a-novel-kit/nodelib-browser@1.6.3(zod@4.6.5))(zod@4.6.5)':
@@ -3930,7 +3930,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@lucide/svelte@1.49.0(svelte@5.57.1(@typescript-eslint/types@8.71.0))':
+  '@lucide/svelte@1.50.0(svelte@5.57.1(@typescript-eslint/types@8.71.0))':
     dependencies:
       svelte: 5.57.1(@typescript-eslint/types@8.71.0)
 
