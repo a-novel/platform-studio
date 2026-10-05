@@ -33,6 +33,7 @@
     "lint:eslint": "eslint .",
     "lint:stylecheck": "prettier --check . --config prettier.config.ts",
     "lint:typecheck": "pnpm check",
+    "prepare": "svelte-kit sync || echo ''",
     "preview": "vite preview",
     "storybook": "BROWSER=none storybook dev --port 6006 --no-open",
     "test": "pnpm test:ci",
