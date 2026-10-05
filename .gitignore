@@ -25,5 +25,6 @@ Thumbs.db
 # Browser integration reports
 /playwright-report/
 /test-results/
+/.vitest/
 
 .visual/

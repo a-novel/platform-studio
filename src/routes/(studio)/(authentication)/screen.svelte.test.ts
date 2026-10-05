@@ -1,5 +1,9 @@
-import type { AccountScreenModel, AuthenticationPanelModel, ShortCodeScreenModel } from "$lib/application/auth/types";
-import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
+import type {
+  AccountScreenModel,
+  AuthenticationPanelModel,
+  ShortCodeScreenModel,
+} from "#lib/application/auth/types.js";
+import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
 
 import { createShortCodeScreenController } from "../../(standalone)/ext/(short-code)/controller.svelte";
 import ShortCodeScreen from "../../(standalone)/ext/(short-code)/screen.svelte";
@@ -228,8 +232,8 @@ describe("pure authentication screens", () => {
     const alert = page.getByRole("alert").element();
     const submit = page.getByRole("button", { name: "Login" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Temporarily unavailable");
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
+    await expect.element(page.getByRole("alert")).toMatchTextContent("Temporarily unavailable");
+    await expect.element(page.getByRole("alert")).toMatchTextContent("Please try again in a few minutes.");
     const form = (submit as HTMLButtonElement).form;
     if (!form) throw new Error("Submit button must belong to a form");
     await expectFormActionLayout(form);
@@ -304,7 +308,7 @@ describe("pure authentication screens", () => {
     const controller = authenticationController({ journey: "register", state: { status: "conflict", code } });
     render(AuthenticationPanel, { controller }, withLocale(locale));
     const alert = page.getByRole("status");
-    await expect.element(alert).toHaveTextContent(message);
+    await expect.element(alert).toMatchTextContent(message);
     const submit = page.getByRole("button", { name: locale === "fr" ? "Rejoindre la liste" : "Join the list" });
     await expect.element(submit).toBeEnabled();
     expect(alert.element().compareDocumentPosition(submit.element()) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
@@ -548,7 +552,7 @@ describe("pure authentication screens", () => {
 
       render(ShortCodeScreen, { controller }, withLocale());
 
-      await expect.element(page.getByRole("status")).toHaveTextContent("Updating email…");
+      await expect.element(page.getByRole("status")).toMatchTextContent("Updating email…");
       await expect.element(page.getByRole("heading", { level: 1, name: "Updating email…" })).toBeVisible();
       await expect.element(page.getByRole("button")).not.toBeInTheDocument();
       expect(document.querySelector('input[type="password"]')).toBeNull();
@@ -568,7 +572,7 @@ describe("pure authentication screens", () => {
       withLocale()
     );
     await expect.element(page.getByRole("heading", { level: 1, name: "Email update unavailable" })).toBeVisible();
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
+    await expect.element(page.getByRole("alert")).toMatchTextContent("Please try again in a few minutes.");
     await expect.element(page.getByRole("link", { name: "Request a new link" })).toBeVisible();
     await expect.element(page.getByRole("button")).not.toBeInTheDocument();
   });

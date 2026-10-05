@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { FormIssue, ShortCodePasswordField } from "$lib/application/auth/types";
+  import type { FormIssue, ShortCodePasswordField } from "#lib/application/auth/types.js";
 
   import type { ShortCodeScreenController } from "./controller.svelte";
 
@@ -10,9 +10,9 @@
 </script>
 
 <script lang="ts">
-  import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "$lib/i18n/auth-copy";
-  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
-  import AuthenticationError from "$lib/ui/auth/AuthenticationError.svelte";
+  import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "#lib/i18n/auth-copy.js";
+  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
+  import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
 
   import { tick } from "svelte";
 

@@ -1,4 +1,4 @@
-import { logoutAuthentication } from "$lib/server/auth/logout";
+import { logoutAuthentication } from "#lib/server/auth/logout.js";
 
 import type { RequestHandler } from "./$types";
 

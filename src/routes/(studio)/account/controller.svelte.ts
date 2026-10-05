@@ -1,5 +1,5 @@
-import { validateEmailUpdate, validatePasswordChange } from "$lib/application/auth/forms";
-import type { AccountFormActions, AccountScreenModel } from "$lib/application/auth/types";
+import { validateEmailUpdate, validatePasswordChange } from "#lib/application/auth/forms.js";
+import type { AccountFormActions, AccountScreenModel } from "#lib/application/auth/types.js";
 
 /** State rendered by the account-management component. */
 export interface AccountScreenControllerState {

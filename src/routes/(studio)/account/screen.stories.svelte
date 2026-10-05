@@ -1,8 +1,8 @@
 <script module lang="ts">
-  import { validateEmailUpdate, validatePasswordChange } from "$lib/application/auth/forms";
-  import { validationFixture } from "$lib/application/auth/forms.fixture";
-  import type { AccountScreenModel } from "$lib/application/auth/types";
-  import { createStorybookTranslator } from "$lib/i18n/storybook";
+  import { validationFixture } from "#lib/application/auth/forms.fixture.js";
+  import { validateEmailUpdate, validatePasswordChange } from "#lib/application/auth/forms.js";
+  import type { AccountScreenModel } from "#lib/application/auth/types.js";
+  import { createStorybookTranslator } from "#lib/i18n/storybook.js";
 
   import StoryHarness from "./story.svelte";
 

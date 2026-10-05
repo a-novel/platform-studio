@@ -1,5 +1,5 @@
 <script lang="ts">
-  import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
+  import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
 
   import "@a-novel-kit/uikit-fonts/fonts.css";
   import "@a-novel-kit/uikit-tokens/tokens.css";

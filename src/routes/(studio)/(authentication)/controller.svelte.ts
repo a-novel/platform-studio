@@ -1,5 +1,5 @@
-import { validateEmailRequest, validateInvitationRequest, validateLogin } from "$lib/application/auth/forms";
-import type { AuthenticationPanelModel } from "$lib/application/auth/types";
+import { validateEmailRequest, validateInvitationRequest, validateLogin } from "#lib/application/auth/forms.js";
+import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
 
 /** State rendered by the authentication form component. */
 export interface AuthenticationPanelControllerState {

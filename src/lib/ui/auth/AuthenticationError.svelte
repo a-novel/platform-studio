@@ -1,7 +1,7 @@
 <!-- @component Shared form-level feedback; field validation stays with the corresponding input. -->
 <script lang="ts">
-  import type { AuthenticationFeedback } from "$lib/application/auth/types";
-  import { translateAuthenticationFeedback } from "$lib/i18n/auth-feedback";
+  import type { AuthenticationFeedback } from "#lib/application/auth/types.js";
+  import { translateAuthenticationFeedback } from "#lib/i18n/auth-feedback.js";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert } from "@a-novel-kit/uikit";

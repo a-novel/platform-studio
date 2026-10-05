@@ -1,4 +1,4 @@
-import { createAccountModel } from "$lib/application/auth/account-action";
+import { createAccountModel } from "#lib/application/auth/account-action.js";
 import {
   validateEmailRequest,
   validateEmailUpdate,
@@ -6,8 +6,8 @@ import {
   validateLogin,
   validateNewPassword,
   validatePasswordChange,
-} from "$lib/application/auth/forms";
-import type { AccountScreenModel, ShortCodeState } from "$lib/application/auth/types";
+} from "#lib/application/auth/forms.js";
+import type { AccountScreenModel, ShortCodeState } from "#lib/application/auth/types.js";
 
 import {
   createShortCodeScreenController,

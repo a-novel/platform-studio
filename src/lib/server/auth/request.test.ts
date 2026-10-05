@@ -1,5 +1,4 @@
-import { env } from "$env/dynamic/private";
-import { createStudioI18n } from "$lib/i18n/instance";
+import { createStudioI18n } from "#lib/i18n/instance.js";
 
 import { accountActions, loadAccount } from "./account-route";
 import { authenticationActions } from "./authentication-route";
@@ -13,9 +12,12 @@ import { Role } from "@a-novel/service-authentication-rest";
 
 import type { Cookies, RequestEvent } from "@sveltejs/kit";
 
-vi.mock("$env/dynamic/private", () => ({
-  env: { AUTHENTICATION_SERVICE_URL: "https://authentication.test" },
+const env = vi.hoisted(() => ({
+  AUTHENTICATION_SERVICE_URL: "https://authentication.test",
+  HEALTHCHECK_TIMEOUT_MS: undefined,
 }));
+
+vi.mock("$app/env/private", () => env);
 
 const fetchService = vi.fn<typeof fetch>();
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";

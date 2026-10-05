@@ -1,5 +1,5 @@
 <script lang="ts">
-  import PageTitle from "$lib/ui/PageTitle.svelte";
+  import PageTitle from "#lib/ui/PageTitle.svelte";
 
   import Screen from "./screen.svelte";
 

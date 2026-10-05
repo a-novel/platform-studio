@@ -1,10 +1,10 @@
-import { validateNewPassword } from "$lib/application/auth/forms";
+import { validateNewPassword } from "#lib/application/auth/forms.js";
 import type {
   AuthenticationFeedback,
   ShortCodeJourney,
   ShortCodeScreenModel,
   ShortCodeState,
-} from "$lib/application/auth/types";
+} from "#lib/application/auth/types.js";
 
 import { parseShortCodeLink } from "./forms";
 

@@ -1,6 +1,6 @@
-import { accountDisplayFromHandle } from "$lib/application/shell/account-display";
-import type { ShellSession } from "$lib/application/shell/types";
-import { createAuthenticationContext } from "$lib/server/auth/context";
+import { accountDisplayFromHandle } from "#lib/application/shell/account-display.js";
+import type { ShellSession } from "#lib/application/shell/types.js";
+import { createAuthenticationContext } from "#lib/server/auth/context.js";
 
 import type { RequestEvent } from "@sveltejs/kit";
 

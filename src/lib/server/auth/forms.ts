@@ -1,4 +1,4 @@
-import type { ShortCodeJourney } from "$lib/application/auth/types";
+import type { ShortCodeJourney } from "#lib/application/auth/types.js";
 
 import { EmailSchema, ShortCodeSchema } from "@a-novel/service-authentication-rest";
 

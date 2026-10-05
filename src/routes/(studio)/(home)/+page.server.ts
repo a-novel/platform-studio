@@ -1,4 +1,4 @@
-import { authenticationActions } from "$lib/server/auth/authentication-route";
+import { authenticationActions } from "#lib/server/auth/authentication-route.js";
 
 import type { Actions } from "./$types";
 

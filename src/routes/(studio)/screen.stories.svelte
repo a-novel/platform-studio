@@ -1,8 +1,8 @@
 <script module lang="ts">
-  import { validateEmailRequest, validateInvitationRequest, validateLogin } from "$lib/application/auth/forms";
-  import { validationFixture } from "$lib/application/auth/forms.fixture";
-  import type { StudioShellViewModel } from "$lib/application/shell/types";
-  import { createStorybookTranslator } from "$lib/i18n/storybook";
+  import { validationFixture } from "#lib/application/auth/forms.fixture.js";
+  import { validateEmailRequest, validateInvitationRequest, validateLogin } from "#lib/application/auth/forms.js";
+  import type { StudioShellViewModel } from "#lib/application/shell/types.js";
+  import { createStorybookTranslator } from "#lib/i18n/storybook.js";
 
   import StoryHarness from "./story.svelte";
 

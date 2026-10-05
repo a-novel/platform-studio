@@ -1,7 +1,7 @@
-import type { AuthenticationPanelModel } from "$lib/application/auth/types";
-import type { StudioShellViewModel } from "$lib/application/shell/types";
-import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
-import { createStudioI18n } from "$lib/i18n/instance";
+import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
+import type { StudioShellViewModel } from "#lib/application/shell/types.js";
+import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
+import { createStudioI18n } from "#lib/i18n/instance.js";
 
 import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
 import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
@@ -349,7 +349,7 @@ describe("studio shell screen", () => {
       withLocale()
     );
 
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Account details are unavailable.");
+    await expect.element(page.getByRole("alert")).toMatchTextContent("Account details are unavailable.");
     await expect.element(page.getByRole("button", { name: /Retry account status/i })).not.toBeInTheDocument();
   });
 

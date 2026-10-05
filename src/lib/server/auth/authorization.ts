@@ -1,4 +1,4 @@
-import { loginHref } from "$lib/application/auth/navigation";
+import { loginHref } from "#lib/application/auth/navigation.js";
 
 import { createAuthenticationContext } from "./context";
 import type { AuthenticatedSession } from "./session";

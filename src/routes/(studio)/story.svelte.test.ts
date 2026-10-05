@@ -1,6 +1,6 @@
-import type { AccountScreenModel, ShortCodeScreenModel } from "$lib/application/auth/types";
-import type { StudioShellViewModel } from "$lib/application/shell/types";
-import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
+import type { AccountScreenModel, ShortCodeScreenModel } from "#lib/application/auth/types.js";
+import type { StudioShellViewModel } from "#lib/application/shell/types.js";
+import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
 
 import ShortCodeStory from "../(standalone)/ext/(short-code)/story.svelte";
 import AccountStory from "./account/story.svelte";

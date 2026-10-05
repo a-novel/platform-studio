@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { AccountScreenModel } from "$lib/application/auth/types";
+  import type { AccountScreenModel } from "#lib/application/auth/types.js";
 
   /** Fixed-state Storybook harness around the pure account screen. */
   export interface AccountScreenStoryProps {

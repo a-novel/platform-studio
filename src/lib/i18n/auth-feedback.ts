@@ -1,4 +1,4 @@
-import type { AuthenticationFeedback, AuthenticationValidation } from "$lib/application/auth/types";
+import type { AuthenticationFeedback, AuthenticationValidation } from "#lib/application/auth/types.js";
 
 import type { TFunction } from "i18next";
 

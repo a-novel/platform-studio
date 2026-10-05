@@ -1,7 +1,7 @@
+import type { ShortCodeState } from "#lib/application/auth/types.js";
+import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
 import { applyAction } from "$app/forms";
 import { goto } from "$app/navigation";
-import type { ShortCodeState } from "$lib/application/auth/types";
-import StudioI18nProvider from "$lib/i18n/StudioI18nProvider.svelte";
 
 import type { ActionData, PageData } from "./$types";
 import EmailPage from "./+page.svelte";
@@ -10,14 +10,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 
-vi.mock("$app/forms", async (original) => ({
-  ...(await original<typeof import("$app/forms")>()),
-  applyAction: vi.fn(),
-}));
-vi.mock("$app/navigation", async (original) => ({
-  ...(await original<typeof import("$app/navigation")>()),
-  goto: vi.fn(),
-}));
+// SvelteKit 3's $app/forms imports $app/navigation, and the browser mocker cannot resolve one mock
+// while loading the other's original, so both are stubbed without importOriginal.
+vi.mock("$app/forms", () => ({ applyAction: vi.fn(), deserialize: (text: string) => JSON.parse(text) }));
+vi.mock("$app/navigation", () => ({ goto: vi.fn() }));
 
 const wrapper = { wrapper: StudioI18nProvider, wrapperProps: { locale: "en" as const } };
 
@@ -40,14 +36,14 @@ describe("automatic email validation", () => {
 
     await expect
       .poll(() => vi.mocked(goto).mock.calls)
-      .toEqual([[result.location, { replaceState: true, invalidateAll: true }]]);
+      .toEqual([[result.location, { replace: true, refreshAll: true }]]);
     expect(request).toHaveBeenCalledOnce();
     const [url, options] = request.mock.calls[0] ?? [];
     expect(url).toBe("");
     expect(options).toMatchObject({ method: "POST", headers: { "x-sveltekit-action": "true" } });
     expect(options?.body).toBeInstanceOf(FormData);
     if (options?.body instanceof FormData) expect(Array.from(options.body.keys())).toEqual([]);
-    await expect.element(page.getByRole("status")).toHaveTextContent("Updating email…");
+    await expect.element(page.getByRole("status")).toMatchTextContent("Updating email…");
   });
 
   it.each<{ state: ShortCodeState; title: string }>([
@@ -70,14 +66,14 @@ describe("automatic email validation", () => {
       shortCode: data({ status: "service-error", feedback: "serviceUnavailable" }).model,
     };
     await render(EmailPage, { data: data(), form }, wrapper);
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
+    await expect.element(page.getByRole("alert")).toMatchTextContent("Please try again in a few minutes.");
     expect(request).not.toHaveBeenCalled();
   });
 
   it("shows a sanitized error on network failure without retrying", async () => {
     const request = vi.spyOn(window, "fetch").mockRejectedValue(new Error("private transport detail"));
     await render(EmailPage, { data: data(), form: null }, wrapper);
-    await expect.element(page.getByRole("alert")).toHaveTextContent("Please try again in a few minutes.");
+    await expect.element(page.getByRole("alert")).toMatchTextContent("Please try again in a few minutes.");
     expect(document.body.textContent).not.toContain("private transport detail");
     expect(request).toHaveBeenCalledOnce();
   });

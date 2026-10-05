@@ -1,4 +1,4 @@
-import { accountActions, loadAccount } from "$lib/server/auth/account-route";
+import { accountActions, loadAccount } from "#lib/server/auth/account-route.js";
 
 import type { Actions, PageServerLoad } from "./$types";
 

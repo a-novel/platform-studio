@@ -1,4 +1,4 @@
-import type { Locale } from "$lib/i18n/config";
+import type { Locale } from "#lib/i18n/config.js";
 
 import type { AuthorizationStatus } from "@a-novel-kit/uikit/authorization";
 

@@ -1,4 +1,4 @@
-import { loadStudioShell } from "$lib/server/auth/shell-layout";
+import { loadStudioShell } from "#lib/server/auth/shell-layout.js";
 
 import type { LayoutServerLoad } from "./$types";
 

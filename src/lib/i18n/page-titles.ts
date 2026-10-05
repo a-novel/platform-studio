@@ -1,4 +1,4 @@
-import type { AuthenticationPanelModel, ShortCodeJourney, ShortCodeScreenModel } from "$lib/application/auth/types";
+import type { AuthenticationPanelModel, ShortCodeJourney, ShortCodeScreenModel } from "#lib/application/auth/types.js";
 
 import type { TFunction } from "i18next";
 

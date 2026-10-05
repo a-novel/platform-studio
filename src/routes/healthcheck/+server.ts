@@ -1,4 +1,4 @@
-import { aggregateHealth } from "$lib/server/health";
+import { aggregateHealth } from "#lib/server/health.js";
 
 import type { RequestHandler } from "./$types";
 

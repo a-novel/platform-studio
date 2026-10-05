@@ -11,7 +11,7 @@ allowBuilds:
   esbuild: true
 
 minimumReleaseAgeExclude:
-  - "@a-novel-kit/nodelib-config@1.6.3"
+  - "@a-novel-kit/nodelib-config@1.8.0"
   - "@a-novel-kit/nodelib-browser@1.6.3"
   - "@a-novel-kit/nodelib-i18n@1.6.3"
   - "@a-novel-kit/nodelib-server@1.6.3"

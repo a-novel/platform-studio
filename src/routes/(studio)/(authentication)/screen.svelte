@@ -8,10 +8,10 @@
 </script>
 
 <script lang="ts">
-  import type { AuthenticationField } from "$lib/application/auth/types";
-  import { translateAuthenticationJourney } from "$lib/i18n/auth-copy";
-  import { translateAuthenticationValidation } from "$lib/i18n/auth-feedback";
-  import AuthenticationError from "$lib/ui/auth/AuthenticationError.svelte";
+  import type { AuthenticationField } from "#lib/application/auth/types.js";
+  import { translateAuthenticationJourney } from "#lib/i18n/auth-copy.js";
+  import { translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
+  import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
 
   import { tick } from "svelte";
 

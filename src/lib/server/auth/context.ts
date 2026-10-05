@@ -1,4 +1,4 @@
-import { getRuntimeConfig } from "$lib/server/runtime-config.server";
+import { getRuntimeConfig } from "#lib/server/runtime-config.server.js";
 
 import { AuthenticationSession, createSessionClient } from "./session";
 
