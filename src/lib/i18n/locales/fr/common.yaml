@@ -141,7 +141,7 @@ shell:
     createAccount: Demander une invitation
     forgotPassword: Mot de passe oublié ?
     login:
-      title: Connexion
+      title: Connectez-vous
     register:
       description: L’accès se fait actuellement sur invitation. Vous recevrez un courriel lorsque la vôtre sera disponible.
       title: Rejoignez la liste d’invitation Agora

@@ -22,10 +22,10 @@ const locales = [
     locale: "fr-FR",
     routes: [
       ["/", "Accueil"],
-      ["/?auth=login", "Connexion"],
+      ["/?auth=login", "Connectez-vous"],
       ["/?auth=register", "Rejoignez la liste d’invitation Agora"],
       ["/?auth=reset", "Réinitialiser le mot de passe"],
-      ["/account", "Connexion"],
+      ["/account", "Connectez-vous"],
       ["/?auth=unknown&email=private@example.test", "Accueil"],
       ["/ext/account/create", "Créer un compte : Lien incomplet"],
       ["/ext/password/reset", "Réinitialiser le mot de passe : Lien incomplet"],
