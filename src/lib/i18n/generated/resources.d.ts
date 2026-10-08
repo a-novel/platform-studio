@@ -3,7 +3,7 @@ export default interface Resources {
   "common": {
     "access": {
       "anonymous": {
-        "description": "This page is available to signed-in members.",
+        "description": "Log in to view this page.",
         "title": "Agora account required"
       },
       "error": {
@@ -14,7 +14,11 @@ export default interface Resources {
         "description": "Your account does not have permission to view this page.",
         "title": "Access denied"
       },
-      "home": "Back to home",
+      "home": "Return home",
+      "notFound": {
+        "description": "This address doesn’t match any page.",
+        "title": "Page not found"
+      },
       "pending": {
         "title": "Checking access"
       },
@@ -63,7 +67,7 @@ export default interface Resources {
           "description": "A confirmation link will be sent to your new email.",
           "hint": "Your current email remains active until you confirm.",
           "label": "New email address",
-          "pendingDescription": "Confirmation link sent to",
+          "pendingDescription": "If no other account uses this address, you’ll receive a confirmation link at",
           "pendingTitle": "Confirmation pending",
           "resend": "Send another link",
           "submit": "Send link",
@@ -92,7 +96,7 @@ export default interface Resources {
         "emailLabel": "Email address",
         "journeys": {
           "login": {
-            "submit": "Login",
+            "submit": "Log in",
             "submitting": "Logging in…"
           },
           "register": {
@@ -129,7 +133,7 @@ export default interface Resources {
             "title": "Reset your Agora password"
           },
           "register": {
-            "description": "Choose a password to sign in.",
+            "description": "Choose the password you’ll log in with.",
             "submit": "Create account",
             "submitting": "Creating account…",
             "title": "Create your Agora account"
@@ -158,7 +162,6 @@ export default interface Resources {
       "emailUpdated": "Email updated",
       "incompleteLink": "Incomplete link",
       "invalidLink": "Invalid link",
-      "notFound": "Page not found",
       "passwordReset": "Password reset",
       "resetPassword": "Reset password",
       "withState": "{{title}}: {{status}}"
@@ -166,11 +169,10 @@ export default interface Resources {
     "shell": {
       "accountFallback": "Account",
       "auth": {
-        "backToSignIn": "Login",
         "createAccount": "Request an invitation",
         "forgotPassword": "Forgot password?",
         "login": {
-          "title": "Login"
+          "title": "Log in"
         },
         "register": {
           "description": "Access is currently by invitation. We’ll contact you when yours is available.",
@@ -179,8 +181,7 @@ export default interface Resources {
         "reset": {
           "description": "You’ll receive an email link to choose a new password.",
           "title": "Reset your password"
-        },
-        "signInInstead": "Login"
+        }
       },
       "brand": "Studio",
       "closeAuthentication": "Close dialog",
@@ -196,7 +197,7 @@ export default interface Resources {
       "openNavigation": "Open navigation",
       "sessionLoading": "Loading account",
       "sessionUnavailable": "Account details are unavailable.",
-      "signIn": "Login",
+      "signIn": "Log in",
       "skipToContent": "Skip to content"
     }
   }

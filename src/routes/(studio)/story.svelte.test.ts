@@ -28,12 +28,12 @@ describe("fixed visual review controllers", () => {
     await page.getByRole("link", { name: "Close dialog" }).click();
     await userEvent.keyboard("{Escape}");
     await page.getByRole("link", { name: "Request an invitation" }).click();
-    await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
+    await expect.element(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
     await page.getByRole("textbox", { name: "Email address" }).fill("review@example.test");
     await page.getByLabelText("Password", { exact: false }).fill("long memorable test password");
-    await page.getByRole("dialog").getByRole("button", { name: "Login", exact: true }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Log in", exact: true }).click();
     await expect.element(page.getByRole("textbox", { name: "Email address" })).toBeEnabled();
-    await expect.element(page.getByRole("dialog", { name: "Login" })).toBeVisible();
+    await expect.element(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
   });
 
   it("pins account form states while retaining editable native inputs", async () => {

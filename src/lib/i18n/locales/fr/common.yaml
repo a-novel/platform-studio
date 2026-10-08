@@ -1,6 +1,6 @@
 access:
   anonymous:
-    description: Cette page est réservée aux membres connectés.
+    description: Connectez-vous pour consulter cette page.
     title: Compte Agora requis
   error:
     description: Cette page n’a pas pu être affichée.
@@ -8,7 +8,10 @@ access:
   forbidden:
     description: Votre compte ne permet pas de consulter cette page.
     title: Accès refusé
-  home: Retour à l’accueil
+  home: Revenir à l’accueil
+  notFound:
+    description: Cette adresse ne correspond à aucune page.
+    title: Page introuvable
   pending:
     title: Vérification de l’accès
   retry: Recharger la page
@@ -52,7 +55,7 @@ authUi:
       description: Un lien de confirmation sera envoyé à votre nouveau courriel.
       hint: Votre courriel actuel reste actif jusqu’à confirmation.
       label: Nouveau courriel
-      pendingDescription: Lien de confirmation envoyé à
+      pendingDescription: Si aucun autre compte n’utilise cette adresse, vous recevrez un lien de confirmation à
       pendingTitle: Confirmation en attente
       resend: Envoyer un autre lien
       submit: Envoyer le lien
@@ -63,7 +66,7 @@ authUi:
     logout:
       description: Vous serez déconnecté de Studio sur cet appareil.
       submit: Se déconnecter
-      submitting: Déconnexion en cours…
+      submitting: Déconnexion…
     password:
       confirmLabel: Confirmez le nouveau mot de passe
       currentLabel: Mot de passe actuel
@@ -77,7 +80,7 @@ authUi:
     emailLabel: Courriel
     journeys:
       login:
-        submit: Connexion
+        submit: Se connecter
         submitting: Connexion…
       register:
         accountExists: Ce courriel est déjà associé à un compte. Vous pouvez vous connecter.
@@ -92,7 +95,7 @@ authUi:
         submitting: Envoi du lien…
     passwordLabel: Mot de passe
     pendingTitle: Consultez votre messagerie
-  serviceUnavailable: Service indisponible
+  serviceUnavailable: Temporairement indisponible
   shortCode:
     confirmPasswordLabel: Confirmez le nouveau mot de passe
     continue: Continuer vers Studio
@@ -129,16 +132,14 @@ pageTitles:
   emailUpdated: Courriel mis à jour
   incompleteLink: Lien incomplet
   invalidLink: Lien invalide
-  notFound: Page introuvable
   passwordReset: Mot de passe réinitialisé
   resetPassword: Réinitialiser le mot de passe
-  withState: "{{title}} : {{status}}"
+  withState: "{{title}} : {{status}}"
 shell:
   accountFallback: Compte
   auth:
-    backToSignIn: Connexion
     createAccount: Demander une invitation
-    forgotPassword: Mot de passe oublié ?
+    forgotPassword: Mot de passe oublié ?
     login:
       title: Connexion
     register:
@@ -147,7 +148,6 @@ shell:
     reset:
       description: Vous recevrez un lien par courriel pour choisir un nouveau mot de passe.
       title: Réinitialisez votre mot de passe
-    signInInstead: Connexion
   brand: Studio
   closeAuthentication: Fermer la fenêtre
   closeNavigation: Fermer la navigation
@@ -162,5 +162,5 @@ shell:
   openNavigation: Ouvrir la navigation
   sessionLoading: Chargement du compte
   sessionUnavailable: Informations du compte indisponibles.
-  signIn: Connexion
+  signIn: Se connecter
   skipToContent: Aller au contenu

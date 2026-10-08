@@ -6,10 +6,10 @@ const locales = [
     locale: "en-US",
     routes: [
       ["/", "Home"],
-      ["/?auth=login", "Login"],
+      ["/?auth=login", "Log in"],
       ["/?auth=register", "Join the Agora invitation list"],
       ["/?auth=reset", "Reset password"],
-      ["/account", "Login"],
+      ["/account", "Log in"],
       ["/?auth=unknown&email=private@example.test", "Home"],
       ["/ext/account/create", "Create account: Incomplete link"],
       ["/ext/password/reset", "Reset password: Incomplete link"],

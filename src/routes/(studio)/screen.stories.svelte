@@ -235,7 +235,7 @@
       within(dialog).getByRole("heading", { name: t("authUi.authentication.journeys.register.recordedTitle") })
     ).toBeVisible();
     expect(getComputedStyle(status).backgroundColor).toBe("rgba(0, 0, 0, 0)");
-    await expect(within(dialog).queryByRole("link", { name: t("shell.auth.signInInstead") })).not.toBeInTheDocument();
+    await expect(within(dialog).queryByRole("link", { name: t("shell.signIn") })).not.toBeInTheDocument();
   }
 </script>
 
