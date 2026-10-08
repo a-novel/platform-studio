@@ -1,5 +1,6 @@
 import { compose, emailLink, expect, test } from "./fixtures";
-import { screenshot } from "./screenshots";
+
+import { screenshot } from "@a-novel-kit/nodelib-test/playwright";
 
 import type { Page } from "playwright/test";
 

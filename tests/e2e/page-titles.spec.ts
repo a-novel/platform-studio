@@ -1,5 +1,6 @@
 import { expect, test } from "./fixtures";
-import { screenshot } from "./screenshots";
+
+import { screenshot } from "@a-novel-kit/nodelib-test/playwright";
 
 const locales = [
   {
