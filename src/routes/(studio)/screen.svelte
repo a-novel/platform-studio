@@ -315,12 +315,14 @@
       </header>
 
       {#if studioDowntime?.downtime}
-        <DowntimeBanner
-          start={studioDowntime.downtime.start}
-          end={studioDowntime.downtime.end}
-          started={studioDowntime.started}
-          timeZone={studioDowntime.timeZone}
-        />
+        <div class="downtime">
+          <DowntimeBanner
+            start={studioDowntime.downtime.start}
+            end={studioDowntime.downtime.end}
+            started={studioDowntime.started}
+            timeZone={studioDowntime.timeZone}
+          />
+        </div>
       {/if}
 
       <main id="main-content" class="main-content" tabindex="-1">
@@ -508,12 +510,19 @@
     text-align: start;
   }
 
-  /* Rows: the mobile header, the maintenance banner, then the content. An absent row takes no space. */
+  /* A column, so the sticky header and banner can stay in view across the whole content. */
   .workspace {
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     min-inline-size: 0;
     min-block-size: 100dvb;
+  }
+
+  /* The maintenance banner stays above the content while it scrolls. */
+  .downtime {
+    position: sticky;
+    z-index: var(--layer-sticky);
+    inset-block-start: 0;
   }
 
   .mobile-header {
@@ -521,7 +530,7 @@
   }
 
   .main-content {
-    grid-row: 3;
+    flex: 1;
     outline: none;
     min-inline-size: 0;
   }
@@ -552,6 +561,13 @@
 
     .rail {
       display: none;
+    }
+
+    /* On narrow screens it waits at the bottom, away from where reading starts, and never covers the end. */
+    .downtime {
+      order: 1;
+      inset-block-end: 0;
+      inset-block-start: auto;
     }
 
     .mobile-header {
