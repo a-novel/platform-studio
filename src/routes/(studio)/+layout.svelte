@@ -63,7 +63,6 @@
     getUrl: () => new URL(currentHref),
     onDrawerChange: (open) => {
       const next = withNavigationOpen(new URL(window.location.href), open);
-      // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
       goto(next, { shallow: true, replace: true, state: page.state });
       currentHref = next.href;
     },
@@ -114,7 +113,6 @@
   function synchronizeUrl() {
     const normalized = normalizeAuthUrl(new URL(window.location.href));
     if (normalized.href !== window.location.href) {
-      // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
       goto(normalized, { shallow: true, replace: true, state: page.state });
     }
     currentHref = normalized.href;
@@ -139,10 +137,8 @@
     const previousView = readAuthView(new URL(window.location.href).searchParams);
     const next = withAuthView(new URL(window.location.href), view);
     if (previousView === null && view !== null) {
-      // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
       goto(next, { shallow: true, state: page.state });
     } else {
-      // eslint-disable-next-line svelte/no-navigation-without-resolve -- window.location is already base-resolved.
       goto(next, { shallow: true, replace: true, state: page.state });
     }
     currentHref = next.href;
