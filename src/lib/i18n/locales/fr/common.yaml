@@ -14,7 +14,7 @@ access:
     title: Page introuvable
   pending:
     title: Vérification de l’accès
-  retry: Recharger la page
+  retry: ""
   unavailable:
     description: Votre session est conservée. Veuillez recharger cette page dans quelques minutes.
     title: Accès temporairement indisponible
