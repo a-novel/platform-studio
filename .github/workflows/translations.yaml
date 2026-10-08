@@ -1,0 +1,59 @@
+name: translations
+
+on: # zizmor: ignore[dangerous-triggers] Reads labels and reruns a check; never checks out or runs PR code.
+  pull_request_target:
+    types: [labeled, unlabeled, synchronize]
+
+permissions: {}
+
+jobs:
+  approval:
+    if: >-
+      github.event.action == 'synchronize' ||
+      github.event.label.name == 'allow-incomplete-translations' ||
+      github.event.label.name == 'allow-translation-drift'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: translations-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Revoke approvals after a catalog change
+        id: revoke
+        if: github.event.action == 'synchronize'
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          held=$(jq -r '.[] | select(. == "allow-incomplete-translations" or . == "allow-translation-drift")' <<<"$LABELS")
+          [ -n "$held" ] || exit 0
+          # A compare that fails, as after a force-push drops the old head, revokes.
+          changed=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$AFTER" --jq '.files[].filename' || echo src/lib/i18n/locales/)
+          grep -q '^src/lib/i18n/locales/' <<<"$changed" || exit 0
+          for label in $held; do gh pr edit "$PR" --repo "$GITHUB_REPOSITORY" --remove-label "$label"; done
+          echo "revoked=true" >> "$GITHUB_OUTPUT"
+
+      - name: Rerun the translation check
+        if: github.event.action != 'synchronize' || steps.revoke.outputs.revoked == 'true'
+        run: |
+          set -euo pipefail
+          # A job reruns only once its whole run has completed.
+          for _ in $(seq 1 80); do
+            run=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow main.yaml --commit "$HEAD_SHA" --event push \
+              --limit 1 --json databaseId,status --jq '.[0] // empty')
+            if [ -n "$run" ] && [ "$(jq -r .status <<<"$run")" = completed ]; then break; fi
+            sleep 20
+          done
+          job=$(gh run view "$(jq -r .databaseId <<<"$run")" --repo "$GITHUB_REPOSITORY" --json jobs \
+            --jq '.jobs[] | select(.name == "lint-translations") | .databaseId')
+          gh run rerun --repo "$GITHUB_REPOSITORY" --job "$job"

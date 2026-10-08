@@ -22,7 +22,73 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
           client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
-          lint_action: "lint:ci"
+          lint_action: "lint:eslint"
+
+  lint-style:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/lint-node@v1.38.4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
+          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
+          lint_action: "lint:stylecheck"
+
+  lint-types:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/lint-node@v1.38.4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
+          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
+          lint_action: "lint:typecheck"
+
+  lint-translations:
+    # Gaps and drift are measured against master, so master has nothing to compare.
+    if: github.ref != 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: read
+    env:
+      BASE: ${{ github.event.repository.default_branch }}
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/setup-node@v1.38.4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
+          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
+      - name: Check catalog structure
+        run: pnpm run i18n:structure || { git diff; exit 1; }
+      # A merge group checks structure only: it cannot carry a gap or drift its PRs did not each report.
+      - name: Read approval labels
+        id: labels
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          names=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --state open --json labels --jq '[.[0].labels[]?.name]')
+          echo "names=$names" >> "$GITHUB_OUTPUT"
+      - name: Fetch the base branch
+        if: github.event_name == 'push'
+        run: |
+          if [ "$(git rev-parse --is-shallow-repository)" = true ]; then git fetch --no-tags --quiet --unshallow origin; fi
+          git fetch --no-tags --quiet origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"
+      - name: Check translation gaps
+        if: github.event_name == 'push' && !contains(fromJSON(steps.labels.outputs.names), 'allow-incomplete-translations')
+        run: pnpm run i18n:gaps --base "origin/$BASE"
+      - name: Check translation drift
+        if: github.event_name == 'push' && !contains(fromJSON(steps.labels.outputs.names), 'allow-translation-drift')
+        run: pnpm run i18n:drift --base "origin/$BASE"
 
   lint-dockerfile:
     runs-on: ubuntu-latest
@@ -35,6 +101,33 @@ jobs:
       - uses: a-novel-kit/workflows/generic-actions/lint-dockerfile@v1.38.4
         with:
           version: "2.14.0"
+
+  scan-secrets:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: a-novel-kit/workflows/security-actions/scan-secrets@v1.38.4
+        with:
+          config: .gitleaks.toml
+          # renovate: datasource=github-releases depName=gitleaks/gitleaks
+          version: "8.30.1"
+
+  lint-workflows:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: a-novel-kit/workflows/security-actions/lint-workflows@v1.38.4
+        with:
+          # renovate: datasource=docker depName=ghcr.io/zizmorcore/zizmor
+          version: "1.30.1"
 
   test-unit:
     runs-on: ubuntu-latest
