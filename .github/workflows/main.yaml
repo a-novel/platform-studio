@@ -22,7 +22,34 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
           client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
-          lint_action: "lint:ci"
+          lint_action: "lint:eslint"
+
+  lint-style:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/lint-node@v1.38.4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
+          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
+          lint_action: "lint:stylecheck"
+
+  lint-types:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/lint-node@v1.38.4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
+          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
+          lint_action: "lint:typecheck"
+
 
   lint-dockerfile:
     runs-on: ubuntu-latest
@@ -35,6 +62,8 @@ jobs:
       - uses: a-novel-kit/workflows/generic-actions/lint-dockerfile@v1.38.4
         with:
           version: "2.14.0"
+
+
 
   test-unit:
     runs-on: ubuntu-latest

@@ -29,7 +29,6 @@
     "i18n:unused": "i18next-cli status --unused",
     "preinstall": "npx only-allow pnpm",
     "lint": "pnpm lint:stylecheck && pnpm lint:typecheck && pnpm lint:eslint && pnpm i18n:check",
-    "lint:ci": "pnpm lint",
     "lint:eslint": "eslint .",
     "lint:stylecheck": "prettier --check . --config prettier.config.ts",
     "lint:typecheck": "pnpm check",
