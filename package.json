@@ -22,7 +22,7 @@
     "format": "prettier --write . --config prettier.config.ts",
     "i18n:check": "pnpm i18n:structure && pnpm i18n:gaps && pnpm i18n:drift",
     "i18n:drift": "nodelib-i18n-changes drift --source en",
-    "i18n:extract": "i18next-cli extract --with-types",
+    "i18n:extract": "i18next-cli extract && i18next-cli types",
     "i18n:extract:check": "i18next-cli extract --ci --quiet",
     "i18n:gaps": "nodelib-i18n-changes gaps --source en",
     "i18n:structure": "pnpm i18n:extract:check && pnpm i18n:types:check && pnpm i18n:unused",
