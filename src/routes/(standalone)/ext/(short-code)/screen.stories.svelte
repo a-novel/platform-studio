@@ -95,19 +95,12 @@
     ).toHaveAttribute("readonly");
   }
 
-  async function verifySuccess({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifySuccess({ canvasElement }: { canvasElement: HTMLElement }) {
     const canvas = within(canvasElement);
-    const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("status")).toBeVisible();
     await expect(within(canvas.getByRole("status")).getByRole("heading", { level: 1 })).toBeVisible();
     expect(canvas.getAllByRole("heading")).toHaveLength(1);
-    await expect(canvas.getByRole("link", { name: t("authUi.shortCode.continue") })).toBeVisible();
+    await expect(canvas.getByRole("link")).toBeVisible();
   }
 </script>
 

@@ -1,91 +1,150 @@
 # Contributing to platform-studio
 
-This document is about shaping and verifying Studio changes. Read the [project overview](./README.md) first, and use the [developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md) for platform setup and shared commands.
+This guide covers where Studio code goes, how a screen is built, how product copy is written, and how
+changes are tested. Read the [project overview](./README.md) first; the
+[developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md) covers
+workspace setup and shared commands.
 
-## Source boundaries
+## Where code goes
 
-Studio uses feature folders inside explicit runtime layers. Create only the folders a feature needs; for example, authentication can span `ui/auth`, `application/auth`, `client/auth`, and `server/auth` without mixing those responsibilities.
+A feature spans the runtime layers it needs, and dependencies point inward: routes compose the
+layers, client and server code depend on application contracts, and application code stays
+framework-free.
 
-- `src/routes` contains SvelteKit entrypoints and composition only. Browser route files wire UI and client controllers; server route files wire application and server modules.
-- `src/lib/ui` contains product-specific, presentational Svelte components, their stories, and rendering tests. UI receives controlled state through typed props and emits interactions; it does not read the environment, call services, persist state, or navigate.
-- `src/lib/application` contains framework-independent types, state codecs, and use-case logic. It does not import SvelteKit, browser APIs, UI, client, or server modules.
-- `src/lib/client` contains browser-only controllers and adapters for navigation, URL state, and local persistence. It may compose application and UI modules, but never imports server code.
-- `src/lib/server` contains private configuration and service-facing adapters. It may use application types, but never imports client or UI code.
-- `src/lib/i18n` contains locale policy, static YAML catalogs, generated key types, and request-localization wiring.
+| Folder                | Owns                                                  | Never imports                               |
+| --------------------- | ----------------------------------------------------- | ------------------------------------------- |
+| `src/routes`          | URLs, layouts, loads, form actions, and wiring        |                                             |
+| `src/lib/ui`          | Product-specific presentational components            | Environment, services, storage, navigation  |
+| `src/lib/application` | Types, state codecs, validation, and use-case logic   | SvelteKit, browser APIs, UI, client, server |
+| `src/lib/client`      | Browser adapters for URL state and local storage      | Server code                                 |
+| `src/lib/server`      | Sessions, service clients, and private configuration  | Client and UI code                          |
+| `src/lib/i18n`        | Locale policy, YAML catalogs, and generated key types |                                             |
 
-Dependencies point inward: routes compose the runtime layers; client and server depend on application contracts; application stays framework-independent. Code that is generic across products belongs in UIKit or nodelib instead of Studio.
+Reusable controls belong in UIKit and reusable runtime helpers in nodelib. Studio keeps screen
+composition and product behavior.
 
 ## Building a screen
 
-A screen starts as pure UI with its behavior supplied through typed props. Add its Storybook states first so reviewers can inspect empty, loading, error, and populated states without live services.
+Each route keeps two files beside its SvelteKit entrypoints. `screen.svelte` renders state and
+reports what the user asked for. `controller.svelte.ts` owns that state and its transitions, with no
+DOM, route, storage, or network access. `+page.svelte` only connects them.
 
-Prefer a single top-to-bottom flow across screen sizes. Stack independent forms and task sections vertically so visual order follows reading and keyboard order; reserve columns for content that benefits from comparison.
+Work in that order. Write stories first, one per meaningful state (loading, error, success, long
+content, mobile), so the screen can be reviewed in `pnpm storybook` without live services. Then
+unit-test the controller, and wire the route last.
 
-Form submit buttons span the form width on mobile and use their content width, aligned to the start, on desktop. Separate them from the preceding fields with twice the normal field gap, keeping secondary actions distinct.
+Layouts follow three rules:
 
-Once those states render correctly, add the logic behind a mockable boundary. Unit tests cover the logic, browser tests cover behavior that needs the DOM, and the route or layout supplies the production wiring.
+- Content flows in one column at every width, so reading order matches keyboard order.
+- Submit buttons span the form on mobile and fit their label, start-aligned, on desktop. Twice the
+  field gap separates them from the last field.
+- Errors and confirmations sit directly above the action they concern.
 
-Keep reusable controls in UIKit. Studio owns screen composition and product-specific behavior.
+## Server and session rules
 
-## Working with translations
+The Studio server is the only caller of platform services.
 
-Messages live in the YAML locale catalogs under `src/lib/i18n/locales`. Call the typed translation function with static keys so extraction can keep source and locale files aligned.
+- Forms post to same-origin server actions and work without JavaScript.
+- Tokens live in HttpOnly cookies. They never reach browser storage, page data, logs, or stories.
+- Email links under `/ext` never echo their code: a GET only parses the link, completion posts to the
+  same URL, and the result redirects to a code-free URL.
+- Private settings are read on the server only. Anything exposed through `VITE_` ships in the
+  browser bundle.
+- A service outage keeps the session cookies and shows a recoverable state. Only a rejected token
+  logs the user out.
 
-For languages with formal and informal address, use the formal form in static text (`vous` in French, `usted` in Spanish). Use the language’s conventional action-label form for buttons, links, and other controls; French uses infinitives such as `Créer le compte`.
+## Writing copy
 
-Run `pnpm i18n:extract` after adding or removing messages. Review both languages, then run `pnpm i18n:check` before committing. The check covers extraction drift, generated types, missing translations, and unused translations.
+Every visible string, accessible name, and page title lives in the YAML catalogs under
+`src/lib/i18n/locales`. Components call `t()` with a static key at render time, and code passes
+stable codes rather than prose.
 
-## Reviewing the application
+The role of a string sets its grammatical form:
 
-Use Storybook for screen review and the development server for route wiring. The application imports shared fonts and design tokens once in its root layout.
+| Role                                                        | Form                     | English                    | French                              |
+| ----------------------------------------------------------- | ------------------------ | -------------------------- | ----------------------------------- |
+| Text asking the reader to act: instructions, guidance       | Formal imperative        | Choose a new password.     | Choisissez un nouveau mot de passe. |
+| Controls: buttons, links, accessible names, task tab titles | Infinitive               | Create account             | Créer le compte                     |
+| Names and outcomes: field labels, section titles, results   | Noun phrase or statement | Your password was changed. | Votre mot de passe a été modifié.   |
 
-The server runtime reads private configuration. Values exposed through `VITE_` become part of the browser bundle and must be public.
+Formal address uses `vous` in French, and the third-person formal form in languages that have one,
+such as `usted` in Spanish. English imperative and infinitive share one form, so a control reads
+"Log in", never the noun "Login".
 
-## Browser integration tests
+Each concept keeps one term across every screen:
 
-The browser journeys run against the production Studio build and disposable authentication,
-JSON-key, PostgreSQL and Mailpit containers. They create accounts from real invitation emails.
-Run them with the dedicated test stack; the outage case stops and restarts its authentication
-container, so the suite runs one worker at a time.
+| Concept                      | English         | French                       |
+| ---------------------------- | --------------- | ---------------------------- |
+| Opening and ending a session | log in, log out | se connecter, se déconnecter |
+| A user's address             | email address   | courriel                     |
+| The waitlist                 | invitation list | liste d’invitation           |
+| A one-time email URL         | link            | lien                         |
+
+Copy promises only what the backend does. When a service hides whether an account exists, the
+confirmation stays conditional ("If this email is registered, you’ll receive…"). A link is named for
+where it leads: a password reset ends on "Log in", because the reset does not open a session.
+
+Both languages use the typographic apostrophe (’) and the ellipsis character (…) on pending labels.
+French puts a no-break space before `:` and a narrow no-break space before `?`, `!`, and `;`.
+
+After adding or removing a key, run `pnpm i18n:extract`, review both languages, then run
+`pnpm i18n:check`. The check fails on extraction drift, stale generated types, and missing or
+unused translations.
+
+## Testing
+
+| Suite      | Covers                                              | Command               |
+| ---------- | --------------------------------------------------- | --------------------- |
+| Unit       | Application logic, server modules, controllers      | `pnpm test:unit`      |
+| Browser    | Component behavior in Chromium                      | `pnpm test:browser`   |
+| Storybook  | Every story's interactions and accessibility checks | `pnpm test:storybook` |
+| End to end | Real journeys against disposable services           | `pnpm test:e2e`       |
+
+`a-novel test --type=pnpm -y` runs every suite.
+
+### End-to-end journeys
+
+The journeys run the production build against disposable authentication, JSON-key, PostgreSQL, and
+Mailpit containers, and create accounts from real invitation emails. They also replay the essential
+forms with JavaScript disabled. One case stops the authentication container to simulate an outage,
+so the suite runs one worker at a time.
 
 ```bash
-E2E_CONTAINER_ENGINE=podman a-novel test --type=pnpm -y
+pnpm exec playwright install --with-deps chromium
+E2E_CONTAINER_ENGINE=podman pnpm test:e2e
 ```
 
-Playwright starts the isolated services, waits for readiness, and removes their containers and data
-afterward. For a focused run, use `E2E_CONTAINER_ENGINE=podman pnpm test:e2e`. Install the pinned browser once with `pnpm exec playwright install --with-deps chromium`. Ports 4173, 14100
-and 14825 must be free. With Docker Compose, use `docker` and omit `E2E_CONTAINER_ENGINE`.
+Install the browser once. Ports 4173, 14100, and 14825 must be free. With Docker Compose, omit
+`E2E_CONTAINER_ENGINE`.
 
-Actions runs these journeys in the required `test-browser` check. With Drive configured, the job
-summary links a private batch containing the HTML report, screenshot diffs, traces and service logs.
-Download and extract it, then open `playwright-report` with `pnpm exec playwright show-report`.
-The latest successful master reference is retained indefinitely; each live branch keeps one completed
-batch, removed after merge or deletion. Codecov continues reporting unit/component coverage as an
-advisory check using small GitHub artifacts. Until Drive activation, `studio-browser-report` remains
-a seven-day GitHub artifact.
+### Screenshot review
 
-Screenshot checkpoints use native Playwright comparisons in CI. Review an intentional change's diff,
-then apply `allow-screenshot-change` to the PR; only a human with repository write access can approve.
-The label approves the current commit and reruns CI. New commits require removing and reapplying it
-after review. Functional failures, capture failures and upload errors remain blocking. Approved runs
-also retain their original diff report in `.visual/comparison-report` inside the private archive.
+The required `test-browser` check compares checkpoint screenshots against the master reference. Its
+job summary links a private batch with the HTML report, screenshot diffs, traces, and service logs;
+extract it and open `playwright-report` with `pnpm exec playwright show-report`.
 
-Local runs attach checkpoint screenshots for diagnosis. To compare locally, extract `snapshots/`
-from the current reference archive into `.visual/snapshots`, then run
-`PLAYWRIGHT_SNAPSHOT_DIR=.visual/snapshots E2E_CONTAINER_ENGINE=podman pnpm test:e2e --update-snapshots=none`.
-Compare using the same Ubuntu/Chromium/font environment as CI to avoid rendering differences.
-Account identifiers and expiry timestamps are masked; roles, labels, forms and layout stay visible.
+Name each checkpoint after its screen with a fixed string. A name derived from copy changes with the
+copy, and the comparison then reports a removed screenshot instead of a reviewable diff.
 
-Studio stores evidence under `studio/ci/references` and `studio/ci/results` in Agorastoryverse's
-dedicated [**CI - Platform** Shared Drive](https://drive.google.com/drive/folders/0AIAPDK2TwJK7Uk9PVA). Shared actions own folder-scoped storage, approval and cleanup; other
-platforms reuse those actions with their own folders and the same `VISUAL_*` repository variable names.
-Provision and activate them using the
+When a visual change is intentional, review the diffs, then have a maintainer with write access apply
+the `allow-screenshot-change` label. The label approves the current commit only, so a new commit needs
+it removed and reapplied. Functional failures and upload errors stay blocking.
+
+To compare locally, extract `snapshots/` from the reference archive into `.visual/snapshots` and run
+the suite in the CI image, since another OS, browser, or font set renders differently:
+
+```bash
+PLAYWRIGHT_SNAPSHOT_DIR=.visual/snapshots E2E_CONTAINER_ENGINE=podman pnpm test:e2e --update-snapshots=none
+```
+
+Evidence lives under `studio/ci/references` and `studio/ci/results` in the
+[**CI - Platform** Shared Drive](https://drive.google.com/drive/folders/0AIAPDK2TwJK7Uk9PVA). The
+master reference is kept indefinitely, and each branch keeps its latest batch until it merges or is
+deleted. Provisioning follows the
 [infrastructure runbook](https://github.com/a-novel/infra/blob/master/docs/runbooks/visual-test-storage.md)
-and [shared adoption guide](https://github.com/a-novel-kit/workflows/blob/master/docs/migrations/v1.33.0.md).
-
-The no-JavaScript cases cover standalone invitation and account forms. The login dialog currently
-requires hydration; see [the tracked fallback issue](https://github.com/a-novel/platform-studio/issues/82).
+and the [shared adoption guide](https://github.com/a-novel-kit/workflows/blob/master/docs/migrations/v1.33.0.md).
 
 ## Questions?
 
-[Open an issue](https://github.com/a-novel/platform-studio/issues) and include the relevant logs and environment details.
+[Open an issue](https://github.com/a-novel/platform-studio/issues) and include the relevant logs and
+environment details.

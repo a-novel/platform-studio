@@ -228,7 +228,7 @@
     >
       {t("shell.auth.createAccount")}
     </Button>
-  {:else if model.authView === "register"}
+  {:else if model.authView}
     <Button
       variant="ghost"
       tone="neutral"
@@ -236,17 +236,7 @@
       href={controller.authenticationHref("login")}
       onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("login"))}
     >
-      {t("shell.auth.signInInstead")}
-    </Button>
-  {:else if model.authView === "reset"}
-    <Button
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      href={controller.authenticationHref("login")}
-      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("login"))}
-    >
-      {t("shell.auth.backToSignIn")}
+      {t("shell.signIn")}
     </Button>
   {/if}
 {/snippet}

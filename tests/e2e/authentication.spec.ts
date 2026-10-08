@@ -6,7 +6,7 @@ import type { Page } from "playwright/test";
 async function login(page: Page, account: { email: string; password: string }) {
   await page.getByLabel(/^Email address/).fill(account.email);
   await page.getByLabel(/^Password/).fill(account.password);
-  await page.getByRole("dialog").getByRole("button", { name: "Login", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Log in", exact: true }).click();
 }
 
 async function choosePassword(page: Page, password: string) {
@@ -21,7 +21,7 @@ test("login returns to the protected account, survives reload and logout protect
 }, info) => {
   await page.goto("/account");
   await expect(page).toHaveURL(/auth=login&returnTo=%2Faccount/);
-  await expect(page).toHaveTitle("Login — Agora Studio");
+  await expect(page).toHaveTitle("Log in — Agora Studio");
   await login(page, account);
   await expect(page).toHaveURL("/account");
   await expect(page).toHaveTitle("Account settings — Agora Studio");
@@ -88,7 +88,7 @@ test("password recovery follows the delivered email and replaces the old passwor
   await expect(page.getByText("Your password was reset.", { exact: true })).toBeVisible();
   await expect(page).toHaveTitle("Password reset — Agora Studio");
   await screenshot(page, info, "password-recovered");
-  await page.getByRole("link", { name: "Continue to Studio" }).click();
+  await page.getByRole("link", { name: "Log in", exact: true }).click();
   await login(page, account);
   await expect(page.getByText("The email address or password is incorrect.", { exact: true })).toBeVisible();
   await login(page, { ...account, password: "Recovered-password-42!" });
@@ -125,10 +125,10 @@ test("dialog history and keyboard dismissal restore the shell focus", async ({ p
   await page.goto("/");
   await expect(page).toHaveTitle("Home — Agora Studio");
   if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
-  const trigger = page.getByRole("link", { name: "Login", exact: true });
+  const trigger = page.getByRole("link", { name: "Log in", exact: true });
   await trigger.click();
-  await expect(page.getByRole("dialog", { name: "Login", exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Login — Agora Studio");
+  await expect(page.getByRole("dialog", { name: "Log in", exact: true })).toBeVisible();
+  await expect(page).toHaveTitle("Log in — Agora Studio");
   await expect(page.getByRole("link", { name: "Close dialog" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByLabel(/^Email address/)).toBeFocused();
@@ -138,12 +138,12 @@ test("dialog history and keyboard dismissal restore the shell focus", async ({ p
   await page.goBack();
   await expect(page).toHaveURL(isMobile ? "/?menu=open" : "/");
   await expect(page).toHaveTitle("Home — Agora Studio");
-  await expect(page.getByRole("dialog", { name: /^(Login|Reset your password)$/ })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: /^(Log in|Reset your password)$/ })).toHaveCount(0);
   await page.goForward();
   await expect(page.getByRole("dialog", { name: "Reset your password" })).toBeVisible();
   await expect(page).toHaveTitle("Reset password — Agora Studio");
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: /^(Login|Reset your password)$/ })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: /^(Log in|Reset your password)$/ })).toHaveCount(0);
   await expect(page).toHaveURL(isMobile ? "/?menu=open" : "/");
   await expect(page).toHaveTitle("Home — Agora Studio");
   await expect(trigger).toBeFocused();
@@ -218,14 +218,14 @@ test.describe("native forms without JavaScript", () => {
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await page.getByRole("link", { name: "Open navigation", exact: true }).click();
     }
-    await page.getByRole("link", { name: "Login", exact: true }).click();
+    await page.getByRole("link", { name: "Log in", exact: true }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByLabel(/^Email address/)).toBeVisible();
     await dialog.getByRole("link", { name: "Forgot password?" }).click();
     await expect(page).toHaveTitle("Reset password — Agora Studio");
     await page.getByRole("button", { name: "Send link", exact: true }).click();
     await expect(dialog.getByText("Enter a valid email address.", { exact: true })).toBeVisible();
-    await dialog.getByRole("link", { name: "Login", exact: true }).click();
+    await dialog.getByRole("link", { name: "Log in", exact: true }).click();
     await dialog.getByRole("link", { name: "Request an invitation", exact: true }).click();
     await expect(page).toHaveTitle("Join the Agora invitation list — Agora Studio");
     await dialog.getByLabel(/^Email address/).fill("invalid");
@@ -238,7 +238,7 @@ test.describe("native forms without JavaScript", () => {
 
   test("login validates on the server and returns to the protected destination", async ({ page, account }) => {
     await page.goto("/account");
-    await expect(page.getByRole("dialog", { name: "Login", exact: true })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Log in", exact: true })).toBeVisible();
     await login(page, { ...account, password: "Incorrect-password-42!" });
     await expect(page.getByText("The email address or password is incorrect.", { exact: true })).toBeVisible();
     await login(page, account);

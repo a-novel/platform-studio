@@ -74,15 +74,21 @@
         description={translateShortCodeStatus(t, unavailableStatus, "description")}
       >
         {#snippet actions()}
+          <!-- Invitations are issued by the team, so a dead one leads back to the invitation list. -->
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-          <Link href={restartHref}>{t("authUi.shortCode.restart")}</Link>
+          <Link href={restartHref}>
+            {model.journey === "register" ? t("shell.auth.createAccount") : t("authUi.shortCode.restart")}
+          </Link>
         {/snippet}
       </StatusState>
     {:else if model.state.status === "success"}
       <StatusState tone="success" {title} headingLevel={1}>
         {#snippet actions()}
+          <!-- A password reset returns no session, so it continues to the login form. -->
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
-          <Link href={continueHref}>{t("authUi.shortCode.continue")}</Link>
+          <Link href={continueHref}>
+            {model.journey === "password-reset" ? t("shell.signIn") : t("authUi.shortCode.continue")}
+          </Link>
         {/snippet}
       </StatusState>
     {:else if model.journey === "email-update"}

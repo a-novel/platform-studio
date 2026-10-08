@@ -6,10 +6,10 @@ const locales = [
     locale: "en-US",
     routes: [
       ["/", "Home"],
-      ["/?auth=login", "Login"],
+      ["/?auth=login", "Log in"],
       ["/?auth=register", "Join the Agora invitation list"],
       ["/?auth=reset", "Reset password"],
-      ["/account", "Login"],
+      ["/account", "Log in"],
       ["/?auth=unknown&email=private@example.test", "Home"],
       ["/ext/account/create", "Create account: Incomplete link"],
       ["/ext/password/reset", "Reset password: Incomplete link"],
@@ -22,10 +22,10 @@ const locales = [
     locale: "fr-FR",
     routes: [
       ["/", "Accueil"],
-      ["/?auth=login", "Connexion"],
+      ["/?auth=login", "Connectez-vous"],
       ["/?auth=register", "Rejoignez la liste d’invitation Agora"],
       ["/?auth=reset", "Réinitialiser le mot de passe"],
-      ["/account", "Connexion"],
+      ["/account", "Connectez-vous"],
       ["/?auth=unknown&email=private@example.test", "Accueil"],
       ["/ext/account/create", "Créer un compte : Lien incomplet"],
       ["/ext/password/reset", "Réinitialiser le mot de passe : Lien incomplet"],
@@ -35,6 +35,14 @@ const locales = [
     ],
   },
 ] as const;
+
+/** Fixed checkpoint names, so a copy change shows as a diff rather than a renamed screenshot. */
+const checkpoints: Partial<Record<string, string>> = {
+  "/": "home",
+  "/?auth=login": "login",
+  "/?auth=register": "join-the-agora-invitation-list",
+  "/?auth=reset": "reset-password",
+};
 
 for (const { locale, routes } of locales) {
   for (const javaScriptEnabled of [true, false]) {
@@ -48,13 +56,10 @@ for (const { locale, routes } of locales) {
             await expect(page).toHaveTitle(`${title} — Agora Studio`);
             await expect(page.locator("head > title")).toHaveCount(1);
             if (route === "/page-that-does-not-exist") expect(response?.status()).toBe(404);
-            if (
-              locale === "en-US" &&
-              javaScriptEnabled &&
-              ["/", "/?auth=login", "/?auth=register", "/?auth=reset"].includes(route)
-            ) {
+            const checkpoint = checkpoints[route];
+            if (locale === "en-US" && javaScriptEnabled && checkpoint) {
               if (route !== "/") await expect(page.getByRole("dialog")).toBeVisible();
-              await screenshot(page, info, title.toLowerCase().replaceAll(" ", "-"));
+              await screenshot(page, info, checkpoint);
             }
           });
         }

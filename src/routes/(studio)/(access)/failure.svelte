@@ -29,8 +29,8 @@
   <div class="error-page">
     <StatusState
       tone="error"
-      title={t("access.error.title")}
-      description={t("access.error.description")}
+      title={status === 404 ? t("access.notFound.title") : t("access.error.title")}
+      description={status === 404 ? t("access.notFound.description") : t("access.error.description")}
       headingLevel={1}
     >
       {#snippet actions()}

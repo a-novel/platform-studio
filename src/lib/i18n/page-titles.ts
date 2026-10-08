@@ -49,7 +49,7 @@ export function shortCodePageTitle(t: TFunction<"common">, { journey, state }: S
 export function errorPageTitle(t: TFunction<"common">, status: number) {
   switch (status) {
     case 404:
-      return t("pageTitles.notFound");
+      return t("access.notFound.title");
     case 403:
       return t("access.forbidden.title");
     case 503:

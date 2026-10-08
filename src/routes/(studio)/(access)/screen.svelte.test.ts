@@ -25,7 +25,7 @@ describe("protected page presentation", () => {
       await expect.element(page.getByRole("heading", { level: 1 })).toBeVisible();
       if (status === "anonymous")
         await expect
-          .element(page.getByRole("link", { name: "Login", exact: true }))
+          .element(page.getByRole("link", { name: "Log in", exact: true }))
           .toHaveAttribute("href", links.loginHref);
       if (status === "unavailable")
         await expect
@@ -49,7 +49,8 @@ describe("protected page presentation", () => {
   it.each([
     [403, "Accès refusé"],
     [503, "Accès temporairement indisponible"],
-    [404, "Page indisponible"],
+    [404, "Page introuvable"],
+    [500, "Page indisponible"],
   ])("localizes HTTP %s without showing internal error details", async (status, title) => {
     render(Failure, { ...links, status }, { wrapper: StudioI18nProvider, wrapperProps: { locale: "fr" } });
     await expect.element(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();

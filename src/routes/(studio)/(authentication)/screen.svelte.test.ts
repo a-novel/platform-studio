@@ -165,7 +165,7 @@ describe("pure authentication screens", () => {
 
     await page.getByLabelText(/Email address/).fill("creator@example.test");
     await page.getByLabelText(/Password/).fill("valid-example-password");
-    const form = await submitForm("Login");
+    const form = await submitForm("Log in");
 
     await expectFormActionLayout(form);
     expect(form.getAttribute("action")).toBe("/auth?/login");
@@ -230,7 +230,7 @@ describe("pure authentication screens", () => {
     );
 
     const alert = page.getByRole("alert").element();
-    const submit = page.getByRole("button", { name: "Login" }).element();
+    const submit = page.getByRole("button", { name: "Log in" }).element();
     expect(alert.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
     await expect.element(page.getByRole("alert")).toMatchTextContent("Temporarily unavailable");
     await expect.element(page.getByRole("alert")).toMatchTextContent("Please try again in a few minutes.");
@@ -482,10 +482,10 @@ describe("pure authentication screens", () => {
   });
 
   it.each([
-    ["register", "registrationCompleted", "Your account is ready."],
-    ["email-update", "emailUpdated", "Your email address was updated."],
-    ["password-reset", "passwordReset", "Your password was reset."],
-  ] as const)("uses the %s outcome as the only page heading", async (journey, feedback, title) => {
+    ["register", "registrationCompleted", "Your account is ready.", "Continue to Studio"],
+    ["email-update", "emailUpdated", "Your email address was updated.", "Continue to Studio"],
+    ["password-reset", "passwordReset", "Your password was reset.", "Log in"],
+  ] as const)("uses the %s outcome as the only page heading", async (journey, feedback, title, action) => {
     render(
       ShortCodeScreen,
       {
@@ -501,10 +501,25 @@ describe("pure authentication screens", () => {
     await expect.element(status).toBeVisible();
     await expect.element(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
     expect(page.getByRole("heading").elements()).toHaveLength(1);
-    await expect.element(page.getByRole("link", { name: "Continue to Studio" })).toHaveAttribute("href", "/");
+    await expect.element(page.getByRole("link", { name: action, exact: true })).toHaveAttribute("href", "/");
     expect(document.querySelector("form")).toBeNull();
     const heading = page.getByRole("heading", { level: 1 }).element();
     expect(getComputedStyle(heading).textAlign).toBe("center");
+  });
+
+  it.each([
+    ["register", "Request an invitation"],
+    ["email-update", "Request a new link"],
+    ["password-reset", "Request a new link"],
+  ] as const)("offers the %s journey's way to get a new link", async (journey, action) => {
+    render(
+      ShortCodeScreen,
+      { controller: shortCodeController({ journey, state: { status: "invalid" } }) },
+      withLocale()
+    );
+
+    await expect.element(page.getByRole("heading", { level: 1, name: "This link is not valid" })).toBeVisible();
+    await expect.element(page.getByRole("link", { name: action, exact: true })).toBeVisible();
   });
 
   it("keeps account and secure-link service errors with their submit actions", async () => {

@@ -40,7 +40,6 @@
       const result = deserialize(await response.text());
       if (signal.aborted) return;
       if (result.type === "redirect") {
-        // eslint-disable-next-line svelte/no-navigation-without-resolve -- The server action supplies an app-resolved URL.
         await goto(result.location, { replace: true, refreshAll: true });
       } else await applyAction(result);
     } catch {
