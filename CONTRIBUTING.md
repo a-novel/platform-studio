@@ -89,9 +89,10 @@ French puts a no-break space before `:` and a narrow no-break space before `?`, 
 
 ### Checking translations
 
-After adding or removing a key, run `pnpm i18n:extract`, review both languages, then run
-`pnpm i18n:check`. CI runs the same checks in the `lint-translations` job, comparing the branch with
-its merge base on `master`:
+After any copy change, run `pnpm i18n:extract`, review both languages, then run `pnpm i18n:check`.
+The extraction also regenerates the catalog types, which embed the English text, so an edited English
+value needs it as much as a new key. CI runs the same checks in the `lint-translations` job, comparing
+the branch with its merge base on `master`, and reports every problem in one run:
 
 | Check     | Fails on                                                                                      | Accepted by                     |
 | --------- | --------------------------------------------------------------------------------------------- | ------------------------------- |
