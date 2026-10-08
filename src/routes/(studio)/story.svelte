@@ -2,12 +2,16 @@
   import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
   import type { StudioShellViewModel } from "#lib/application/shell/types.js";
 
+  import type { Snippet } from "svelte";
+
   /** Fixed-state Storybook harness around the pure shell. */
   export interface StudioShellStoryProps {
     initialModel: StudioShellViewModel;
     initialAuthenticationModel?: AuthenticationPanelModel;
     /** A started planned downtime, which the shell announces and locks the sign-in dialog for. */
     downtime?: { start: Date; end: Date };
+    /** Content after the home page, such as filler to scroll past sticky elements. */
+    children?: Snippet;
   }
 </script>
 
@@ -20,7 +24,7 @@
 
   import { untrack } from "svelte";
 
-  let { initialModel, initialAuthenticationModel, downtime }: StudioShellStoryProps = $props();
+  let { initialModel, initialAuthenticationModel, downtime, children }: StudioShellStoryProps = $props();
 
   const startedDowntime = untrack(() => downtime);
   if (startedDowntime) {
@@ -74,6 +78,7 @@
 <div class="story-frame">
   <Screen {controller}>
     <HomeScreen />
+    {@render children?.()}
   </Screen>
 </div>
 

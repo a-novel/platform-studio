@@ -7,6 +7,7 @@
   import StoryHarness from "./story.svelte";
 
   import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
+  import ScrollPreview from "@a-novel-kit/uikit-storybook/ScrollPreview.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
@@ -322,11 +323,11 @@
 </Story>
 
 <Story name="Maintenance" asChild>
-  <StoryHarness initialModel={maintenance} {downtime} />
+  <StoryHarness initialModel={maintenance} {downtime}><ScrollPreview /></StoryHarness>
 </Story>
 
 <Story name="Maintenance — mobile" exportName="MaintenanceMobile" globals={reviewStoryGlobals.mobile} asChild>
-  <StoryHarness initialModel={withOpenMobileNavigation(maintenance)} {downtime} />
+  <StoryHarness initialModel={maintenance} {downtime}><ScrollPreview /></StoryHarness>
 </Story>
 
 <Story name="Login modal during maintenance" asChild>
