@@ -123,6 +123,9 @@ The required `test-browser` check compares checkpoint screenshots against the ma
 job summary links a private batch with the HTML report, screenshot diffs, traces, and service logs;
 extract it and open `playwright-report` with `pnpm exec playwright show-report`.
 
+Name each checkpoint after its screen with a fixed string. A name derived from copy changes with the
+copy, and the comparison then reports a removed screenshot instead of a reviewable diff.
+
 When a visual change is intentional, review the diffs, then have a maintainer with write access apply
 the `allow-screenshot-change` label. The label approves the current commit only, so a new commit needs
 it removed and reapplied. Functional failures and upload errors stay blocking.

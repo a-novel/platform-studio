@@ -36,6 +36,14 @@ const locales = [
   },
 ] as const;
 
+/** Fixed checkpoint names, so a copy change shows as a diff rather than a renamed screenshot. */
+const checkpoints: Partial<Record<string, string>> = {
+  "/": "home",
+  "/?auth=login": "login",
+  "/?auth=register": "join-the-agora-invitation-list",
+  "/?auth=reset": "reset-password",
+};
+
 for (const { locale, routes } of locales) {
   for (const javaScriptEnabled of [true, false]) {
     test.describe(`${locale}, JavaScript ${javaScriptEnabled ? "enabled" : "disabled"}`, () => {
@@ -48,13 +56,10 @@ for (const { locale, routes } of locales) {
             await expect(page).toHaveTitle(`${title} — Agora Studio`);
             await expect(page.locator("head > title")).toHaveCount(1);
             if (route === "/page-that-does-not-exist") expect(response?.status()).toBe(404);
-            if (
-              locale === "en-US" &&
-              javaScriptEnabled &&
-              ["/", "/?auth=login", "/?auth=register", "/?auth=reset"].includes(route)
-            ) {
+            const checkpoint = checkpoints[route];
+            if (locale === "en-US" && javaScriptEnabled && checkpoint) {
               if (route !== "/") await expect(page.getByRole("dialog")).toBeVisible();
-              await screenshot(page, info, title.toLowerCase().replaceAll(" ", "-"));
+              await screenshot(page, info, checkpoint);
             }
           });
         }
