@@ -14,7 +14,7 @@ export default interface Resources {
         "description": "Your account does not have permission to view this page.",
         "title": "Access denied"
       },
-      "home": "Return home",
+      "home": "Go back home",
       "notFound": {
         "description": "This address doesn’t match any page.",
         "title": "Page not found"
