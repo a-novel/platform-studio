@@ -1,5 +1,5 @@
-# Studio's gitleaks config: the scan-secrets baseline plus Studio's own allowlist at the
-# end. gitleaks cannot layer configs, so this file replaces the baseline wholesale.
+# Studio's gitleaks config. gitleaks cannot layer configs, so this file replaces the
+# scan-secrets baseline wholesale and keeps only the allowlists Studio's files need.
 #
 # Every allowlist targets `generic-api-key` alone — the entropy heuristic. The
 # provider-specific rules (AWS, GitHub, Stripe, ...) stay active everywhere,
@@ -9,17 +9,12 @@
 useDefault = true
 
 [[allowlists]]
-description = "Checksum manifests: module digests are high-entropy by construction."
+description = "The lockfile: package integrity digests are high-entropy by construction."
 targetRules = ["generic-api-key"]
-paths = ['''(^|/)(buf|go)\.sum$''', '''(^|/)pnpm-lock\.yaml$''']
+paths = ['''(^|/)pnpm-lock\.yaml$''']
 
 [[allowlists]]
-description = "Go test fixtures: sample keys and tokens generated per test, granting nothing."
-targetRules = ["generic-api-key"]
-paths = ['''_test\.go$''']
-
-[[allowlists]]
-description = "Compose and CI env blocks: throwaway credentials for a database that lives for one job."
+description = "The e2e compose file: throwaway credentials for a database that lives for one run."
 targetRules = ["generic-api-key"]
 regexes = [
   '''postgres://postgres:postgres@''',
