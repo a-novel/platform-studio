@@ -1,7 +1,7 @@
 name: visual-tests
 run-name: Visual approval ${{ github.event.pull_request.number }} ${{ github.event.pull_request.head.sha }} ${{ github.event.pull_request.base.ref }} ${{ github.event.action }}
 
-on:
+on: # zizmor: ignore[dangerous-triggers] Trusted approval and storage maintenance; never checks out or runs PR code.
   workflow_run:
     workflows: [main]
     types: [completed]
