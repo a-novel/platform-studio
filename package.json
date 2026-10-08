@@ -44,9 +44,9 @@
     "test:unit": "vitest run --project=unit --coverage.reportsDirectory=coverage/unit"
   },
   "dependencies": {
-    "@a-novel-kit/nodelib-browser": "1.7.0",
-    "@a-novel-kit/nodelib-i18n": "1.7.0",
-    "@a-novel-kit/nodelib-server": "1.7.0",
+    "@a-novel-kit/nodelib-browser": "1.8.0",
+    "@a-novel-kit/nodelib-i18n": "1.8.0",
+    "@a-novel-kit/nodelib-server": "1.8.0",
     "@a-novel-kit/uikit": "0.6.7",
     "@a-novel-kit/uikit-fonts": "0.6.7",
     "@a-novel-kit/uikit-images": "0.6.7",
