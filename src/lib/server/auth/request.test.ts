@@ -495,7 +495,8 @@ describe("planned downtime at the request boundary", () => {
   });
 
   it("treats a downtime refusal from authentication as maintenance before the document announces it", async () => {
-    fetchService.mockResolvedValue(
+    // A fresh response per call, since a body can only be read once.
+    fetchService.mockImplementation(async () =>
       Response.json(
         { type: "about:blank", title: "Service Unavailable", status: 503, tags: { downtime: true } },
         { status: 503, headers: { "Content-Type": "application/problem+json" } }
