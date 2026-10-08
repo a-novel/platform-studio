@@ -16,19 +16,25 @@ The creative workspace for building and managing stories in Agora Storyverse.
 
 ## What it does
 
-Studio is the browser application where creators work with the Agora platform. It serves a SvelteKit interface and keeps privileged service access in its server runtime.
+Studio is the browser application where creators work with the Agora platform. Its SvelteKit server
+renders the pages and is the only caller of the platform services, so session tokens stay in
+server-set cookies and never reach browser code.
 
-The application ships as one OCI image. Storybook provides a separate static review surface for screens and their controlled states.
+It ships as one container image. Every screen state is also on display in the
+[published Storybook](https://a-novel.github.io/platform-studio/).
 
 ## Deploying
 
-Set `PLATFORM_STUDIO_VERSION` to a release tag and provide the authentication service URL in the container environment.
+Run a tag from the [latest release](https://github.com/a-novel/platform-studio/releases/latest) and
+point it at the authentication service.
 
 ```bash
-podman run --detach   --name platform-studio   --publish 3000:3000   --env AUTHENTICATION_SERVICE_URL   ghcr.io/a-novel/platform-studio:"$PLATFORM_STUDIO_VERSION"
+podman run --detach --name platform-studio --publish 3000:3000 \
+  --env AUTHENTICATION_SERVICE_URL \
+  ghcr.io/a-novel/platform-studio:"$PLATFORM_STUDIO_VERSION"
 ```
 
-The image runs as a non-root user and listens on port `3000`. Pin deployments to a tag from the [latest release](https://github.com/a-novel/platform-studio/releases/latest).
+The image runs as a non-root user on port `3000`, and its container healthcheck calls `/ping`.
 
 ### Configuration
 
@@ -39,26 +45,17 @@ The image runs as a non-root user and listens on port `3000`. Pin deployments to
 | `HOST`                       | No       | Listen address. The image sets `0.0.0.0`.                       |
 | `PORT`                       | No       | Listen port. The image sets `3000`.                             |
 
-Client-visible configuration is public. Keep private values in the server environment.
-
 ## Operational endpoints
 
-| Path           | Success | Purpose                                                                                                 |
-| -------------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `/ping`        | `200`   | Confirms that the Studio process can serve traffic without a downstream.                                |
-| `/healthcheck` | `200`   | Reports authentication reachability and proxies its dependency map. Any down result makes Studio `503`. |
-
-The container probe calls `/ping`. An orchestrator can call `/healthcheck` when downstream readiness matters.
-
-## Localization
-
-English and French messages live under `src/lib/i18n/locales`. The static YAML files are the message source for the runtime, Storybook, extraction, generated key types, and offline validation.
-
-The `i18next-cli` extraction and unused-key checks report source and locale drift.
+| Path           | Success | Purpose                                                                                            |
+| -------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `/ping`        | `200`   | Liveness: the process serves traffic. No downstream call.                                          |
+| `/healthcheck` | `200`   | Readiness: reports each downstream service with its own dependency map. Any failure returns `503`. |
 
 ## Running locally
 
-Configure pnpm for GitHub Packages with a token that can read packages. Start the authentication service, export its allocated local port, then install dependencies and start Studio.
+Configure pnpm for GitHub Packages with a token that can read packages, then start the
+authentication service and Studio:
 
 ```bash
 a-novel run start service-authentication/rest
@@ -67,8 +64,10 @@ pnpm install
 pnpm dev
 ```
 
-The committed `.env.local` expands `SERVICE_AUTHENTICATION_REST_PORT`, so no URL needs to be copied by hand. Run `pnpm storybook` to review pure screen states at `http://localhost:6006`.
+The committed `.env.local` reads the service port from that environment. `pnpm storybook` serves the
+screen catalog at `http://localhost:6006`.
 
 ## Contributing
 
-Start with the [developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md), then read the [Studio contribution guide](./CONTRIBUTING.md).
+Start with the [developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md),
+then read the [Studio contribution guide](./CONTRIBUTING.md).
