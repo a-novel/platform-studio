@@ -202,7 +202,7 @@ importers:
     devDependencies:
       '@a-novel-kit/nodelib-config':
         specifier: 1.10.0
-        version: 1.10.0(4c2b199f47170f4a0ee065f60cf0758d)
+        version: 1.10.0(7e924489edcaf1f83d38a0a60e0f48d6)
       '@a-novel-kit/nodelib-test':
         specifier: 1.10.0
         version: 1.10.0(@a-novel-kit/nodelib-browser@1.10.0(zod@4.6.5))(jsdom@30.1.2)(playwright@1.63.0)
@@ -285,11 +285,11 @@ importers:
         specifier: 17.13.0
         version: 17.13.0
       i18next-cli:
-        specifier: 1.74.4
-        version: 1.74.4(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
+        specifier: 1.74.6
+        version: 1.74.6(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
       i18next-cli-plugin-svelte:
         specifier: 2.4.1
-        version: 2.4.1(estree-walker@3.0.3)(i18next-cli@1.74.4(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(svelte@5.57.1(@typescript-eslint/types@8.71.1))
+        version: 2.4.1(estree-walker@3.0.3)(i18next-cli@1.74.6(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(svelte@5.57.1(@typescript-eslint/types@8.71.1))
       jsdom:
         specifier: 30.1.2
         version: 30.1.2
@@ -2318,8 +2318,8 @@ packages:
       i18next-cli: ^1.51.6
       svelte: ^5.53.11
 
-  i18next-cli@1.74.4:
-    resolution: {integrity: sha512-VsgKIo5bVfInXelzqHFRWIORODU/MBO4LrpOUNxAAMvKWUewejYzu09JC8jrC24ezaPh4hAX65pPknmnBWqeDw==}
+  i18next-cli@1.74.6:
+    resolution: {integrity: sha512-S/dpQSyLRYD/H41ua7Fzq6Xvsu8LrW/6v0hOsyMnrwxJhjGXMLMhKoYQ+xfytOe9ZC2T9hXIwz0ZztqO6pPodA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -3464,7 +3464,7 @@ snapshots:
     dependencies:
       zod: 4.6.5
 
-  '@a-novel-kit/nodelib-config@1.10.0(4c2b199f47170f4a0ee065f60cf0758d)':
+  '@a-novel-kit/nodelib-config@1.10.0(7e924489edcaf1f83d38a0a60e0f48d6)':
     dependencies:
       '@eslint/compat': 2.1.1(eslint@10.12.0(jiti@2.7.0))
       '@eslint/config-helpers': 0.7.0
@@ -3481,8 +3481,8 @@ snapshots:
       eslint-plugin-svelte: 3.23.0(eslint@10.12.0(jiti@2.7.0))(svelte@5.57.1(@typescript-eslint/types@8.71.1))
       estree-walker: 3.0.3
       globals: 17.13.0
-      i18next-cli: 1.74.4(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
-      i18next-cli-plugin-svelte: 2.4.1(estree-walker@3.0.3)(i18next-cli@1.74.4(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(svelte@5.57.1(@typescript-eslint/types@8.71.1))
+      i18next-cli: 1.74.6(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
+      i18next-cli-plugin-svelte: 2.4.1(estree-walker@3.0.3)(i18next-cli@1.74.6(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(svelte@5.57.1(@typescript-eslint/types@8.71.1))
       playwright: 1.63.0
       prettier: 3.9.9
       prettier-plugin-css-order: 2.2.0(postcss@8.5.29)(prettier@3.9.9)
@@ -5210,14 +5210,14 @@ snapshots:
 
   human-signals@8.0.1: {}
 
-  i18next-cli-plugin-svelte@2.4.1(estree-walker@3.0.3)(i18next-cli@1.74.4(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(svelte@5.57.1(@typescript-eslint/types@8.71.1)):
+  i18next-cli-plugin-svelte@2.4.1(estree-walker@3.0.3)(i18next-cli@1.74.6(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(svelte@5.57.1(@typescript-eslint/types@8.71.1)):
     dependencies:
       estree-walker: 3.0.3
-      i18next-cli: 1.74.4(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
+      i18next-cli: 1.74.6(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
       recast: 0.23.21
       svelte: 5.57.1(@typescript-eslint/types@8.71.1)
 
-  i18next-cli@1.74.4(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3):
+  i18next-cli@1.74.6(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3):
     dependencies:
       '@croct/json5-parser': 0.2.2
       '@swc/core': 1.16.13
