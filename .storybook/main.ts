@@ -7,7 +7,14 @@ const config: StorybookConfig = {
   framework: "@storybook/sveltekit",
   staticDirs: ["../static"],
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|ts|svelte)"],
-  viteFinal: (config) => mergeConfig(config, { optimizeDeps: { include: ["@a-novel-kit/uikit-storybook"] } }),
+  // Vite matches each specifier exactly, so a subpath needs its own entry, or the first story run
+  // discovers it late and reloads the tests.
+  viteFinal: (config) =>
+    mergeConfig(config, {
+      optimizeDeps: {
+        include: ["@a-novel-kit/uikit-storybook", "@a-novel-kit/uikit-storybook/ScrollPreview.svelte"],
+      },
+    }),
 };
 
 export default config;
