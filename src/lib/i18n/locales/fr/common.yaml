@@ -134,7 +134,7 @@ pageTitles:
   invalidLink: Lien invalide
   passwordReset: Mot de passe réinitialisé
   resetPassword: Réinitialiser le mot de passe
-  withState: "{{title}} : {{status}}"
+  withState: "{{title}}: {{status}}"
 shell:
   accountFallback: Compte
   auth:
