@@ -34,6 +34,12 @@
     ...anonymous,
     session: { status: "error" },
   };
+  const maintenance: StudioShellViewModel = {
+    ...anonymous,
+    session: { status: "downtime" },
+  };
+  // Fixed times keep every rendering identical.
+  const downtime = { start: new Date("2026-10-12T06:00:00Z"), end: new Date("2026-10-12T08:30:00Z") };
   const longAccountName: StudioShellViewModel = {
     ...anonymous,
     session: {
@@ -313,6 +319,18 @@
   play={verifyExpandedMobileNavigation}
 >
   <StoryHarness initialModel={withOpenMobileNavigation(accountError)} />
+</Story>
+
+<Story name="Maintenance" asChild>
+  <StoryHarness initialModel={maintenance} {downtime} />
+</Story>
+
+<Story name="Maintenance — mobile" exportName="MaintenanceMobile" globals={reviewStoryGlobals.mobile} asChild>
+  <StoryHarness initialModel={withOpenMobileNavigation(maintenance)} {downtime} />
+</Story>
+
+<Story name="Login modal during maintenance" asChild>
+  <StoryHarness initialModel={{ ...maintenance, authView: "login" }} {downtime} />
 </Story>
 
 <Story name="Login modal — desktop" exportName="LoginModalDesktop" globals={reviewStoryGlobals.desktop} asChild>

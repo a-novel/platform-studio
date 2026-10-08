@@ -38,12 +38,13 @@ The image runs as a non-root user on port `3000`, and its container healthcheck 
 
 ### Configuration
 
-| Name                         | Required | Description                                                     |
-| ---------------------------- | -------- | --------------------------------------------------------------- |
-| `AUTHENTICATION_SERVICE_URL` | Yes      | Base HTTP or HTTPS URL for the authentication service.          |
-| `HEALTHCHECK_TIMEOUT_MS`     | No       | Downstream timeout from 100 to 10,000 ms. The default is 2,000. |
-| `HOST`                       | No       | Listen address. The image sets `0.0.0.0`.                       |
-| `PORT`                       | No       | Listen port. The image sets `3000`.                             |
+| Name                         | Required | Description                                                        |
+| ---------------------------- | -------- | ------------------------------------------------------------------ |
+| `AUTHENTICATION_SERVICE_URL` | Yes      | Base HTTP or HTTPS URL for the authentication service.             |
+| `HEALTHCHECK_TIMEOUT_MS`     | No       | Downstream timeout from 100 to 10,000 ms. The default is 2,000.    |
+| `DOWNTIME_URL`               | No       | Planned downtime document. The default is the one infra publishes. |
+| `HOST`                       | No       | Listen address. The image sets `0.0.0.0`.                          |
+| `PORT`                       | No       | Listen port. The image sets `3000`.                                |
 
 ## Operational endpoints
 

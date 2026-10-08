@@ -20,6 +20,8 @@ const wrapper = { wrapper: StudioI18nProvider, wrapperProps: { locale: "en" as c
 function data(state: ShortCodeState = { status: "ready" }): PageData {
   return {
     locale: "en",
+    downtime: null,
+    downtimeStarted: false,
     model: { journey: "email-update", state },
     links: { restartHref: "/account", continueHref: "/account" },
   };

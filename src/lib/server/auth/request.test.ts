@@ -14,10 +14,19 @@ import type { Cookies, RequestEvent } from "@sveltejs/kit";
 
 const env = vi.hoisted(() => ({
   AUTHENTICATION_SERVICE_URL: "https://authentication.test",
+  DOWNTIME_URL: undefined,
   HEALTHCHECK_TIMEOUT_MS: undefined,
 }));
 
 vi.mock("$app/env/private", () => env);
+
+// The planned downtime the published document announces; none unless a test sets one.
+const published = vi.hoisted(() => ({ downtime: null as { components: string[]; start: Date; end: Date } | null }));
+
+vi.mock("@a-novel-kit/nodelib-server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@a-novel-kit/nodelib-server")>()),
+  createDowntimeReader: () => async () => published.downtime,
+}));
 
 const fetchService = vi.fn<typeof fetch>();
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
@@ -58,7 +67,10 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchService);
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  published.downtime = null;
+});
 
 describe("invitation requests at the request boundary", () => {
   const email = "Creator@Example.test";
@@ -341,9 +353,9 @@ const journeys = [
 ] as const;
 
 describe("secure-link request boundary", () => {
-  it.each(journeys)("loads $journey without returning link secrets or consuming it", (scenario) => {
+  it.each(journeys)("loads $journey without returning link secrets or consuming it", async (scenario) => {
     const { event } = request(scenario.path);
-    expect(loadShortCodeRoute(scenario.journey, event)).toEqual({
+    await expect(loadShortCodeRoute(scenario.journey, event)).resolves.toEqual({
       links: { continueHref: scenario.continueHref, restartHref: scenario.restartHref },
       model: { journey: scenario.journey, state: { status: "ready" } },
     });
@@ -427,5 +439,74 @@ describe("secure-link request boundary", () => {
       status: 503,
       data: { shortCode: { journey: "register", state: { status: "service-error", feedback: "serviceUnavailable" } } },
     });
+  });
+});
+
+describe("planned downtime at the request boundary", () => {
+  const started = () => ({
+    components: ["service-json-keys.database"],
+    start: new Date(Date.now() - 60_000),
+    end: new Date(Date.now() + 3_600_000),
+  });
+  const downtimeRefusal = { status: 503, body: { message: "Planned downtime", downtime: true } };
+
+  it("shows a maintenance session without calling authentication once a downtime has started", async () => {
+    published.downtime = started();
+    const { event } = request("/", { studio_access_token: "access", studio_refresh_token: "refresh" });
+
+    await expect(loadStudioShell(event)).resolves.toEqual({
+      activeNavigation: "home",
+      session: { status: "downtime" },
+      authorization: "unavailable",
+    });
+    expect(fetchService).not.toHaveBeenCalled();
+  });
+
+  it("refuses sign-in, account and secure links without calling authentication", async () => {
+    published.downtime = started();
+
+    await expect(
+      authenticationActions.default(request("/?auth=login", {}, { email: "a@b.test", password: "p" }).event)
+    ).rejects.toMatchObject(downtimeRefusal);
+    await expect(loadAccount(request("/account", { studio_access_token: "access" }).event)).rejects.toMatchObject(
+      downtimeRefusal
+    );
+    await expect(loadShortCodeRoute("register", request(registrationLink).event)).rejects.toMatchObject(
+      downtimeRefusal
+    );
+    await expect(submitShortCodeRoute("register", request(registrationLink, {}, password).event)).rejects.toMatchObject(
+      downtimeRefusal
+    );
+    expect(fetchService).not.toHaveBeenCalled();
+  });
+
+  it("locks nothing before the start, or for a service Studio doesn't use", async () => {
+    for (const downtime of [
+      { ...started(), start: new Date(Date.now() + 60_000) },
+      { ...started(), components: ["service-genai.database"] },
+    ]) {
+      published.downtime = downtime;
+
+      await expect(loadShortCodeRoute("register", request(registrationLink).event)).resolves.toMatchObject({
+        model: { journey: "register" },
+      });
+      await expect(loadStudioShell(request("/").event)).resolves.toMatchObject({ session: { status: "anonymous" } });
+    }
+  });
+
+  it("treats a downtime refusal from authentication as maintenance before the document announces it", async () => {
+    fetchService.mockResolvedValue(
+      Response.json(
+        { type: "about:blank", title: "Service Unavailable", status: 503, tags: { downtime: true } },
+        { status: 503, headers: { "Content-Type": "application/problem+json" } }
+      )
+    );
+
+    await expect(
+      loadStudioShell(request("/", { studio_access_token: "access", studio_refresh_token: "refresh" }).event)
+    ).resolves.toMatchObject({ session: { status: "downtime" }, authorization: "unavailable" });
+    await expect(loadAccount(request("/account", { studio_access_token: "access" }).event)).rejects.toMatchObject(
+      downtimeRefusal
+    );
   });
 });

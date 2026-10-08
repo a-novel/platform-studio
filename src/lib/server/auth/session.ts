@@ -1,4 +1,4 @@
-import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
+import { isDowntimeError, isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {
   AuthenticationApi,
   type Claims,
@@ -32,6 +32,7 @@ export interface SessionClient {
 export type ResolvedSession =
   | { status: "none" }
   | { status: "unavailable" }
+  | { status: "downtime" }
   | {
       status: "available";
       accessToken: string;
@@ -47,6 +48,13 @@ export class AuthenticationUnavailableError extends Error {
   constructor() {
     super("The authentication service is unavailable.");
     this.name = "AuthenticationUnavailableError";
+  }
+}
+
+export class AuthenticationDowntimeError extends Error {
+  constructor() {
+    super("The authentication service is in a planned downtime.");
+    this.name = "AuthenticationDowntimeError";
   }
 }
 
@@ -76,6 +84,7 @@ export class AuthenticationSession {
         claims,
       };
     } catch (error) {
+      if (isDowntimeError(error)) return { status: "downtime" };
       if (!isHttpStatusError(error, ...rejectedSessionStatuses)) {
         return { status: "unavailable" };
       }
@@ -104,13 +113,14 @@ export class AuthenticationSession {
         return { status: "none" };
       }
 
-      return { status: "unavailable" };
+      return isDowntimeError(error) ? { status: "downtime" } : { status: "unavailable" };
     }
   }
 
   async authenticated(): Promise<AuthenticatedSession | null> {
     const session = await this.current();
 
+    if (session.status === "downtime") throw new AuthenticationDowntimeError();
     if (session.status === "unavailable") throw new AuthenticationUnavailableError();
     if (session.status !== "available") return null;
 
@@ -121,6 +131,7 @@ export class AuthenticationSession {
   async anonymousAccessToken(): Promise<string> {
     const session = await this.current();
 
+    if (session.status === "downtime") throw new AuthenticationDowntimeError();
     if (session.status === "unavailable") throw new AuthenticationUnavailableError();
     if (session.status === "available") return session.accessToken;
 

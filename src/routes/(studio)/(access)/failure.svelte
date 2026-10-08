@@ -2,23 +2,34 @@
   import ProtectedPage from "./screen.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Link, StatusState } from "@a-novel-kit/uikit";
+  import { DowntimeState, Link, StatusState } from "@a-novel-kit/uikit";
 
   let {
     status,
     loginHref,
     homeHref,
     retryHref,
+    downtime,
   }: {
     status: number;
     loginHref: string;
     homeHref: string;
     retryHref: string;
+    /** Set when a planned downtime stopped the services the page needs. */
+    downtime?: { end: Date; timeZone: string };
   } = $props();
   const { t } = getI18nContext();
 </script>
 
-{#if status === 403 || status === 503}
+{#if downtime}
+  <div class="error-page">
+    <DowntimeState end={downtime.end} timeZone={downtime.timeZone} headingLevel={1}>
+      {#snippet actions()}
+        <Link href={homeHref}>{t("access.home")}</Link>
+      {/snippet}
+    </DowntimeState>
+  </div>
+{:else if status === 403 || status === 503}
   <ProtectedPage
     controller={{ state: { status: status === 403 ? "forbidden" : "unavailable" } }}
     {loginHref}

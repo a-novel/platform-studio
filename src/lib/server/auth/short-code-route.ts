@@ -1,6 +1,7 @@
 import type { ShortCodePageData } from "#lib/application/auth/short-code-route.js";
 import type { ShortCodeJourney } from "#lib/application/auth/types.js";
 
+import { refuseDuringDowntime } from "../downtime";
 import { createAuthenticationContext } from "./context";
 import { completeShortCode, createShortCodeClient, readShortCodeModel } from "./short-code";
 
@@ -27,10 +28,13 @@ const routeDetails: Record<ShortCodeJourney, RouteDetails> = {
   },
 };
 
-export function loadShortCodeRoute(
+export async function loadShortCodeRoute(
   journey: ShortCodeJourney,
   event: Pick<RequestEvent, "locals" | "url">
-): ShortCodePageData {
+): Promise<ShortCodePageData> {
+  // A code can't be completed while the services are stopped, so its page explains why at once.
+  await refuseDuringDowntime();
+
   return {
     links: {
       continueHref: routeDetails[journey].continueHref,
@@ -41,6 +45,8 @@ export function loadShortCodeRoute(
 }
 
 export async function submitShortCodeRoute(journey: ShortCodeJourney, event: RequestEvent) {
+  await refuseDuringDowntime();
+
   const authentication = createAuthenticationContext(event.cookies, event.url);
   const result = await completeShortCode(journey, event.url, await event.request.formData(), {
     accept: (token, identityEmail) => authentication.session.accept(token, identityEmail),
