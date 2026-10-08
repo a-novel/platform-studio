@@ -166,18 +166,19 @@
   <div class="account-widget" data-session={model.session.status}>
     {#if model.session.status === "loading" || model.session.status === "error" || model.session.status === "downtime"}
       {@const tone = model.session.status === "downtime" ? "warning" : model.session.status}
-      {@const title =
+      {@const message =
         model.session.status === "loading"
           ? t("shell.sessionLoading")
           : model.session.status === "downtime"
             ? t("shell.sessionDowntime")
             : t("shell.sessionUnavailable")}
       {#if compact}
-        <div class="compact-status" {title}>
-          <InlineMessage {tone} aria-label={title} />
+        <div class="compact-status" title={message}>
+          <InlineMessage {tone} aria-label={message} />
         </div>
       {:else}
-        <Alert {tone} {title} />
+        <!-- No title: a heading would crowd the narrow rail. -->
+        <Alert {tone}>{message}</Alert>
       {/if}
     {:else if authenticatedSession}
       <NavList
