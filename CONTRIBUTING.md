@@ -87,9 +87,22 @@ where it leads: a password reset ends on "Log in", because the reset does not op
 Both languages use the typographic apostrophe (’) and the ellipsis character (…) on pending labels.
 French puts a no-break space before `:` and a narrow no-break space before `?`, `!`, and `;`.
 
+### Checking translations
+
 After adding or removing a key, run `pnpm i18n:extract`, review both languages, then run
-`pnpm i18n:check`. The check fails on extraction drift, stale generated types, and missing or
-unused translations.
+`pnpm i18n:check`. CI runs the same checks in the `lint-translations` job, comparing the branch with
+its merge base on `master`:
+
+| Check     | Fails on                                                                                      | Accepted by                     |
+| --------- | --------------------------------------------------------------------------------------------- | ------------------------------- |
+| Structure | Catalogs out of sync with the code, stale generated types, unused keys, translation-only keys | Nothing                         |
+| Gaps      | A translation the branch left empty (`""`), which renders the English text                    | `allow-incomplete-translations` |
+| Drift     | An English message the branch changed while its translation kept its value                    | `allow-translation-drift`       |
+
+A changed meaning gets a new key: the old translation stops matching, and the new key shows as a gap.
+An English-only fix, such as a typo, keeps its key and takes `allow-translation-drift` once the
+translation is checked. Adding or removing a label reruns the check, and a push that changes a
+catalog removes both labels.
 
 ## Testing
 
@@ -100,7 +113,9 @@ unused translations.
 | Storybook  | Every story's interactions and accessibility checks | `pnpm test:storybook` |
 | End to end | Real journeys against disposable services           | `pnpm test:e2e`       |
 
-`a-novel test --type=pnpm -y` runs every suite.
+`a-novel test --type=pnpm -y` runs every suite. CI also runs ESLint, Prettier, svelte-check, the
+translation checks, secret scanning, and the workflow audit as separate jobs, so each failure names
+its concern.
 
 ### End-to-end journeys
 
