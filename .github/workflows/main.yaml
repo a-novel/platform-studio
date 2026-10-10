@@ -164,26 +164,30 @@ jobs:
     permissions:
       contents: read
       packages: read
+    outputs:
+      artifact-id: ${{ steps.test.outputs.artifact-id }}
     steps:
-      - uses: a-novel-kit/workflows/node-actions/setup-node@v1.42.2
+      - uses: a-novel-kit/workflows/node-actions/test-node@v1.42.2
+        id: test
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
           client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
-      - name: Run Storybook interaction and accessibility tests
-        run: pnpm run test:storybook
+          test_action: "test:storybook"
+          coverage_artifact: storybookcover
+          coverage_file: coverage/storybook/lcov.info
 
   report-codecov:
     runs-on: ubuntu-latest
-    needs: [test-unit, test-browser]
+    needs: [test-unit, test-browser, test-storybook]
     permissions:
       contents: read
     steps:
       - uses: a-novel-kit/workflows/generic-actions/codecov@v1.42.2
         with:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
-          coverage_files: unitcover/lcov.info,browsercover/lcov.info
-          coverage_artifact_ids: ${{ needs.test-unit.outputs.artifact-id }},${{ needs.test-browser.outputs.artifact-id }}
+          coverage_files: unitcover/lcov.info,browsercover/lcov.info,storybookcover/lcov.info
+          coverage_artifact_ids: ${{ needs.test-unit.outputs.artifact-id }},${{ needs.test-browser.outputs.artifact-id }},${{ needs.test-storybook.outputs.artifact-id }}
 
   audit-node:
     runs-on: ubuntu-latest
