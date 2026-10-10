@@ -5,4 +5,5 @@ import { defineEnvVars } from "@sveltejs/kit/env";
 export const variables = defineEnvVars({
   AUTHENTICATION_SERVICE_URL: { schema: (value) => value },
   HEALTHCHECK_TIMEOUT_MS: { schema: (value) => value },
+  DOWNTIME_URL: { schema: (value) => value },
 });

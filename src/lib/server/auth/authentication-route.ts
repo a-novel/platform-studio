@@ -3,6 +3,7 @@ import { safeReturnTo } from "#lib/application/auth/navigation.js";
 import type { AuthenticationFeedback, AuthenticationPanelModel } from "#lib/application/auth/types.js";
 import { readAuthView } from "#lib/application/shell/auth-dialog-state.js";
 import { createAuthenticationContext } from "#lib/server/auth/context.js";
+import { refuseDuringDowntime } from "#lib/server/downtime.js";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {
@@ -131,6 +132,8 @@ async function requestPasswordReset(event: RequestEvent, form: FormData) {
 
 export const authenticationActions = {
   default: async (event: RequestEvent) => {
+    await refuseDuringDowntime();
+
     const journey = readAuthView(event.url.searchParams);
     const form = await event.request.formData();
 

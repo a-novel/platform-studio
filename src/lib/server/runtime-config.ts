@@ -6,8 +6,12 @@ import {
   parseEnvironment,
 } from "@a-novel-kit/nodelib-server";
 
+/** The public planned downtime document operators publish from infra. */
+const defaultDowntimeUrl = "https://raw.githubusercontent.com/a-novel/infra/downtime/downtime.json";
+
 const runtimeEnvironmentSchema = {
   authenticationServiceUrl: environmentHttpUrl("AUTHENTICATION_SERVICE_URL"),
+  downtimeUrl: environmentHttpUrl("DOWNTIME_URL"),
   healthcheckTimeoutMs: environmentInteger("HEALTHCHECK_TIMEOUT_MS", {
     defaultValue: 2000,
     maximum: 10_000,
@@ -20,5 +24,8 @@ export type RuntimeConfig = EnvironmentOutput<typeof runtimeEnvironmentSchema>;
 
 /** Parses Studio's environment variables without retaining invalid values. */
 export function parseRuntimeConfig(environment: EnvironmentSource): RuntimeConfig {
-  return parseEnvironment(environment, runtimeEnvironmentSchema);
+  return parseEnvironment(
+    { ...environment, DOWNTIME_URL: environment.DOWNTIME_URL ?? defaultDowntimeUrl },
+    runtimeEnvironmentSchema
+  );
 }

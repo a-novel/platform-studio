@@ -6,6 +6,9 @@ export default interface Resources {
         "description": "Log in to view this page.",
         "title": "Agora account required"
       },
+      "downtime": {
+        "title": "Maintenance in progress"
+      },
       "error": {
         "description": "This page could not be displayed.",
         "title": "Page unavailable"
@@ -195,6 +198,7 @@ export default interface Resources {
       "manageAccountFor": "Manage account for {{name}}",
       "navigation": "Studio navigation",
       "openNavigation": "Open navigation",
+      "sessionDowntime": "Account unavailable during maintenance.",
       "sessionLoading": "Loading account",
       "sessionUnavailable": "Account details are unavailable.",
       "signIn": "Log in",

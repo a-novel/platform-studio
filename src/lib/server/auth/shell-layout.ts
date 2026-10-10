@@ -1,6 +1,9 @@
 import { accountDisplayFromHandle } from "#lib/application/shell/account-display.js";
 import type { ShellSession } from "#lib/application/shell/types.js";
 import { createAuthenticationContext } from "#lib/server/auth/context.js";
+import { readStudioDowntime } from "#lib/server/downtime.js";
+
+import { isDowntimeStarted } from "@a-novel-kit/nodelib-server";
 
 import type { RequestEvent } from "@sveltejs/kit";
 
@@ -9,11 +12,16 @@ export const loadStudioShell = async ({ cookies, locals, url }: Pick<RequestEven
   const t = locals.i18n.getFixedT(locals.locale, "common");
   let session: ShellSession = { status: "anonymous" };
 
-  const resolved = await Promise.resolve()
-    .then(() => createAuthenticationContext(cookies, url).session.current())
-    .catch(() => ({ status: "unavailable" as const }));
+  // A started downtime stops Authentication, so the shell doesn't ask it for the session.
+  const resolved = isDowntimeStarted(await readStudioDowntime())
+    ? ({ status: "downtime" } as const)
+    : await Promise.resolve()
+        .then(() => createAuthenticationContext(cookies, url).session.current())
+        .catch(() => ({ status: "unavailable" as const }));
 
-  if (resolved.status === "unavailable") {
+  if (resolved.status === "downtime") {
+    session = { status: "downtime" };
+  } else if (resolved.status === "unavailable") {
     session = { status: "error" };
   } else if (resolved.status === "available" && resolved.claims.userID) {
     const account = resolved.identityHandle
@@ -28,7 +36,7 @@ export const loadStudioShell = async ({ cookies, locals, url }: Pick<RequestEven
     authorization:
       session.status === "authenticated"
         ? ("allowed" as const)
-        : session.status === "error"
+        : session.status === "error" || session.status === "downtime"
           ? ("unavailable" as const)
           : ("anonymous" as const),
   };

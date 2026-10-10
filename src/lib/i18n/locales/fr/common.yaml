@@ -2,6 +2,8 @@ access:
   anonymous:
     description: Connectez-vous pour consulter cette page.
     title: Compte Agora requis
+  downtime:
+    title: Maintenance en cours
   error:
     description: Cette page n’a pas pu être affichée.
     title: Page indisponible
@@ -160,6 +162,7 @@ shell:
   manageAccountFor: Gérer le compte de {{name}}
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
+  sessionDowntime: Compte indisponible pendant la maintenance.
   sessionLoading: Chargement du compte
   sessionUnavailable: Informations du compte indisponibles.
   signIn: Se connecter

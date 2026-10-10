@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 const config: RuntimeConfig = {
   authenticationServiceUrl: "http://authentication:8080/api",
+  downtimeUrl: "http://downtime.test/downtime.json",
   healthcheckTimeoutMs: 500,
 };
 

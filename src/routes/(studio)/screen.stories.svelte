@@ -7,6 +7,7 @@
   import StoryHarness from "./story.svelte";
 
   import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
+  import ScrollPreview from "@a-novel-kit/uikit-storybook/ScrollPreview.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import { expect, userEvent, within } from "storybook/test";
@@ -34,6 +35,12 @@
     ...anonymous,
     session: { status: "error" },
   };
+  const maintenance: StudioShellViewModel = {
+    ...anonymous,
+    session: { status: "downtime" },
+  };
+  // Fixed times keep every rendering identical.
+  const downtime = { start: new Date("2026-10-12T06:00:00Z"), end: new Date("2026-10-12T08:30:00Z") };
   const longAccountName: StudioShellViewModel = {
     ...anonymous,
     session: {
@@ -313,6 +320,18 @@
   play={verifyExpandedMobileNavigation}
 >
   <StoryHarness initialModel={withOpenMobileNavigation(accountError)} />
+</Story>
+
+<Story name="Maintenance" asChild>
+  <StoryHarness initialModel={maintenance} {downtime}><ScrollPreview /></StoryHarness>
+</Story>
+
+<Story name="Maintenance — mobile" exportName="MaintenanceMobile" globals={reviewStoryGlobals.mobile} asChild>
+  <StoryHarness initialModel={maintenance} {downtime}><ScrollPreview /></StoryHarness>
+</Story>
+
+<Story name="Login modal during maintenance" asChild>
+  <StoryHarness initialModel={{ ...maintenance, authView: "login" }} {downtime} />
 </Story>
 
 <Story name="Login modal — desktop" exportName="LoginModalDesktop" globals={reviewStoryGlobals.desktop} asChild>

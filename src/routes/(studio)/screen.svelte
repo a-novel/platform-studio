@@ -13,10 +13,23 @@
 </script>
 
 <script lang="ts">
+  import { getStudioDowntime, hasStudioDowntime } from "#lib/ui/downtime.svelte.js";
+
   import AuthenticationPanel from "./(authentication)/screen.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Avatar, Button, Dialog, IconButton, InlineMessage, NavList, SkipLink } from "@a-novel-kit/uikit";
+  import {
+    Alert,
+    Avatar,
+    Button,
+    Dialog,
+    DowntimeBanner,
+    DowntimeState,
+    IconButton,
+    InlineMessage,
+    NavList,
+    SkipLink,
+  } from "@a-novel-kit/uikit";
   import agoraBanner320 from "@a-novel-kit/uikit-images/files/banner/320w/agora-banner.png";
   import agoraBanner640 from "@a-novel-kit/uikit-images/files/banner/640w/agora-banner.png";
   import agoraIcon48 from "@a-novel-kit/uikit-images/files/icon/48x48/agora-icon.png";
@@ -25,6 +38,10 @@
   import { House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 
   let { controller, children }: StudioShellProps = $props();
+
+  // Stories and tests render the shell without the app's downtime tracking.
+  const studioDowntime = hasStudioDowntime() ? getStudioDowntime() : undefined;
+  const stoppedUntil = $derived(studioDowntime?.started ? studioDowntime.downtime?.end : undefined);
 
   const model = $derived(controller.state.model);
   const homeHref = $derived(controller.state.homeHref);
@@ -147,14 +164,21 @@
 
 {#snippet accountWidget(compact: boolean)}
   <div class="account-widget" data-session={model.session.status}>
-    {#if model.session.status === "loading" || model.session.status === "error"}
-      {@const title = model.session.status === "loading" ? t("shell.sessionLoading") : t("shell.sessionUnavailable")}
+    {#if model.session.status === "loading" || model.session.status === "error" || model.session.status === "downtime"}
+      {@const tone = model.session.status === "downtime" ? "warning" : model.session.status}
+      {@const message =
+        model.session.status === "loading"
+          ? t("shell.sessionLoading")
+          : model.session.status === "downtime"
+            ? t("shell.sessionDowntime")
+            : t("shell.sessionUnavailable")}
       {#if compact}
-        <div class="compact-status" {title}>
-          <InlineMessage tone={model.session.status} aria-label={title} />
+        <div class="compact-status" title={message}>
+          <InlineMessage {tone} aria-label={message} />
         </div>
       {:else}
-        <Alert tone={model.session.status} {title} />
+        <!-- No title: a heading would crowd the narrow rail. -->
+        <Alert {tone}>{message}</Alert>
       {/if}
     {:else if authenticatedSession}
       <NavList
@@ -291,6 +315,17 @@
         </IconButton>
       </header>
 
+      {#if studioDowntime?.downtime}
+        <div class="downtime">
+          <DowntimeBanner
+            start={studioDowntime.downtime.start}
+            end={studioDowntime.downtime.end}
+            started={studioDowntime.started}
+            timeZone={studioDowntime.timeZone}
+          />
+        </div>
+      {/if}
+
       <main id="main-content" class="main-content" tabindex="-1">
         {@render children?.()}
       </main>
@@ -323,7 +358,7 @@
     controller={controller.authenticationDialog}
     title={authDialogTitle}
     description={authDialogDescription}
-    actions={authActionsVisible ? authActions : undefined}
+    actions={authActionsVisible && !stoppedUntil ? authActions : undefined}
   >
     {#snippet headerActions()}
       <IconButton
@@ -337,7 +372,9 @@
         <X size="var(--icon-size-sm)" aria-hidden="true" />
       </IconButton>
     {/snippet}
-    {#if model.authView}
+    {#if stoppedUntil && model.authView}
+      <DowntimeState end={stoppedUntil} timeZone={studioDowntime?.timeZone} headingLevel={3} />
+    {:else if model.authView}
       <AuthenticationPanel controller={controller.authentication} />
     {/if}
   </Dialog>
@@ -474,11 +511,19 @@
     text-align: start;
   }
 
+  /* A column, so the sticky header and banner can stay in view across the whole content. */
   .workspace {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     min-inline-size: 0;
     min-block-size: 100dvb;
+  }
+
+  /* The maintenance banner stays above the content while it scrolls. */
+  .downtime {
+    position: sticky;
+    z-index: var(--layer-sticky);
+    inset-block-start: 0;
   }
 
   .mobile-header {
@@ -486,6 +531,7 @@
   }
 
   .main-content {
+    flex: 1;
     outline: none;
     min-inline-size: 0;
   }
@@ -518,8 +564,11 @@
       display: none;
     }
 
-    .workspace {
-      grid-template-rows: auto minmax(0, 1fr);
+    /* On narrow screens it waits at the bottom, away from where reading starts, and never covers the end. */
+    .downtime {
+      order: 1;
+      inset-block-end: 0;
+      inset-block-start: auto;
     }
 
     .mobile-header {

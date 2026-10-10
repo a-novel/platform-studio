@@ -37,7 +37,8 @@ export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "
       }),
     };
   } catch (error) {
-    if (isRedirect(error) || isHttpError(error, 403)) throw error;
+    // A planned downtime renders as maintenance rather than as the account's own outage state.
+    if (isRedirect(error) || isHttpError(error, 403) || (isHttpError(error, 503) && error.body.downtime)) throw error;
 
     return {
       authorization: "unavailable" as const,

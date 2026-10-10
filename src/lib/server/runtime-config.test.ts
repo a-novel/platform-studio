@@ -10,6 +10,7 @@ describe("parseRuntimeConfig", () => {
       })
     ).toEqual({
       authenticationServiceUrl: "https://authentication.example.test",
+      downtimeUrl: "https://raw.githubusercontent.com/a-novel/infra/downtime/downtime.json",
       healthcheckTimeoutMs: 2000,
     });
   });
@@ -18,10 +19,12 @@ describe("parseRuntimeConfig", () => {
     expect(
       parseRuntimeConfig({
         AUTHENTICATION_SERVICE_URL: "http://authentication:8080",
+        DOWNTIME_URL: "http://downtime.test/downtime.json",
         HEALTHCHECK_TIMEOUT_MS: "750",
       })
     ).toEqual({
       authenticationServiceUrl: "http://authentication:8080",
+      downtimeUrl: "http://downtime.test/downtime.json",
       healthcheckTimeoutMs: 750,
     });
   });

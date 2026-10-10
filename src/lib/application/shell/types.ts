@@ -6,6 +6,7 @@ export type ShellSession =
   | { status: "anonymous" }
   | { status: "loading" }
   | { status: "error" }
+  | { status: "downtime" }
   | { status: "authenticated"; displayName: string; initials?: string };
 
 /** Serializable state consumed by the pure Studio shell. */

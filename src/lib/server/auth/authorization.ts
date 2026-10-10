@@ -1,7 +1,8 @@
 import { loginHref } from "#lib/application/auth/navigation.js";
 
+import { downtimeError, refuseDuringDowntime } from "../downtime";
 import { createAuthenticationContext } from "./context";
-import type { AuthenticatedSession } from "./session";
+import { type AuthenticatedSession, AuthenticationDowntimeError } from "./session";
 
 import type { RequestEvent } from "@sveltejs/kit";
 import { error, redirect } from "@sveltejs/kit";
@@ -14,11 +15,14 @@ export async function requireAuthorization(
   event: Pick<RequestEvent, "cookies" | "url">,
   when: (session: AuthenticatedSession) => boolean = () => true
 ) {
+  await refuseDuringDowntime();
+
   const resolved = await (async () => {
     try {
       const authentication = createAuthenticationContext(event.cookies, event.url);
       return { authentication, session: await authentication.session.authenticated() };
-    } catch {
+    } catch (cause) {
+      if (cause instanceof AuthenticationDowntimeError) downtimeError();
       error(503, "Authentication unavailable");
     }
   })();

@@ -200,9 +200,8 @@
                     <AuthenticationError feedback={model.emailState.feedback} />
                   {:else if model.emailState.status === "pending-email"}
                     <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
-                      <p class="pending-copy">
-                        {t("authUi.account.email.pendingDescription")} <strong>{model.emailState.targetHint}</strong>
-                      </p>
+                      {t("authUi.account.email.pendingDescription")}
+                      <strong class="pending-target">{model.emailState.targetHint}</strong>
                     </Alert>
                   {/if}
                 {/snippet}
@@ -230,7 +229,7 @@
             <Alert tone="loading" title={t("authUi.account.loadingTitle")} />
           {:else if model.claims.status === "error"}
             <Alert tone="error" title={t("authUi.account.loadErrorTitle")}>
-              <p class="feedback-message">{translateAuthenticationFeedback(t, model.claims.feedback)}</p>
+              {translateAuthenticationFeedback(t, model.claims.feedback)}
             </Alert>
           {:else}
             <dl class="session-details">
@@ -337,8 +336,7 @@
 
   h2,
   .section-heading p,
-  .feedback-message,
-  .pending-copy {
+  .feedback-message {
     margin: 0;
   }
 
@@ -351,8 +349,7 @@
   }
 
   .section-heading p,
-  .feedback-message,
-  .pending-copy {
+  .feedback-message {
     color: var(--color-text-secondary);
     line-height: var(--line-height-normal);
   }
@@ -402,9 +399,8 @@
     font-family: var(--font-family-mono);
   }
 
-  .pending-copy strong {
+  .pending-target {
     color: var(--color-text-primary);
-    overflow-wrap: anywhere;
   }
 
   @media (max-width: 34.999rem) {
