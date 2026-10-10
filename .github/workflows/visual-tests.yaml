@@ -13,11 +13,15 @@ on: # zizmor: ignore[dangerous-triggers] Trusted approval and storage maintenanc
 
 jobs:
   approval:
-    if: ${{ github.event_name == 'pull_request_target' && vars.VISUAL_CI_PROVIDER != '' }}
+    if: >-
+      ${{ vars.VISUAL_CI_PROVIDER != '' && (github.event_name == 'pull_request_target' ||
+      (github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch != github.event.repository.default_branch)) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     concurrency:
-      group: visual-approval-${{ github.event.pull_request.number }}
+      # A completion event names no PR, so each one gets its own group.
+      group: visual-approval-${{ github.event.pull_request.number || github.run_id }}
       cancel-in-progress: false
     permissions:
       contents: read
