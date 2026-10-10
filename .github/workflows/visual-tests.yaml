@@ -13,11 +13,15 @@ on: # zizmor: ignore[dangerous-triggers] Trusted approval and storage maintenanc
 
 jobs:
   approval:
-    if: ${{ github.event_name == 'pull_request_target' && vars.VISUAL_CI_PROVIDER != '' }}
+    if: >-
+      ${{ vars.VISUAL_CI_PROVIDER != '' && (github.event_name == 'pull_request_target' ||
+      (github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch != github.event.repository.default_branch)) }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 5
     concurrency:
-      group: visual-approval-${{ github.event.pull_request.number }}
+      # A completion event names no PR, so each one gets its own group.
+      group: visual-approval-${{ github.event.pull_request.number || github.run_id }}
       cancel-in-progress: false
     permissions:
       contents: read
@@ -25,7 +29,7 @@ jobs:
       statuses: write
       pull-requests: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@v1.42.2
+      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@v1.44.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -42,7 +46,7 @@ jobs:
       pull-requests: read
       id-token: write
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@v1.42.2
+      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@v1.44.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           identity_provider: ${{ vars.VISUAL_MAINTENANCE_PROVIDER }}
