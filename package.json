@@ -41,7 +41,7 @@
     "test:browser": "vitest run --project=browser --coverage.reportsDirectory=coverage/browser",
     "test:ci": "pnpm test:unit && pnpm test:browser && pnpm test:storybook && pnpm test:e2e",
     "test:e2e": "playwright test",
-    "test:storybook": "vitest run --project=storybook --coverage.enabled=false",
+    "test:storybook": "vitest run --project=storybook --coverage.reportsDirectory=coverage/storybook",
     "test:unit": "vitest run --project=unit --coverage.reportsDirectory=coverage/unit"
   },
   "dependencies": {
