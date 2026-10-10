@@ -27,9 +27,10 @@ jobs:
       contents: read
       actions: write
       statuses: write
-      pull-requests: read
+      # Removes the screenshot label a push made stale.
+      pull-requests: write
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@v1.45.2
+      - uses: a-novel-kit/workflows/generic-actions/approve-playwright@v1.45.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -46,7 +47,7 @@ jobs:
       pull-requests: read
       id-token: write
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@v1.45.2
+      - uses: a-novel-kit/workflows/generic-actions/maintain-playwright@v1.45.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           identity_provider: ${{ vars.VISUAL_MAINTENANCE_PROVIDER }}
