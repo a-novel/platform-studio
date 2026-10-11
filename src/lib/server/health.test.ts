@@ -37,7 +37,7 @@ describe("aggregateHealth", () => {
       status: "up",
     });
     expect(fetchImplementation).toHaveBeenCalledWith(
-      new URL("http://authentication:8080/api/healthcheck"),
+      new URL("http://authentication:8080/api/v2/healthcheck"),
       expect.objectContaining({
         headers: { accept: "application/json" },
         signal: expect.any(AbortSignal),

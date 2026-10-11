@@ -17,7 +17,7 @@ export function aggregateHealth(
 
         return {
           timeoutMs: config.healthcheckTimeoutMs,
-          url: new URL("healthcheck", `${config.authenticationServiceUrl}/`),
+          url: new URL("v2/healthcheck", `${config.authenticationServiceUrl}/`),
         };
       },
     },
