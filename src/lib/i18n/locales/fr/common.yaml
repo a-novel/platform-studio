@@ -31,6 +31,7 @@ authFlow:
     registrationCompleted: Votre compte est prêt.
     serviceUnavailable: Veuillez réessayer dans quelques minutes.
     sessionUnavailable: Impossible de vérifier votre session. Veuillez recharger la page dans quelques minutes.
+    tooManyAttempts: Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.
   validation:
     confirmPassword: Confirmez votre nouveau mot de passe.
     currentPassword: Saisissez votre mot de passe actuel.

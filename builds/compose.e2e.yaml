@@ -81,3 +81,5 @@ services:
       SMTP_SENDER_EMAIL: noreply@studio.test
       SMTP_SENDER_PASSWORD: test-only
       SMTP_FORCE_UNENCRYPTED: "true"
+      # Every journey comes from one address and mints its own anonymous session.
+      REST_RATE_LIMITS_ENABLED: "false"

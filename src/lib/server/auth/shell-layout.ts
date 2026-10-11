@@ -7,7 +7,8 @@ import { isDowntimeStarted } from "@a-novel-kit/nodelib-server";
 
 import type { RequestEvent } from "@sveltejs/kit";
 
-export const loadStudioShell = async ({ cookies, locals, url }: Pick<RequestEvent, "cookies" | "locals" | "url">) => {
+export const loadStudioShell = async (event: Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">) => {
+  const { locals, url } = event;
   const activeNavigation = url.pathname === "/" ? ("home" as const) : null;
   const t = locals.i18n.getFixedT(locals.locale, "common");
   let session: ShellSession = { status: "anonymous" };
@@ -16,7 +17,7 @@ export const loadStudioShell = async ({ cookies, locals, url }: Pick<RequestEven
   const resolved = isDowntimeStarted(await readStudioDowntime())
     ? ({ status: "downtime" } as const)
     : await Promise.resolve()
-        .then(() => createAuthenticationContext(cookies, url).session.current())
+        .then(() => createAuthenticationContext(event).session.current())
         .catch(() => ({ status: "unavailable" as const }));
 
   if (resolved.status === "downtime") {

@@ -19,6 +19,8 @@ export function translateAuthenticationFeedback(t: TFunction<"common">, feedback
       return t("authFlow.feedback.serviceUnavailable");
     case "sessionUnavailable":
       return t("authFlow.feedback.sessionUnavailable");
+    case "tooManyAttempts":
+      return t("authFlow.feedback.tooManyAttempts");
   }
 }
 

@@ -36,13 +36,10 @@ describe("aggregateHealth", () => {
       },
       status: "up",
     });
-    expect(fetchImplementation).toHaveBeenCalledWith(
-      new URL("http://authentication:8080/api/v2/healthcheck"),
-      expect.objectContaining({
-        headers: { accept: "application/json" },
-        signal: expect.any(AbortSignal),
-      })
-    );
+    const [url, init] = fetchImplementation.mock.calls[0] ?? [];
+    expect(url).toEqual(new URL("http://authentication:8080/api/v2/healthcheck"));
+    expect(new Headers(init?.headers).get("accept")).toBe("application/json");
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
   });
 
   it("keeps a reachable service up while a reported dependency makes Studio unavailable", async () => {

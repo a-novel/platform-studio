@@ -13,6 +13,7 @@ import { Role } from "@a-novel/service-authentication-rest";
 import type { Cookies, RequestEvent } from "@sveltejs/kit";
 
 const env = vi.hoisted(() => ({
+  AUTHENTICATION_SERVICE_AUDIENCE: undefined,
   AUTHENTICATION_SERVICE_URL: "https://authentication.test",
   DOWNTIME_URL: undefined,
   HEALTHCHECK_TIMEOUT_MS: undefined,
@@ -54,6 +55,7 @@ function request(path: string, cookieValues: Record<string, string> = {}, fields
   const url = new URL(path, "https://studio.test");
   const event = {
     cookies,
+    getClientAddress: () => "192.0.2.1",
     url,
     locals: { locale: "fr", i18n: createStudioI18n("fr") },
     request: new Request(url, fields ? { method: "POST", body: new URLSearchParams(fields) } : undefined),

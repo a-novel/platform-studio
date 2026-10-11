@@ -12,14 +12,14 @@ import { error, redirect } from "@sveltejs/kit";
  * Optional rules restrict a verified account; authentication outages never become anonymous access.
  */
 export async function requireAuthorization(
-  event: Pick<RequestEvent, "cookies" | "url">,
+  event: Pick<RequestEvent, "cookies" | "getClientAddress" | "url">,
   when: (session: AuthenticatedSession) => boolean = () => true
 ) {
   await refuseDuringDowntime();
 
   const resolved = await (async () => {
     try {
-      const authentication = createAuthenticationContext(event.cookies, event.url);
+      const authentication = createAuthenticationContext(event);
       return { authentication, session: await authentication.session.authenticated() };
     } catch (cause) {
       if (cause instanceof AuthenticationDowntimeError) downtimeError();

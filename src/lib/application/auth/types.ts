@@ -8,7 +8,8 @@ export type AuthenticationFeedback =
   | "passwordReset"
   | "registrationCompleted"
   | "serviceUnavailable"
-  | "sessionUnavailable";
+  | "sessionUnavailable"
+  | "tooManyAttempts";
 
 /** Stable validation categories translated only at the rendering boundary. */
 export type AuthenticationValidation =

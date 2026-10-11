@@ -20,11 +20,12 @@ function formatExpiry(token: string | undefined, locale: string, fallback: strin
   }).format(expiry);
 }
 
-export const loadAccount = async ({ cookies, locals, url }: Pick<RequestEvent, "cookies" | "locals" | "url">) => {
+export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">) => {
+  const { locals } = event;
   const t = locals.i18n.getFixedT(locals.locale, "common");
 
   try {
-    const { session } = await requireAuthorization({ cookies, url });
+    const { session } = await requireAuthorization(event);
 
     return {
       authorization: "allowed" as const,
@@ -121,12 +122,13 @@ export const accountActions = {
     } catch (error) {
       if (isRedirect(error) || isHttpError(error, 403)) throw error;
 
-      return fail(503, {
+      const limited = isHttpStatusError(error, 429);
+      return fail(limited ? 429 : 503, {
         accountAction: {
           kind: "email" as const,
           state: {
             status: "service-error" as const,
-            feedback: "serviceUnavailable" as const,
+            feedback: limited ? ("tooManyAttempts" as const) : ("serviceUnavailable" as const),
           },
         },
       });

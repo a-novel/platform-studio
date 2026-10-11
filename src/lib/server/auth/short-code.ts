@@ -133,7 +133,10 @@ export async function completeShortCode(
 
     return {
       outcome: "service-error",
-      model: screenModel(journey, { status: "service-error", feedback: "serviceUnavailable" }),
+      model: screenModel(journey, {
+        status: "service-error",
+        feedback: isHttpStatusError(error, 429) ? "tooManyAttempts" : "serviceUnavailable",
+      }),
     };
   }
 
