@@ -215,6 +215,24 @@ describe("AuthenticationSession", () => {
     expect(cookies.values.has("studio_refresh_token")).toBe(false);
   });
 
+  it("keeps an anonymous token across browser restarts until it expires", async () => {
+    const accessToken = createJwt(1_800_000_000);
+    client.createAnonymous.mockResolvedValue({ accessToken, refreshToken: "" });
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await session.anonymousAccessToken();
+
+    expect(cookies.writes[0]?.options).toMatchObject({ expires: new Date(1_800_000_000 * 1000) });
+  });
+
+  it("ends a signed-in session with the browser", () => {
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    session.accept({ accessToken: createJwt(1_800_000_000), refreshToken: "refresh" });
+
+    expect(cookies.writes[0]?.options).not.toHaveProperty("expires");
+  });
+
   it("does not turn an authentication outage into an anonymous session", async () => {
     cookies.values.set("studio_access_token", "access");
     client.claims.mockRejectedValue(new Error("network unavailable"));

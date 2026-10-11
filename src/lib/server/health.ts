@@ -1,5 +1,6 @@
 import type { RuntimeConfig } from "./runtime-config";
 import { getRuntimeConfig } from "./runtime-config.server";
+import { serviceFetch } from "./service-fetch";
 
 import { aggregateHealth as aggregateServiceHealth } from "@a-novel-kit/nodelib-server";
 
@@ -21,7 +22,9 @@ export function aggregateHealth(
         };
       },
     },
-    fetch: fetchImplementation,
+    // Probes prove Studio's identity like any call, but are made for no visitor.
+    fetch: async (input, init) =>
+      await serviceFetch({ audience: readConfig().authenticationServiceAudience }, fetchImplementation)(input, init),
   });
 }
 

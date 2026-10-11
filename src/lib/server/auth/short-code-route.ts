@@ -47,7 +47,7 @@ export async function loadShortCodeRoute(
 export async function submitShortCodeRoute(journey: ShortCodeJourney, event: RequestEvent) {
   await refuseDuringDowntime();
 
-  const authentication = createAuthenticationContext(event.cookies, event.url);
+  const authentication = createAuthenticationContext(event);
   const result = await completeShortCode(journey, event.url, await event.request.formData(), {
     accept: (token, identityEmail) => authentication.session.accept(token, identityEmail),
     accessToken: async () => await authentication.session.anonymousAccessToken(),

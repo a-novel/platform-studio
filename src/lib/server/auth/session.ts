@@ -146,7 +146,10 @@ export class AuthenticationSession {
 
   accept(token: Token, identityEmail?: string): void {
     const options = this.cookieOptions();
-    this.cookies.set(accessTokenCookie, token.accessToken, options);
+    // An anonymous token outlives the browser session, so a browser restart doesn't spend the
+    // visitor's few anonymous tokens. A signed-in session still ends with the browser.
+    const expiry = token.refreshToken ? null : readTokenExpiry(token.accessToken);
+    this.cookies.set(accessTokenCookie, token.accessToken, expiry ? { ...options, expires: expiry } : options);
 
     if (token.refreshToken) {
       this.cookies.set(refreshTokenCookie, token.refreshToken, options);

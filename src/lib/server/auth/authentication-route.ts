@@ -26,6 +26,13 @@ function serviceError(
   } as AuthenticationPanelModel;
 }
 
+/** Fails the action as unavailable, or as rate-limited when authentication refused the caller. */
+function failService(journey: AuthenticationPanelModel["journey"], error: unknown) {
+  return isHttpStatusError(error, 429)
+    ? fail(429, { authentication: serviceError(journey, "tooManyAttempts") })
+    : fail(503, { authentication: serviceError(journey, "serviceUnavailable") });
+}
+
 async function login(event: RequestEvent, form: FormData) {
   const input = validateLogin(form);
 
@@ -39,12 +46,12 @@ async function login(event: RequestEvent, form: FormData) {
   }
 
   try {
-    await createAuthenticationContext(event.cookies, event.url).session.login(input.value.email, input.value.password);
+    await createAuthenticationContext(event).session.login(input.value.email, input.value.password);
   } catch (error) {
-    const feedback = isHttpStatusError(error, 401) ? "invalidCredentials" : "serviceUnavailable";
-    return fail(isHttpStatusError(error, 401) ? 401 : 503, {
-      authentication: serviceError("login", feedback),
-    });
+    if (isHttpStatusError(error, 401)) {
+      return fail(401, { authentication: serviceError("login", "invalidCredentials") });
+    }
+    return failService("login", error);
   }
 
   redirect(303, safeReturnTo(event.url.searchParams.get("returnTo")));
@@ -63,7 +70,7 @@ async function requestInvitation(event: RequestEvent, form: FormData) {
   }
 
   try {
-    const authentication = createAuthenticationContext(event.cookies, event.url);
+    const authentication = createAuthenticationContext(event);
     const accessToken = await authentication.session.anonymousAccessToken();
     await waitlistJoin(authentication.api, accessToken, {
       email: input.value.email,
@@ -78,9 +85,7 @@ async function requestInvitation(event: RequestEvent, form: FormData) {
         } satisfies AuthenticationPanelModel,
       });
     }
-    return fail(503, {
-      authentication: serviceError("register", "serviceUnavailable"),
-    });
+    return failService("register", error);
   }
 
   return {
@@ -107,16 +112,14 @@ async function requestPasswordReset(event: RequestEvent, form: FormData) {
   }
 
   try {
-    const authentication = createAuthenticationContext(event.cookies, event.url);
+    const authentication = createAuthenticationContext(event);
     const accessToken = await authentication.session.anonymousAccessToken();
     await shortCodeCreatePasswordReset(authentication.api, accessToken, {
       email: input.value.email,
       lang: event.locals.locale === "fr" ? Lang.Fr : Lang.En,
     });
-  } catch {
-    return fail(503, {
-      authentication: serviceError("reset", "serviceUnavailable"),
-    });
+  } catch (error) {
+    return failService("reset", error);
   }
 
   return {

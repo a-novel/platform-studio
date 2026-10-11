@@ -13,7 +13,7 @@ vi.mock("./context", () => ({ createAuthenticationContext: vi.fn() }));
 
 const authenticated = vi.spyOn(AuthenticationSession.prototype, "authenticated");
 const cookies = { get: vi.fn(), set: vi.fn(), delete: vi.fn() } as unknown as RequestEvent["cookies"];
-const event = { cookies, url: new URL("https://studio.test/account?panel=email") };
+const event = { cookies, getClientAddress: () => "192.0.2.1", url: new URL("https://studio.test/account?panel=email") };
 const session = {
   status: "available",
   accessToken: "test-access",

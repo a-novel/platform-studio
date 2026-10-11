@@ -55,6 +55,7 @@ describe("authentication outcomes", () => {
 
   it.each([
     [new HttpError(401, "fixture-only detail"), 401, "invalidCredentials"],
+    [new HttpError(429, "fixture-only detail"), 429, "tooManyAttempts"],
     [new Error("fixture-only detail"), 503, "serviceUnavailable"],
   ] as const)("maps login rejection to %s without exposing service detail", async (error, status, feedback) => {
     vi.spyOn(AuthenticationSession.prototype, "login").mockRejectedValue(error);
@@ -83,6 +84,11 @@ describe("authentication outcomes", () => {
     await expect(authenticationActions.default(event(journey))).resolves.toMatchObject({
       status: 503,
       data: { authentication: { journey, state: { status: "service-error", feedback: "serviceUnavailable" } } },
+    });
+    vi.mocked(send).mockRejectedValueOnce(new HttpError(429, "private service detail"));
+    await expect(authenticationActions.default(event(journey))).resolves.toMatchObject({
+      status: 429,
+      data: { authentication: { journey, state: { status: "service-error", feedback: "tooManyAttempts" } } },
     });
   });
 });

@@ -437,6 +437,16 @@
   />
 </Story>
 
+<Story name="Login too many attempts" asChild>
+  <StoryHarness
+    initialModel={{ ...anonymous, authView: "login" }}
+    initialAuthenticationModel={{
+      journey: "login",
+      state: { status: "service-error", feedback: "tooManyAttempts" },
+    }}
+  />
+</Story>
+
 <Story name="Invitation request submitting" asChild>
   <StoryHarness
     initialModel={{ ...anonymous, authView: "register" }}

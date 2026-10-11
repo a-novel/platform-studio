@@ -41,7 +41,8 @@ export default interface Resources {
         "passwordReset": "Your password was reset.",
         "registrationCompleted": "Your account is ready.",
         "serviceUnavailable": "Please try again in a few minutes.",
-        "sessionUnavailable": "We couldn’t verify your session. Please reload the page in a few minutes."
+        "sessionUnavailable": "We couldn’t verify your session. Please reload the page in a few minutes.",
+        "tooManyAttempts": "Too many attempts. Please wait a few minutes before trying again."
       },
       "validation": {
         "confirmPassword": "Confirm your new password.",

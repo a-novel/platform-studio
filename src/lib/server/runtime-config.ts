@@ -20,12 +20,18 @@ const runtimeEnvironmentSchema = {
 } as const;
 
 /** RuntimeConfig contains Studio's private server settings. */
-export type RuntimeConfig = EnvironmentOutput<typeof runtimeEnvironmentSchema>;
+export type RuntimeConfig = EnvironmentOutput<typeof runtimeEnvironmentSchema> & {
+  /** The audience of the ID token Authentication's IAM admits. Unset outside Cloud Run. */
+  authenticationServiceAudience?: string;
+};
 
 /** Parses Studio's environment variables without retaining invalid values. */
 export function parseRuntimeConfig(environment: EnvironmentSource): RuntimeConfig {
-  return parseEnvironment(
-    { ...environment, DOWNTIME_URL: environment.DOWNTIME_URL ?? defaultDowntimeUrl },
-    runtimeEnvironmentSchema
-  );
+  return {
+    ...parseEnvironment(
+      { ...environment, DOWNTIME_URL: environment.DOWNTIME_URL ?? defaultDowntimeUrl },
+      runtimeEnvironmentSchema
+    ),
+    authenticationServiceAudience: environment.AUTHENTICATION_SERVICE_AUDIENCE || undefined,
+  };
 }
