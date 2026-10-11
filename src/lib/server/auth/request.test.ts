@@ -30,6 +30,13 @@ vi.mock("@a-novel-kit/nodelib-server", async (importOriginal) => ({
 }));
 
 const fetchService = vi.fn<typeof fetch>();
+
+/** The last authentication call as the service receives it, after Studio's fetch wrapper. */
+function sentRequest() {
+  const [url, init] = fetchService.mock.lastCall ?? [];
+  return { url, method: init?.method, headers: Object.fromEntries(new Headers(init?.headers)), body: init?.body };
+}
+
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
 const credentials = {
   id: userId,
@@ -87,9 +94,14 @@ describe("invitation requests at the request boundary", () => {
       authentication: { journey: "register", state: { status: "recorded", email } },
     });
     expect(fetchService).toHaveBeenCalledTimes(2);
-    expect(fetchService).toHaveBeenLastCalledWith("https://authentication.test/v2/waitlist", {
+    expect(sentRequest()).toEqual({
+      url: "https://authentication.test/v2/waitlist",
       method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer anonymous-access" },
+      headers: {
+        "content-type": "application/json",
+        authorization: "Bearer anonymous-access",
+        "x-client-ip": "192.0.2.1",
+      },
       body: JSON.stringify({ email, lang: locale }),
     });
     expect(cookies.set).toHaveBeenCalledWith("studio_access_token", "anonymous-access", {
@@ -159,9 +171,15 @@ describe("Studio session at the request boundary", () => {
       session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
       authorization: "allowed",
     });
-    expect(fetchService).toHaveBeenCalledExactlyOnceWith("https://authentication.test/v2/session", {
+    expect(fetchService).toHaveBeenCalledOnce();
+    expect(sentRequest()).toEqual({
+      url: "https://authentication.test/v2/session",
       method: "GET",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer private-access" },
+      headers: {
+        "content-type": "application/json",
+        authorization: "Bearer private-access",
+        "x-client-ip": "192.0.2.1",
+      },
     });
   });
 
@@ -202,9 +220,10 @@ describe("Studio session at the request boundary", () => {
       session: { status: "error" },
       authorization: "unavailable",
     });
-    expect(fetchService).toHaveBeenLastCalledWith("https://authentication.test/v2/session", {
+    expect(sentRequest()).toEqual({
+      url: "https://authentication.test/v2/session",
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json", "x-client-ip": "192.0.2.1" },
       body: expect.any(String),
     });
     expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual({
@@ -227,9 +246,11 @@ describe("Studio session at the request boundary", () => {
     );
     fetchService.mockResolvedValueOnce(Response.json({ accessToken: "new-access", refreshToken: "new-refresh" }));
     await expect(authenticationActions.default(event)).rejects.toMatchObject({ status: 303, location: "/account" });
-    expect(fetchService).toHaveBeenCalledExactlyOnceWith("https://authentication.test/v2/session", {
+    expect(fetchService).toHaveBeenCalledOnce();
+    expect(sentRequest()).toEqual({
+      url: "https://authentication.test/v2/session",
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json", "x-client-ip": "192.0.2.1" },
       body: expect.any(String),
     });
     expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual({
@@ -291,9 +312,14 @@ describe("Studio session at the request boundary", () => {
       accountAction: { kind: "password", state: { status: "success", feedback: "passwordChanged" } },
     });
     expect(fetchService).toHaveBeenCalledTimes(2);
-    expect(fetchService).toHaveBeenLastCalledWith("https://authentication.test/v2/credentials/password", {
+    expect(sentRequest()).toEqual({
+      url: "https://authentication.test/v2/credentials/password",
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer private-access" },
+      headers: {
+        "content-type": "application/json",
+        authorization: "Bearer private-access",
+        "x-client-ip": "192.0.2.1",
+      },
       body: expect.any(String),
     });
     expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual({
@@ -374,9 +400,14 @@ describe("secure-link request boundary", () => {
       location: event.url.pathname + "?result=success",
     });
     expect(fetchService).toHaveBeenCalledTimes(2);
-    expect(fetchService).toHaveBeenLastCalledWith("https://authentication.test" + scenario.endpoint, {
+    expect(sentRequest()).toEqual({
+      url: "https://authentication.test" + scenario.endpoint,
       method: scenario.journey === "email-update" ? "PATCH" : "PUT",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer anonymous-access" },
+      headers: {
+        "content-type": "application/json",
+        authorization: "Bearer anonymous-access",
+        "x-client-ip": "192.0.2.1",
+      },
       body: expect.any(String),
     });
     expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual(scenario.body);
