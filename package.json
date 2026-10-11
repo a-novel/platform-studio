@@ -52,7 +52,7 @@
     "@a-novel-kit/uikit-fonts": "0.8.1",
     "@a-novel-kit/uikit-images": "0.8.1",
     "@a-novel-kit/uikit-tokens": "0.8.1",
-    "@a-novel/service-authentication-rest": "2.11.1",
+    "@a-novel/service-authentication-rest": "2.12.0",
     "@lucide/svelte": "1.52.0",
     "i18next": "26.4.2",
     "zod": "4.6.5"
