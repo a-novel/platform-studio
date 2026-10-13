@@ -29,5 +29,3 @@ jobs:
           build_path: storybook-static
           working_directory: .
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}

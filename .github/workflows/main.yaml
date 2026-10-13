@@ -26,8 +26,6 @@ jobs:
       - uses: a-novel-kit/workflows/node-actions/lint-node@v1.55.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           lint_action: "lint:eslint"
 
   lint-style:
@@ -39,8 +37,6 @@ jobs:
       - uses: a-novel-kit/workflows/node-actions/lint-node@v1.55.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           lint_action: "lint:stylecheck"
 
   lint-types:
@@ -52,8 +48,6 @@ jobs:
       - uses: a-novel-kit/workflows/node-actions/lint-node@v1.55.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           lint_action: "lint:typecheck"
 
   lint-translations:
@@ -68,8 +62,6 @@ jobs:
       - uses: a-novel-kit/workflows/node-actions/lint-translations@v1.55.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
 
   lint-dockerfile:
     runs-on: ubuntu-latest
@@ -123,8 +115,6 @@ jobs:
         id: test
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           test_action: "test:unit"
           coverage_artifact: unitcover
           coverage_file: coverage/unit/lcov.info
@@ -149,8 +139,6 @@ jobs:
         id: test
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           compose_file: builds/compose.e2e.yaml
           report_artifact: studio-browser-report
           drive_ci_provider: ${{ vars.VISUAL_CI_PROVIDER }}
@@ -177,8 +165,6 @@ jobs:
         id: test
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           test_action: "test:storybook"
           coverage_artifact: storybookcover
           coverage_file: coverage/storybook/lcov.info
@@ -204,8 +190,6 @@ jobs:
       - uses: a-novel-kit/workflows/node-actions/setup-node@v1.55.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
       - name: Audit production and development dependencies
         run: pnpm run audit
 
@@ -218,8 +202,6 @@ jobs:
       - uses: a-novel-kit/workflows/node-actions/build-node@v1.55.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
-          client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
           build_action: "build:ci"
 
   build-platform:
