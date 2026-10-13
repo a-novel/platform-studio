@@ -102,8 +102,8 @@ the branch with its merge base on `master`, and reports every problem in one run
 
 A changed meaning gets a new key: the old translation stops matching, and the new key shows as a gap.
 An English-only fix, such as a typo, keeps its key and takes `allow-translation-drift` once the
-translation is checked. Adding or removing a label reruns the check, and a push that changes a
-catalog removes both labels.
+translation is checked. Adding or removing a label reruns the check, and a push removes both labels,
+since each approves one commit.
 
 ## Testing
 
@@ -117,6 +117,10 @@ catalog removes both labels.
 `a-novel test --type=pnpm -y` runs every suite. CI also runs ESLint, Prettier, svelte-check, the
 translation checks, secret scanning, and the workflow audit as separate jobs, so each failure names
 its concern.
+
+CI runs on pull requests and in the merge queue, not on bare branches: open a draft pull request to
+check work in progress. The `with-feature-env` label publishes the pull request's image as
+`ghcr.io/a-novel/platform-studio:pr-<number>` for its current commit, and a push removes the label.
 
 ### End-to-end journeys
 
@@ -143,8 +147,9 @@ Name each checkpoint after its screen with a fixed string. A name derived from c
 copy, and the comparison then reports a removed screenshot instead of a reviewable diff.
 
 When a visual change is intentional, review the diffs, then have a maintainer with write access apply
-the `allow-screenshot-change` label. The label approves the current commit only, so a new commit needs
-it removed and reapplied. Functional failures and upload errors stay blocking.
+the `allow-screenshot-change` label. The label approves the current commit only, so a push removes it;
+apply it again once the new commit's diffs are reviewed. Functional failures and upload errors stay
+blocking.
 
 To compare locally, extract `snapshots/` from the reference archive into `.visual/snapshots` and run
 the suite in the CI image, since another OS, browser, or font set renders differently:
