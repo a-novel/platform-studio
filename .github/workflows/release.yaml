@@ -66,6 +66,29 @@ jobs:
           secrets: |
             npm_token=${{ secrets.GITHUB_TOKEN }}
 
+  # Infra pins the published images in one pull request, which deploys the release once it merges.
+  deploy:
+    needs: [release, build-platform]
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - id: token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.AGENT_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.AGENT_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: infra
+          permission-contents: write
+      - name: Dispatch the release to infra
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: >-
+          gh api "repos/$GITHUB_REPOSITORY_OWNER/infra/dispatches" -f event_type=release
+          -f "client_payload[repository]=$GITHUB_REPOSITORY" -f "client_payload[version]=$TAG"
+
   archive:
     needs: [release, build-platform]
     if: ${{ !inputs.dry_run }}
