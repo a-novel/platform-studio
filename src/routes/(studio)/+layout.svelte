@@ -63,6 +63,7 @@
     getUrl: () => new URL(currentHref),
     onDrawerChange: (open) => {
       const next = withNavigationOpen(new URL(window.location.href), open);
+      // eslint-disable-next-line svelte/no-navigation-without-resolve -- Shallow routing edits the current, resolved URL.
       goto(next, { shallow: true, replace: true, state: page.state });
       currentHref = next.href;
     },
@@ -113,6 +114,7 @@
   function synchronizeUrl() {
     const normalized = normalizeAuthUrl(new URL(window.location.href));
     if (normalized.href !== window.location.href) {
+      // eslint-disable-next-line svelte/no-navigation-without-resolve -- Shallow routing edits the current, resolved URL.
       goto(normalized, { shallow: true, replace: true, state: page.state });
     }
     currentHref = normalized.href;
@@ -136,11 +138,9 @@
   function changeAuthView(view: AuthDialogView | null) {
     const previousView = readAuthView(new URL(window.location.href).searchParams);
     const next = withAuthView(new URL(window.location.href), view);
-    if (previousView === null && view !== null) {
-      goto(next, { shallow: true, state: page.state });
-    } else {
-      goto(next, { shallow: true, replace: true, state: page.state });
-    }
+    // Opening the dialog adds a history entry; any other change replaces the current one.
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- Shallow routing edits the current, resolved URL.
+    goto(next, { shallow: true, replace: previousView !== null || view === null, state: page.state });
     currentHref = next.href;
   }
 </script>
