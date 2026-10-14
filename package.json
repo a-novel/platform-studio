@@ -62,7 +62,7 @@
     "@opentelemetry/sdk-trace-node": "2.12.0",
     "google-auth-library": "11.2.0",
     "i18next": "26.4.3",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@a-novel-kit/nodelib-config": "1.14.0",
