@@ -168,7 +168,7 @@ importers:
     dependencies:
       '@a-novel-kit/nodelib-browser':
         specifier: 1.14.0
-        version: 1.14.0(zod@4.6.5)
+        version: 1.14.0(zod@4.6.6)
       '@a-novel-kit/nodelib-i18n':
         specifier: 1.14.0
         version: 1.14.0(i18next@26.4.3(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
@@ -189,7 +189,7 @@ importers:
         version: 0.8.1
       '@a-novel/service-authentication-rest':
         specifier: 2.13.2
-        version: 2.13.2(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.5))(zod@4.6.5)
+        version: 2.13.2(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.6))(zod@4.6.6)
       '@lucide/svelte':
         specifier: 1.55.0
         version: 1.55.0(svelte@5.57.2(@typescript-eslint/types@8.71.2))
@@ -218,15 +218,15 @@ importers:
         specifier: 26.4.3
         version: 26.4.3(typescript@6.0.3)
       zod:
-        specifier: 4.6.5
-        version: 4.6.5
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@a-novel-kit/nodelib-config':
         specifier: 1.14.0
         version: 1.14.0(8fbaf9b82d6e498510181fd53615dd18)
       '@a-novel-kit/nodelib-test':
         specifier: 1.14.0
-        version: 1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.5))(jsdom@30.1.2)(playwright@1.64.0)
+        version: 1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.6))(jsdom@30.1.2)(playwright@1.64.0)
       '@a-novel-kit/uikit-storybook':
         specifier: 0.8.1
         version: 0.8.1(@storybook/addon-a11y@10.6.1(storybook@10.6.1(prettier@3.9.10)(react@19.3.0)))(@storybook/addon-docs@10.6.1(storybook@10.6.1(prettier@3.9.10)(react@19.3.0)))(@storybook/addon-svelte-csf@5.1.5(@storybook/svelte@10.6.1(storybook@10.6.1(prettier@3.9.10)(react@19.3.0))(svelte@5.57.2(@typescript-eslint/types@8.71.2)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(storybook@10.6.1(prettier@3.9.10)(react@19.3.0))(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(@storybook/addon-vitest@10.6.1(@vitest/browser-playwright@5.0.3)(@vitest/browser@5.0.3)(react@19.3.0)(storybook@10.6.1(prettier@3.9.10)(react@19.3.0))(vitest@5.0.3))(react@19.3.0)(storybook@10.6.1(prettier@3.9.10)(react@19.3.0))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
@@ -3663,17 +3663,17 @@ packages:
   zimmerframe@1.1.5:
     resolution: {integrity: sha512-msJxIvYDYcoNL+PJsu+7qmpDWsYmAxTY+2TNYXXF0hzBzBk0BMecOqDOG/EckUoKCuKwObfbugIl8QpqHDXeFA==}
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
 
-  '@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.5)':
+  '@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.6)':
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@a-novel-kit/nodelib-config@1.14.0(8fbaf9b82d6e498510181fd53615dd18)':
     dependencies:
@@ -3722,9 +3722,9 @@ snapshots:
       '@opentelemetry/sdk-trace-node': 2.12.0(@opentelemetry/api@1.9.1)
       google-auth-library: 11.2.0
 
-  '@a-novel-kit/nodelib-test@1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.5))(jsdom@30.1.2)(playwright@1.64.0)':
+  '@a-novel-kit/nodelib-test@1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.6))(jsdom@30.1.2)(playwright@1.64.0)':
     dependencies:
-      '@a-novel-kit/nodelib-browser': 1.14.0(zod@4.6.5)
+      '@a-novel-kit/nodelib-browser': 1.14.0(zod@4.6.6)
       jsdom: 30.1.2
       playwright: 1.64.0
 
@@ -3759,10 +3759,10 @@ snapshots:
       i18next: 26.4.3(typescript@6.0.3)
       svelte: 5.57.2(@typescript-eslint/types@8.71.2)
 
-  '@a-novel/service-authentication-rest@2.13.2(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.5))(zod@4.6.5)':
+  '@a-novel/service-authentication-rest@2.13.2(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.6))(zod@4.6.6)':
     dependencies:
-      '@a-novel-kit/nodelib-browser': 1.14.0(zod@4.6.5)
-      zod: 4.6.5
+      '@a-novel-kit/nodelib-browser': 1.14.0(zod@4.6.6)
+      zod: 4.6.6
 
   '@adobe/css-tools@4.5.0': {}
 
@@ -6893,6 +6893,6 @@ snapshots:
 
   zimmerframe@1.1.5: {}
 
-  zod@4.6.5: {}
+  zod@4.6.6: {}
 
   zwitch@2.0.4: {}
