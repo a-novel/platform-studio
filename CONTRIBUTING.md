@@ -2,7 +2,7 @@
 
 This guide covers where Studio code goes, how a screen is built, how product copy is written, and how
 changes are tested. Read the [project overview](./README.md) first; the
-[developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md) covers
+[developer guide](https://a-novel-kit.github.io/stack/) covers
 workspace setup and shared commands.
 
 ## Where code goes
