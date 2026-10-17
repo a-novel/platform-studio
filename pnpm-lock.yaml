@@ -223,10 +223,10 @@ importers:
     devDependencies:
       '@a-novel-kit/nodelib-config':
         specifier: 1.14.0
-        version: 1.14.0(cd681dc8c990551adecaeba6a22c73d2)
+        version: 1.14.0(2c63ea582916036e945fa1cbd65c756e)
       '@a-novel-kit/nodelib-test':
         specifier: 1.14.0
-        version: 1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(jsdom@30.1.2)(playwright@1.64.0)
+        version: 1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(jsdom@30.1.2)(playwright@1.64.1)
       '@a-novel-kit/uikit-storybook':
         specifier: 0.8.1
         version: 0.8.1(@storybook/addon-a11y@10.6.2(storybook@10.6.2(prettier@3.9.10)(react@19.3.0)))(@storybook/addon-docs@10.6.2(storybook@10.6.2(prettier@3.9.10)(react@19.3.0)))(@storybook/addon-svelte-csf@5.1.5(@storybook/svelte@10.6.2(storybook@10.6.2(prettier@3.9.10)(react@19.3.0))(svelte@5.57.2(@typescript-eslint/types@8.71.2)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(storybook@10.6.2(prettier@3.9.10)(react@19.3.0))(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(@storybook/addon-vitest@10.6.2(@vitest/browser-playwright@5.0.4)(@vitest/browser@5.0.4)(react@19.3.0)(storybook@10.6.2(prettier@3.9.10)(react@19.3.0))(vitest@5.0.4))(react@19.3.0)(storybook@10.6.2(prettier@3.9.10)(react@19.3.0))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
@@ -280,7 +280,7 @@ importers:
         version: 24.19.2
       '@vitest/browser-playwright':
         specifier: 5.0.4
-        version: 5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
+        version: 5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
       '@vitest/coverage-v8':
         specifier: 5.0.4
         version: 5.0.4(@vitest/browser@5.0.4)(vitest@5.0.4)
@@ -315,8 +315,8 @@ importers:
         specifier: 30.1.2
         version: 30.1.2
       playwright:
-        specifier: 1.64.0
-        version: 1.64.0
+        specifier: 1.64.1
+        version: 1.64.1
       prettier:
         specifier: 3.9.10
         version: 3.9.10
@@ -2997,13 +2997,13 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  playwright-core@1.64.0:
-    resolution: {integrity: sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==}
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.64.0:
-    resolution: {integrity: sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg==}
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -3649,7 +3649,7 @@ snapshots:
     dependencies:
       zod: 4.6.7
 
-  '@a-novel-kit/nodelib-config@1.14.0(cd681dc8c990551adecaeba6a22c73d2)':
+  '@a-novel-kit/nodelib-config@1.14.0(2c63ea582916036e945fa1cbd65c756e)':
     dependencies:
       '@eslint/compat': 2.1.1(eslint@10.12.0(jiti@2.7.0))
       '@eslint/config-helpers': 0.7.0
@@ -3659,7 +3659,7 @@ snapshots:
       '@sveltejs/kit': 3.0.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.71.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.71.2))(typescript@6.0.3)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       '@trivago/prettier-plugin-sort-imports': 6.0.2(prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.2(@typescript-eslint/types@8.71.2)))(prettier@3.9.10)(svelte@5.57.2(@typescript-eslint/types@8.71.2))
       '@types/node': 24.19.2
-      '@vitest/browser-playwright': 5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
+      '@vitest/browser-playwright': 5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
       eslint: 10.12.0(jiti@2.7.0)
       eslint-config-prettier: 10.1.8(eslint@10.12.0(jiti@2.7.0))
       eslint-plugin-storybook: 10.6.2(eslint@10.12.0(jiti@2.7.0))(typescript@6.0.3)
@@ -3668,7 +3668,7 @@ snapshots:
       globals: 17.13.0
       i18next-cli: 1.75.3(@types/node@24.19.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
       i18next-cli-plugin-svelte: 2.4.1(estree-walker@3.0.3)(i18next-cli@1.75.3(@types/node@24.19.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.71.2))
-      playwright: 1.64.0
+      playwright: 1.64.1
       prettier: 3.9.10
       prettier-plugin-css-order: 2.2.0(postcss@8.5.30)(prettier@3.9.10)
       prettier-plugin-packagejson: 3.0.2(prettier@3.9.10)
@@ -3696,11 +3696,11 @@ snapshots:
       '@opentelemetry/sdk-trace-node': 2.12.0(@opentelemetry/api@1.9.1)
       google-auth-library: 11.3.0
 
-  '@a-novel-kit/nodelib-test@1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(jsdom@30.1.2)(playwright@1.64.0)':
+  '@a-novel-kit/nodelib-test@1.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(jsdom@30.1.2)(playwright@1.64.1)':
     dependencies:
       '@a-novel-kit/nodelib-browser': 1.14.0(zod@4.6.7)
       jsdom: 30.1.2
-      playwright: 1.64.0
+      playwright: 1.64.1
 
   '@a-novel-kit/uikit-fonts@0.8.1': {}
 
@@ -4522,7 +4522,7 @@ snapshots:
       storybook: 10.6.2(prettier@3.9.10)(react@19.3.0)
     optionalDependencies:
       '@vitest/browser': 5.0.4(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
-      '@vitest/browser-playwright': 5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
+      '@vitest/browser-playwright': 5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
       vitest: 5.0.4(@opentelemetry/api@1.9.1)(@types/node@24.19.2)(@vitest/browser-playwright@5.0.4)(@vitest/coverage-v8@5.0.4)(@vitest/ui@5.0.4)(jsdom@30.1.2)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
     transitivePeerDependencies:
       - react
@@ -4870,11 +4870,11 @@ snapshots:
       '@typescript-eslint/types': 8.71.2
       eslint-visitor-keys: 5.0.1
 
-  '@vitest/browser-playwright@5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)':
+  '@vitest/browser-playwright@5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)':
     dependencies:
       '@vitest/browser': 5.0.4(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
       '@vitest/mocker': 5.0.4(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
-      playwright: 1.64.0
+      playwright: 1.64.1
       tinyrainbow: 3.2.0
       vitest: 5.0.4(@opentelemetry/api@1.9.1)(@types/node@24.19.2)(@vitest/browser-playwright@5.0.4)(@vitest/coverage-v8@5.0.4)(@vitest/ui@5.0.4)(jsdom@30.1.2)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
     transitivePeerDependencies:
@@ -6255,11 +6255,11 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  playwright-core@1.64.0: {}
+  playwright-core@1.64.1: {}
 
-  playwright@1.64.0:
+  playwright@1.64.1:
     dependencies:
-      playwright-core: 1.64.0
+      playwright-core: 1.64.1
 
   pngjs@7.0.0: {}
 
@@ -6770,7 +6770,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 24.19.2
-      '@vitest/browser-playwright': 5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
+      '@vitest/browser-playwright': 5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))(vitest@5.0.4)
       '@vitest/coverage-v8': 5.0.4(@vitest/browser@5.0.4)(vitest@5.0.4)
       '@vitest/ui': 5.0.4(vitest@5.0.4)
       jsdom: 30.1.2
