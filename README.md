@@ -1,6 +1,6 @@
 # Studio platform
 
-The creative workspace for building and managing stories in Agora Storyverse.
+The creative workspace for building and managing stories in Agora.
 
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/agorastoryverse)](https://twitter.com/agorastoryverse)
 [![Discord](https://img.shields.io/discord/1315240114691248138?logo=discord)](https://discord.gg/rp4Qr8cA)
@@ -16,7 +16,7 @@ The creative workspace for building and managing stories in Agora Storyverse.
 
 ## What it does
 
-Studio is the browser application where creators work with the Agora platform. Its SvelteKit server
+Studio is Agora's browser application for creators. Its SvelteKit server
 renders the pages and is the only caller of the platform services, so session tokens stay in
 server-set cookies and never reach browser code.
 

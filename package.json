@@ -2,7 +2,7 @@
   "name": "@a-novel/platform-studio",
   "version": "0.1.0",
   "private": true,
-  "description": "The creative workspace for the Agora Storyverse platform",
+  "description": "Agora's creative workspace for building and managing stories",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/a-novel/platform-studio.git"
