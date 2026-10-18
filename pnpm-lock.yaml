@@ -188,8 +188,8 @@ importers:
         specifier: 0.9.0
         version: 0.9.0
       '@a-novel/service-authentication-rest':
-        specifier: 2.13.2
-        version: 2.13.2(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(zod@4.6.7)
+        specifier: 2.14.0
+        version: 2.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(zod@4.6.7)
       '@lucide/svelte':
         specifier: 1.57.0
         version: 1.57.0(svelte@5.57.2(@typescript-eslint/types@8.71.2))
@@ -457,8 +457,8 @@ packages:
       i18next: ^26.4.2
       svelte: ^5.57.2
 
-  '@a-novel/service-authentication-rest@2.13.2':
-    resolution: {integrity: sha512-VN8VHnNLi+TnIkNW1Xmbs4R8MCdpYktjbu70/4c23ixuqDiPBqtbczbBxr6SHFeUo3de2O08L0I0beI36h4kKQ==, tarball: https://npm.pkg.github.com/download/@a-novel/service-authentication-rest/2.13.2/d63cf75d8515927514c9e92bf518bce819d5f717}
+  '@a-novel/service-authentication-rest@2.14.0':
+    resolution: {integrity: sha512-OTOm/bRUZtErFQWo6WAUvZcmTpM9oZ3QOSFSCffYlZ/xJ8Fbsu7APbeZbBMoeTSlyWfYHwwpNp9+7QatAo5j9g==, tarball: https://npm.pkg.github.com/download/@a-novel/service-authentication-rest/2.14.0/0ef7a1b48cd3092c51d2c08929df08d23998162b}
     engines: {node: '>=23.11.0', npm: '>=10.9.2'}
     peerDependencies:
       '@a-novel-kit/nodelib-browser': ^1.3.21
@@ -3733,7 +3733,7 @@ snapshots:
       i18next: 26.4.5(typescript@6.0.3)
       svelte: 5.57.2(@typescript-eslint/types@8.71.2)
 
-  '@a-novel/service-authentication-rest@2.13.2(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(zod@4.6.7)':
+  '@a-novel/service-authentication-rest@2.14.0(@a-novel-kit/nodelib-browser@1.14.0(zod@4.6.7))(zod@4.6.7)':
     dependencies:
       '@a-novel-kit/nodelib-browser': 1.14.0(zod@4.6.7)
       zod: 4.6.7
