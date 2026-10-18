@@ -1,3 +1,21 @@
+<p align="center">
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset="https://raw.githubusercontent.com/a-novel-kit/uikit/cfe1d542719dd8dff915b4773cad2352109763cb/packages/images/files/banner/960h/studio-banner.png"
+    />
+    <source
+      media="(prefers-color-scheme: light)"
+      srcset="https://raw.githubusercontent.com/a-novel-kit/uikit/cfe1d542719dd8dff915b4773cad2352109763cb/packages/images/files/banner/960h/studio-banner-light.png"
+    />
+    <img
+      alt="Studio"
+      src="https://raw.githubusercontent.com/a-novel-kit/uikit/cfe1d542719dd8dff915b4773cad2352109763cb/packages/images/files/banner/960h/studio-banner-light.png"
+      width="1010"
+    />
+  </picture>
+</p>
+
 # Studio platform
 
 The creative workspace for building and managing stories in Agora.
