@@ -41,7 +41,7 @@ export function parseShortCodeLink(journey: ShortCodeJourney, url: URL): ParsedS
 
   if (code.status === "missing" || target.status === "missing") return { status: "missing" };
   if (code.status === "invalid" || target.status === "invalid") return { status: "invalid" };
-  if (!ShortCodeSchema.safeParse(code.value).success || code.value.length === 0) return { status: "invalid" };
+  if (!ShortCodeSchema.safeParse(code.value).success) return { status: "invalid" };
 
   if (journey === "register") {
     const email = decodeEmail(target.value);
