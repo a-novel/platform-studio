@@ -83,10 +83,9 @@ export function translateShortCodeTitle(t: TFunction<"common">, { journey, state
     case "success":
       return translateAuthenticationFeedback(t, state.feedback);
     default:
-      return journey === "email-update"
-        ? state.status === "service-error"
-          ? t("authUi.shortCode.journeys.emailUpdate.unavailableTitle")
-          : t("authUi.shortCode.journeys.emailUpdate.submitting")
-        : translateShortCodeJourney(t, journey, "title");
+      if (journey !== "email-update") return translateShortCodeJourney(t, journey, "title");
+      return state.status === "service-error"
+        ? t("authUi.shortCode.journeys.emailUpdate.unavailableTitle")
+        : t("authUi.shortCode.journeys.emailUpdate.submitting");
   }
 }

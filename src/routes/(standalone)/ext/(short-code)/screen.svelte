@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { FormIssue, ShortCodePasswordField } from "#lib/application/auth/types.js";
+  import type { ShortCodePasswordField } from "#lib/application/auth/types.js";
 
   import type { ShortCodeScreenController } from "./controller.svelte";
 
@@ -13,8 +13,7 @@
   import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "#lib/i18n/auth-copy.js";
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
-
-  import { tick } from "svelte";
+  import { submitThrough } from "#lib/ui/form-submission.js";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Button, Field, FormActions, Input, Link, StatusState } from "@a-novel-kit/uikit";
@@ -40,21 +39,12 @@
     model.journey === "email-update" || unavailableStatus !== null || model.state.status === "success"
   );
 
-  function issueMessage(
-    currentIssues: readonly FormIssue<ShortCodePasswordField>[],
-    field: ShortCodePasswordField
-  ): string | undefined {
-    const issue = currentIssues.find((candidate) => candidate.field === field);
+  function fieldError(field: ShortCodePasswordField): string | undefined {
+    const issue = issues.find((candidate) => candidate.field === field);
     return issue ? translateAuthenticationValidation(t, issue) : undefined;
   }
 
-  async function submit(event: SubmitEvent) {
-    const form = event.currentTarget as HTMLFormElement;
-    if (controller.submit(new FormData(form))) return;
-    event.preventDefault();
-    await tick();
-    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
-  }
+  const submit = (event: SubmitEvent) => submitThrough(event, (form) => controller.submit(form));
 </script>
 
 <main class="standalone-page">
@@ -117,7 +107,7 @@
         <Field
           controlId={newPasswordId}
           label={t("authUi.shortCode.newPasswordLabel")}
-          error={issueMessage(issues, "newPassword")}
+          error={fieldError("newPassword")}
           required
         >
           {#snippet children(control)}
@@ -127,14 +117,14 @@
               type="password"
               autocomplete="new-password"
               readonly={submitting}
-              invalid={Boolean(issueMessage(issues, "newPassword"))}
+              invalid={Boolean(fieldError("newPassword"))}
             />
           {/snippet}
         </Field>
         <Field
           controlId={confirmPasswordId}
           label={t("authUi.shortCode.confirmPasswordLabel")}
-          error={issueMessage(issues, "confirmPassword")}
+          error={fieldError("confirmPassword")}
           required
         >
           {#snippet children(control)}
@@ -144,7 +134,7 @@
               type="password"
               autocomplete="new-password"
               readonly={submitting}
-              invalid={Boolean(issueMessage(issues, "confirmPassword"))}
+              invalid={Boolean(fieldError("confirmPassword"))}
             />
           {/snippet}
         </Field>
