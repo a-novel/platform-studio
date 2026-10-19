@@ -5,7 +5,7 @@ FROM docker.io/library/node:24.22.0-alpine3.23 AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME/bin:$PNPM_HOME:$PATH
 
-RUN corepack enable && corepack install --global pnpm@11.15.1
+RUN corepack enable
 
 WORKDIR /app
 
