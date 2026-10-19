@@ -5,6 +5,7 @@ const shortCodeResponseHeaders = {
   "x-robots-tag": "noindex, nofollow",
 } as const;
 
+/** Keeps an email-link response out of caches, search indexes and referrers. */
 export function secureShortCodeResponse(response: Response): Response {
   for (const [name, value] of Object.entries(shortCodeResponseHeaders)) {
     response.headers.set(name, value);

@@ -2,20 +2,17 @@ import { createStudioI18n } from "#lib/i18n/instance.js";
 
 import { accountActions, loadAccount } from "./account-route";
 import { createAuthenticationContext } from "./context";
+import { stubAuthenticationContext } from "./context.fixture";
 import { AuthenticationSession, AuthenticationUnavailableError } from "./session";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "@a-novel-kit/nodelib-browser/http";
-import {
-  AuthenticationApi,
-  credentialsUpdatePassword,
-  shortCodeCreateEmailUpdate,
-} from "@a-novel/service-authentication-rest";
+import { credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
 
-vi.mock("./context", () => ({ createAuthenticationContext: vi.fn() }));
+vi.mock("./context", { spy: true });
 vi.mock("@a-novel/service-authentication-rest", { spy: true });
 
 const authenticated = vi.spyOn(AuthenticationSession.prototype, "authenticated");
@@ -42,14 +39,7 @@ describe("account route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     const request = event();
-    vi.mocked(createAuthenticationContext).mockReturnValue({
-      api: new AuthenticationApi("https://auth.example.test"),
-      session: new AuthenticationSession(
-        { claims: vi.fn(), login: vi.fn(), refresh: vi.fn(), createAnonymous: vi.fn() },
-        request.cookies,
-        request.url
-      ),
-    });
+    vi.mocked(createAuthenticationContext).mockReturnValue(stubAuthenticationContext(request.cookies, request.url));
   });
 
   it("limits a retrieval failure to the recap and initializes usable actions", async () => {

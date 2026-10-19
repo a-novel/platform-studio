@@ -12,8 +12,7 @@
   import { translateAuthenticationJourney } from "#lib/i18n/auth-copy.js";
   import { translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
-
-  import { tick } from "svelte";
+  import { submitThrough } from "#lib/ui/form-submission.js";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import { Alert, Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
@@ -37,13 +36,7 @@
     return issue ? translateAuthenticationValidation(t, issue) : undefined;
   }
 
-  async function submit(event: SubmitEvent) {
-    const form = event.currentTarget as HTMLFormElement;
-    if (controller.submit(new FormData(form))) return;
-    event.preventDefault();
-    await tick();
-    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
-  }
+  const submit = (event: SubmitEvent) => submitThrough(event, (form) => controller.submit(form));
 </script>
 
 {#if model.state.status === "pending-email"}

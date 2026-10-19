@@ -34,25 +34,26 @@ The creative workspace for building and managing stories in Agora.
 
 ## What it does
 
-Studio is Agora's browser application for creators. Its SvelteKit server
-renders the pages and is the only caller of the platform services, so session tokens stay in
-server-set cookies and never reach browser code.
+Studio is Agora's browser application for creators. Its SvelteKit server renders the pages and is
+the only caller of the platform services. Session tokens stay in server-set cookies and never reach
+browser code.
 
-It ships as one container image. Every screen state is also on display in the
-[published Storybook](https://a-novel.github.io/platform-studio/).
+Studio ships as one container image. The [published Storybook](https://a-novel.github.io/platform-studio/)
+shows every screen state.
 
 ## Deploying
 
 Run a tag from the [latest release](https://github.com/a-novel/platform-studio/releases/latest) and
-point it at the authentication service.
+point it at the authentication service. The image runs as a non-root user on port `3000`, and its
+container healthcheck calls `/ping`.
 
 ```bash
+PLATFORM_STUDIO_VERSION="vX.Y.Z"
+AUTHENTICATION_SERVICE_URL="https://authentication.example.com"
 podman run --detach --name platform-studio --publish 3000:3000 \
-  --env AUTHENTICATION_SERVICE_URL \
+  --env AUTHENTICATION_SERVICE_URL="$AUTHENTICATION_SERVICE_URL" \
   ghcr.io/a-novel/platform-studio:"$PLATFORM_STUDIO_VERSION"
 ```
-
-The image runs as a non-root user on port `3000`, and its container healthcheck calls `/ping`.
 
 ### Configuration
 
@@ -77,8 +78,9 @@ The image runs as a non-root user on port `3000`, and its container healthcheck 
 
 ## Running locally
 
-Configure pnpm for GitHub Packages with a token that can read packages, then start the
-authentication service and Studio:
+Installing Studio's packages needs your
+[GitHub Packages token](https://a-novel-kit.github.io/stack/dependencies/node#configure). Start the
+authentication service, then Studio:
 
 ```bash
 a-novel run start service-authentication/rest

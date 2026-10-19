@@ -12,8 +12,7 @@
 <script lang="ts">
   import { translateAuthenticationFeedback, translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
-
-  import { tick } from "svelte";
+  import { submitThrough } from "#lib/ui/form-submission.js";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import {
@@ -43,28 +42,19 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const newEmailId = `${componentId}-new-email`;
 
+  const passwordSubmitting = $derived(model.passwordState.status === "submitting");
+  const emailSubmitting = $derived(model.emailState.status === "submitting");
+  const loggingOut = $derived(model.logoutState === "submitting");
   const passwordIssues = $derived(model.passwordState.status === "validation-error" ? model.passwordState.issues : []);
   const emailIssues = $derived(model.emailState.status === "validation-error" ? model.emailState.issues : []);
+
   function issueMessage<Field extends string>(issues: readonly FormIssue<Field>[], field: Field): string | undefined {
     const issue = issues.find((candidate) => candidate.field === field);
     return issue ? translateAuthenticationValidation(t, issue) : undefined;
   }
 
-  async function submitPassword(event: SubmitEvent) {
-    const form = event.currentTarget as HTMLFormElement;
-    if (controller.submitPassword(new FormData(form))) return;
-    event.preventDefault();
-    await tick();
-    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
-  }
-
-  async function submitEmail(event: SubmitEvent) {
-    const form = event.currentTarget as HTMLFormElement;
-    if (controller.submitEmail(new FormData(form))) return;
-    event.preventDefault();
-    await tick();
-    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
-  }
+  const submitPassword = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitPassword(form));
+  const submitEmail = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitEmail(form));
 
   function submitLogout(event: SubmitEvent) {
     if (!controller.submitLogout()) event.preventDefault();
@@ -86,7 +76,7 @@
             <form
               method="POST"
               action={actions.password}
-              aria-busy={model.passwordState.status === "submitting"}
+              aria-busy={passwordSubmitting}
               novalidate
               onsubmit={submitPassword}
             >
@@ -102,7 +92,7 @@
                     name="currentPassword"
                     type="password"
                     autocomplete="current-password"
-                    readonly={model.passwordState.status === "submitting"}
+                    readonly={passwordSubmitting}
                     invalid={Boolean(issueMessage(passwordIssues, "currentPassword"))}
                   />
                 {/snippet}
@@ -120,7 +110,7 @@
                     name="password"
                     type="password"
                     autocomplete="new-password"
-                    readonly={model.passwordState.status === "submitting"}
+                    readonly={passwordSubmitting}
                     invalid={Boolean(issueMessage(passwordIssues, "newPassword"))}
                   />
                 {/snippet}
@@ -137,7 +127,7 @@
                     name="confirmPassword"
                     type="password"
                     autocomplete="new-password"
-                    readonly={model.passwordState.status === "submitting"}
+                    readonly={passwordSubmitting}
                     invalid={Boolean(issueMessage(passwordIssues, "confirmPassword"))}
                   />
                 {/snippet}
@@ -150,10 +140,8 @@
                     <Alert tone="success" title={translateAuthenticationFeedback(t, model.passwordState.feedback)} />
                   {/if}
                 {/snippet}
-                <Button type="submit" disabled={model.passwordState.status === "submitting"}>
-                  {model.passwordState.status === "submitting"
-                    ? t("authUi.account.password.submitting")
-                    : t("authUi.account.password.submit")}
+                <Button type="submit" disabled={passwordSubmitting}>
+                  {passwordSubmitting ? t("authUi.account.password.submitting") : t("authUi.account.password.submit")}
                 </Button>
               </FormActions>
             </form>
@@ -167,13 +155,7 @@
               <p>{t("authUi.account.email.description")}</p>
             </header>
 
-            <form
-              method="POST"
-              action={actions.email}
-              aria-busy={model.emailState.status === "submitting"}
-              novalidate
-              onsubmit={submitEmail}
-            >
+            <form method="POST" action={actions.email} aria-busy={emailSubmitting} novalidate onsubmit={submitEmail}>
               <Field
                 controlId={newEmailId}
                 label={t("authUi.account.email.label")}
@@ -189,7 +171,7 @@
                     autocomplete="email"
                     autocapitalize="none"
                     spellcheck="false"
-                    readonly={model.emailState.status === "submitting"}
+                    readonly={emailSubmitting}
                     invalid={Boolean(issueMessage(emailIssues, "newEmail"))}
                   />
                 {/snippet}
@@ -205,8 +187,8 @@
                     </Alert>
                   {/if}
                 {/snippet}
-                <Button type="submit" disabled={model.emailState.status === "submitting"}>
-                  {#if model.emailState.status === "submitting"}
+                <Button type="submit" disabled={emailSubmitting}>
+                  {#if emailSubmitting}
                     {t("authUi.account.email.submitting")}
                   {:else if model.emailState.status === "pending-email"}
                     {t("authUi.account.email.resend")}
@@ -264,7 +246,7 @@
             id="account-session"
             method="POST"
             action={actions.logout}
-            aria-busy={model.logoutState === "submitting"}
+            aria-busy={loggingOut}
             onsubmit={submitLogout}
           >
             <FormActions>
@@ -278,11 +260,9 @@
                 variant="outline"
                 tone="neutral"
                 aria-describedby={`${componentId}-logout-description`}
-                disabled={model.logoutState === "submitting"}
+                disabled={loggingOut}
               >
-                {model.logoutState === "submitting"
-                  ? t("authUi.account.logout.submitting")
-                  : t("authUi.account.logout.submit")}
+                {loggingOut ? t("authUi.account.logout.submitting") : t("authUi.account.logout.submit")}
               </Button>
             </FormActions>
           </form>

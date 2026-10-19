@@ -6,10 +6,10 @@ import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
 
 # Account screen
 
-Account settings follow one reading column: password, email, then session details and logout.
-Forms use shared panels and action spacing, with feedback immediately before their submit button.
-Session details sit directly on the page background; a retrieval failure never blocks the forms.
-Short section names identify the setting, while descriptions explain only what happens next.
+Account settings read in one column: password, email, then the session details and logout. Each
+form sits on a shared panel, with its feedback right above the submit button. The session details sit
+on the page background, and a failure to load them never blocks the forms. Section names are short,
+and descriptions only say what happens next.
 
 ## Account status
 
@@ -66,7 +66,7 @@ Short section names identify the setting, while descriptions explain only what h
 
 ### Incorrect current password
 
-The service rejects the current password beside its field, without a duplicate form-level alert.
+A rejected current password shows beside its field, with no form-level alert.
 
 <ResponsiveStoryPair
   desktop={AccountStories.IncorrectCurrentPassword}

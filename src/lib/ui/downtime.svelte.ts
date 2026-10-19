@@ -14,7 +14,7 @@ export interface StudioDowntime {
 
 export const [getStudioDowntime, setStudioDowntime, hasStudioDowntime] = createContext<StudioDowntime>();
 
-// setTimeout fires at once past this delay; a page left open that long picks the start up on reload.
+// setTimeout fires at once past this delay. A page left open that long picks the start up on reload.
 const maxTimerDelay = 2 ** 31 - 1;
 
 /**

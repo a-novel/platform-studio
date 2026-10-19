@@ -51,14 +51,14 @@ function validationMessage(issue: z.core.$ZodIssue, empty: boolean): Authenticat
   }
 }
 
+function textValue(form: FormData, name: string): string {
+  const value = form.get(name);
+  return typeof value === "string" ? value : "";
+}
+
 function formValidator<Value, Field extends string>(schema: z.ZodType<Value>, fields: Record<string, Field>) {
   return (form: FormData): ValidationResult<Value, Field> => {
-    const values = Object.fromEntries(
-      Object.keys(fields).map((name) => {
-        const value = form.get(name);
-        return [name, typeof value === "string" ? value : ""];
-      })
-    );
+    const values = Object.fromEntries(Object.keys(fields).map((name) => [name, textValue(form, name)]));
     const parsed = schema.safeParse(values);
     if (parsed.success) return { success: true, value: parsed.data };
 

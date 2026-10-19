@@ -15,7 +15,7 @@ export interface ShortCodeScreenController {
   readonly state: ShortCodeScreenControllerState;
   /** Reconciles a completed route load or action with the rendered secure-link state. */
   synchronize(state: ShortCodeScreenControllerState): void;
-  /** Validates password forms into state before submission; email confirmation needs no form values. */
+  /** Validates password forms into state before submission. Email confirmation needs no form values. */
   submit(form?: FormData): boolean;
 }
 
@@ -27,18 +27,10 @@ export interface ShortCodeScreenControllerOptions extends ShortCodeScreenControl
 
 /** Creates a reactive controller for a standalone secure-link screen. */
 export function createShortCodeScreenController({
-  model: initialModel,
-  action: initialAction,
-  restartHref: initialRestartHref,
-  continueHref: initialContinueHref,
   allowNativeSubmission = true,
+  ...initialState
 }: ShortCodeScreenControllerOptions): ShortCodeScreenController {
-  let state = $state<ShortCodeScreenControllerState>({
-    model: initialModel,
-    action: initialAction,
-    restartHref: initialRestartHref,
-    continueHref: initialContinueHref,
-  });
+  let state = $state<ShortCodeScreenControllerState>(initialState);
 
   return {
     get state() {
@@ -48,14 +40,7 @@ export function createShortCodeScreenController({
       state = nextState;
     },
     submit(form = new FormData()) {
-      if (
-        state.model.state.status === "submitting" ||
-        state.model.state.status === "success" ||
-        state.model.state.status === "missing" ||
-        state.model.state.status === "invalid"
-      ) {
-        return false;
-      }
+      if (["submitting", "success", "missing", "invalid"].includes(state.model.state.status)) return false;
 
       if (state.model.journey !== "email-update") {
         const result = validateNewPassword(form);
@@ -64,10 +49,7 @@ export function createShortCodeScreenController({
           return false;
         }
       }
-      state = {
-        ...state,
-        model: { ...state.model, state: { status: "submitting" } },
-      };
+      state = { ...state, model: { ...state.model, state: { status: "submitting" } } };
       return allowNativeSubmission;
     },
   };
@@ -78,10 +60,5 @@ export function shortCodeControllerState(
   data: ShortCodePageData,
   form?: ShortCodeActionData | null
 ): ShortCodeScreenControllerState {
-  return {
-    model: form?.shortCode ?? data.model,
-    action: "",
-    restartHref: data.links.restartHref,
-    continueHref: data.links.continueHref,
-  };
+  return { model: form?.shortCode ?? data.model, action: "", ...data.links };
 }

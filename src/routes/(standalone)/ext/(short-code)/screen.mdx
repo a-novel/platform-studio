@@ -6,16 +6,16 @@ import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
 
 # Secure email links
 
-These standalone routes intentionally omit the Studio shell. Each supported journey is documented
-in isolated desktop and mobile documents.
+Secure email links open standalone pages, without the Studio shell.
 
 The current outcome is the page’s only heading and its browser-tab title. Password instructions appear
-only while a password is needed. Failures explain the next useful step: wait during an outage or request
-a fresh link when the current one cannot be used.
+only while a password is needed. Failures explain the next useful step. An outage asks the visitor to
+wait, and an unusable link offers a fresh one.
 
 Validation examples use the API package’s password schema, including both length boundaries.
 Rejected, expired, and already-used links share the same error because the API does not distinguish
-them. Email confirmation has no editable form; account creation logs the user in before continuing to Studio.
+them. Email confirmation has no editable form. Account creation logs the user in before continuing to
+Studio.
 
 ## Supported journeys
 
@@ -29,8 +29,8 @@ them. Email confirmation has no editable form; account creation logs the user in
 
 ### Updating email
 
-Opening the email link starts validation automatically. These previews pin the pending state; success
-and failure appear below. Registration and password reset still require a password.
+Opening the email link starts the confirmation at once. These previews hold the pending state, and its
+outcomes appear below.
 
 <ResponsiveStoryPair
   desktop={SecureLinkStories.UpdatingEmailDesktop}

@@ -30,7 +30,7 @@
     if (controller.state.model.state.status !== "ready" || !controller.submit()) return;
 
     try {
-      // Keep GET/prefetch read-only; only the mounted route consumes the link through its action.
+      // GET and prefetch stay read-only. Only the mounted route consumes the link, through its action.
       const response = await fetch("", {
         method: "POST",
         headers: { accept: "application/json", "x-sveltekit-action": "true" },

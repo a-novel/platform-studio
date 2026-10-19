@@ -1,6 +1,12 @@
 import { validateEmailRequest, validateInvitationRequest, validateLogin } from "#lib/application/auth/forms.js";
 import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
 
+const validators = {
+  login: validateLogin,
+  register: validateInvitationRequest,
+  reset: validateEmailRequest,
+} satisfies Record<AuthenticationPanelModel["journey"], unknown>;
+
 /** State rendered by the authentication form component. */
 export interface AuthenticationPanelControllerState {
   model: AuthenticationPanelModel;
@@ -44,13 +50,7 @@ export function createAuthenticationPanelController({
         return false;
       }
 
-      const validate =
-        model.journey === "login"
-          ? validateLogin
-          : model.journey === "register"
-            ? validateInvitationRequest
-            : validateEmailRequest;
-      const result = validate(form);
+      const result = validators[model.journey](form);
       if (!result.success) {
         model = { ...model, state: { status: "validation-error", issues: result.issues } } as AuthenticationPanelModel;
         return false;

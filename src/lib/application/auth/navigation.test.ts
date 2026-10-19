@@ -3,7 +3,7 @@ import { loginHref, safeReturnTo } from "./navigation";
 import { describe, expect, it } from "vitest";
 
 describe("authentication navigation", () => {
-  it.each([
+  const returnDestinations = [
     ["/account?panel=password#change", "/account?panel=password#change"],
     ["/account?query=two%20words", "/account?query=two+words"],
     ["/account?auth=login&returnTo=%2Faccount&panel=email", "/account?panel=email"],
@@ -18,7 +18,9 @@ describe("authentication navigation", () => {
     ["/%zz", "/"],
     ["javascript:alert(1)", "/"],
     [null, "/"],
-  ])("sanitizes %s", (value, expected) => {
+  ];
+
+  it.each(returnDestinations)("sanitizes %s", (value, expected) => {
     expect(safeReturnTo(value)).toBe(expected);
   });
 

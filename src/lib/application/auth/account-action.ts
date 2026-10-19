@@ -1,5 +1,6 @@
 import type { AccountClaimsState, AccountScreenModel } from "./types";
 
+/** AccountActionData is the result an account form action returns to the page. */
 export type AccountActionData =
   | {
       accountAction: {
@@ -9,6 +10,7 @@ export type AccountActionData =
     }
   | { accountAction: { kind: "password"; state: AccountScreenModel["passwordState"] } };
 
+/** Applies an account action's result to the form it came from, ignoring any other data. */
 export function mergeAccountAction(model: AccountScreenModel, data: unknown): AccountScreenModel {
   if (!data || typeof data !== "object" || !("accountAction" in data)) return model;
 

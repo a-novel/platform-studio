@@ -9,6 +9,7 @@
   import { PasswordSchema } from "@a-novel/service-authentication-rest";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
+  import type { StoryContext } from "@storybook/sveltekit";
   import { expect, within } from "storybook/test";
 
   const { Story } = defineMeta({
@@ -19,13 +20,9 @@
     },
   });
 
-  async function verifyRegistrationForm({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  type PlayContext = Pick<StoryContext, "canvasElement" | "globals">;
+
+  async function verifyRegistrationForm({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(
@@ -56,13 +53,7 @@
     expect(Math.abs(spaceBefore - spaceAfter)).toBeLessThanOrEqual(1);
   }
 
-  async function verifyEmailConfirmation({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyEmailConfirmation({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("status")).toHaveTextContent(t("authUi.shortCode.journeys.emailUpdate.submitting"));
@@ -75,13 +66,7 @@
     await expect(within(canvasElement).queryByRole("link")).not.toBeInTheDocument();
   }
 
-  async function verifySubmittingLocked({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifySubmittingLocked({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(
