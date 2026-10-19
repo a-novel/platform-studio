@@ -6,28 +6,25 @@ import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
 
 # Platform shell
 
-The shell and each authentication dialog render in isolated desktop and mobile documents. Dialogs
-are locked open in these visual states, so dismissing one preview cannot change the documentation
-around it. Every mobile navigation/account preview likewise uses an explicit mobile story with its
-intended menu state: showcase previews remain locked open, while the collapsed anonymous preview
-remains closed.
+The shell frames every Studio page with its navigation, its account controls and the authentication
+dialogs. Each preview holds one state fixed, so dismissing a dialog or a menu leaves it as it was.
 
-Expanded headers share one padded Agora wordmark. The compact rail uses its icon; mobile keeps the
-wordmark and menu control aligned between the closed header and opened menu.
+Expanded headers show the padded Agora wordmark, and the compact rail shows the icon. On mobile, the
+wordmark and the menu control stay aligned between the closed header and the open menu.
 
-Dialog titles and fields share a leading edge. UIKit owns the header controls, fullscreen menu,
-compact navigation, and action spacing. Primary actions stay separated from inputs, with service
-errors grouped above submission. Mobile actions stack at full width; desktop actions keep their
-natural width, with secondary actions at the end of the dialog footer. Completion states omit the footer.
-Requests explain the next step before submission. Once recorded or sent, the dialog heading becomes
-the outcome, with one compact status message and the submitted address below it.
+Dialog titles and fields share a leading edge. UIKit owns the header controls, the fullscreen menu,
+the compact navigation and the action spacing. Service errors sit above the submit button, which
+stays apart from the fields. Mobile actions stack at full width. Desktop actions keep their natural
+width, with secondary actions at the end of the footer. Completion states drop the footer.
 
-Validation previews come from the same API schemas as the controllers. Invalid credentials stay
-distinct from service outages, whose short heading and recovery guidance are shared across forms.
-Successful login redirects. Invitation requests acknowledge list membership, with distinct warnings
-for existing accounts and duplicate requests. Recovery acknowledges delivery without disclosing
-whether an account exists. Controller transitions and duplicate-submission guards are covered by tests,
-not interactive documentation.
+A request explains the next step before submission. Once the request is recorded or sent, the dialog
+heading becomes the outcome, with one compact status message and the submitted address below it.
+
+Validation previews use the same API schemas as the controllers. Invalid credentials read apart from
+service outages, which share a short heading and recovery guidance across forms. A successful login
+redirects. Invitation requests acknowledge list membership, with distinct warnings for existing
+accounts and repeated requests. Recovery acknowledges delivery without disclosing whether an account
+exists.
 
 ## Navigation and account
 
