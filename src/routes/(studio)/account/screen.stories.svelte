@@ -9,6 +9,7 @@
   import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
+  import type { StoryContext } from "@storybook/sveltekit";
   import { expect, within } from "storybook/test";
 
   const ready = {
@@ -32,13 +33,9 @@
     },
   });
 
-  async function verifySessionFits({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  type PlayContext = Pick<StoryContext, "canvasElement" | "globals">;
+
+  async function verifySessionFits({ canvasElement, globals }: PlayContext) {
     const t = createStorybookTranslator(globals);
     const recap = within(canvasElement).getByRole("region", { name: t("authUi.account.claims.title") });
     const bounds = recap.getBoundingClientRect();
@@ -52,13 +49,7 @@
     }
   }
 
-  async function verifyReadyAccount({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyReadyAccount({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await verifySessionFits({ canvasElement, globals });
@@ -93,34 +84,24 @@
     expect(canvasElement.querySelector('a[href$="-confirm-password"]')).toBeNull();
   }
 
-  async function verifyFormsAvailable({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyFormsAvailable({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     const recap = canvas.getByRole("region", { name: t("authUi.account.claims.title") });
     await expect(within(recap).getByRole("alert")).toBeVisible();
-    for (const key of [
+    const submitKeys = [
       "authUi.account.password.submit",
       "authUi.account.email.submit",
       "authUi.account.logout.submit",
-    ] as const) {
+    ] as const;
+
+    for (const key of submitKeys) {
       await expect(canvas.getByRole("button", { name: t(key) })).toBeEnabled();
     }
     await expect(canvas.getByRole("textbox", { name: t("authUi.account.email.label") })).toBeEnabled();
   }
 
-  async function verifyPasswordLocked({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyPasswordLocked({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("button", { name: t("authUi.account.password.submitting") })).toBeDisabled();

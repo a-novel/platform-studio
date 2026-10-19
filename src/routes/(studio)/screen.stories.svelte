@@ -10,6 +10,7 @@
   import ScrollPreview from "@a-novel-kit/uikit-storybook/ScrollPreview.svelte";
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
+  import type { StoryContext } from "@storybook/sveltekit";
   import { expect, userEvent, within } from "storybook/test";
 
   const anonymous: StudioShellViewModel = {
@@ -62,17 +63,13 @@
     },
   });
 
+  type PlayContext = Pick<StoryContext, "canvasElement" | "globals">;
+
   function clearFocus() {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   }
 
-  async function verifyAnonymousAuthentication({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyAnonymousAuthentication({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("link", { name: t("shell.home") })).toHaveAttribute("aria-current", "page");
@@ -84,13 +81,7 @@
     clearFocus();
   }
 
-  async function verifyRailToggle({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyRailToggle({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "24");
@@ -102,13 +93,7 @@
     clearFocus();
   }
 
-  async function verifyExpandedMobileNavigation({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyExpandedMobileNavigation({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     const navigation = canvas.getByRole("dialog", { name: t("shell.brand") });
@@ -120,13 +105,7 @@
     clearFocus();
   }
 
-  async function verifyCollapsedMobileNavigation({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyCollapsedMobileNavigation({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     const openNavigation = canvas.getByRole("link", { name: t("shell.openNavigation") });
@@ -144,13 +123,7 @@
     clearFocus();
   }
 
-  async function verifyAuthenticatedActions({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyAuthenticatedActions({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(canvas.getByRole("link", { name: "Maya Chen" })).toHaveAttribute("href", "#account");
@@ -161,13 +134,7 @@
     clearFocus();
   }
 
-  async function verifyAuthenticatedMobileLayout({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyAuthenticatedMobileLayout({ canvasElement, globals }: PlayContext) {
     await verifyExpandedMobileNavigation({ canvasElement, globals });
 
     const canvas = within(canvasElement);
@@ -182,13 +149,7 @@
     await expect(Math.max(...labelStarts) - Math.min(...labelStarts)).toBeLessThanOrEqual(1);
   }
 
-  async function verifyMobileAuthenticationActions({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyMobileAuthenticationActions({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     const forgotPassword = canvas.getByRole("link", { name: t("shell.auth.forgotPassword") });
@@ -208,13 +169,7 @@
     expect(canvasElement.querySelector('a[href$="-email"]')).toBeNull();
   }
 
-  async function verifySubmittingIsLocked({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifySubmittingIsLocked({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     await expect(
@@ -225,13 +180,7 @@
     );
   }
 
-  async function verifyRecordedInvitation({
-    canvasElement,
-    globals,
-  }: {
-    canvasElement: HTMLElement;
-    globals: Record<string, unknown>;
-  }) {
+  async function verifyRecordedInvitation({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
     const status = canvas.getByRole("status");
