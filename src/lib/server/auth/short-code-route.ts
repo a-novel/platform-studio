@@ -14,6 +14,7 @@ const links: Record<ShortCodeJourney, ShortCodePageData["links"]> = {
   "password-reset": { continueHref: "/?auth=login", restartHref: "/?auth=reset" },
 };
 
+/** Loads an email-link page without contacting the service, so a prefetch never consumes the link. */
 export async function loadShortCodeRoute(
   journey: ShortCodeJourney,
   event: Pick<RequestEvent, "locals" | "url">
@@ -24,6 +25,7 @@ export async function loadShortCodeRoute(
   return { links: links[journey], model: readShortCodeModel(journey, event.url) };
 }
 
+/** Completes an email link. A final outcome redirects to a result URL without the link's parameters. */
 export async function submitShortCodeRoute(journey: ShortCodeJourney, event: RequestEvent) {
   await refuseDuringDowntime();
 

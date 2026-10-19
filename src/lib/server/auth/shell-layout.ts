@@ -20,6 +20,7 @@ const shellAuthorization = {
 
 type ShellEvent = Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">;
 
+/** Loads the shell's navigation state, session display and page authorization. */
 export const loadStudioShell = async (event: ShellEvent) => {
   const session = await readShellSession(event);
 

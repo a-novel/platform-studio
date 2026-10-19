@@ -4,6 +4,7 @@ import { EmailSchema, ShortCodeSchema } from "@a-novel/service-authentication-re
 
 import { z } from "zod";
 
+/** ParsedShortCodeLink is an email link's parameters, ready for the service or rejected as missing or invalid. */
 export type ParsedShortCodeLink =
   | { status: "missing" }
   | { status: "invalid" }
@@ -33,6 +34,7 @@ function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
 }
 
+/** Reads a journey's link parameters, decoding the base64url email address they carry. */
 export function parseShortCodeLink(journey: ShortCodeJourney, url: URL): ParsedShortCodeLink {
   const code = readParameter(url.searchParams, "shortCode");
   const target = readParameter(url.searchParams, "target");

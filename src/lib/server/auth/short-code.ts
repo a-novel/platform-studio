@@ -17,12 +17,14 @@ import {
   credentialsUpdateEmail,
 } from "@a-novel/service-authentication-rest";
 
+/** ShortCodeClient is the service API that completes an email link. */
 export interface ShortCodeClient {
   register(accessToken: string, input: { email: string; password: string; shortCode: string }): Promise<Token>;
   resetPassword(accessToken: string, input: { password: string; shortCode: string; userID: string }): Promise<void>;
   updateEmail(accessToken: string, input: { shortCode: string; userID: string }): Promise<void>;
 }
 
+/** ShortCodeCompletionContext is the visitor's session as a link completion uses it. */
 export interface ShortCodeCompletionContext {
   accept(token: Token, identityEmail?: string): void;
   accessToken(): Promise<string>;
@@ -30,8 +32,10 @@ export interface ShortCodeCompletionContext {
   rememberIdentity(identityEmail: string): void;
 }
 
+/** ShortCodeCompletionOutcome tells the route whether to redirect or to show the form again. */
 export type ShortCodeCompletionOutcome = "success" | "invalid" | "validation-error" | "service-error";
 
+/** ShortCodeCompletionResult is the screen state a completion leaves, with its outcome. */
 export interface ShortCodeCompletionResult {
   model: ShortCodeScreenModel;
   outcome: ShortCodeCompletionOutcome;
@@ -39,6 +43,7 @@ export interface ShortCodeCompletionResult {
 
 type ReadyLink<Journey extends ShortCodeJourney> = Extract<ParsedShortCodeLink, { journey: Journey }>;
 
+/** Binds the link-completion API to an authentication client. */
 export function createShortCodeClient(api: AuthenticationApi): ShortCodeClient {
   return {
     register: async (accessToken, input) => await credentialsCreate(api, accessToken, input),
@@ -51,6 +56,7 @@ export function createShortCodeClient(api: AuthenticationApi): ShortCodeClient {
   };
 }
 
+/** Reads the screen state of an email-link URL without keeping its code or target. */
 export function readShortCodeModel(journey: ShortCodeJourney, url: URL): ShortCodeScreenModel {
   const result = url.searchParams.getAll("result");
 
@@ -64,6 +70,7 @@ export function readShortCodeModel(journey: ShortCodeJourney, url: URL): ShortCo
   return { journey, state: { status: parseShortCodeLink(journey, url).status } };
 }
 
+/** Completes an email link with the service. A password journey validates its form before any call. */
 export async function completeShortCode(
   journey: ShortCodeJourney,
   url: URL,

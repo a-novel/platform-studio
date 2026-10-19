@@ -50,6 +50,7 @@ type ShortCodeJourneyMessage = keyof (typeof shortCodeJourneyKeys)["register"];
 type ShortCodeStatus = keyof typeof shortCodeStatusKeys;
 type ShortCodeStatusMessage = keyof (typeof shortCodeStatusKeys)["missing"];
 
+/** Resolves a shell dialog's submit labels. */
 export function translateAuthenticationJourney(
   t: TFunction<"common">,
   journey: AuthenticationJourney,
@@ -58,6 +59,7 @@ export function translateAuthenticationJourney(
   return authenticationJourneyKeys[journey][message](t);
 }
 
+/** Resolves an email-link page's copy for a password journey. */
 export function translateShortCodeJourney(
   t: TFunction<"common">,
   journey: Exclude<ShortCodeJourney, "email-update">,
@@ -66,6 +68,7 @@ export function translateShortCodeJourney(
   return shortCodeJourneyKeys[journey][message](t);
 }
 
+/** Resolves the copy of a missing or invalid email link. */
 export function translateShortCodeStatus(
   t: TFunction<"common">,
   status: ShortCodeStatus,

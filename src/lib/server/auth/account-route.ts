@@ -30,6 +30,7 @@ function emailAction(state: AccountScreenModel["emailState"]): AccountActionData
   return { accountAction: { kind: "email", state } };
 }
 
+/** Loads the account recap. An authentication outage still renders the account forms. */
 export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">) => {
   const { locals } = event;
   const t = locals.i18n.getFixedT(locals.locale, "common");
@@ -48,7 +49,7 @@ export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClie
       }),
     };
   } catch (error) {
-    // A planned downtime renders as maintenance rather than as the account's own outage state.
+    // A planned downtime renders as the maintenance page.
     if (isRedirect(error) || isHttpError(error, 403) || (isHttpError(error, 503) && error.body.downtime)) throw error;
 
     return {

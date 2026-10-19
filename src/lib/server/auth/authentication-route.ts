@@ -111,6 +111,7 @@ async function requestPasswordReset(event: RequestEvent, form: FormData) {
   };
 }
 
+/** The shell dialog's form action, which serves the journey named in the `auth` parameter. */
 export const authenticationActions = {
   default: async (event: RequestEvent) => {
     await refuseDuringDowntime();
