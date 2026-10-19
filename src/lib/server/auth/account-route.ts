@@ -1,11 +1,13 @@
-import { createAccountModel } from "#lib/application/auth/account-action.js";
+import { type AccountActionData, createAccountModel } from "#lib/application/auth/account-action.js";
 import { validateEmailUpdate, validatePasswordChange } from "#lib/application/auth/forms.js";
+import type { AccountScreenModel } from "#lib/application/auth/types.js";
 import { requireAuthorization } from "#lib/server/auth/authorization.js";
+import { emailLanguage } from "#lib/server/auth/context.js";
 import { logoutAuthentication } from "#lib/server/auth/logout.js";
 import { readTokenExpiry } from "#lib/server/auth/session.js";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
-import { Lang, credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";
+import { credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";
 
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, isHttpError, isRedirect } from "@sveltejs/kit";
@@ -18,6 +20,14 @@ function formatExpiry(token: string | undefined, locale: string, fallback: strin
     dateStyle: "medium",
     timeStyle: "short",
   }).format(expiry);
+}
+
+function passwordAction(state: AccountScreenModel["passwordState"]): AccountActionData {
+  return { accountAction: { kind: "password", state } };
+}
+
+function emailAction(state: AccountScreenModel["emailState"]): AccountActionData {
+  return { accountAction: { kind: "email", state } };
 }
 
 export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">) => {
@@ -51,99 +61,50 @@ export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClie
   }
 };
 
+async function changePassword(event: RequestEvent) {
+  const input = validatePasswordChange(await event.request.formData());
+  if (!input.success) return fail(400, passwordAction({ status: "validation-error", issues: input.issues }));
+
+  try {
+    const { authentication, session } = await requireAuthorization(event);
+    await credentialsUpdatePassword(authentication.api, session.accessToken, input.value);
+  } catch (error) {
+    if (isRedirect(error) || isHttpError(error, 403)) throw error;
+
+    // A 403 from the service means a wrong current password, which the form shows on its field.
+    if (isHttpStatusError(error, 403)) {
+      const issues = [{ field: "currentPassword", feedback: "invalidCurrentPassword" }] as const;
+      return fail(403, passwordAction({ status: "validation-error", issues }));
+    }
+    return fail(503, passwordAction({ status: "service-error", feedback: "serviceUnavailable" }));
+  }
+
+  return passwordAction({ status: "success", feedback: "passwordChanged" });
+}
+
+async function requestEmailUpdate(event: RequestEvent) {
+  const input = validateEmailUpdate(await event.request.formData());
+  if (!input.success) return fail(400, emailAction({ status: "validation-error", issues: input.issues }));
+
+  try {
+    const { authentication, session } = await requireAuthorization(event);
+    await shortCodeCreateEmailUpdate(authentication.api, session.accessToken, {
+      email: input.value.email,
+      lang: emailLanguage(event.locals.locale),
+    });
+  } catch (error) {
+    if (isRedirect(error) || isHttpError(error, 403)) throw error;
+
+    return isHttpStatusError(error, 429)
+      ? fail(429, emailAction({ status: "service-error", feedback: "tooManyAttempts" }))
+      : fail(503, emailAction({ status: "service-error", feedback: "serviceUnavailable" }));
+  }
+
+  return emailAction({ status: "pending-email", targetHint: input.value.email });
+}
+
 export const accountActions = {
-  password: async (event: RequestEvent) => {
-    const input = validatePasswordChange(await event.request.formData());
-
-    if (!input.success) {
-      return fail(400, {
-        accountAction: {
-          kind: "password" as const,
-          state: { status: "validation-error" as const, issues: input.issues },
-        },
-      });
-    }
-
-    try {
-      const { authentication, session } = await requireAuthorization(event);
-      await credentialsUpdatePassword(authentication.api, session.accessToken, input.value);
-    } catch (error) {
-      if (isRedirect(error) || isHttpError(error, 403)) throw error;
-
-      if (isHttpStatusError(error, 403)) {
-        return fail(403, {
-          accountAction: {
-            kind: "password" as const,
-            state: {
-              status: "validation-error" as const,
-              issues: [{ field: "currentPassword" as const, feedback: "invalidCurrentPassword" as const }],
-            },
-          },
-        });
-      }
-
-      return fail(503, {
-        accountAction: {
-          kind: "password" as const,
-          state: {
-            status: "service-error" as const,
-            feedback: "serviceUnavailable" as const,
-          },
-        },
-      });
-    }
-
-    return {
-      accountAction: {
-        kind: "password" as const,
-        state: { status: "success" as const, feedback: "passwordChanged" as const },
-      },
-    };
-  },
-
-  email: async (event: RequestEvent) => {
-    const input = validateEmailUpdate(await event.request.formData());
-
-    if (!input.success) {
-      return fail(400, {
-        accountAction: {
-          kind: "email" as const,
-          state: { status: "validation-error" as const, issues: input.issues },
-        },
-      });
-    }
-
-    try {
-      const { authentication, session } = await requireAuthorization(event);
-      await shortCodeCreateEmailUpdate(authentication.api, session.accessToken, {
-        email: input.value.email,
-        lang: event.locals.locale === "fr" ? Lang.Fr : Lang.En,
-      });
-    } catch (error) {
-      if (isRedirect(error) || isHttpError(error, 403)) throw error;
-
-      const limited = isHttpStatusError(error, 429);
-      return fail(limited ? 429 : 503, {
-        accountAction: {
-          kind: "email" as const,
-          state: {
-            status: "service-error" as const,
-            feedback: limited ? ("tooManyAttempts" as const) : ("serviceUnavailable" as const),
-          },
-        },
-      });
-    }
-
-    return {
-      accountAction: {
-        kind: "email" as const,
-        state: {
-          status: "pending-email" as const,
-          targetHint: input.value.email,
-        },
-      },
-    };
-  },
-
+  password: changePassword,
+  email: requestEmailUpdate,
   logout: logoutAuthentication,
 };

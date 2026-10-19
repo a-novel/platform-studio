@@ -8,24 +8,10 @@ import { completeShortCode, createShortCodeClient, readShortCodeModel } from "./
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, redirect } from "@sveltejs/kit";
 
-interface RouteDetails {
-  continueHref: string;
-  restartHref: string;
-}
-
-const routeDetails: Record<ShortCodeJourney, RouteDetails> = {
-  register: {
-    continueHref: "/",
-    restartHref: "/?auth=register",
-  },
-  "email-update": {
-    continueHref: "/account",
-    restartHref: "/account",
-  },
-  "password-reset": {
-    continueHref: "/?auth=login",
-    restartHref: "/?auth=reset",
-  },
+const links: Record<ShortCodeJourney, ShortCodePageData["links"]> = {
+  register: { continueHref: "/", restartHref: "/?auth=register" },
+  "email-update": { continueHref: "/account", restartHref: "/account" },
+  "password-reset": { continueHref: "/?auth=login", restartHref: "/?auth=reset" },
 };
 
 export async function loadShortCodeRoute(
@@ -35,13 +21,7 @@ export async function loadShortCodeRoute(
   // A code can't be completed while the services are stopped, so its page explains why at once.
   await refuseDuringDowntime();
 
-  return {
-    links: {
-      continueHref: routeDetails[journey].continueHref,
-      restartHref: routeDetails[journey].restartHref,
-    },
-    model: readShortCodeModel(journey, event.url),
-  };
+  return { links: links[journey], model: readShortCodeModel(journey, event.url) };
 }
 
 export async function submitShortCodeRoute(journey: ShortCodeJourney, event: RequestEvent) {
@@ -55,14 +35,9 @@ export async function submitShortCodeRoute(journey: ShortCodeJourney, event: Req
     rememberIdentity: (identityEmail) => authentication.session.rememberIdentity(identityEmail),
   });
 
-  if (result.outcome === "success") {
-    redirect(303, event.url.pathname + "?result=success");
-  }
-  if (result.outcome === "invalid") {
-    redirect(303, event.url.pathname + "?result=invalid");
+  if (result.outcome === "success" || result.outcome === "invalid") {
+    redirect(303, `${event.url.pathname}?result=${result.outcome}`);
   }
 
-  return fail(result.outcome === "validation-error" ? 400 : 503, {
-    shortCode: result.model,
-  });
+  return fail(result.outcome === "validation-error" ? 400 : 503, { shortCode: result.model });
 }

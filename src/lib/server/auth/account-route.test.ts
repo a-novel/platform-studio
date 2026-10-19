@@ -15,7 +15,7 @@ import {
 
 import type { RequestEvent } from "@sveltejs/kit";
 
-vi.mock("./context", () => ({ createAuthenticationContext: vi.fn() }));
+vi.mock("./context", { spy: true });
 vi.mock("@a-novel/service-authentication-rest", { spy: true });
 
 const authenticated = vi.spyOn(AuthenticationSession.prototype, "authenticated");

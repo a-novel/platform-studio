@@ -6,7 +6,7 @@ import type {
   ShortCodeState,
 } from "#lib/application/auth/types.js";
 
-import { parseShortCodeLink } from "./forms";
+import { type ParsedShortCodeLink, parseShortCodeLink } from "./forms";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {
@@ -37,6 +37,8 @@ export interface ShortCodeCompletionResult {
   outcome: ShortCodeCompletionOutcome;
 }
 
+type ReadyLink<Journey extends ShortCodeJourney> = Extract<ParsedShortCodeLink, { journey: Journey }>;
+
 export function createShortCodeClient(api: AuthenticationApi): ShortCodeClient {
   return {
     register: async (accessToken, input) => await credentialsCreate(api, accessToken, input),
@@ -53,18 +55,13 @@ export function readShortCodeModel(journey: ShortCodeJourney, url: URL): ShortCo
   const result = url.searchParams.getAll("result");
 
   if (result.length === 1 && result[0] === "success") {
-    return screenModel(journey, { status: "success", feedback: successFeedback(journey) });
+    return { journey, state: { status: "success", feedback: successFeedback(journey) } };
   }
   if (result.length === 1 && result[0] === "invalid") {
-    return screenModel(journey, { status: "invalid" });
+    return { journey, state: { status: "invalid" } };
   }
 
-  const parsed = parseShortCodeLink(journey, url);
-  if (parsed.status !== "ready") {
-    return screenModel(journey, { status: parsed.status });
-  }
-
-  return screenModel(journey, { status: "ready" });
+  return { journey, state: { status: parseShortCodeLink(journey, url).status } };
 }
 
 export async function completeShortCode(
@@ -73,85 +70,72 @@ export async function completeShortCode(
   form: FormData,
   context: ShortCodeCompletionContext
 ): Promise<ShortCodeCompletionResult> {
-  const parsed = parseShortCodeLink(journey, url);
-  if (parsed.status !== "ready") {
-    return {
-      outcome: "invalid",
-      model: screenModel(journey, { status: "invalid" }),
-    };
+  const link = parseShortCodeLink(journey, url);
+  if (link.status !== "ready") return completion("invalid", journey, { status: "invalid" });
+  if (link.journey === "email-update") {
+    return await settle(journey, context, async (accessToken) => await confirmEmail(link, accessToken, context));
   }
 
-  let operation: (accessToken: string) => Promise<void>;
-
-  if (parsed.journey === "email-update") {
-    operation = async (accessToken) => {
-      await context.client.updateEmail(accessToken, {
-        shortCode: parsed.shortCode,
-        userID: parsed.userId,
-      });
-      context.rememberIdentity(parsed.email);
-    };
-  } else {
-    const validation = validateNewPassword(form);
-    if (!validation.success) {
-      return {
-        outcome: "validation-error",
-        model: screenModel(journey, { status: "validation-error", issues: validation.issues }),
-      };
-    }
-
-    const password = validation.value.password;
-    if (parsed.journey === "register") {
-      operation = async (accessToken) => {
-        const token = await context.client.register(accessToken, {
-          email: parsed.email,
-          password,
-          shortCode: parsed.shortCode,
-        });
-        context.accept(token, parsed.email);
-      };
-    } else {
-      operation = async (accessToken) => {
-        await context.client.resetPassword(accessToken, {
-          password,
-          shortCode: parsed.shortCode,
-          userID: parsed.userId,
-        });
-      };
-    }
+  // Passwords are checked before the link spends an anonymous token.
+  const validation = validateNewPassword(form);
+  if (!validation.success) {
+    return completion("validation-error", journey, { status: "validation-error", issues: validation.issues });
   }
 
+  const password = validation.value.password;
+  return await settle(journey, context, async (accessToken) => await setPassword(link, password, accessToken, context));
+}
+
+/** Runs a link operation with an anonymous token and maps its outcome to the completion screen. */
+async function settle(
+  journey: ShortCodeJourney,
+  context: ShortCodeCompletionContext,
+  operation: (accessToken: string) => Promise<void>
+): Promise<ShortCodeCompletionResult> {
   try {
     await operation(await context.accessToken());
   } catch (error) {
-    if (isHttpStatusError(error, 403, 404, 409)) {
-      return {
-        outcome: "invalid",
-        model: screenModel(journey, { status: "invalid" }),
-      };
-    }
+    if (isHttpStatusError(error, 403, 404, 409)) return completion("invalid", journey, { status: "invalid" });
 
-    return {
-      outcome: "service-error",
-      model: screenModel(journey, {
-        status: "service-error",
-        feedback: isHttpStatusError(error, 429) ? "tooManyAttempts" : "serviceUnavailable",
-      }),
-    };
+    const feedback = isHttpStatusError(error, 429) ? "tooManyAttempts" : "serviceUnavailable";
+    return completion("service-error", journey, { status: "service-error", feedback });
   }
 
-  return {
-    outcome: "success",
-    model: screenModel(journey, { status: "success", feedback: successFeedback(journey) }),
-  };
+  return completion("success", journey, { status: "success", feedback: successFeedback(journey) });
+}
+
+/** Moves the account to the link's address, which then names the visitor in the shell. */
+async function confirmEmail(link: ReadyLink<"email-update">, accessToken: string, context: ShortCodeCompletionContext) {
+  await context.client.updateEmail(accessToken, { shortCode: link.shortCode, userID: link.userId });
+  context.rememberIdentity(link.email);
+}
+
+/** Creates the invited account and signs it in, or resets the password of an existing one. */
+async function setPassword(
+  link: ReadyLink<"register" | "password-reset">,
+  password: string,
+  accessToken: string,
+  context: ShortCodeCompletionContext
+) {
+  if (link.journey === "password-reset") {
+    await context.client.resetPassword(accessToken, { password, shortCode: link.shortCode, userID: link.userId });
+    return;
+  }
+
+  const token = await context.client.register(accessToken, { email: link.email, password, shortCode: link.shortCode });
+  context.accept(token, link.email);
+}
+
+function completion(
+  outcome: ShortCodeCompletionOutcome,
+  journey: ShortCodeJourney,
+  state: ShortCodeState
+): ShortCodeCompletionResult {
+  return { outcome, model: { journey, state } };
 }
 
 function successFeedback(journey: ShortCodeJourney): AuthenticationFeedback {
   if (journey === "register") return "registrationCompleted";
   if (journey === "email-update") return "emailUpdated";
   return "passwordReset";
-}
-
-function screenModel(journey: ShortCodeJourney, state: ShortCodeState): ShortCodeScreenModel {
-  return { journey, state };
 }

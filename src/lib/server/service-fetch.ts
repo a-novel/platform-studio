@@ -1,23 +1,25 @@
 /** Cloud Run's metadata server mints Google ID tokens for the runtime's own service account. */
 const identityUrl = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity";
 
-/** Google ID tokens last an hour; renew them five minutes early. */
+/** Google ID tokens last an hour. Studio renews them five minutes early. */
 const identityTokenTtlMs = 55 * 60 * 1000;
 
 const identityTokens = new Map<string, { token: Promise<string>; expiresAt: number }>();
+
+async function fetchIdentityToken(audience: string): Promise<string> {
+  const response = await fetch(`${identityUrl}?audience=${encodeURIComponent(audience)}`, {
+    headers: { "Metadata-Flavor": "Google" },
+  });
+  if (!response.ok) throw new Error(`Studio's identity token is unavailable: HTTP ${response.status}`);
+  return await response.text();
+}
 
 function identityToken(audience: string): Promise<string> {
   const cached = identityTokens.get(audience);
   if (cached && cached.expiresAt > Date.now()) return cached.token;
 
-  const token = fetch(`${identityUrl}?audience=${encodeURIComponent(audience)}`, {
-    headers: { "Metadata-Flavor": "Google" },
-  }).then(async (response) => {
-    if (!response.ok) throw new Error(`Studio's identity token is unavailable: HTTP ${response.status}`);
-    return await response.text();
-  });
-
-  // Concurrent calls share one request; a failed one is retried by the next call.
+  const token = fetchIdentityToken(audience);
+  // Concurrent calls share one request. The next call retries a failed one.
   identityTokens.set(audience, { token, expiresAt: Date.now() + identityTokenTtlMs });
   token.catch(() => identityTokens.delete(audience));
 

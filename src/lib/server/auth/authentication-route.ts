@@ -1,13 +1,17 @@
 import { validateEmailRequest, validateInvitationRequest, validateLogin } from "#lib/application/auth/forms.js";
 import { safeReturnTo } from "#lib/application/auth/navigation.js";
-import type { AuthenticationFeedback, AuthenticationPanelModel } from "#lib/application/auth/types.js";
+import type {
+  AuthenticationFeedback,
+  AuthenticationField,
+  AuthenticationPanelModel,
+  FormIssue,
+} from "#lib/application/auth/types.js";
 import { readAuthView } from "#lib/application/shell/auth-dialog-state.js";
-import { createAuthenticationContext } from "#lib/server/auth/context.js";
+import { createAuthenticationContext, emailLanguage } from "#lib/server/auth/context.js";
 import { refuseDuringDowntime } from "#lib/server/downtime.js";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {
-  Lang,
   WaitlistJoinConflictError,
   shortCodeCreatePasswordReset,
   waitlistJoin,
@@ -16,42 +20,38 @@ import {
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, redirect } from "@sveltejs/kit";
 
-function serviceError(
-  journey: AuthenticationPanelModel["journey"],
-  feedback: AuthenticationFeedback
-): AuthenticationPanelModel {
-  return {
-    journey,
-    state: { status: "service-error", feedback },
-  } as AuthenticationPanelModel;
+type Journey = AuthenticationPanelModel["journey"];
+
+/** Fails the action with field errors, which never echo the submitted values. */
+function failValidation(journey: Journey, issues: readonly FormIssue<AuthenticationField>[]) {
+  return fail(400, {
+    authentication: { journey, state: { status: "validation-error", issues } } as AuthenticationPanelModel,
+  });
+}
+
+/** Fails the action with the service outcome the dialog shows above its submit button. */
+function failService(status: number, journey: Journey, feedback: AuthenticationFeedback) {
+  return fail(status, {
+    authentication: { journey, state: { status: "service-error", feedback } } as AuthenticationPanelModel,
+  });
 }
 
 /** Fails the action as unavailable, or as rate-limited when authentication refused the caller. */
-function failService(journey: AuthenticationPanelModel["journey"], error: unknown) {
+function failUnavailable(journey: Journey, error: unknown) {
   return isHttpStatusError(error, 429)
-    ? fail(429, { authentication: serviceError(journey, "tooManyAttempts") })
-    : fail(503, { authentication: serviceError(journey, "serviceUnavailable") });
+    ? failService(429, journey, "tooManyAttempts")
+    : failService(503, journey, "serviceUnavailable");
 }
 
 async function login(event: RequestEvent, form: FormData) {
   const input = validateLogin(form);
-
-  if (!input.success) {
-    return fail(400, {
-      authentication: {
-        journey: "login",
-        state: { status: "validation-error", issues: input.issues },
-      } satisfies AuthenticationPanelModel,
-    });
-  }
+  if (!input.success) return failValidation("login", input.issues);
 
   try {
     await createAuthenticationContext(event).session.login(input.value.email, input.value.password);
   } catch (error) {
-    if (isHttpStatusError(error, 401)) {
-      return fail(401, { authentication: serviceError("login", "invalidCredentials") });
-    }
-    return failService("login", error);
+    if (isHttpStatusError(error, 401)) return failService(401, "login", "invalidCredentials");
+    return failUnavailable("login", error);
   }
 
   redirect(303, safeReturnTo(event.url.searchParams.get("returnTo")));
@@ -59,22 +59,14 @@ async function login(event: RequestEvent, form: FormData) {
 
 async function requestInvitation(event: RequestEvent, form: FormData) {
   const input = validateInvitationRequest(form);
-
-  if (!input.success) {
-    return fail(400, {
-      authentication: {
-        journey: "register",
-        state: { status: "validation-error", issues: input.issues },
-      } satisfies AuthenticationPanelModel,
-    });
-  }
+  if (!input.success) return failValidation("register", input.issues);
 
   try {
     const authentication = createAuthenticationContext(event);
     const accessToken = await authentication.session.anonymousAccessToken();
     await waitlistJoin(authentication.api, accessToken, {
       email: input.value.email,
-      lang: event.locals.locale === "fr" ? Lang.Fr : Lang.En,
+      lang: emailLanguage(event.locals.locale),
     });
   } catch (error) {
     if (error instanceof WaitlistJoinConflictError) {
@@ -85,50 +77,36 @@ async function requestInvitation(event: RequestEvent, form: FormData) {
         } satisfies AuthenticationPanelModel,
       });
     }
-    return failService("register", error);
+    return failUnavailable("register", error);
   }
 
   return {
     authentication: {
       journey: "register",
-      state: {
-        status: "recorded",
-        email: input.value.email,
-      },
+      state: { status: "recorded", email: input.value.email },
     } satisfies AuthenticationPanelModel,
   };
 }
 
 async function requestPasswordReset(event: RequestEvent, form: FormData) {
   const input = validateEmailRequest(form);
-
-  if (!input.success) {
-    return fail(400, {
-      authentication: {
-        journey: "reset",
-        state: { status: "validation-error", issues: input.issues },
-      } satisfies AuthenticationPanelModel,
-    });
-  }
+  if (!input.success) return failValidation("reset", input.issues);
 
   try {
     const authentication = createAuthenticationContext(event);
     const accessToken = await authentication.session.anonymousAccessToken();
     await shortCodeCreatePasswordReset(authentication.api, accessToken, {
       email: input.value.email,
-      lang: event.locals.locale === "fr" ? Lang.Fr : Lang.En,
+      lang: emailLanguage(event.locals.locale),
     });
   } catch (error) {
-    return failService("reset", error);
+    return failUnavailable("reset", error);
   }
 
   return {
     authentication: {
       journey: "reset",
-      state: {
-        status: "pending-email",
-        targetHint: input.value.email,
-      },
+      state: { status: "pending-email", targetHint: input.value.email },
     } satisfies AuthenticationPanelModel,
   };
 }
@@ -144,8 +122,6 @@ export const authenticationActions = {
     if (journey === "register") return await requestInvitation(event, form);
     if (journey === "reset") return await requestPasswordReset(event, form);
 
-    return fail(400, {
-      authentication: serviceError("login", "serviceUnavailable"),
-    });
+    return failService(400, "login", "serviceUnavailable");
   },
 };
