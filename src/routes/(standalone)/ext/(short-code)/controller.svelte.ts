@@ -15,7 +15,7 @@ export interface ShortCodeScreenController {
   readonly state: ShortCodeScreenControllerState;
   /** Reconciles a completed route load or action with the rendered secure-link state. */
   synchronize(state: ShortCodeScreenControllerState): void;
-  /** Validates password forms into state before submission; email confirmation needs no form values. */
+  /** Validates password forms into state before submission. Email confirmation needs no form values. */
   submit(form?: FormData): boolean;
 }
 

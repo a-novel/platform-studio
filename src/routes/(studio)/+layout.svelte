@@ -131,7 +131,7 @@
 
   function changeAuthView(view: AuthDialogView | null) {
     const previousView = readAuthView(new URL(window.location.href).searchParams);
-    // Opening the dialog adds a history entry; any other change replaces the current one.
+    // Opening the dialog adds a history entry. Any other change replaces the current one.
     showShallow(withAuthView(new URL(window.location.href), view), previousView !== null || view === null);
   }
 </script>
