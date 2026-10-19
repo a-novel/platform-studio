@@ -97,32 +97,37 @@ async function expectFormActionLayout(form: HTMLFormElement) {
 }
 
 describe("pure authentication screens", () => {
-  it.each([
+  const currentPasswordRejections = [
     ["en", "Current password", "Your current password is incorrect."],
     ["fr", "Mot de passe actuel", "Votre mot de passe actuel est incorrect."],
-  ] as const)("associates the %s current-password rejection with its field only", async (locale, label, message) => {
-    render(
-      AccountScreen,
-      {
-        controller: createAccountScreenController({
-          model: {
-            ...readyAccount,
-            passwordState: {
-              status: "validation-error",
-              issues: [{ field: "currentPassword", feedback: "invalidCurrentPassword" }],
+  ] as const;
+
+  it.each(currentPasswordRejections)(
+    "associates the %s current-password rejection with its field only",
+    async (locale, label, message) => {
+      render(
+        AccountScreen,
+        {
+          controller: createAccountScreenController({
+            model: {
+              ...readyAccount,
+              passwordState: {
+                status: "validation-error",
+                issues: [{ field: "currentPassword", feedback: "invalidCurrentPassword" }],
+              },
             },
-          },
-          actions: { password: "?/password", email: "?/email", logout: "?/logout" },
-        }),
-      },
-      withLocale(locale)
-    );
-    const field = page.getByLabelText(label, { exact: false });
-    await expect.element(field).toHaveAttribute("aria-invalid", "true");
-    await expect.element(field).toHaveAccessibleDescription(message);
-    expect(page.getByText(message).elements()).toHaveLength(1);
-    expect(page.getByRole("alert").elements()).toHaveLength(0);
-  });
+            actions: { password: "?/password", email: "?/email", logout: "?/logout" },
+          }),
+        },
+        withLocale(locale)
+      );
+      const field = page.getByLabelText(label, { exact: false });
+      await expect.element(field).toHaveAttribute("aria-invalid", "true");
+      await expect.element(field).toHaveAccessibleDescription(message);
+      expect(page.getByText(message).elements()).toHaveLength(1);
+      expect(page.getByRole("alert").elements()).toHaveLength(0);
+    }
+  );
   it.each(["en", "fr"] as const)("shows localized API length errors on real %s submissions", async (locale) => {
     const controller = shortCodeController({ journey: "register", state: { status: "ready" } });
     await render(ShortCodeScreen, { controller }, withLocale(locale));
@@ -299,12 +304,14 @@ describe("pure authentication screens", () => {
     ).toBe(true);
   });
 
-  it.each([
+  const waitlistConflicts = [
     ["en", "account_exists", "This email is already registered. You can log in to your account."],
     ["en", "already_waitlisted", "This email is already on the invitation list."],
     ["fr", "account_exists", "Ce courriel est déjà associé à un compte. Vous pouvez vous connecter."],
     ["fr", "already_waitlisted", "Ce courriel figure déjà sur la liste d’invitation."],
-  ] as const)("renders %s %s as a correctable warning", async (locale, code, message) => {
+  ] as const;
+
+  it.each(waitlistConflicts)("renders %s %s as a correctable warning", async (locale, code, message) => {
     const controller = authenticationController({ journey: "register", state: { status: "conflict", code } });
     render(AuthenticationPanel, { controller }, withLocale(locale));
     const alert = page.getByRole("status");
@@ -335,11 +342,13 @@ describe("pure authentication screens", () => {
     await page.getByLabelText(/^New password/).fill("new-password");
     await page.getByLabelText(/Confirm new password/).fill("new-password");
     await page.getByLabelText(/New email address/).fill("creator@example.test");
-    for (const [label, action] of [
+    const accountForms = [
       ["Change password", "/account?/password"],
       ["Send link", "/account?/email"],
       ["Log out", "/account?/logout"],
-    ] as const) {
+    ] as const;
+
+    for (const [label, action] of accountForms) {
       const form = await submitForm(label);
       expect(form.getAttribute("action")).toBe(action);
       if (label === "Change password")
@@ -481,11 +490,13 @@ describe("pure authentication screens", () => {
     expect(document.querySelector('[name="target"]')).toBeNull();
   });
 
-  it.each([
+  const completedLinks = [
     ["register", "registrationCompleted", "Your account is ready.", "Continue to Studio"],
     ["email-update", "emailUpdated", "Your email address was updated.", "Continue to Studio"],
     ["password-reset", "passwordReset", "Your password was reset.", "Log in"],
-  ] as const)("uses the %s outcome as the only page heading", async (journey, feedback, title, action) => {
+  ] as const;
+
+  it.each(completedLinks)("uses the %s outcome as the only page heading", async (journey, feedback, title, action) => {
     render(
       ShortCodeScreen,
       {
@@ -507,11 +518,13 @@ describe("pure authentication screens", () => {
     expect(getComputedStyle(heading).textAlign).toBe("center");
   });
 
-  it.each([
+  const invalidLinks = [
     ["register", "Request an invitation"],
     ["email-update", "Request a new link"],
     ["password-reset", "Request a new link"],
-  ] as const)("offers the %s journey's way to get a new link", async (journey, action) => {
+  ] as const;
+
+  it.each(invalidLinks)("offers the %s journey's way to get a new link", async (journey, action) => {
     render(
       ShortCodeScreen,
       { controller: shortCodeController({ journey, state: { status: "invalid" } }) },

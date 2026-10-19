@@ -48,11 +48,13 @@ describe("automatic email validation", () => {
     await expect.element(page.getByRole("status")).toMatchTextContent("Updating email…");
   });
 
-  it.each<{ state: ShortCodeState; title: string }>([
+  const settledLinks: { state: ShortCodeState; title: string }[] = [
     { state: { status: "success", feedback: "emailUpdated" }, title: "Email updated" },
     { state: { status: "invalid" }, title: "Confirm email: Invalid link" },
     { state: { status: "missing" }, title: "Confirm email: Incomplete link" },
-  ])("does not post a $state.status link", async ({ state, title }) => {
+  ];
+
+  it.each(settledLinks)("does not post a $state.status link", async ({ state, title }) => {
     const request = vi.spyOn(window, "fetch");
     await render(EmailPage, { data: data(state), form: null }, wrapper);
     expect(request).not.toHaveBeenCalled();

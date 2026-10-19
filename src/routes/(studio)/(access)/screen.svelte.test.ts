@@ -46,12 +46,14 @@ describe("protected page presentation", () => {
     await expect.element(page.getByText("Private content")).not.toBeInTheDocument();
   });
 
-  it.each([
+  const failureTitles = [
     [403, "Accès refusé"],
     [503, "Accès temporairement indisponible"],
     [404, "Page introuvable"],
     [500, "Page indisponible"],
-  ])("localizes HTTP %s without showing internal error details", async (status, title) => {
+  ] as const;
+
+  it.each(failureTitles)("localizes HTTP %s without showing internal error details", async (status, title) => {
     render(Failure, { ...links, status }, { wrapper: StudioI18nProvider, wrapperProps: { locale: "fr" } });
     await expect.element(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
   });

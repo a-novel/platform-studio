@@ -17,8 +17,13 @@ import type { RequestEvent } from "@sveltejs/kit";
 vi.mock("./context", { spy: true });
 vi.mock("@a-novel/service-authentication-rest", { spy: true });
 
-function event(journey: string, fields = { email: "creator@example.test", password: "test-password" }): RequestEvent {
+function event(
+  journey: string,
+  fields = { email: "creator@example.test", password: "test-password" },
+  returnTo?: string
+): RequestEvent {
   const url = new URL(`https://studio.test/?auth=${journey}`);
+  if (returnTo) url.searchParams.set("returnTo", returnTo);
   const request = {
     url,
     locals: { locale: "fr" },
@@ -53,24 +58,31 @@ describe("authentication outcomes", () => {
     }
   );
 
-  it.each([
+  const loginRejections = [
     [new HttpError(401, "fixture-only detail"), 401, "invalidCredentials"],
     [new HttpError(429, "fixture-only detail"), 429, "tooManyAttempts"],
     [new Error("fixture-only detail"), 503, "serviceUnavailable"],
-  ] as const)("maps login rejection to %s without exposing service detail", async (error, status, feedback) => {
-    vi.spyOn(AuthenticationSession.prototype, "login").mockRejectedValue(error);
-    const result = await authenticationActions.default(event("login"));
-    expect(result).toMatchObject({
-      status,
-      data: { authentication: { journey: "login", state: { status: "service-error", feedback } } },
-    });
-    expect(JSON.stringify(result)).not.toContain("fixture-only detail");
-  });
+  ] as const;
 
-  it.each([
+  it.each(loginRejections)(
+    "maps login rejection to %s without exposing service detail",
+    async (error, status, feedback) => {
+      vi.spyOn(AuthenticationSession.prototype, "login").mockRejectedValue(error);
+      const result = await authenticationActions.default(event("login"));
+      expect(result).toMatchObject({
+        status,
+        data: { authentication: { journey: "login", state: { status: "service-error", feedback } } },
+      });
+      expect(JSON.stringify(result)).not.toContain("fixture-only detail");
+    }
+  );
+
+  const emailRequests = [
     ["register", waitlistJoin, { status: "recorded", email: "creator@example.test" }],
     ["reset", shortCodeCreatePasswordReset, { status: "pending-email", targetHint: "creator@example.test" }],
-  ] as const)("acknowledges the %s outcome and handles unavailability", async (journey, send, state) => {
+  ] as const;
+
+  it.each(emailRequests)("acknowledges the %s outcome and handles unavailability", async (journey, send, state) => {
     vi.spyOn(AuthenticationSession.prototype, "anonymousAccessToken").mockResolvedValue("fixture-access");
     vi.mocked(send).mockResolvedValueOnce(undefined);
     await expect(authenticationActions.default(event(journey))).resolves.toEqual({
@@ -94,34 +106,16 @@ describe("authentication outcomes", () => {
 });
 
 describe("login return destination", () => {
-  it.each([
+  const returnDestinations = [
     ["/account?panel=email#email", "/account?panel=email#email"],
     ["https://attacker.invalid", "/"],
     ["/?auth=login&returnTo=%2Faccount", "/"],
-  ])("redirects to a sanitized %s only after successful login", async (returnTo, expected) => {
+  ];
+
+  it.each(returnDestinations)("redirects to a sanitized %s only after successful login", async (returnTo, expected) => {
     const login = vi.spyOn(AuthenticationSession.prototype, "login").mockResolvedValue(undefined);
-    const url = new URL("https://studio.test/?auth=login");
-    url.searchParams.set("returnTo", returnTo);
-    const event = {
-      url,
-      cookies: { get: vi.fn(), set: vi.fn(), delete: vi.fn() },
-      request: new Request(url, {
-        method: "POST",
-        body: new URLSearchParams({
-          email: "creator@example.com",
-          password: "test-password",
-        }),
-      }),
-    } as unknown as RequestEvent;
-    vi.mocked(createAuthenticationContext).mockReturnValue({
-      api: new AuthenticationApi("https://auth.example.test"),
-      session: new AuthenticationSession(
-        { claims: vi.fn(), login: vi.fn(), refresh: vi.fn(), createAnonymous: vi.fn() },
-        event.cookies,
-        url
-      ),
-    });
-    await expect(authenticationActions.default(event)).rejects.toMatchObject({ status: 303, location: expected });
+    const request = event("login", { email: "creator@example.com", password: "test-password" }, returnTo);
+    await expect(authenticationActions.default(request)).rejects.toMatchObject({ status: 303, location: expected });
     expect(login).toHaveBeenCalledWith("creator@example.com", "test-password");
   });
 });

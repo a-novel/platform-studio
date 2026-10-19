@@ -353,12 +353,14 @@ describe("studio shell screen", () => {
     await expect.element(page.getByRole("button", { name: /Retry account status/i })).not.toBeInTheDocument();
   });
 
-  it.each([
+  const sessionFeedback = [
     [320, "loading"],
     [320, "error"],
     [1280, "loading"],
     [1280, "error"],
-  ] as const)("uses the shared section message for %s px %s feedback", async (width, status) => {
+  ] as const;
+
+  it.each(sessionFeedback)("uses the shared section message for %s px %s feedback", async (width, status) => {
     await page.viewport(width, 800);
     render(Screen, { controller: controller({ session: { status }, drawerOpen: width < 1280 }) }, withLocale());
     const role = status === "error" ? "alert" : "status";

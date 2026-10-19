@@ -28,13 +28,19 @@ function form(values: Record<string, string>) {
 }
 
 describe("service-derived auth validation", () => {
-  it.each([
+  const passwordLengths = [
     0,
     Number(PasswordSchema.minLength) - 1,
     Number(PasswordSchema.minLength),
     Number(PasswordSchema.maxLength),
     Number(PasswordSchema.maxLength) + 1,
-  ])("matches each service password schema at length %i", (length) => {
+  ];
+  const newPasswordSchemas = [
+    CredentialsCreateRequestSchema.pick({ password: true }),
+    CredentialsResetPasswordRequestSchema.pick({ password: true }),
+  ];
+
+  it.each(passwordLengths)("matches each service password schema at length %i", (length) => {
     expect(PasswordSchema.minLength).toBeGreaterThan(0);
     expect(PasswordSchema.maxLength).toBeGreaterThan(Number(PasswordSchema.minLength));
     const password = "x".repeat(length);
@@ -44,37 +50,34 @@ describe("service-derived auth validation", () => {
     expect(validatePasswordChange(input).success).toBe(
       CredentialsUpdatePasswordRequestSchema.safeParse(values).success
     );
-    for (const schema of [
-      CredentialsCreateRequestSchema.pick({ password: true }),
-      CredentialsResetPasswordRequestSchema.pick({ password: true }),
-    ]) {
+    for (const schema of newPasswordSchemas) {
       expect(validateNewPassword(input).success).toBe(schema.safeParse(values).success);
     }
   });
 
-  it.each(["creator@example.test", "a+b@example.test", "not-an-email", "", `${"a".repeat(400)}@example.test`])(
-    "matches the service email checks for %s",
-    (email) => {
-      for (const schema of [
-        ShortCodeCreateRegisterRequestSchema,
-        ShortCodeCreatePasswordResetRequestSchema,
-        ShortCodeCreateEmailUpdateRequestSchema,
-      ]) {
-        const expected = schema.pick({ email: true }).safeParse({ email }).success;
-        expect(validateEmailRequest(form({ email })).success).toBe(expected);
-        expect(validateEmailUpdate(form({ email })).success).toBe(expected);
-      }
-    }
-  );
+  const emailRequestSchemas = [
+    ShortCodeCreateRegisterRequestSchema,
+    ShortCodeCreatePasswordResetRequestSchema,
+    ShortCodeCreateEmailUpdateRequestSchema,
+  ];
+  const longEmail = `${"a".repeat(400)}@example.test`;
+  const emails = ["creator@example.test", "a+b@example.test", "not-an-email", "", longEmail];
 
-  it.each(["Creator@Example.test", "a+b@example.test", "not-an-email", "", `${"a".repeat(400)}@example.test`])(
-    "matches the waitlist schema for %s",
-    (email) => {
-      expect(validateInvitationRequest(form({ email })).success).toBe(
-        WaitlistJoinRequestSchema.pick({ email: true }).safeParse({ email }).success
-      );
+  it.each(emails)("matches the service email checks for %s", (email) => {
+    for (const schema of emailRequestSchemas) {
+      const expected = schema.pick({ email: true }).safeParse({ email }).success;
+      expect(validateEmailRequest(form({ email })).success).toBe(expected);
+      expect(validateEmailUpdate(form({ email })).success).toBe(expected);
     }
-  );
+  });
+
+  const waitlistEmails = ["Creator@Example.test", "a+b@example.test", "not-an-email", "", longEmail];
+
+  it.each(waitlistEmails)("matches the waitlist schema for %s", (email) => {
+    expect(validateInvitationRequest(form({ email })).success).toBe(
+      WaitlistJoinRequestSchema.pick({ email: true }).safeParse({ email }).success
+    );
+  });
 
   it("trims invitation input without changing case-sensitive membership", () => {
     expect(validateInvitationRequest(form({ email: " Creator@Example.test " }))).toEqual({

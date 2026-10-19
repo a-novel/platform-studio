@@ -59,10 +59,12 @@ describe("platform controllers", () => {
     const model = createAccountModel({ status: "error", feedback: "sessionUnavailable" });
     const controller = createAccountScreenController({ model, actions });
     const invalid = new FormData();
-    for (const [submit, validate, key] of [
+    const accountForms = [
       [controller.submitPassword, validatePasswordChange, "passwordState"],
       [controller.submitEmail, validateEmailUpdate, "emailState"],
-    ] as const) {
+    ] as const;
+
+    for (const [submit, validate, key] of accountForms) {
       controller.synchronize(model, actions);
       expect(submit(invalid)).toBe(false);
       const result = validate(invalid);
@@ -216,12 +218,14 @@ describe("platform controllers", () => {
     expect(JSON.stringify(controller.state)).not.toContain("new-password");
   });
 
-  it.each<ShortCodeState>([
+  const settledStates: ShortCodeState[] = [
     { status: "missing" },
     { status: "invalid" },
     { status: "submitting" },
     { status: "success", feedback: "registrationCompleted" },
-  ])("preserves a secure link in $status state", (state) => {
+  ];
+
+  it.each(settledStates)("preserves a secure link in $status state", (state) => {
     const controller = createShortCodeScreenController({
       model: { journey: "register", state },
       action: "",

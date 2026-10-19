@@ -47,6 +47,9 @@ const credentials = {
 };
 const identity = { userID: userId, roles: [Role.User] };
 const tokenCookies = { studio_access_token: "private-access", studio_refresh_token: "private-refresh" };
+const password = { password: "replacement-password", confirmPassword: "replacement-password" };
+const encodedEmail = Buffer.from("maya.chen@example.com").toString("base64url");
+const registrationLink = `/ext/account/create?shortCode=private-code&target=${encodedEmail}`;
 
 function request(path: string, cookieValues: Record<string, string> = {}, fields?: Record<string, string>) {
   const values = new Map(Object.entries(cookieValues));
@@ -123,12 +126,14 @@ describe("invitation requests at the request boundary", () => {
     });
   });
 
-  it.each([
+  const unacknowledged = [
     ["storage unavailable", new Response("private service detail", { status: 503 })],
     ["unknown conflict", Response.json({ code: "private service detail" }, { status: 409 })],
     ["malformed conflict", new Response("private service detail", { status: 409 })],
     ["network failure", new Error("private service detail")],
-  ])("never acknowledges a request after %s", async (_, outcome) => {
+  ] as const;
+
+  it.each(unacknowledged)("never acknowledges a request after %s", async (_, outcome) => {
     const { event } = request("/?auth=register", {}, { email });
     fetchService.mockResolvedValueOnce(
       Response.json({ accessToken: "anonymous-access", refreshToken: "anonymous-refresh" })
@@ -346,10 +351,6 @@ describe("Studio session at the request boundary", () => {
   });
 });
 
-const email = Buffer.from("maya.chen@example.com").toString("base64url");
-const registrationLink = `/ext/account/create?shortCode=private-code&target=${email}`;
-const password = { password: "replacement-password", confirmPassword: "replacement-password" };
-
 const journeys = [
   {
     journey: "register",
@@ -371,7 +372,7 @@ const journeys = [
   },
   {
     journey: "email-update",
-    path: `/ext/email/validate?shortCode=private-code&target=${userId}&source=${email}`,
+    path: `/ext/email/validate?shortCode=private-code&target=${userId}&source=${encodedEmail}`,
     endpoint: "/v2/credentials/email",
     body: { shortCode: "private-code", userID: userId },
     response: credentials,
@@ -514,10 +515,11 @@ describe("planned downtime at the request boundary", () => {
   });
 
   it("locks nothing before the start, or for a service Studio doesn't use", async () => {
-    for (const downtime of [
+    const harmless = [
       { ...started(), start: new Date(Date.now() + 60_000) },
       { ...started(), components: ["service-genai.database"] },
-    ]) {
+    ];
+    for (const downtime of harmless) {
       published.downtime = downtime;
 
       await expect(loadShortCodeRoute("register", request(registrationLink).event)).resolves.toMatchObject({

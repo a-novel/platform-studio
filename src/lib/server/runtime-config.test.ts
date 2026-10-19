@@ -29,17 +29,16 @@ describe("parseRuntimeConfig", () => {
     });
   });
 
-  it.each([
+  const invalidEnvironments = [
     [{}, "AUTHENTICATION_SERVICE_URL"],
     [{ AUTHENTICATION_SERVICE_URL: "postgres://database" }, "AUTHENTICATION_SERVICE_URL"],
     [
-      {
-        AUTHENTICATION_SERVICE_URL: "http://authentication:8080",
-        HEALTHCHECK_TIMEOUT_MS: "99",
-      },
+      { AUTHENTICATION_SERVICE_URL: "http://authentication:8080", HEALTHCHECK_TIMEOUT_MS: "99" },
       "HEALTHCHECK_TIMEOUT_MS",
     ],
-  ])("rejects invalid environment without echoing values", (environment, field) => {
+  ] as const;
+
+  it.each(invalidEnvironments)("rejects invalid environment without echoing values", (environment, field) => {
     expect(() => parseRuntimeConfig(environment)).toThrow(`Invalid server environment: ${field}`);
   });
 });
