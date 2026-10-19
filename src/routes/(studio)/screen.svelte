@@ -57,22 +57,19 @@
   const compactRail = $derived(model.rail === "collapsed");
   const { t } = getI18nContext();
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
-  const authDialogTitle = $derived(
-    authenticationState === "pending-email"
-      ? t("authUi.authentication.pendingTitle")
-      : authenticationState === "recorded"
-        ? t("authUi.authentication.journeys.register.recordedTitle")
-        : getAuthDialogTitle(model.authView)
-  );
-  const authDialogDescription = $derived(
-    !authActionsVisible
-      ? undefined
-      : model.authView === "register"
-        ? t("shell.auth.register.description")
-        : model.authView === "reset"
-          ? t("shell.auth.reset.description")
-          : undefined
-  );
+  const authDialogTitle = $derived.by(() => {
+    if (authenticationState === "pending-email") return t("authUi.authentication.pendingTitle");
+    if (authenticationState === "recorded") return t("authUi.authentication.journeys.register.recordedTitle");
+    if (model.authView === "register") return t("shell.auth.register.title");
+    if (model.authView === "reset") return t("shell.auth.reset.title");
+    return t("shell.auth.login.title");
+  });
+  const authDialogDescription = $derived.by(() => {
+    if (!authActionsVisible) return undefined;
+    if (model.authView === "register") return t("shell.auth.register.description");
+    if (model.authView === "reset") return t("shell.auth.reset.description");
+    return undefined;
+  });
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
     if (event.target instanceof Element && event.target.closest("a")) controller.navigationDialog.close();
@@ -94,18 +91,6 @@
       return;
     event.preventDefault();
     transition();
-  }
-
-  function getAuthDialogTitle(view: AuthDialogView | null): string {
-    switch (view) {
-      case "register":
-        return t("shell.auth.register.title");
-      case "reset":
-        return t("shell.auth.reset.title");
-      case "login":
-      default:
-        return t("shell.auth.login.title");
-    }
   }
 </script>
 
@@ -232,36 +217,24 @@
   </div>
 {/snippet}
 
+{#snippet authLink(view: AuthDialogView, label: string)}
+  <Button
+    variant="ghost"
+    tone="neutral"
+    size="sm"
+    href={controller.authenticationHref(view)}
+    onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication(view))}
+  >
+    {label}
+  </Button>
+{/snippet}
+
 {#snippet authActions()}
   {#if model.authView === "login"}
-    <Button
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      href={controller.authenticationHref("reset")}
-      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("reset"))}
-    >
-      {t("shell.auth.forgotPassword")}
-    </Button>
-    <Button
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      href={controller.authenticationHref("register")}
-      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("register"))}
-    >
-      {t("shell.auth.createAccount")}
-    </Button>
+    {@render authLink("reset", t("shell.auth.forgotPassword"))}
+    {@render authLink("register", t("shell.auth.createAccount"))}
   {:else if model.authView}
-    <Button
-      variant="ghost"
-      tone="neutral"
-      size="sm"
-      href={controller.authenticationHref("login")}
-      onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("login"))}
-    >
-      {t("shell.signIn")}
-    </Button>
+    {@render authLink("login", t("shell.signIn"))}
   {/if}
 {/snippet}
 
