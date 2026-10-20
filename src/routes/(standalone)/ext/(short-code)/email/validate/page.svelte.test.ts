@@ -1,5 +1,5 @@
 import type { ShortCodeState } from "#lib/application/auth/types.js";
-import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
+import { withLocale } from "#lib/i18n/provider.fixture.js";
 import { applyAction } from "$app/forms";
 import { goto } from "$app/navigation";
 
@@ -14,8 +14,6 @@ import { page } from "vitest/browser";
 // while loading the other's original, so both are stubbed without importOriginal.
 vi.mock("$app/forms", () => ({ applyAction: vi.fn(), deserialize: (text: string) => JSON.parse(text) }));
 vi.mock("$app/navigation", () => ({ goto: vi.fn() }));
-
-const wrapper = { wrapper: StudioI18nProvider, wrapperProps: { locale: "en" as const } };
 
 function data(state: ShortCodeState = { status: "ready" }): PageData {
   return {
@@ -34,7 +32,7 @@ describe("automatic email validation", () => {
   it("posts once to the current URL and replaces the secret-bearing history entry", async () => {
     const result = { type: "redirect", status: 303, location: "/ext/email/validate?result=success" };
     const request = vi.spyOn(window, "fetch").mockResolvedValue(Response.json(result));
-    await render(EmailPage, { data: data(), form: null }, wrapper);
+    await render(EmailPage, { data: data(), form: null }, withLocale());
 
     await expect
       .poll(() => vi.mocked(goto).mock.calls)
@@ -56,7 +54,7 @@ describe("automatic email validation", () => {
 
   it.each(settledLinks)("does not post a $state.status link", async ({ state, title }) => {
     const request = vi.spyOn(window, "fetch");
-    await render(EmailPage, { data: data(state), form: null }, wrapper);
+    await render(EmailPage, { data: data(state), form: null }, withLocale());
     expect(request).not.toHaveBeenCalled();
     const heading = page.getByRole("heading", { level: 1 });
     await expect.element(heading).toBeVisible();
@@ -69,14 +67,14 @@ describe("automatic email validation", () => {
     const form: ActionData = {
       shortCode: data({ status: "service-error", feedback: "serviceUnavailable" }).model,
     };
-    await render(EmailPage, { data: data(), form }, wrapper);
+    await render(EmailPage, { data: data(), form }, withLocale());
     await expect.element(page.getByRole("alert")).toMatchTextContent("Please try again in a few minutes.");
     expect(request).not.toHaveBeenCalled();
   });
 
   it("shows a sanitized error on network failure without retrying", async () => {
     const request = vi.spyOn(window, "fetch").mockRejectedValue(new Error("private transport detail"));
-    await render(EmailPage, { data: data(), form: null }, wrapper);
+    await render(EmailPage, { data: data(), form: null }, withLocale());
     await expect.element(page.getByRole("alert")).toMatchTextContent("Please try again in a few minutes.");
     expect(document.body.textContent).not.toContain("private transport detail");
     expect(request).toHaveBeenCalledOnce();
@@ -85,7 +83,7 @@ describe("automatic email validation", () => {
   it("aborts on navigation and ignores a late response", async () => {
     const { promise, resolve } = Promise.withResolvers<Response>();
     const request = vi.spyOn(window, "fetch").mockReturnValue(promise);
-    const view = await render(EmailPage, { data: data(), form: null }, wrapper);
+    const view = await render(EmailPage, { data: data(), form: null }, withLocale());
     const signal = request.mock.calls[0]?.[1]?.signal;
     await view.unmount();
     expect(signal?.aborted).toBe(true);
