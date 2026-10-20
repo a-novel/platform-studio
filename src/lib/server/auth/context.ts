@@ -1,7 +1,7 @@
 import type { Locale } from "#lib/i18n/config.js";
-import { getRuntimeConfig } from "#lib/server/runtime-config.server.js";
-import { serviceFetch } from "#lib/server/service-fetch.js";
 
+import { getRuntimeConfig } from "../runtime-config.server";
+import { serviceFetch } from "../service-fetch";
 import { AuthenticationSession, createSessionClient } from "./session";
 
 import { AuthenticationApi, Lang } from "@a-novel/service-authentication-rest";

@@ -2,6 +2,9 @@ import { validateNewPassword } from "#lib/application/auth/forms.js";
 import type { ShortCodeActionData, ShortCodePageData } from "#lib/application/auth/short-code-route.js";
 import type { ShortCodeScreenModel } from "#lib/application/auth/types.js";
 
+/** A link in one of these statuses is completing, completed or unusable, and ignores another submission. */
+const lockedStatuses = new Set(["submitting", "success", "missing", "invalid"]);
+
 /** State rendered by a standalone secure-link component. */
 export interface ShortCodeScreenControllerState {
   model: ShortCodeScreenModel;
@@ -40,7 +43,7 @@ export function createShortCodeScreenController({
       state = nextState;
     },
     submit(form = new FormData()) {
-      if (["submitting", "success", "missing", "invalid"].includes(state.model.state.status)) return false;
+      if (lockedStatuses.has(state.model.state.status)) return false;
 
       if (state.model.journey !== "email-update") {
         const result = validateNewPassword(form);

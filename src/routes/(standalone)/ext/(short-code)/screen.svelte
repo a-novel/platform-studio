@@ -11,7 +11,7 @@
 
 <script lang="ts">
   import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "#lib/i18n/auth-copy.js";
-  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
+  import { translateAuthenticationFeedback, translateFieldIssue } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
   import { submitThrough } from "#lib/ui/form-submission.js";
 
@@ -39,11 +39,7 @@
     model.journey === "email-update" || unavailableStatus !== null || model.state.status === "success"
   );
 
-  function fieldError(field: ShortCodePasswordField): string | undefined {
-    const issue = issues.find((candidate) => candidate.field === field);
-    return issue ? translateAuthenticationValidation(t, issue) : undefined;
-  }
-
+  const fieldError = (field: ShortCodePasswordField) => translateFieldIssue(t, issues, field);
   const submit = (event: SubmitEvent) => submitThrough(event, (form) => controller.submit(form));
 </script>
 

@@ -1,8 +1,9 @@
 import { accountDisplayFromHandle } from "#lib/application/shell/account-display.js";
 import type { ShellSession } from "#lib/application/shell/types.js";
-import { type AuthenticationEvent, createAuthenticationContext } from "#lib/server/auth/context.js";
-import type { ResolvedSession } from "#lib/server/auth/session.js";
-import { readStudioDowntime } from "#lib/server/downtime.js";
+
+import { readStudioDowntime } from "../downtime";
+import { type AuthenticationEvent, createAuthenticationContext } from "./context";
+import type { ResolvedSession } from "./session";
 
 import { isDowntimeStarted } from "@a-novel-kit/nodelib-server";
 import type { AuthorizationStatus } from "@a-novel-kit/uikit/authorization";
@@ -18,7 +19,7 @@ const shellAuthorization = {
   authenticated: "allowed",
 } as const satisfies Record<ShellSession["status"], AuthorizationStatus>;
 
-type ShellEvent = Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">;
+type ShellEvent = AuthenticationEvent & Pick<RequestEvent, "locals">;
 
 /** Loads the shell's navigation state, session display and page authorization. */
 export const loadStudioShell = async (event: ShellEvent) => {

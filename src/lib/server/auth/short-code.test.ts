@@ -1,3 +1,5 @@
+import { formData } from "#lib/application/auth/forms.fixture.js";
+
 import {
   type ShortCodeClient,
   type ShortCodeCompletionContext,
@@ -20,10 +22,7 @@ function registrationUrl(): URL {
 }
 
 function passwordForm(value = "replacement-password"): FormData {
-  const form = new FormData();
-  form.set("password", value);
-  form.set("confirmPassword", value);
-  return form;
+  return formData({ password: value, confirmPassword: value });
 }
 
 function createContext() {

@@ -3,12 +3,14 @@ import { safeReturnTo } from "#lib/application/auth/navigation.js";
 import type {
   AuthenticationFeedback,
   AuthenticationField,
+  AuthenticationJourney,
   AuthenticationPanelModel,
   FormIssue,
 } from "#lib/application/auth/types.js";
 import { readAuthView } from "#lib/application/shell/auth-dialog-state.js";
-import { createAuthenticationContext, emailLanguage } from "#lib/server/auth/context.js";
-import { refuseDuringDowntime } from "#lib/server/downtime.js";
+
+import { refuseDuringDowntime } from "../downtime";
+import { createAuthenticationContext, emailLanguage } from "./context";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {
@@ -20,24 +22,22 @@ import {
 import type { RequestEvent } from "@sveltejs/kit";
 import { fail, redirect } from "@sveltejs/kit";
 
-type Journey = AuthenticationPanelModel["journey"];
-
 /** Fails the action with field errors, which never echo the submitted values. */
-function failValidation(journey: Journey, issues: readonly FormIssue<AuthenticationField>[]) {
+function failValidation(journey: AuthenticationJourney, issues: readonly FormIssue<AuthenticationField>[]) {
   return fail(400, {
     authentication: { journey, state: { status: "validation-error", issues } } as AuthenticationPanelModel,
   });
 }
 
 /** Fails the action with the service outcome the dialog shows above its submit button. */
-function failService(status: number, journey: Journey, feedback: AuthenticationFeedback) {
+function failService(status: number, journey: AuthenticationJourney, feedback: AuthenticationFeedback) {
   return fail(status, {
     authentication: { journey, state: { status: "service-error", feedback } } as AuthenticationPanelModel,
   });
 }
 
 /** Fails the action as unavailable, or as rate-limited when authentication refused the caller. */
-function failUnavailable(journey: Journey, error: unknown) {
+function failUnavailable(journey: AuthenticationJourney, error: unknown) {
   return isHttpStatusError(error, 429)
     ? failService(429, journey, "tooManyAttempts")
     : failService(503, journey, "serviceUnavailable");

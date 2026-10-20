@@ -1,10 +1,11 @@
 import { type AccountActionData, createAccountModel } from "#lib/application/auth/account-action.js";
 import { validateEmailUpdate, validatePasswordChange } from "#lib/application/auth/forms.js";
 import type { AccountScreenModel } from "#lib/application/auth/types.js";
-import { requireAuthorization } from "#lib/server/auth/authorization.js";
-import { emailLanguage } from "#lib/server/auth/context.js";
-import { logoutAuthentication } from "#lib/server/auth/logout.js";
-import { readTokenExpiry } from "#lib/server/auth/session.js";
+
+import { requireAuthorization } from "./authorization";
+import { type AuthenticationEvent, emailLanguage } from "./context";
+import { logoutAuthentication } from "./logout";
+import { readTokenExpiry } from "./session";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import { credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";
@@ -31,7 +32,7 @@ function emailAction(state: AccountScreenModel["emailState"]): AccountActionData
 }
 
 /** Loads the account recap. An authentication outage still renders the account forms. */
-export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">) => {
+export const loadAccount = async (event: AuthenticationEvent & Pick<RequestEvent, "locals">) => {
   const { locals } = event;
   const t = locals.i18n.getFixedT(locals.locale, "common");
 
@@ -49,7 +50,7 @@ export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClie
       }),
     };
   } catch (error) {
-    // A planned downtime renders as the maintenance page.
+    // Redirects, refusals and planned downtimes render their own pages. Any other failure keeps the forms.
     if (isRedirect(error) || isHttpError(error, 403) || (isHttpError(error, 503) && error.body.downtime)) throw error;
 
     return {
@@ -104,6 +105,7 @@ async function requestEmailUpdate(event: RequestEvent) {
   return emailAction({ status: "pending-email", targetHint: input.value.email });
 }
 
+/** The account page's form actions. Each account change checks the session again before calling the service. */
 export const accountActions = {
   password: changePassword,
   email: requestEmailUpdate,

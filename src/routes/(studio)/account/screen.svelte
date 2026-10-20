@@ -1,6 +1,4 @@
 <script module lang="ts">
-  import type { FormIssue } from "#lib/application/auth/types.js";
-
   import type { AccountScreenController } from "./controller.svelte";
 
   /** Props for the pure protected account-management screen. */
@@ -10,7 +8,7 @@
 </script>
 
 <script lang="ts">
-  import { translateAuthenticationFeedback, translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
+  import { translateAuthenticationFeedback, translateFieldIssue } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
   import { submitThrough } from "#lib/ui/form-submission.js";
 
@@ -48,11 +46,6 @@
   const passwordIssues = $derived(model.passwordState.status === "validation-error" ? model.passwordState.issues : []);
   const emailIssues = $derived(model.emailState.status === "validation-error" ? model.emailState.issues : []);
 
-  function issueMessage<Field extends string>(issues: readonly FormIssue<Field>[], field: Field): string | undefined {
-    const issue = issues.find((candidate) => candidate.field === field);
-    return issue ? translateAuthenticationValidation(t, issue) : undefined;
-  }
-
   const submitPassword = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitPassword(form));
   const submitEmail = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitEmail(form));
 
@@ -83,7 +76,7 @@
               <Field
                 controlId={currentPasswordId}
                 label={t("authUi.account.password.currentLabel")}
-                error={issueMessage(passwordIssues, "currentPassword")}
+                error={translateFieldIssue(t, passwordIssues, "currentPassword")}
                 required
               >
                 {#snippet children(control)}
@@ -93,7 +86,7 @@
                     type="password"
                     autocomplete="current-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(issueMessage(passwordIssues, "currentPassword"))}
+                    invalid={Boolean(translateFieldIssue(t, passwordIssues, "currentPassword"))}
                   />
                 {/snippet}
               </Field>
@@ -101,7 +94,7 @@
                 controlId={newPasswordId}
                 label={t("authUi.account.password.newLabel")}
                 hint={t("authUi.account.password.hint")}
-                error={issueMessage(passwordIssues, "newPassword")}
+                error={translateFieldIssue(t, passwordIssues, "newPassword")}
                 required
               >
                 {#snippet children(control)}
@@ -111,14 +104,14 @@
                     type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(issueMessage(passwordIssues, "newPassword"))}
+                    invalid={Boolean(translateFieldIssue(t, passwordIssues, "newPassword"))}
                   />
                 {/snippet}
               </Field>
               <Field
                 controlId={confirmPasswordId}
                 label={t("authUi.account.password.confirmLabel")}
-                error={issueMessage(passwordIssues, "confirmPassword")}
+                error={translateFieldIssue(t, passwordIssues, "confirmPassword")}
                 required
               >
                 {#snippet children(control)}
@@ -128,7 +121,7 @@
                     type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(issueMessage(passwordIssues, "confirmPassword"))}
+                    invalid={Boolean(translateFieldIssue(t, passwordIssues, "confirmPassword"))}
                   />
                 {/snippet}
               </Field>
@@ -160,7 +153,7 @@
                 controlId={newEmailId}
                 label={t("authUi.account.email.label")}
                 hint={t("authUi.account.email.hint")}
-                error={issueMessage(emailIssues, "newEmail")}
+                error={translateFieldIssue(t, emailIssues, "newEmail")}
                 required
               >
                 {#snippet children(control)}
@@ -172,7 +165,7 @@
                     autocapitalize="none"
                     spellcheck="false"
                     readonly={emailSubmitting}
-                    invalid={Boolean(issueMessage(emailIssues, "newEmail"))}
+                    invalid={Boolean(translateFieldIssue(t, emailIssues, "newEmail"))}
                   />
                 {/snippet}
               </Field>
@@ -334,16 +327,16 @@
     line-height: var(--line-height-normal);
   }
 
-  @media (min-width: 35rem) {
-    .session-details {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
   .session-details {
     display: grid;
     gap: var(--space-4);
     margin: 0;
+  }
+
+  @media (min-width: 35rem) {
+    .session-details {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   .session-details > div {

@@ -10,7 +10,7 @@
 <script lang="ts">
   import type { AuthenticationField } from "#lib/application/auth/types.js";
   import { translateAuthenticationJourney } from "#lib/i18n/auth-copy.js";
-  import { translateAuthenticationValidation } from "#lib/i18n/auth-feedback.js";
+  import { translateFieldIssue } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
   import { submitThrough } from "#lib/ui/form-submission.js";
 
@@ -31,11 +31,7 @@
   const submitLabel = $derived(translateAuthenticationJourney(t, model.journey, "submit"));
   const submittingLabel = $derived(translateAuthenticationJourney(t, model.journey, "submitting"));
 
-  function fieldError(field: AuthenticationField): string | undefined {
-    const issue = issues.find((candidate) => candidate.field === field);
-    return issue ? translateAuthenticationValidation(t, issue) : undefined;
-  }
-
+  const fieldError = (field: AuthenticationField) => translateFieldIssue(t, issues, field);
   const submit = (event: SubmitEvent) => submitThrough(event, (form) => controller.submit(form));
 </script>
 
