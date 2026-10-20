@@ -56,6 +56,13 @@
   const compactRail = $derived(model.rail === "collapsed");
   const { t } = getI18nContext();
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
+  /** The account widget's notice while the session is loading, unavailable or stopped for maintenance. */
+  const sessionNotice = $derived.by(() => {
+    if (model.session.status === "loading") return { tone: "loading", message: t("shell.sessionLoading") } as const;
+    if (model.session.status === "error") return { tone: "error", message: t("shell.sessionUnavailable") } as const;
+    if (model.session.status === "downtime") return { tone: "warning", message: t("shell.sessionDowntime") } as const;
+    return null;
+  });
   const authDialogTitle = $derived.by(() => {
     if (authenticationState === "pending-email") return t("authUi.authentication.pendingTitle");
     if (authenticationState === "recorded") return t("authUi.authentication.journeys.register.recordedTitle");
@@ -139,21 +146,14 @@
 
 {#snippet accountWidget(compact: boolean)}
   <div class="account-widget" data-session={model.session.status}>
-    {#if model.session.status === "loading" || model.session.status === "error" || model.session.status === "downtime"}
-      {@const tone = model.session.status === "downtime" ? "warning" : model.session.status}
-      {@const message =
-        model.session.status === "loading"
-          ? t("shell.sessionLoading")
-          : model.session.status === "downtime"
-            ? t("shell.sessionDowntime")
-            : t("shell.sessionUnavailable")}
+    {#if sessionNotice}
       {#if compact}
-        <div class="compact-status" title={message}>
-          <InlineMessage {tone} aria-label={message} />
+        <div class="compact-status" title={sessionNotice.message}>
+          <InlineMessage tone={sessionNotice.tone} aria-label={sessionNotice.message} />
         </div>
       {:else}
-        <!-- No title: a heading would crowd the narrow rail. -->
-        <Alert {tone}>{message}</Alert>
+        <!-- A title crowds the narrow rail, so the alert has none. -->
+        <Alert tone={sessionNotice.tone}>{sessionNotice.message}</Alert>
       {/if}
     {:else if authenticatedSession}
       <NavList
