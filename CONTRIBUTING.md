@@ -52,8 +52,10 @@ The Studio server is the only caller of platform services.
 - Tokens live in HttpOnly cookies. They never reach browser storage, page data, logs, or stories.
 - Email links under `/ext` never echo their code. A GET only parses the link, completion posts to the
   same URL, and the result redirects to a code-free URL.
-- Private settings are read on the server only. Anything exposed through `VITE_` ships in the
+- Configuration is declared in `src/env.ts`. A variable stays server-only unless it is declared
+  public. ESLint rejects `import.meta.env`, because Vite inlines every value read through it into the
   browser bundle.
+- Pages render user content as text. ESLint rejects `{@html}`.
 - A service outage keeps the session cookies and shows a recoverable state. Only a rejected token
   logs the user out.
 
