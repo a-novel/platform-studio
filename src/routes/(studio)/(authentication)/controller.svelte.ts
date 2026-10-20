@@ -7,6 +7,9 @@ const validators = {
   reset: validateEmailRequest,
 } satisfies Record<AuthenticationJourney, unknown>;
 
+/** A form in one of these statuses is sending or done, and ignores another submission. */
+const lockedStatuses = new Set(["submitting", "pending-email", "recorded"]);
+
 /** State rendered by the authentication form component. */
 export interface AuthenticationPanelControllerState {
   model: AuthenticationPanelModel;
@@ -46,9 +49,7 @@ export function createAuthenticationPanelController({
       action = nextAction;
     },
     submit(form) {
-      if (["submitting", "pending-email", "recorded"].includes(model.state.status)) {
-        return false;
-      }
+      if (lockedStatuses.has(model.state.status)) return false;
 
       const result = validators[model.journey](form);
       if (!result.success) {
