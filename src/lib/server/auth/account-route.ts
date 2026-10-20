@@ -3,7 +3,7 @@ import { validateEmailUpdate, validatePasswordChange } from "#lib/application/au
 import type { AccountScreenModel } from "#lib/application/auth/types.js";
 
 import { requireAuthorization } from "./authorization";
-import { emailLanguage } from "./context";
+import { type AuthenticationEvent, emailLanguage } from "./context";
 import { logoutAuthentication } from "./logout";
 import { readTokenExpiry } from "./session";
 
@@ -32,7 +32,7 @@ function emailAction(state: AccountScreenModel["emailState"]): AccountActionData
 }
 
 /** Loads the account recap. An authentication outage still renders the account forms. */
-export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">) => {
+export const loadAccount = async (event: AuthenticationEvent & Pick<RequestEvent, "locals">) => {
   const { locals } = event;
   const t = locals.i18n.getFixedT(locals.locale, "common");
 

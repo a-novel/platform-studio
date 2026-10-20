@@ -19,7 +19,7 @@ const shellAuthorization = {
   authenticated: "allowed",
 } as const satisfies Record<ShellSession["status"], AuthorizationStatus>;
 
-type ShellEvent = Pick<RequestEvent, "cookies" | "getClientAddress" | "locals" | "url">;
+type ShellEvent = AuthenticationEvent & Pick<RequestEvent, "locals">;
 
 /** Loads the shell's navigation state, session display and page authorization. */
 export const loadStudioShell = async (event: ShellEvent) => {
