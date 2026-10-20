@@ -327,16 +327,16 @@
     line-height: var(--line-height-normal);
   }
 
-  @media (min-width: 35rem) {
-    .session-details {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
   .session-details {
     display: grid;
     gap: var(--space-4);
     margin: 0;
+  }
+
+  @media (min-width: 35rem) {
+    .session-details {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   .session-details > div {
