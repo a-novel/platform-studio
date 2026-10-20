@@ -7,8 +7,9 @@ import type {
   FormIssue,
 } from "#lib/application/auth/types.js";
 import { readAuthView } from "#lib/application/shell/auth-dialog-state.js";
-import { createAuthenticationContext, emailLanguage } from "#lib/server/auth/context.js";
-import { refuseDuringDowntime } from "#lib/server/downtime.js";
+
+import { refuseDuringDowntime } from "../downtime";
+import { createAuthenticationContext, emailLanguage } from "./context";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {

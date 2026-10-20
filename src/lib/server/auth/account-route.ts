@@ -1,10 +1,11 @@
 import { type AccountActionData, createAccountModel } from "#lib/application/auth/account-action.js";
 import { validateEmailUpdate, validatePasswordChange } from "#lib/application/auth/forms.js";
 import type { AccountScreenModel } from "#lib/application/auth/types.js";
-import { requireAuthorization } from "#lib/server/auth/authorization.js";
-import { emailLanguage } from "#lib/server/auth/context.js";
-import { logoutAuthentication } from "#lib/server/auth/logout.js";
-import { readTokenExpiry } from "#lib/server/auth/session.js";
+
+import { requireAuthorization } from "./authorization";
+import { emailLanguage } from "./context";
+import { logoutAuthentication } from "./logout";
+import { readTokenExpiry } from "./session";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import { credentialsUpdatePassword, shortCodeCreateEmailUpdate } from "@a-novel/service-authentication-rest";
