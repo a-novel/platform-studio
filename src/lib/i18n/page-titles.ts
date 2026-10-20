@@ -1,8 +1,13 @@
-import type { AuthenticationPanelModel, ShortCodeJourney, ShortCodeScreenModel } from "#lib/application/auth/types.js";
+import type {
+  AuthenticationJourney,
+  AuthenticationPanelModel,
+  ShortCodeJourney,
+  ShortCodeScreenModel,
+} from "#lib/application/auth/types.js";
 
 import type { TFunction } from "i18next";
 
-function journeyTitle(t: TFunction<"common">, journey: AuthenticationPanelModel["journey"] | ShortCodeJourney) {
+function journeyTitle(t: TFunction<"common">, journey: AuthenticationJourney | ShortCodeJourney) {
   switch (journey) {
     case "login":
       return t("shell.auth.login.title");
