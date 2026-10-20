@@ -1,4 +1,4 @@
-import { parseShortCodeLink } from "./forms";
+import { parseShortCodeLink } from "./short-code-link";
 
 import { describe, expect, it } from "vitest";
 

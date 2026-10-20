@@ -6,7 +6,7 @@ import type {
   ShortCodeState,
 } from "#lib/application/auth/types.js";
 
-import { type ParsedShortCodeLink, parseShortCodeLink } from "./forms";
+import { type ParsedShortCodeLink, parseShortCodeLink } from "./short-code-link";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {
