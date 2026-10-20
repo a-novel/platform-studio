@@ -30,9 +30,9 @@
     NavList,
     SkipLink,
   } from "@a-novel-kit/uikit";
-  import agoraBanner from "@a-novel-kit/uikit-images/files/banner/80h/agora-banner.png";
-  import agoraIcon48 from "@a-novel-kit/uikit-images/files/icon/48x48/agora-icon.png";
-  import agoraIcon96 from "@a-novel-kit/uikit-images/files/icon/96x96/agora-icon.png";
+  import studioBanner from "@a-novel-kit/uikit-images/files/banner/80h/studio-banner.png";
+  import studioIcon48 from "@a-novel-kit/uikit-images/files/icon/48x48/studio-icon.png";
+  import studioIcon96 from "@a-novel-kit/uikit-images/files/icon/96x96/studio-icon.png";
 
   import { House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 
@@ -106,14 +106,14 @@
     {#if compact}
       <img
         class="brand-icon"
-        src={agoraIcon48}
-        srcset={`${agoraIcon48} 1x, ${agoraIcon96} 2x`}
+        src={studioIcon48}
+        srcset={`${studioIcon48} 1x, ${studioIcon96} 2x`}
         width="24"
         height="24"
         alt={t("shell.brand")}
       />
     {:else}
-      <img class="brand-banner" src={agoraBanner} width="96" height="24" alt={t("shell.brand")} />
+      <img class="brand-banner" src={studioBanner} width="96" height="24" alt={t("shell.brand")} />
     {/if}
   </span>
 {/snippet}
