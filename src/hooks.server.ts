@@ -4,6 +4,7 @@ import { secureShortCodeResponse } from "#lib/server/auth/short-code-response.js
 
 import type { Handle } from "@sveltejs/kit/hooks";
 
+/** Gives each request its own locale and translations, and keeps email-link pages out of caches and referrers. */
 export const handle: Handle = async ({ event, resolve }) => {
   const locale = resolveLocale(event.request.headers.get("accept-language"));
 

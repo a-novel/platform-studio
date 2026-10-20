@@ -1,6 +1,7 @@
 const shortCodeResponseHeaders = {
   "cache-control": "no-store",
-  // Strip link secrets while preserving the Origin header used to check native form submissions.
+  // Referrers carry the origin alone, which keeps the link's secrets private. SvelteKit still reads
+  // that origin to check native form posts.
   "referrer-policy": "strict-origin",
   "x-robots-tag": "noindex, nofollow",
 } as const;

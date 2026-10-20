@@ -12,6 +12,7 @@ export interface StudioDowntime {
   readonly timeZone: string;
 }
 
+/** Reads, installs and detects the downtime tracking that the root layout installs for every page. */
 export const [getStudioDowntime, setStudioDowntime, hasStudioDowntime] = createContext<StudioDowntime>();
 
 // setTimeout fires at once past this delay. A page left open that long picks the start up on reload.

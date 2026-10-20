@@ -5,7 +5,7 @@
 
   import type { Snippet } from "svelte";
 
-  /** Props for the pure, application-agnostic Studio shell surface. */
+  /** Props for the pure Studio shell. */
   export interface StudioShellProps {
     controller: StudioShellController;
     children?: Snippet;

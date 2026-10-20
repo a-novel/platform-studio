@@ -32,7 +32,10 @@ export type FormState<Field extends string> =
   | { status: "service-error"; feedback: AuthenticationFeedback }
   | { status: "success"; feedback: AuthenticationFeedback };
 
+/** The journeys the shell authentication dialog offers. */
 export type AuthenticationJourney = "login" | "register" | "reset";
+
+/** The fields of the shell authentication forms. */
 export type AuthenticationField = "email" | "password";
 
 /** Email delivery acknowledgement that deliberately does not disclose account existence. */
@@ -65,7 +68,10 @@ export interface InvitationRequestPanelModel {
 /** Every state rendered inside the shell authentication dialog. */
 export type AuthenticationPanelModel = LoginPanelModel | EmailRequestPanelModel | InvitationRequestPanelModel;
 
+/** The fields of the account password form. */
 export type AccountPasswordField = "currentPassword" | "newPassword" | "confirmPassword";
+
+/** The field of the account email form. */
 export type AccountEmailField = "newEmail";
 
 /** Claims and expiry data resolved by the server-side session boundary. */
@@ -97,7 +103,10 @@ export interface AccountFormActions {
   logout: string;
 }
 
+/** The journeys an email link completes. */
 export type ShortCodeJourney = "register" | "email-update" | "password-reset";
+
+/** The fields of an email link's password form. */
 export type ShortCodePasswordField = "newPassword" | "confirmPassword";
 
 /** A secure email-link state. No short code or raw target is part of this model. */

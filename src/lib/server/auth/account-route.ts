@@ -50,7 +50,7 @@ export const loadAccount = async (event: Pick<RequestEvent, "cookies" | "getClie
       }),
     };
   } catch (error) {
-    // A planned downtime renders as the maintenance page.
+    // Redirects, refusals and planned downtimes render their own pages. Any other failure keeps the forms.
     if (isRedirect(error) || isHttpError(error, 403) || (isHttpError(error, 503) && error.body.downtime)) throw error;
 
     return {
@@ -105,6 +105,7 @@ async function requestEmailUpdate(event: RequestEvent) {
   return emailAction({ status: "pending-email", targetHint: input.value.email });
 }
 
+/** The account page's form actions. Each account change checks the session again before calling the service. */
 export const accountActions = {
   password: changePassword,
   email: requestEmailUpdate,
