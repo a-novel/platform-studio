@@ -39,17 +39,17 @@
       });
       const result = deserialize(await response.text());
       if (signal.aborted) return;
-      if (result.type === "redirect") {
-        // eslint-disable-next-line svelte/no-navigation-without-resolve -- The action redirects to an app-resolved URL.
-        await goto(result.location, { replace: true, refreshAll: true });
-      } else await applyAction(result);
+
+      // eslint-disable-next-line svelte/no-navigation-without-resolve -- The action redirects to an app-resolved URL.
+      if (result.type === "redirect") return await goto(result.location, { replace: true, refreshAll: true });
+      await applyAction(result);
     } catch {
-      if (!signal.aborted) {
-        controller.synchronize({
-          ...controller.state,
-          model: { journey: "email-update", state: { status: "service-error", feedback: "serviceUnavailable" } },
-        });
-      }
+      if (signal.aborted) return;
+
+      controller.synchronize({
+        ...controller.state,
+        model: { journey: "email-update", state: { status: "service-error", feedback: "serviceUnavailable" } },
+      });
     }
   }
 </script>

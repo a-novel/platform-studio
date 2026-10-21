@@ -1,7 +1,7 @@
 import { createStudioI18n } from "#lib/i18n/instance.js";
 
 import { accountActions, loadAccount } from "./account-route";
-import { createAuthenticationContext } from "./context";
+import { getAuthenticationContext } from "./context";
 import { stubAuthenticationContext } from "./context.fixture";
 import { AuthenticationSession, AuthenticationUnavailableError } from "./session";
 
@@ -39,7 +39,7 @@ describe("account route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     const request = event();
-    vi.mocked(createAuthenticationContext).mockReturnValue(stubAuthenticationContext(request.cookies, request.url));
+    vi.mocked(getAuthenticationContext).mockReturnValue(stubAuthenticationContext(request.cookies, request.url));
   });
 
   it("limits a retrieval failure to the recap and initializes usable actions", async () => {

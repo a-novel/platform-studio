@@ -188,6 +188,15 @@ describe("Studio session at the request boundary", () => {
     });
   });
 
+  it("checks the session once for the shell and page loads of one request", async () => {
+    const { event } = request("/account", tokenCookies);
+    fetchService.mockImplementation(async () => Response.json(identity));
+
+    await Promise.all([loadStudioShell(event), loadAccount(event)]);
+
+    expect(fetchService).toHaveBeenCalledOnce();
+  });
+
   it("uses a localized account label when the identity cookie contains a full email", async () => {
     const { event } = request("/", { ...tokenCookies, studio_identity_handle: "maya.chen@example.com" });
     fetchService.mockResolvedValueOnce(Response.json(identity));
@@ -331,6 +340,16 @@ describe("Studio session at the request boundary", () => {
       currentPassword: "old-password",
       password: password.password,
     });
+  });
+
+  it("reuses an account action's session check for the loads that render its result", async () => {
+    const { event } = request("/account?/password", tokenCookies, { currentPassword: "old-password", ...password });
+    fetchService.mockResolvedValueOnce(Response.json(identity)).mockResolvedValueOnce(Response.json(credentials));
+
+    await accountActions.password(event);
+    await Promise.all([loadStudioShell(event), loadAccount(event)]);
+
+    expect(fetchService).toHaveBeenCalledTimes(2);
   });
 
   it.each(["password", "email"] as const)("redirects anonymous %s changes before any mutation", async (action) => {

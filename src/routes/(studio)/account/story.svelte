@@ -38,9 +38,10 @@
     email: "/storybook/account/email",
     logout: "/storybook/account/logout",
   };
+  const model = $derived(localizeClaimExpiries(structuredClone(initialModel)));
   const controller: AccountScreenController = {
     get state() {
-      return { model: localizeClaimExpiries(structuredClone(initialModel)), actions };
+      return { model, actions };
     },
     synchronize: () => {},
     submitPassword: () => false,
