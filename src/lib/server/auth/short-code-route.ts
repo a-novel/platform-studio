@@ -2,7 +2,7 @@ import type { ShortCodePageData } from "#lib/application/auth/short-code-route.j
 import type { ShortCodeJourney } from "#lib/application/auth/types.js";
 
 import { refuseDuringDowntime } from "../downtime";
-import { createAuthenticationContext } from "./context";
+import { getAuthenticationContext } from "./context";
 import { completeShortCode, createShortCodeClient, readShortCodeModel } from "./short-code";
 
 import type { RequestEvent } from "@sveltejs/kit";
@@ -29,7 +29,7 @@ export async function loadShortCodeRoute(
 export async function submitShortCodeRoute(journey: ShortCodeJourney, event: RequestEvent) {
   await refuseDuringDowntime();
 
-  const authentication = createAuthenticationContext(event);
+  const authentication = getAuthenticationContext(event);
   const result = await completeShortCode(journey, event.url, await event.request.formData(), {
     accept: (token, identityEmail) => authentication.session.accept(token, identityEmail),
     accessToken: async () => await authentication.session.anonymousAccessToken(),

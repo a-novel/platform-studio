@@ -10,7 +10,7 @@ import type {
 import { readAuthView } from "#lib/application/shell/auth-dialog-state.js";
 
 import { refuseDuringDowntime } from "../downtime";
-import { createAuthenticationContext, emailLanguage } from "./context";
+import { emailLanguage, getAuthenticationContext } from "./context";
 
 import { isHttpStatusError } from "@a-novel-kit/nodelib-browser/http";
 import {
@@ -48,7 +48,7 @@ async function login(event: RequestEvent, form: FormData) {
   if (!input.success) return failValidation("login", input.issues);
 
   try {
-    await createAuthenticationContext(event).session.login(input.value.email, input.value.password);
+    await getAuthenticationContext(event).session.login(input.value.email, input.value.password);
   } catch (error) {
     if (isHttpStatusError(error, 401)) return failService(401, "login", "invalidCredentials");
     return failUnavailable("login", error);
@@ -62,7 +62,7 @@ async function requestInvitation(event: RequestEvent, form: FormData) {
   if (!input.success) return failValidation("register", input.issues);
 
   try {
-    const authentication = createAuthenticationContext(event);
+    const authentication = getAuthenticationContext(event);
     const accessToken = await authentication.session.anonymousAccessToken();
     await waitlistJoin(authentication.api, accessToken, {
       email: input.value.email,
@@ -93,7 +93,7 @@ async function requestPasswordReset(event: RequestEvent, form: FormData) {
   if (!input.success) return failValidation("reset", input.issues);
 
   try {
-    const authentication = createAuthenticationContext(event);
+    const authentication = getAuthenticationContext(event);
     const accessToken = await authentication.session.anonymousAccessToken();
     await shortCodeCreatePasswordReset(authentication.api, accessToken, {
       email: input.value.email,
