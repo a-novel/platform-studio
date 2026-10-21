@@ -8,6 +8,7 @@
 </script>
 
 <script lang="ts">
+  import type { AccountPasswordField } from "#lib/application/auth/types.js";
   import { translateAuthenticationFeedback, translateFieldIssue } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
   import { submitThrough } from "#lib/ui/form-submission.js";
@@ -46,6 +47,8 @@
   const passwordIssues = $derived(model.passwordState.status === "validation-error" ? model.passwordState.issues : []);
   const emailIssues = $derived(model.emailState.status === "validation-error" ? model.emailState.issues : []);
 
+  const passwordError = (field: AccountPasswordField) => translateFieldIssue(t, passwordIssues, field);
+  const emailError = $derived(translateFieldIssue(t, emailIssues, "newEmail"));
   const submitPassword = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitPassword(form));
   const submitEmail = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitEmail(form));
 
@@ -76,7 +79,7 @@
               <Field
                 controlId={currentPasswordId}
                 label={t("authUi.account.password.currentLabel")}
-                error={translateFieldIssue(t, passwordIssues, "currentPassword")}
+                error={passwordError("currentPassword")}
                 required
               >
                 {#snippet children(control)}
@@ -86,7 +89,7 @@
                     type="password"
                     autocomplete="current-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(translateFieldIssue(t, passwordIssues, "currentPassword"))}
+                    invalid={Boolean(passwordError("currentPassword"))}
                   />
                 {/snippet}
               </Field>
@@ -94,7 +97,7 @@
                 controlId={newPasswordId}
                 label={t("authUi.account.password.newLabel")}
                 hint={t("authUi.account.password.hint")}
-                error={translateFieldIssue(t, passwordIssues, "newPassword")}
+                error={passwordError("newPassword")}
                 required
               >
                 {#snippet children(control)}
@@ -104,14 +107,14 @@
                     type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(translateFieldIssue(t, passwordIssues, "newPassword"))}
+                    invalid={Boolean(passwordError("newPassword"))}
                   />
                 {/snippet}
               </Field>
               <Field
                 controlId={confirmPasswordId}
                 label={t("authUi.account.password.confirmLabel")}
-                error={translateFieldIssue(t, passwordIssues, "confirmPassword")}
+                error={passwordError("confirmPassword")}
                 required
               >
                 {#snippet children(control)}
@@ -121,7 +124,7 @@
                     type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(translateFieldIssue(t, passwordIssues, "confirmPassword"))}
+                    invalid={Boolean(passwordError("confirmPassword"))}
                   />
                 {/snippet}
               </Field>
@@ -153,7 +156,7 @@
                 controlId={newEmailId}
                 label={t("authUi.account.email.label")}
                 hint={t("authUi.account.email.hint")}
-                error={translateFieldIssue(t, emailIssues, "newEmail")}
+                error={emailError}
                 required
               >
                 {#snippet children(control)}
@@ -165,7 +168,7 @@
                     autocapitalize="none"
                     spellcheck="false"
                     readonly={emailSubmitting}
-                    invalid={Boolean(translateFieldIssue(t, emailIssues, "newEmail"))}
+                    invalid={Boolean(emailError)}
                   />
                 {/snippet}
               </Field>
