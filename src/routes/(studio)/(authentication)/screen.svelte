@@ -9,7 +9,6 @@
 
 <script lang="ts">
   import type { AuthenticationField } from "#lib/application/auth/types.js";
-  import { translateAuthenticationJourney } from "#lib/i18n/auth-copy.js";
   import { translateFieldIssue } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
   import { submitThrough } from "#lib/ui/form-submission.js";
@@ -28,8 +27,6 @@
   const passwordId = `${componentId}-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const submitLabel = $derived(translateAuthenticationJourney(t, model.journey, "submit"));
-  const submittingLabel = $derived(translateAuthenticationJourney(t, model.journey, "submitting"));
 
   const fieldError = (field: AuthenticationField) => translateFieldIssue(t, issues, field);
   const submit = (event: SubmitEvent) => submitThrough(event, (form) => controller.submit(form));
@@ -88,7 +85,19 @@
         {/if}
       {/snippet}
       <Button type="submit" disabled={submitting}>
-        {submitting ? submittingLabel : submitLabel}
+        {#if model.journey === "register"}
+          {submitting
+            ? t("authUi.authentication.journeys.register.submitting")
+            : t("authUi.authentication.journeys.register.submit")}
+        {:else if model.journey === "reset"}
+          {submitting
+            ? t("authUi.authentication.journeys.reset.submitting")
+            : t("authUi.authentication.journeys.reset.submit")}
+        {:else}
+          {submitting
+            ? t("authUi.authentication.journeys.login.submitting")
+            : t("authUi.authentication.journeys.login.submit")}
+        {/if}
       </Button>
     </FormActions>
   </form>

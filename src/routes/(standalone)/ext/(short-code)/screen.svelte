@@ -10,7 +10,6 @@
 </script>
 
 <script lang="ts">
-  import { translateShortCodeJourney, translateShortCodeStatus, translateShortCodeTitle } from "#lib/i18n/auth-copy.js";
   import { translateAuthenticationFeedback, translateFieldIssue } from "#lib/i18n/auth-feedback.js";
   import AuthenticationError from "#lib/ui/auth/AuthenticationError.svelte";
   import { submitThrough } from "#lib/ui/form-submission.js";
@@ -31,7 +30,6 @@
   const confirmPasswordId = `${componentId}-confirm-password`;
   const submitting = $derived(model.state.status === "submitting");
   const issues = $derived(model.state.status === "validation-error" ? model.state.issues : []);
-  const title = $derived(translateShortCodeTitle(t, model));
   const unavailableStatus = $derived(
     model.state.status === "missing" || model.state.status === "invalid" ? model.state.status : null
   );
@@ -47,17 +45,26 @@
   <section class="secure-action" aria-labelledby={hasOutcome ? undefined : `${componentId}-title`}>
     {#if !hasOutcome && model.journey !== "email-update"}
       <header class="page-heading">
-        <h1 id={`${componentId}-title`}>{title}</h1>
-        <p>{translateShortCodeJourney(t, model.journey, "description")}</p>
+        {#if model.journey === "register"}
+          <h1 id={`${componentId}-title`}>{t("authUi.shortCode.journeys.register.title")}</h1>
+          <p>{t("authUi.shortCode.journeys.register.description")}</p>
+        {:else}
+          <h1 id={`${componentId}-title`}>{t("authUi.shortCode.journeys.passwordReset.title")}</h1>
+          <p>{t("authUi.shortCode.journeys.passwordReset.description")}</p>
+        {/if}
       </header>
     {/if}
 
     {#if unavailableStatus}
       <StatusState
         tone="error"
-        {title}
+        title={unavailableStatus === "missing"
+          ? t("authUi.shortCode.states.missing.title")
+          : t("authUi.shortCode.states.invalid.title")}
         headingLevel={1}
-        description={translateShortCodeStatus(t, unavailableStatus, "description")}
+        description={unavailableStatus === "missing"
+          ? t("authUi.shortCode.states.missing.description")
+          : t("authUi.shortCode.states.invalid.description")}
       >
         {#snippet actions()}
           <!-- Invitations are issued by the team, so a dead one leads back to the invitation list. -->
@@ -68,7 +75,7 @@
         {/snippet}
       </StatusState>
     {:else if model.state.status === "success"}
-      <StatusState tone="success" {title} headingLevel={1}>
+      <StatusState tone="success" title={translateAuthenticationFeedback(t, model.state.feedback)} headingLevel={1}>
         {#snippet actions()}
           <!-- A password reset returns no session, so it continues to the login form. -->
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- The pure screen receives app-resolved URLs. -->
@@ -81,7 +88,7 @@
       {#if model.state.status === "service-error"}
         <StatusState
           tone="error"
-          {title}
+          title={t("authUi.shortCode.journeys.emailUpdate.unavailableTitle")}
           description={translateAuthenticationFeedback(t, model.state.feedback)}
           headingLevel={1}
         >
@@ -91,7 +98,7 @@
           {/snippet}
         </StatusState>
       {:else}
-        <StatusState tone="loading" {title} headingLevel={1} />
+        <StatusState tone="loading" title={t("authUi.shortCode.journeys.emailUpdate.submitting")} headingLevel={1} />
         <noscript>
           <form method="POST" {action}>
             <Button type="submit">{t("authUi.shortCode.journeys.emailUpdate.submit")}</Button>
@@ -134,7 +141,15 @@
             {/if}
           {/snippet}
           <Button type="submit" disabled={submitting}>
-            {translateShortCodeJourney(t, model.journey, submitting ? "submitting" : "submit")}
+            {#if model.journey === "register"}
+              {submitting
+                ? t("authUi.shortCode.journeys.register.submitting")
+                : t("authUi.shortCode.journeys.register.submit")}
+            {:else}
+              {submitting
+                ? t("authUi.shortCode.journeys.passwordReset.submitting")
+                : t("authUi.shortCode.journeys.passwordReset.submit")}
+            {/if}
           </Button>
         </FormActions>
       </form>
