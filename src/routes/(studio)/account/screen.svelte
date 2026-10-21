@@ -48,7 +48,6 @@
   const emailIssues = $derived(model.emailState.status === "validation-error" ? model.emailState.issues : []);
 
   const passwordError = (field: AccountPasswordField) => translateFieldIssue(t, passwordIssues, field);
-  const emailError = $derived(translateFieldIssue(t, emailIssues, "newEmail"));
   const submitPassword = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitPassword(form));
   const submitEmail = (event: SubmitEvent) => submitThrough(event, (form) => controller.submitEmail(form));
 
@@ -89,7 +88,6 @@
                     type="password"
                     autocomplete="current-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(passwordError("currentPassword"))}
                   />
                 {/snippet}
               </Field>
@@ -107,7 +105,6 @@
                     type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(passwordError("newPassword"))}
                   />
                 {/snippet}
               </Field>
@@ -124,7 +121,6 @@
                     type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
-                    invalid={Boolean(passwordError("confirmPassword"))}
                   />
                 {/snippet}
               </Field>
@@ -156,7 +152,7 @@
                 controlId={newEmailId}
                 label={t("authUi.account.email.label")}
                 hint={t("authUi.account.email.hint")}
-                error={emailError}
+                error={translateFieldIssue(t, emailIssues, "newEmail")}
                 required
               >
                 {#snippet children(control)}
@@ -168,7 +164,6 @@
                     autocapitalize="none"
                     spellcheck="false"
                     readonly={emailSubmitting}
-                    invalid={Boolean(emailError)}
                   />
                 {/snippet}
               </Field>

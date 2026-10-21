@@ -107,14 +107,7 @@
           required
         >
           {#snippet children(control)}
-            <Input
-              {...control}
-              name="password"
-              type="password"
-              autocomplete="new-password"
-              readonly={submitting}
-              invalid={Boolean(fieldError("newPassword"))}
-            />
+            <Input {...control} name="password" type="password" autocomplete="new-password" readonly={submitting} />
           {/snippet}
         </Field>
         <Field
@@ -130,7 +123,6 @@
               type="password"
               autocomplete="new-password"
               readonly={submitting}
-              invalid={Boolean(fieldError("confirmPassword"))}
             />
           {/snippet}
         </Field>
