@@ -18,6 +18,9 @@
   import AuthenticationPanel from "./(authentication)/screen.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
+  import studioBanner from "@a-novel-kit/ui-images/files/banner/80h/studio-banner.png";
+  import studioIcon48 from "@a-novel-kit/ui-images/files/icon/48x48/studio-icon.png";
+  import studioIcon96 from "@a-novel-kit/ui-images/files/icon/96x96/studio-icon.png";
   import {
     Alert,
     Avatar,
@@ -30,9 +33,6 @@
     NavList,
     SkipLink,
   } from "@a-novel-kit/uikit";
-  import studioBanner from "@a-novel-kit/uikit-images/files/banner/80h/studio-banner.png";
-  import studioIcon48 from "@a-novel-kit/uikit-images/files/icon/48x48/studio-icon.png";
-  import studioIcon96 from "@a-novel-kit/uikit-images/files/icon/96x96/studio-icon.png";
 
   import { House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
 

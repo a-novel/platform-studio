@@ -2,9 +2,9 @@
   import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
   import { createStudioDowntime, setStudioDowntime } from "#lib/ui/downtime.svelte.js";
 
-  import "@a-novel-kit/uikit-fonts/fonts.css";
   // The opaque tile keeps the pen readable on light and dark tab bars alike.
-  import favicon from "@a-novel-kit/uikit-images/files/icon/32x32/studio-icon-black.png";
+  import favicon from "@a-novel-kit/ui-images/files/icon/32x32/studio-icon-black.png";
+  import "@a-novel-kit/uikit-fonts/fonts.css";
   import "@a-novel-kit/uikit-tokens/tokens.css";
 
   let { children, data } = $props();
