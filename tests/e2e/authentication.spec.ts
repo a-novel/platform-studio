@@ -57,6 +57,15 @@ test("login returns to the protected account, survives reload and logout protect
   await expect(page).toHaveTitle("Home — Agora Studio");
   expect((await context.cookies()).filter((cookie) => cookie.name.startsWith("studio_"))).toEqual([]);
 
+  // Logout revoked the refresh token, so the service refuses to renew the session with it.
+  const tokens = Object.fromEntries(cookies.map((cookie) => [cookie.name, cookie.value]));
+  const renewal = await fetch("http://127.0.0.1:14100/v2/session", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ accessToken: tokens.studio_access_token, refreshToken: tokens.studio_refresh_token }),
+  });
+  expect(renewal.status).toBe(403);
+
   await page.goto("/account");
   await expect(page).toHaveURL(/auth=login&returnTo=%2Faccount/);
   await expect(page.getByLabel(/^Current password/)).toHaveCount(0);
