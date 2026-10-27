@@ -95,7 +95,6 @@ export default interface Resources {
           "title": "Password"
         },
         "privacy": {
-          "telemetry": "Error logs and performance metrics this browser sends through Sentry. Never used for advertising.",
           "title": "Privacy"
         },
         "title": "Manage your account"
@@ -210,7 +209,8 @@ export default interface Resources {
       "skipToContent": "Skip to content"
     },
     "telemetryConsent": {
-      "message": "Your browser can send us error logs and performance metrics through Sentry, to find what breaks or slows down. Never used for advertising. Change it anytime in your account.",
+      "change": "Change this anytime from the account management menu.",
+      "message": "We sometimes collect error logs and performance metrics to improve our products. No personal information is recorded or shared.",
       "title": "Metrics and log collection"
     }
   }

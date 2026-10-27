@@ -207,7 +207,7 @@
 
         {#if telemetry}
           <Card surface="raised">
-            <section id="account-privacy" class="card-section privacy" aria-labelledby={`${componentId}-privacy-title`}>
+            <section id="account-privacy" class="card-section" aria-labelledby={`${componentId}-privacy-title`}>
               <header class="section-heading">
                 <h2 id={`${componentId}-privacy-title`}>{t("authUi.account.privacy.title")}</h2>
               </header>
@@ -215,7 +215,7 @@
                 class="telemetry-setting"
                 controller={telemetrySwitch}
                 label={t("telemetryConsent.title")}
-                description={t("authUi.account.privacy.telemetry")}
+                description={t("telemetryConsent.message")}
                 disabled={telemetry.pending}
               />
             </section>
@@ -389,7 +389,7 @@
     overflow-wrap: anywhere;
   }
 
-  .privacy :global(.telemetry-setting) {
+  .card-section :global(.telemetry-setting) {
     display: flex;
   }
 
