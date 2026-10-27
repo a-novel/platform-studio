@@ -1,17 +1,16 @@
 <script lang="ts">
+  import { createTelemetryPreference } from "#lib/client/telemetry-preference.svelte.js";
   import { telemetry } from "#lib/client/telemetry.js";
   import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
   import TelemetryConsent from "#lib/ui/TelemetryConsent.svelte";
   import { createStudioDowntime, setStudioDowntime } from "#lib/ui/downtime.svelte.js";
-  import { setTelemetryConsent } from "#lib/ui/telemetry-consent.js";
+  import { setTelemetryPreference } from "#lib/ui/telemetry-preference.js";
   import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { page } from "$app/state";
 
-  import { onMount } from "svelte";
-
   // The opaque tile keeps the pen readable on light and dark tab bars alike.
   import favicon from "@a-novel-kit/ui-images/files/icon/32x32/studio-icon-black.png";
-  import { createConsentController } from "@a-novel-kit/uikit";
+  import type { ConsentController } from "@a-novel-kit/uikit";
   import "@a-novel-kit/uikit-fonts/fonts.css";
   import "@a-novel-kit/uikit-tokens/tokens.css";
 
@@ -21,13 +20,18 @@
   // place, so the root layout only shares the downtime.
   setStudioDowntime(createStudioDowntime(() => data));
 
-  const consent = createConsentController({ onChoice: (choice) => void telemetry.choose(choice) });
-  if (telemetry.enabled) setTelemetryConsent(consent);
+  const preference = createTelemetryPreference(telemetry);
+  if (telemetry.enabled) setTelemetryPreference(preference);
 
-  // The answer lives on the visitor's device, so the request opens only once the page runs there.
-  onMount(() => {
-    if (telemetry.enabled && telemetry.choice === undefined) consent.open();
-  });
+  // The request shows only while the device records no answer; the account page changes it later.
+  const consent: ConsentController = {
+    get state() {
+      return { open: telemetry.enabled && !preference.pending && preference.choice === undefined };
+    },
+    open: () => {},
+    accept: () => preference.choose("accepted"),
+    decline: () => preference.choose("declined"),
+  };
 
   beforeNavigate((navigation) => telemetry.navigate(navigation));
   // SvelteKit gives the first navigation no route, so the page state names it.

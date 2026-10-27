@@ -26,4 +26,20 @@ describe("fixed visual review controllers", () => {
     await expect.element(email).toBeEnabled();
     expect(input.form?.getAttribute("aria-busy")).toBe("false");
   });
+
+  it("changes the telemetry answer from the privacy section", async () => {
+    const initialModel: AccountScreenModel = {
+      claims: { status: "loading" },
+      passwordState: { status: "ready" },
+      emailState: { status: "ready" },
+      logoutState: "ready",
+    };
+    render(AccountStory, { initialModel, telemetryChoice: "declined" }, withLocale());
+    const setting = page.getByRole("switch", { name: /Metrics and log collection/ });
+    await expect.element(setting).not.toBeChecked();
+
+    await setting.click();
+
+    await expect.element(setting).toBeChecked();
+  });
 });

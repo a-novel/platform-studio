@@ -16,17 +16,13 @@
 </script>
 
 <script lang="ts">
-  import TelemetryConsent from "#lib/ui/TelemetryConsent.svelte";
   import { setStudioDowntime } from "#lib/ui/downtime.svelte.js";
-  import { setTelemetryConsent } from "#lib/ui/telemetry-consent.js";
 
   import HomeScreen from "./(home)/screen.svelte";
   import { type StudioShellController, readyAuthenticationModel } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
   import { untrack } from "svelte";
-
-  import { createConsentController } from "@a-novel-kit/uikit";
 
   let { initialModel, initialAuthenticationModel, downtime, children }: StudioShellStoryProps = $props();
 
@@ -38,10 +34,6 @@
       timeZone: "UTC",
     });
   }
-
-  // A platform that collects browser telemetry: Privacy choices reopens the consent request.
-  const consent = createConsentController();
-  setTelemetryConsent(consent);
 
   const controller: StudioShellController = {
     get state() {
@@ -84,7 +76,6 @@
 </script>
 
 <div class="story-frame">
-  <TelemetryConsent controller={consent} />
   <Screen {controller}>
     <HomeScreen />
     {@render children?.()}
