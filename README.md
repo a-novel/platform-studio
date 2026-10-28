@@ -61,6 +61,7 @@ podman run --detach --name platform-studio --publish 3000:3000 \
 | --------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `AUTHENTICATION_SERVICE_URL`      | Yes            | Base HTTP or HTTPS URL for the authentication service.                                                               |
 | `AUTHENTICATION_SERVICE_AUDIENCE` | Cloud Run      | Audience of the Google ID token the authentication service's IAM admits. Studio fetches it from the metadata server. |
+| `SERVICE_TOKEN_PATH`              | Kubernetes     | File of the projected service token, sent instead of a Google ID token. Studio reads it on every call.               |
 | `ADDRESS_HEADER`, `XFF_DEPTH`     | Behind a proxy | Where the visitor's IP is read, which Studio forwards for rate limiting. On Cloud Run, `X-Forwarded-For` and `1`.    |
 | `HEALTHCHECK_TIMEOUT_MS`          | No             | Downstream timeout from 100 to 10,000 ms. The default is 2,000.                                                      |
 | `DOWNTIME_URL`                    | No             | Planned downtime document. The default is the one infra publishes.                                                   |
