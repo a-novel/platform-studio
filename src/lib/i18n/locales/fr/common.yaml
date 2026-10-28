@@ -78,6 +78,8 @@ authUi:
       submit: Changer le mot de passe
       submitting: Modification du mot de passe…
       title: Mot de passe
+    privacy:
+      title: Confidentialité
     title: Gérez votre compte
   authentication:
     emailLabel: Courriel
@@ -168,3 +170,7 @@ shell:
   sessionUnavailable: Informations du compte indisponibles.
   signIn: Se connecter
   skipToContent: Aller au contenu
+telemetryConsent:
+  change: Modifiable à tout moment depuis le menu de gestion du compte.
+  message: Nous collectons parfois des journaux d’erreurs et des métriques de performances, à des fins d’amélioration de nos produits. Aucune information personnelle n’est enregistrée ou partagée.
+  title: Collecte des métriques et des journaux

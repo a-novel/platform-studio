@@ -167,29 +167,29 @@ importers:
   .:
     dependencies:
       '@a-novel-kit/nodelib-browser':
-        specifier: 2.2.1
-        version: 2.2.1(zod@4.6.7)
+        specifier: 2.3.0
+        version: 2.3.0(@sentry/browser@11.9.0)(zod@4.6.7)
       '@a-novel-kit/nodelib-i18n':
-        specifier: 2.2.1
-        version: 2.2.1(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
+        specifier: 2.3.0
+        version: 2.3.0(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
       '@a-novel-kit/nodelib-server':
-        specifier: 2.2.1
-        version: 2.2.1(@opentelemetry/api@1.10.0)(@opentelemetry/exporter-trace-otlp-proto@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation-undici@0.34.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/resources@3.0.0(@opentelemetry/api@1.10.0))(@opentelemetry/sdk-trace-node@2.12.0(@opentelemetry/api@1.10.0))
+        specifier: 2.3.0
+        version: 2.3.0(@opentelemetry/api@1.10.0)(@opentelemetry/exporter-trace-otlp-proto@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation-undici@0.34.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/resources@3.0.0(@opentelemetry/api@1.10.0))(@opentelemetry/sdk-trace-node@2.12.0(@opentelemetry/api@1.10.0))
       '@a-novel-kit/ui-images':
         specifier: 0.1.0
         version: 0.1.0
       '@a-novel-kit/uikit':
-        specifier: 0.11.0
-        version: 0.11.0(@a-novel-kit/nodelib-i18n@2.2.1(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
+        specifier: 0.12.1
+        version: 0.12.1(@a-novel-kit/nodelib-i18n@2.3.0(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
       '@a-novel-kit/uikit-fonts':
-        specifier: 0.11.0
-        version: 0.11.0
+        specifier: 0.12.1
+        version: 0.12.1
       '@a-novel-kit/uikit-tokens':
-        specifier: 0.11.0
-        version: 0.11.0
+        specifier: 0.12.1
+        version: 0.12.1
       '@a-novel/service-authentication-rest':
         specifier: 2.18.4
-        version: 2.18.4(@a-novel-kit/nodelib-browser@2.2.1(zod@4.6.7))(zod@4.6.7)
+        version: 2.18.4(@a-novel-kit/nodelib-browser@2.3.0(@sentry/browser@11.9.0)(zod@4.6.7))(zod@4.6.7)
       '@lucide/svelte':
         specifier: 1.61.0
         version: 1.61.0(svelte@5.57.2(@typescript-eslint/types@8.72.0))
@@ -211,6 +211,9 @@ importers:
       '@opentelemetry/sdk-trace-node':
         specifier: 2.12.0
         version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@sentry/browser':
+        specifier: 11.9.0
+        version: 11.9.0
       i18next:
         specifier: 26.5.10
         version: 26.5.10(typescript@6.0.3)
@@ -219,14 +222,14 @@ importers:
         version: 4.6.7
     devDependencies:
       '@a-novel-kit/nodelib-config':
-        specifier: 2.2.1
-        version: 2.2.1(67b3d5a751c7804815587f9c3156f551)
+        specifier: 2.3.0
+        version: 2.3.0(67b3d5a751c7804815587f9c3156f551)
       '@a-novel-kit/nodelib-test':
-        specifier: 2.2.1
-        version: 2.2.1(@a-novel-kit/nodelib-browser@2.2.1(zod@4.6.7))(jsdom@30.1.3)(playwright@1.64.1)
+        specifier: 2.3.0
+        version: 2.3.0(@a-novel-kit/nodelib-browser@2.3.0(@sentry/browser@11.9.0)(zod@4.6.7))(jsdom@30.1.3)(playwright@1.64.1)
       '@a-novel-kit/uikit-storybook':
-        specifier: 0.11.0
-        version: 0.11.0(@storybook/addon-a11y@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-docs@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-svelte-csf@5.1.5(@storybook/svelte@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(@storybook/addon-vitest@10.6.3(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5)(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(vitest@5.0.5))(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
+        specifier: 0.12.1
+        version: 0.12.1(@storybook/addon-a11y@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-docs@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-svelte-csf@5.1.5(@storybook/svelte@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(@storybook/addon-vitest@10.6.3(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5)(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(vitest@5.0.5))(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
       '@eslint/compat':
         specifier: 2.1.1
         version: 2.1.1(eslint@10.13.0(jiti@2.7.0))
@@ -359,14 +362,15 @@ importers:
 
 packages:
 
-  '@a-novel-kit/nodelib-browser@2.2.1':
-    resolution: {integrity: sha512-p50Yx26vGcV7M+vyH1/1QGqoI2RgIUSd+rmNQABb+pZsYuySiXeZQAXK3hVzb5GVQZD90yxFPXsaySsqNQWoVA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-browser/2.2.1/bfbc7ae455ca3ae55d72e200b4706c24e54912a9}
+  '@a-novel-kit/nodelib-browser@2.3.0':
+    resolution: {integrity: sha512-V8BywzgbfaIOjwxDnfEYf65uXt4mS3VAcGBkYJYcW8nkAUTbjje9lX1i9J0PM2dhtkYADQeRU4g3az16OUXoTQ==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-browser/2.3.0/cb3f7a9e9a3a68a36c95dd37a8d06008d7a7aaf7}
     engines: {node: '>=24.0.0', npm: '>=10.9.2'}
     peerDependencies:
+      '@sentry/browser': ^11.9.0
       zod: ^4.6.7
 
-  '@a-novel-kit/nodelib-config@2.2.1':
-    resolution: {integrity: sha512-L6/yiZlO2l6WKrGZllLgJw53sRbijhzJjkWYWaowiO//Gr7FzTFTBfVfhgg73TkXsIKia/FVau4kXUB0mq2ErQ==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/2.2.1/ae62f6d56434fad297ca0484eab776752994803e}
+  '@a-novel-kit/nodelib-config@2.3.0':
+    resolution: {integrity: sha512-HS/K0OyZAAltzCJhOiTRRl9pzPynaRzwbk6WMLRaXtsCXApSCdvC1I4+KzY+y2O2Lf0hdI+UEvVOUi05SCKrMA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/2.3.0/036f1caf10320987c1ae8e4c33f98c043a02f8b9}
     engines: {node: '>=24.0.0', npm: '>=10.9.2'}
     hasBin: true
     peerDependencies:
@@ -385,7 +389,7 @@ packages:
       eslint-plugin-svelte: ^3.23.1
       estree-walker: ^3.0.3
       globals: ^17.13.0
-      i18next-cli: ^1.80.0
+      i18next-cli: ^1.80.4
       i18next-cli-plugin-svelte: ^2.4.1
       playwright: ^1.64.1
       prettier: ^3.9.10
@@ -400,15 +404,15 @@ packages:
       vite: ^8.3.5
       vitest: ^5.0.5
 
-  '@a-novel-kit/nodelib-i18n@2.2.1':
-    resolution: {integrity: sha512-+XKMSGDcuAOVkoP5GHO3NouKnqIwzRwtotKIITUMJO5tXT4BPKuKvwCpPCAmysDwSbK2VmdDhVYxWm0NrbVerg==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-i18n/2.2.1/041be44f2bd507c7211f369523b9a5e6cadad1a4}
+  '@a-novel-kit/nodelib-i18n@2.3.0':
+    resolution: {integrity: sha512-Ps8C7s+oz92fMwroxarGZzUyMquQwLUNCKDa8W//SP8gRYYP2curhUPD9FcUXn3sJOCcd4pSmR1V/ED/SpO5RQ==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-i18n/2.3.0/c2c17dcfecb4ba57d213d5152eceabd1a8323b82}
     engines: {node: '>=24.0.0', npm: '>=10.9.2'}
     peerDependencies:
-      i18next: ^26.5.7
+      i18next: ^26.5.10
       svelte: ^5.57.2
 
-  '@a-novel-kit/nodelib-server@2.2.1':
-    resolution: {integrity: sha512-bL3dHLE4pzxwRPmx/f21SUiWJkV8uYK2JxJgsTM/fWsKYaQT3qgn2IJPWunOeG2BR51IVu0QVSbObcAgW2cFEA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-server/2.2.1/6f1807cd789cd0b804900f45161979cce88f4d3d}
+  '@a-novel-kit/nodelib-server@2.3.0':
+    resolution: {integrity: sha512-NOljzbBQBuKy3kWRAfuQw6bb4cUZQtkGkOpG64PM2ULcZay1OvWSW2lQjEchLRwYrmrVEhIHXeqjiidrW0Hl7w==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-server/2.3.0/2edb69f54c0e8c013dd3c22f984c2e730bba3ff2}
     engines: {node: '>=24.0.0', npm: '>=10.9.2'}
     peerDependencies:
       '@opentelemetry/api': ^1.10.0
@@ -418,8 +422,8 @@ packages:
       '@opentelemetry/resources': ^3.0.0
       '@opentelemetry/sdk-trace-node': ^2.12.0
 
-  '@a-novel-kit/nodelib-test@2.2.1':
-    resolution: {integrity: sha512-g+QRoNTgKm/SM+VRiglb/9eSOdjYyi8S97bezcELrRj1/9rNxZzUMJQG5tWt2U1+wQILRHULjvfrQZkmOQ5nlg==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-test/2.2.1/71e4faaed92e63d7e7778f1c4a8cd45087f662cd}
+  '@a-novel-kit/nodelib-test@2.3.0':
+    resolution: {integrity: sha512-uunW1PIZD1ECPPtEHWKEdf3RDkkAJeFq6GS9O1OaEAL5X63maG+Ebe03gzMO9MrEpxq7l5jlc4DoA4U++0W/Rw==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-test/2.3.0/4851b39b030757211226262c1a6a972e242d64ff}
     engines: {node: '>=24.0.0', npm: '>=10.9.2'}
     peerDependencies:
       '@a-novel-kit/nodelib-browser': '*'
@@ -429,28 +433,28 @@ packages:
   '@a-novel-kit/ui-images@0.1.0':
     resolution: {integrity: sha512-oY+6zPETssF9ZQqjgOciDKqQzXUQwzcezj/wFQEWgD/uAYP9jqQ1ax3uBr2kOPGgsOAdMl/Dkmi6ABUyBfaJ+A==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/ui-images/0.1.0/4cca57fa8accb46236b621986042f8e55b516703}
 
-  '@a-novel-kit/uikit-fonts@0.11.0':
-    resolution: {integrity: sha512-OKBzdmD6uVykqqsp2tSmEDLKhh/aFtcUtYv0K6bo0NFPyI+bKX/Sf7SoYYcD3Pt6eoPI+fqmsM3IftpIbFnjoQ==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-fonts/0.11.0/65716a4e368e82afa04c022c195fa4030ec53c9c}
+  '@a-novel-kit/uikit-fonts@0.12.1':
+    resolution: {integrity: sha512-90A02FOfTgdUWbrfS+kPN9YyW6ldkxgbIUvKRF3yN0Ap+ibOL8mOv46C6AZkRaCmXrz13exuDLmN7uWb73IMJg==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-fonts/0.12.1/578b16e1d43dcd0aa219137964ed777c646c09bf}
 
-  '@a-novel-kit/uikit-storybook@0.11.0':
-    resolution: {integrity: sha512-MYi3lwBarqdwUPQ3l1NsVbwC4fxh6R0/lyImkKgssCC+a/O0J6dfNMKnyzdKQzgWRYechBz3uwRnKr2r/zzFpg==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-storybook/0.11.0/5d9e100bf098469d434de863d791b524871ac01c}
+  '@a-novel-kit/uikit-storybook@0.12.1':
+    resolution: {integrity: sha512-fwQmvbs+CnjpJyiWGb7KK8DWFClNLercrpFPt5rv4/gMFZEjC5eLOk/HD+YfCv6pSoHgOqULFW1ka1Ih0aJodw==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-storybook/0.12.1/64a69429e34ff516598f30e5f7307544a870dbfe}
     peerDependencies:
-      '@storybook/addon-a11y': ^10.6.2
-      '@storybook/addon-docs': ^10.6.2
+      '@storybook/addon-a11y': ^10.6.3
+      '@storybook/addon-docs': ^10.6.3
       '@storybook/addon-svelte-csf': ^5.1.5
-      '@storybook/addon-vitest': ^10.6.2
+      '@storybook/addon-vitest': ^10.6.3
       react: ^19.3.1
-      storybook: ^10.6.2
+      storybook: ^10.6.3
       svelte: ^5.57.2
 
-  '@a-novel-kit/uikit-tokens@0.11.0':
-    resolution: {integrity: sha512-/dNf8z32rYxyTlXFuc4hGfiwA8PNSgzE8BgJQU6RmHYpPZ/Tf3xo7aPTC+QC0etJnEZu/w2IIBHa36gmms1+7Q==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-tokens/0.11.0/895d351229e3b57d01018dbefc7f46c942f50182}
+  '@a-novel-kit/uikit-tokens@0.12.1':
+    resolution: {integrity: sha512-mmNvnZLOxcYaEaOvzZ3edGgRbnbixwkQjOz84AQufT/7VIKsGAsK45L1lUJjVjo0yg90yIVmdui+x6ljC9ghnA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit-tokens/0.12.1/a18a89091e3d1149b95618fa33971f25d313b106}
 
-  '@a-novel-kit/uikit@0.11.0':
-    resolution: {integrity: sha512-O7paSL3iYMh5/rzOhKgx+Fq//hDGfyAX2zEQLfx+TvkGYhu85llDs+7m+GGQCSAbezQJ9jEmnZ34ij9JAL2UKg==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit/0.11.0/569e6e01bc804c681cfc8bc7f65f90b497a7c114}
+  '@a-novel-kit/uikit@0.12.1':
+    resolution: {integrity: sha512-ZrrH3cuNGpQWvmVN9VumPuvMWWGuhv/+hGNV/gPp/c3NheGTWtaHxc4HeJ0yHPddmtbxkBagMzR+fGbPF8th5A==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/uikit/0.12.1/002f1559ee6867b3a3ef4fa2848d2c919c66f5af}
     peerDependencies:
-      '@a-novel-kit/nodelib-i18n': ^1.14.0
-      i18next: ^26.4.7
+      '@a-novel-kit/nodelib-i18n': ^2.2.1
+      i18next: ^26.5.10
       svelte: ^5.57.2
 
   '@a-novel/service-authentication-rest@2.18.4':
@@ -1458,6 +1462,34 @@ packages:
 
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
+
+  '@sentry/browser-utils@11.9.0':
+    resolution: {integrity: sha512-HwEa+BYxNJ+9msyzKSL2w5+eQwWRGk13StZoMinRmkq+tK34pmIOeDRq/ARlofyYzffvY6R9Xggh9peLjYn2Rg==}
+    engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
+
+  '@sentry/browser@11.9.0':
+    resolution: {integrity: sha512-3YQ6DJyeqOV2b02m+kUNLUcFAlzyjCL30+4NZgUQLWlpmZgTO+b01v+HXwY5d7etf8mAKwEjL8BPoVqkVqL2Kg==}
+    engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
+
+  '@sentry/conventions@0.27.0':
+    resolution: {integrity: sha512-Mrqd/o7n/z7qWSYfQQA7x4fFTA0IqOG6JNsbBpnC97khPwZk7n6DPtOO7YgaYplSl8R8QLRbBz9Xv2lVhToSAg==}
+    engines: {node: '>=14'}
+
+  '@sentry/core@11.9.0':
+    resolution: {integrity: sha512-t0dZyHILt2XVC4Fe9UmAty6YRfOuQv95cvWeNl+HlW4LphjF5/jkALV3cJCUMdhpblYELgIJC4U/S/GoYuI2bA==}
+    engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
+
+  '@sentry/feedback@11.9.0':
+    resolution: {integrity: sha512-Rq3xwo66AuuLgS4/v/ZrNwJo+barxzAtXRZWmMU5T60AGX2apTFQfvo0H4zsVwvxouvw9NBg8RmL7jF9MdNG7g==}
+    engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
+
+  '@sentry/replay-canvas@11.9.0':
+    resolution: {integrity: sha512-EqSlEg1iJFXKlGrpddZ+ytX7SS5oOgui5kAYqDOfNolmxoQc2dz0KXSEtLpiWjwnnfeJ5El0uAmv/1jPdrd4aw==}
+    engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
+
+  '@sentry/replay@11.9.0':
+    resolution: {integrity: sha512-fSM8f1skiu6+O1Mzpn3BjtjoESygA+UcZaXyLr7t/1yDNPi7ne2+pJnrXo4oIFV1UbWJHPedo2vOIBNHDLABTg==}
+    engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
@@ -3499,6 +3531,9 @@ packages:
     resolution: {integrity: sha512-4Nsy8K5Tr6SPDH9jhKJOHf7ChDrc1zufZTVSF7x72hwuEXBqxqk9G6cK+K2NRUtB3iELRJqjXb4JPDMBjMTl2Q==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
+  web-vitals@6.2.3:
+    resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
+
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
@@ -3587,11 +3622,12 @@ packages:
 
 snapshots:
 
-  '@a-novel-kit/nodelib-browser@2.2.1(zod@4.6.7)':
+  '@a-novel-kit/nodelib-browser@2.3.0(@sentry/browser@11.9.0)(zod@4.6.7)':
     dependencies:
+      '@sentry/browser': 11.9.0
       zod: 4.6.7
 
-  '@a-novel-kit/nodelib-config@2.2.1(67b3d5a751c7804815587f9c3156f551)':
+  '@a-novel-kit/nodelib-config@2.3.0(67b3d5a751c7804815587f9c3156f551)':
     dependencies:
       '@eslint/compat': 2.1.1(eslint@10.13.0(jiti@2.7.0))
       '@eslint/config-helpers': 0.7.0
@@ -3623,12 +3659,12 @@ snapshots:
       vitest: 5.0.5(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/coverage-v8@5.0.5)(@vitest/ui@5.0.5)(jsdom@30.1.3)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       yaml: 2.9.1
 
-  '@a-novel-kit/nodelib-i18n@2.2.1(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
+  '@a-novel-kit/nodelib-i18n@2.3.0(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
     dependencies:
       i18next: 26.5.10(typescript@6.0.3)
       svelte: 5.57.2(@typescript-eslint/types@8.72.0)
 
-  '@a-novel-kit/nodelib-server@2.2.1(@opentelemetry/api@1.10.0)(@opentelemetry/exporter-trace-otlp-proto@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation-undici@0.34.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/resources@3.0.0(@opentelemetry/api@1.10.0))(@opentelemetry/sdk-trace-node@2.12.0(@opentelemetry/api@1.10.0))':
+  '@a-novel-kit/nodelib-server@2.3.0(@opentelemetry/api@1.10.0)(@opentelemetry/exporter-trace-otlp-proto@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation-undici@0.34.0(@opentelemetry/api@1.10.0))(@opentelemetry/instrumentation@0.300.0(@opentelemetry/api@1.10.0))(@opentelemetry/resources@3.0.0(@opentelemetry/api@1.10.0))(@opentelemetry/sdk-trace-node@2.12.0(@opentelemetry/api@1.10.0))':
     dependencies:
       '@opentelemetry/api': 1.10.0
       '@opentelemetry/exporter-trace-otlp-proto': 0.300.0(@opentelemetry/api@1.10.0)
@@ -3637,20 +3673,20 @@ snapshots:
       '@opentelemetry/resources': 3.0.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/sdk-trace-node': 2.12.0(@opentelemetry/api@1.10.0)
 
-  '@a-novel-kit/nodelib-test@2.2.1(@a-novel-kit/nodelib-browser@2.2.1(zod@4.6.7))(jsdom@30.1.3)(playwright@1.64.1)':
+  '@a-novel-kit/nodelib-test@2.3.0(@a-novel-kit/nodelib-browser@2.3.0(@sentry/browser@11.9.0)(zod@4.6.7))(jsdom@30.1.3)(playwright@1.64.1)':
     dependencies:
-      '@a-novel-kit/nodelib-browser': 2.2.1(zod@4.6.7)
+      '@a-novel-kit/nodelib-browser': 2.3.0(@sentry/browser@11.9.0)(zod@4.6.7)
       jsdom: 30.1.3
       playwright: 1.64.1
 
   '@a-novel-kit/ui-images@0.1.0': {}
 
-  '@a-novel-kit/uikit-fonts@0.11.0': {}
+  '@a-novel-kit/uikit-fonts@0.12.1': {}
 
-  '@a-novel-kit/uikit-storybook@0.11.0(@storybook/addon-a11y@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-docs@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-svelte-csf@5.1.5(@storybook/svelte@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(@storybook/addon-vitest@10.6.3(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5)(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(vitest@5.0.5))(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
+  '@a-novel-kit/uikit-storybook@0.12.1(@storybook/addon-a11y@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-docs@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1)))(@storybook/addon-svelte-csf@5.1.5(@storybook/svelte@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(@storybook/addon-vitest@10.6.3(@vitest/browser-playwright@5.0.5)(@vitest/browser@5.0.5)(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(vitest@5.0.5))(react@19.3.1)(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
     dependencies:
-      '@a-novel-kit/uikit-fonts': 0.11.0
-      '@a-novel-kit/uikit-tokens': 0.11.0
+      '@a-novel-kit/uikit-fonts': 0.12.1
+      '@a-novel-kit/uikit-tokens': 0.12.1
       '@storybook/addon-a11y': 10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))
       '@storybook/addon-docs': 10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))
       '@storybook/addon-svelte-csf': 5.1.5(@storybook/svelte@10.6.3(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(storybook@10.6.3(prettier@3.9.10)(react@19.3.1))(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
@@ -3663,20 +3699,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@a-novel-kit/uikit-tokens@0.11.0': {}
+  '@a-novel-kit/uikit-tokens@0.12.1': {}
 
-  '@a-novel-kit/uikit@0.11.0(@a-novel-kit/nodelib-i18n@2.2.1(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
+  '@a-novel-kit/uikit@0.12.1(@a-novel-kit/nodelib-i18n@2.3.0(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0)))(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))':
     dependencies:
-      '@a-novel-kit/nodelib-i18n': 2.2.1(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
-      '@a-novel-kit/uikit-fonts': 0.11.0
-      '@a-novel-kit/uikit-tokens': 0.11.0
+      '@a-novel-kit/nodelib-i18n': 2.3.0(i18next@26.5.10(typescript@6.0.3))(svelte@5.57.2(@typescript-eslint/types@8.72.0))
+      '@a-novel-kit/uikit-fonts': 0.12.1
+      '@a-novel-kit/uikit-tokens': 0.12.1
       '@lucide/svelte': 1.61.0(svelte@5.57.2(@typescript-eslint/types@8.72.0))
       i18next: 26.5.10(typescript@6.0.3)
       svelte: 5.57.2(@typescript-eslint/types@8.72.0)
 
-  '@a-novel/service-authentication-rest@2.18.4(@a-novel-kit/nodelib-browser@2.2.1(zod@4.6.7))(zod@4.6.7)':
+  '@a-novel/service-authentication-rest@2.18.4(@a-novel-kit/nodelib-browser@2.3.0(@sentry/browser@11.9.0)(zod@4.6.7))(zod@4.6.7)':
     dependencies:
-      '@a-novel-kit/nodelib-browser': 2.2.1(zod@4.6.7)
+      '@a-novel-kit/nodelib-browser': 2.3.0(@sentry/browser@11.9.0)(zod@4.6.7)
       zod: 4.6.7
 
   '@adobe/css-tools@4.5.0': {}
@@ -4432,6 +4468,41 @@ snapshots:
   '@rolldown/pluginutils@1.0.1': {}
 
   '@sec-ant/readable-stream@0.4.1': {}
+
+  '@sentry/browser-utils@11.9.0':
+    dependencies:
+      '@sentry/conventions': 0.27.0
+      '@sentry/core': 11.9.0
+      web-vitals: 6.2.3
+
+  '@sentry/browser@11.9.0':
+    dependencies:
+      '@sentry/browser-utils': 11.9.0
+      '@sentry/conventions': 0.27.0
+      '@sentry/core': 11.9.0
+      '@sentry/feedback': 11.9.0
+      '@sentry/replay': 11.9.0
+      '@sentry/replay-canvas': 11.9.0
+
+  '@sentry/conventions@0.27.0': {}
+
+  '@sentry/core@11.9.0':
+    dependencies:
+      '@sentry/conventions': 0.27.0
+
+  '@sentry/feedback@11.9.0':
+    dependencies:
+      '@sentry/core': 11.9.0
+
+  '@sentry/replay-canvas@11.9.0':
+    dependencies:
+      '@sentry/core': 11.9.0
+      '@sentry/replay': 11.9.0
+
+  '@sentry/replay@11.9.0':
+    dependencies:
+      '@sentry/browser-utils': 11.9.0
+      '@sentry/core': 11.9.0
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
@@ -6650,6 +6721,8 @@ snapshots:
   w3c-xmlserializer@6.0.0:
     dependencies:
       xml-name-validator: 5.0.0
+
+  web-vitals@6.2.3: {}
 
   webidl-conversions@8.0.1: {}
 

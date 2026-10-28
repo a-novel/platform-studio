@@ -94,6 +94,9 @@ export default interface Resources {
           "submitting": "Changing password…",
           "title": "Password"
         },
+        "privacy": {
+          "title": "Privacy"
+        },
         "title": "Manage your account"
       },
       "authentication": {
@@ -204,6 +207,11 @@ export default interface Resources {
       "sessionUnavailable": "Account details are unavailable.",
       "signIn": "Log in",
       "skipToContent": "Skip to content"
+    },
+    "telemetryConsent": {
+      "change": "Change this anytime from the account management menu.",
+      "message": "We sometimes collect error logs and performance metrics to improve our products. No personal information is recorded or shared.",
+      "title": "Metrics and log collection"
     }
   }
 }
