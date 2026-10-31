@@ -88,11 +88,22 @@ export type AccountClaimsState =
   | { status: "loading" }
   | { status: "error"; feedback: AuthenticationFeedback };
 
+/** The account's email and the change awaiting confirmation, as Authentication reports them. */
+export interface AccountCredentialsSummary {
+  email: string;
+  pendingEmail?: { email: string; expiresAt: string };
+}
+
+/** Email availability, independent of the session recap and the account forms. */
+export type AccountCredentialsState = ({ status: "ready" } & AccountCredentialsSummary) | { status: "unavailable" };
+
 /** Account recap and independently controlled actions. */
 export interface AccountScreenModel {
   claims: AccountClaimsState;
+  credentials: AccountCredentialsState;
   passwordState: FormState<AccountPasswordField>;
-  emailState: Exclude<FormState<AccountEmailField>, { status: "success" }> | PendingEmailState;
+  /** A sent link carries no address: the pending email comes from `credentials` once the page reloads. */
+  emailState: Exclude<FormState<AccountEmailField>, { status: "success" }> | { status: "pending-email" };
   logoutState: "ready" | "submitting";
 }
 

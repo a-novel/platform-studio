@@ -137,7 +137,8 @@ test("account forms change the password and confirm an email update", async ({ p
   const email = `updated-${account.email}`;
   await page.getByLabel(/^New email address/).fill(email);
   await page.getByRole("button", { name: "Send link", exact: true }).click();
-  await expect(page.getByText("Confirmation pending", { exact: true })).toBeVisible();
+  await expect(page.getByText("Check your inbox", { exact: true })).toBeVisible();
+  await expect(page.getByText(email, { exact: true })).toBeVisible();
 
   await page.goto(await emailLink(email, "/ext/email/validate"));
   await expect(page).toHaveURL("/ext/email/validate?result=success");

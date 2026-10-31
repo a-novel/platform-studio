@@ -20,6 +20,7 @@ const readyAccount: AccountScreenModel = {
     accessExpiresAt: "18 Aug 2026, 19:30",
     refreshExpiresAt: "25 Aug 2026, 18:30",
   },
+  credentials: { status: "ready", email: "creator@example.test" },
   passwordState: { status: "ready" },
   emailState: { status: "ready" },
   logoutState: "ready",
@@ -175,7 +176,7 @@ describe("account screen", () => {
         ...readyAccount,
         ...(setting === "password"
           ? { passwordState: { status: "success", feedback: "passwordChanged" } }
-          : { emailState: { status: "pending-email", targetHint: "creator@example.test" } }),
+          : { emailState: { status: "pending-email" } }),
       };
       render(
         AccountScreen,

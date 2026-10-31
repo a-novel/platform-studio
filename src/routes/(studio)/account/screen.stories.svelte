@@ -20,9 +20,18 @@
       accessExpiresAt: "2026-08-18T19:30:00Z",
       refreshExpiresAt: "2026-08-25T18:30:00Z",
     },
+    credentials: { status: "ready", email: "maya.chen@example.test" },
     passwordState: { status: "ready" },
     emailState: { status: "ready" },
     logoutState: "ready",
+  } satisfies AccountScreenModel;
+
+  const pendingChange = {
+    ...ready,
+    credentials: {
+      ...ready.credentials,
+      pendingEmail: { email: "maya.writes@example.test", expiresAt: "2026-08-18T20:30:00Z" },
+    },
   } satisfies AccountScreenModel;
 
   const { Story } = defineMeta({
@@ -77,6 +86,15 @@
     await expect(email.top).toBeGreaterThan(password.bottom);
     await expect(session.getBoundingClientRect().top).toBeGreaterThan(email.bottom);
     await expect(within(session).getByRole("button", { name: t("authUi.account.logout.submit") })).toBeVisible();
+  }
+
+  async function verifyPendingEmail({ canvasElement, globals }: PlayContext) {
+    const t = createStorybookTranslator(globals);
+    const email = within(within(canvasElement).getByRole("region", { name: t("authUi.account.email.title") }));
+    const terms = email.getAllByRole("term").map((term) => term.textContent);
+    await expect(terms).toEqual([t("authUi.account.email.current"), t("authUi.account.email.pending")]);
+    await expect(email.getByText(ready.credentials.email)).toBeVisible();
+    await expect(email.getByText(pendingChange.credentials.pendingEmail.email)).toBeVisible();
   }
 
   async function verifyPasswordValidation({ canvasElement }: { canvasElement: HTMLElement }) {
@@ -134,6 +152,30 @@
   <StoryHarness initialModel={ready} />
 </Story>
 
+<Story
+  name="Email change pending — desktop"
+  exportName="EmailChangePendingDesktop"
+  globals={reviewStoryGlobals.desktop}
+  asChild
+  play={verifyPendingEmail}
+>
+  <StoryHarness initialModel={pendingChange} />
+</Story>
+
+<Story
+  name="Email change pending — mobile"
+  exportName="EmailChangePendingMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyPendingEmail}
+>
+  <StoryHarness initialModel={pendingChange} />
+</Story>
+
+<Story name="Email unavailable" asChild>
+  <StoryHarness initialModel={{ ...ready, credentials: { status: "unavailable" } }} />
+</Story>
+
 <Story name="Collecting metrics" asChild>
   <StoryHarness initialModel={ready} telemetryChoice="accepted" />
 </Story>
@@ -143,7 +185,13 @@
 </Story>
 
 <Story name="Load error" asChild play={verifyFormsAvailable}>
-  <StoryHarness initialModel={{ ...ready, claims: { status: "error", feedback: "sessionUnavailable" } }} />
+  <StoryHarness
+    initialModel={{
+      ...ready,
+      claims: { status: "error", feedback: "sessionUnavailable" },
+      credentials: { status: "unavailable" },
+    }}
+  />
 </Story>
 
 <Story name="Password validation error" asChild play={verifyPasswordValidation}>
@@ -222,12 +270,7 @@
 </Story>
 
 <Story name="Email confirmation pending" asChild>
-  <StoryHarness
-    initialModel={{
-      ...ready,
-      emailState: { status: "pending-email", targetHint: "new.address@example.test" },
-    }}
-  />
+  <StoryHarness initialModel={{ ...pendingChange, emailState: { status: "pending-email" } }} />
 </Story>
 
 <Story name="Logout submitting" asChild>
@@ -243,6 +286,14 @@
         roles: ["auth:user", "auth:admin"],
         accessExpiresAt: "2026-09-18T19:30:00Z",
         refreshExpiresAt: "2026-09-25T18:30:00Z",
+      },
+      credentials: {
+        status: "ready",
+        email: "maya.chen.writing-under-a-long-pen-name@studio-correspondence.example.test",
+        pendingEmail: {
+          email: "maya.chen.after-the-move@a-much-longer-regional-provider.example.test",
+          expiresAt: "2026-09-18T20:30:00Z",
+        },
       },
       emailState: {
         status: "service-error",
