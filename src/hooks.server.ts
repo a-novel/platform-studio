@@ -2,12 +2,13 @@ import { resolveLocale } from "#lib/i18n/config.js";
 import { createStudioI18n } from "#lib/i18n/instance.js";
 import { secureShortCodeResponse } from "#lib/server/auth/short-code-response.js";
 
+import { SpanStatusCode } from "@opentelemetry/api";
 import type { RequestEvent } from "@sveltejs/kit";
 import type { Handle } from "@sveltejs/kit/hooks";
 
 /**
- * Gives each request its own locale and translations, hands its trace to the page, and keeps
- * email-link pages out of caches and referrers.
+ * Gives each request its own locale and translations, hands its trace to the page, keeps email-link
+ * pages out of caches and referrers, and traces the response.
  */
 export const handle: Handle = async ({ event, resolve }) => {
   const locale = resolveLocale(event.request.headers.get("accept-language"));
@@ -20,6 +21,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     transformPageChunk: ({ html }) => html.replace("%lang%", locale).replace("%trace%", trace),
   });
 
+  traceResponse(event, response);
   return event.url.pathname.startsWith("/ext/") ? secureShortCodeResponse(response) : response;
 };
 
@@ -29,4 +31,14 @@ function pageTrace({ tracing }: RequestEvent): string {
 
   const { traceId, spanId, traceFlags } = tracing.root.spanContext();
   return `${traceId}-${spanId}-${traceFlags & 1}`;
+}
+
+// Names the request's span after its route, as `GET /account`, and records the response's status, so
+// span metrics split the traffic by page and tell a refusal from a fault. A request that matched no
+// route keeps its method alone, so no path names a span.
+function traceResponse({ request, route, tracing }: RequestEvent, { status }: Response): void {
+  tracing.root.updateName(route.id ? `${request.method} ${route.id}` : request.method);
+  tracing.root.setAttribute("http.response.status_code", status);
+
+  if (status >= 500) tracing.root.setStatus({ code: SpanStatusCode.ERROR });
 }
