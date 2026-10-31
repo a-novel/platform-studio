@@ -268,6 +268,23 @@ describe("AuthenticationSession", () => {
     expect(cookies.values.get("studio_access_token")).toBe("access");
   });
 
+  it.each([
+    ["an unchanged", "maya.chen@example.com", 1, []],
+    ["a changed", "maya.writes@example.com", 2, ["maya.writes"]],
+  ])("checks the session again only after %s identity handle", async (_, email, checks, writes) => {
+    cookies.values.set("studio_access_token", "access");
+    cookies.values.set("studio_identity_handle", "maya.chen");
+    client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await session.current();
+    session.rememberIdentity(email);
+    await session.current();
+
+    expect(client.claims).toHaveBeenCalledTimes(checks);
+    expect(cookies.writes.map(({ value }) => value)).toEqual(writes);
+  });
+
   it("revokes the refresh token before removing every cookie on logout", async () => {
     cookies.values.set("studio_access_token", "access");
     cookies.values.set("studio_refresh_token", "refresh");

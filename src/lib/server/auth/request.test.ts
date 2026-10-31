@@ -191,11 +191,16 @@ describe("Studio session at the request boundary", () => {
 
   it("checks the session once for the shell and page loads of one request", async () => {
     const { event } = request("/account", tokenCookies);
-    fetchService.mockImplementation(async () => Response.json(identity));
+    fetchService.mockImplementation(async (url) =>
+      Response.json(String(url).endsWith("/credentials/self") ? credentials : identity)
+    );
 
     await Promise.all([loadStudioShell(event), loadAccount(event)]);
 
-    expect(fetchService).toHaveBeenCalledOnce();
+    expect(fetchService.mock.calls.map(([url]) => url)).toEqual([
+      "https://authentication.test/v2/session",
+      "https://authentication.test/v2/credentials/self",
+    ]);
   });
 
   it("uses a localized account label when the identity cookie contains a full email", async () => {
@@ -319,7 +324,7 @@ describe("Studio session at the request boundary", () => {
 
   it("returns an account recap without serializing access or refresh credentials", async () => {
     const { event } = request("/account", tokenCookies);
-    fetchService.mockResolvedValueOnce(Response.json(identity));
+    fetchService.mockResolvedValueOnce(Response.json(identity)).mockResolvedValueOnce(Response.json(credentials));
     await expect(loadAccount(event)).resolves.toEqual({
       authorization: "allowed",
       accountModel: {
@@ -330,6 +335,7 @@ describe("Studio session at the request boundary", () => {
           accessExpiresAt: "Non renseignée",
           refreshExpiresAt: "Non renseignée",
         },
+        credentials: { status: "ready", email: credentials.email },
         passwordState: { status: "ready" },
         emailState: { status: "ready" },
         logoutState: "ready",
@@ -365,12 +371,18 @@ describe("Studio session at the request boundary", () => {
 
   it("reuses an account action's session check for the loads that render its result", async () => {
     const { event } = request("/account?/password", tokenCookies, { currentPassword: "old-password", ...password });
-    fetchService.mockResolvedValueOnce(Response.json(identity)).mockResolvedValueOnce(Response.json(credentials));
+    fetchService.mockImplementation(async (url) =>
+      Response.json(String(url).endsWith("/v2/session") ? identity : credentials)
+    );
 
     await accountActions.password(event);
     await Promise.all([loadStudioShell(event), loadAccount(event)]);
 
-    expect(fetchService).toHaveBeenCalledTimes(2);
+    expect(fetchService.mock.calls.map(([url]) => url)).toEqual([
+      "https://authentication.test/v2/session",
+      "https://authentication.test/v2/credentials/password",
+      "https://authentication.test/v2/credentials/self",
+    ]);
   });
 
   it.each(["password", "email"] as const)("redirects anonymous %s changes before any mutation", async (action) => {

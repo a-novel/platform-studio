@@ -68,15 +68,19 @@ export default interface Resources {
         },
         "description": "Your personal information and security settings.",
         "email": {
+          "current": "Current email",
           "description": "A confirmation link will be sent to your new email.",
           "hint": "Your current email remains active until you confirm.",
           "label": "New email address",
-          "pendingDescription": "If no other account uses this address, you’ll receive a confirmation link at",
-          "pendingTitle": "Confirmation pending",
+          "pending": "Awaiting confirmation",
+          "pendingDescription": "If no other account uses the new address, you’ll receive a confirmation link there.",
+          "pendingExpiry": "Link expires {{date}}",
+          "pendingTitle": "Check your inbox",
           "resend": "Send another link",
           "submit": "Send link",
           "submitting": "Sending link…",
-          "title": "Email"
+          "title": "Email",
+          "unavailable": "Your current email can’t be shown right now."
         },
         "loadErrorTitle": "Session details unavailable",
         "loadingTitle": "Loading session",

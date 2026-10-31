@@ -14,6 +14,7 @@ describe("fixed visual review controllers", () => {
   it("pins account form states while retaining editable native inputs", async () => {
     const initialModel: AccountScreenModel = {
       claims: { status: "loading" },
+      credentials: { status: "unavailable" },
       passwordState: { status: "ready" },
       emailState: { status: "ready" },
       logoutState: "ready",
@@ -30,6 +31,7 @@ describe("fixed visual review controllers", () => {
   it("changes the telemetry answer from the privacy section", async () => {
     const initialModel: AccountScreenModel = {
       claims: { status: "loading" },
+      credentials: { status: "unavailable" },
       passwordState: { status: "ready" },
       emailState: { status: "ready" },
       logoutState: "ready",

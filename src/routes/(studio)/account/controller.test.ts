@@ -15,7 +15,7 @@ const actions = {
 
 describe("createAccountScreenController", () => {
   it("validates independent account forms without changing other actions", () => {
-    const model = createAccountModel({ status: "error", feedback: "sessionUnavailable" });
+    const model = createAccountModel({ status: "error", feedback: "sessionUnavailable" }, { status: "unavailable" });
     const controller = createAccountScreenController({ model, actions });
     const invalid = new FormData();
     const accountForms = [
@@ -46,6 +46,7 @@ describe("createAccountScreenController", () => {
           accessExpiresAt: "later",
           refreshExpiresAt: "later",
         },
+        credentials: { status: "ready", email: "creator@example.test" },
         passwordState: { status: "ready" },
         emailState: { status: "ready" },
         logoutState: "ready",
@@ -64,7 +65,10 @@ describe("createAccountScreenController", () => {
     });
 
     const nextActions = { ...actions, logout: "/logout" };
-    const unavailable = createAccountModel({ status: "error", feedback: "sessionUnavailable" });
+    const unavailable = createAccountModel(
+      { status: "error", feedback: "sessionUnavailable" },
+      { status: "unavailable" }
+    );
     controller.synchronize(unavailable, nextActions);
     expect(controller.state).toEqual({
       model: unavailable,
@@ -83,7 +87,7 @@ describe("createAccountScreenController", () => {
 
   it("allows native account submissions when only the recap failed", () => {
     const controller = createAccountScreenController({
-      model: createAccountModel({ status: "error", feedback: "sessionUnavailable" }),
+      model: createAccountModel({ status: "error", feedback: "sessionUnavailable" }, { status: "unavailable" }),
       actions,
     });
     for (const submit of [controller.submitPassword, controller.submitEmail, controller.submitLogout]) {
@@ -94,14 +98,14 @@ describe("createAccountScreenController", () => {
 
   it.each(["completed", "unavailable"] as const)("allows another account change after %s actions", (outcome) => {
     const model: AccountScreenModel = {
-      ...createAccountModel({ status: "error", feedback: "sessionUnavailable" }),
+      ...createAccountModel({ status: "error", feedback: "sessionUnavailable" }, { status: "unavailable" }),
       passwordState:
         outcome === "completed"
           ? { status: "success", feedback: "passwordChanged" }
           : { status: "service-error", feedback: "serviceUnavailable" },
       emailState:
         outcome === "completed"
-          ? { status: "pending-email", targetHint: "creator@example.test" }
+          ? { status: "pending-email" }
           : { status: "service-error", feedback: "serviceUnavailable" },
     };
     const controller = createAccountScreenController({ model, actions });

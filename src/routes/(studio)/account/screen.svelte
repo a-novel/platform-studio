@@ -161,6 +161,27 @@
               <p>{t("authUi.account.email.description")}</p>
             </header>
 
+            {#if model.credentials.status === "ready"}
+              <dl class="details">
+                <div>
+                  <dt>{t("authUi.account.email.current")}</dt>
+                  <dd>{model.credentials.email}</dd>
+                </div>
+                {#if model.credentials.pendingEmail}
+                  {@const pending = model.credentials.pendingEmail}
+                  <div>
+                    <dt>{t("authUi.account.email.pending")}</dt>
+                    <dd>{pending.email}</dd>
+                    <dd class="pending-expiry">
+                      {t("authUi.account.email.pendingExpiry", { date: pending.expiresAt })}
+                    </dd>
+                  </div>
+                {/if}
+              </dl>
+            {:else}
+              <p class="feedback-message">{t("authUi.account.email.unavailable")}</p>
+            {/if}
+
             <form method="POST" action={actions.email} aria-busy={emailSubmitting} novalidate onsubmit={submitEmail}>
               <Field
                 controlId={newEmailId}
@@ -188,7 +209,6 @@
                   {:else if model.emailState.status === "pending-email"}
                     <Alert tone="success" title={t("authUi.account.email.pendingTitle")}>
                       {t("authUi.account.email.pendingDescription")}
-                      <strong class="pending-target">{model.emailState.targetHint}</strong>
                     </Alert>
                   {/if}
                 {/snippet}
@@ -236,7 +256,7 @@
               {translateAuthenticationFeedback(t, model.claims.feedback)}
             </Alert>
           {:else}
-            <dl class="session-details">
+            <dl class="details">
               <div class="session-identity">
                 <dt>{t("authUi.account.claims.userId")}</dt>
                 <dd class="monospace">{model.claims.userId}</dd>
@@ -356,19 +376,19 @@
     line-height: var(--line-height-normal);
   }
 
-  .session-details {
+  .details {
     display: grid;
     gap: var(--space-4);
     margin: 0;
   }
 
   @media (min-width: 35rem) {
-    .session-details {
+    .details {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  .session-details > div {
+  .details > div {
     display: grid;
     align-content: start;
     gap: var(--space-1);
@@ -379,12 +399,12 @@
     grid-column: 1 / -1;
   }
 
-  .session-details dt {
+  .details dt {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);
   }
 
-  .session-details dd {
+  .details dd {
     margin: 0;
     line-height: var(--line-height-normal);
     overflow-wrap: anywhere;
@@ -405,8 +425,9 @@
     font-family: var(--font-family-mono);
   }
 
-  .pending-target {
-    color: var(--color-text-primary);
+  .details .pending-expiry {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
   }
 
   @media (max-width: 34.999rem) {
@@ -415,11 +436,11 @@
       padding-block-start: var(--space-3);
     }
 
-    .session-details {
+    .details {
       gap: var(--space-3);
     }
 
-    .session-details > .session-expiry {
+    .details > .session-expiry {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;

@@ -55,15 +55,19 @@ authUi:
       userId: Identifiant du compte
     description: Vos informations personnelles et vos paramètres de sécurité.
     email:
+      current: Courriel actuel
       description: Un lien de confirmation sera envoyé à votre nouveau courriel.
       hint: Votre courriel actuel reste actif jusqu’à confirmation.
       label: Nouveau courriel
-      pendingDescription: Si aucun autre compte n’utilise cette adresse, vous recevrez un lien de confirmation à
-      pendingTitle: Confirmation en attente
+      pending: En attente de confirmation
+      pendingDescription: Si aucun autre compte n’utilise la nouvelle adresse, vous y recevrez un lien de confirmation.
+      pendingExpiry: Le lien expire le {{date}}
+      pendingTitle: Consultez votre messagerie
       resend: Envoyer un autre lien
       submit: Envoyer le lien
       submitting: Envoi du lien…
       title: Courriel
+      unavailable: Votre courriel actuel ne peut pas être affiché pour le moment.
     loadErrorTitle: Détails de la session indisponibles
     loadingTitle: Chargement de la session
     logout:
