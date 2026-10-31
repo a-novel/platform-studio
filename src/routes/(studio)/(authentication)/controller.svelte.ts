@@ -1,6 +1,8 @@
 import { validateEmailRequest, validateInvitationRequest, validateLogin } from "#lib/application/auth/forms.js";
 import type { AuthenticationJourney, AuthenticationPanelModel } from "#lib/application/auth/types.js";
 
+import { type PasswordInputController, createPressedController } from "@a-novel-kit/uikit";
+
 const validators = {
   login: validateLogin,
   register: validateInvitationRequest,
@@ -19,6 +21,8 @@ export interface AuthenticationPanelControllerState {
 /** Pure authentication-form state and transitions. */
 export interface AuthenticationPanelController {
   readonly state: AuthenticationPanelControllerState;
+  /** Shows or hides the password; every synchronization masks it again. */
+  readonly passwordVisibility: PasswordInputController;
   /** Reconciles a completed route load or action with the rendered form. */
   synchronize(model: AuthenticationPanelModel, action: string): void;
   /** Validates submitted values, exposes field issues in state, and allows valid native submission. */
@@ -39,12 +43,15 @@ export function createAuthenticationPanelController({
 }: AuthenticationPanelControllerOptions): AuthenticationPanelController {
   let model = $state(initialModel);
   let action = $state(initialAction);
+  const passwordVisibility = createPressedController();
 
   return {
     get state() {
       return { model, action };
     },
+    passwordVisibility,
     synchronize(nextModel, nextAction) {
+      passwordVisibility.setPressed(false);
       model = nextModel;
       action = nextAction;
     },

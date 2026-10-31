@@ -11,12 +11,16 @@
   import type { ShortCodeScreenController } from "./controller.svelte";
   import ShortCodeScreen from "./screen.svelte";
 
+  import type { PasswordInputController } from "@a-novel-kit/uikit";
+
   let { initialModel }: ShortCodeScreenStoryProps = $props();
 
+  const masked: PasswordInputController = { state: { pressed: false }, setPressed: () => {}, toggle: () => {} };
   const controller: ShortCodeScreenController = {
     get state() {
       return { model: initialModel, action: "#complete", restartHref: "#restart", continueHref: "#continue" };
     },
+    passwordVisibility: { newPassword: masked, confirmPassword: masked },
     synchronize: () => {},
     submit: () => false,
   };

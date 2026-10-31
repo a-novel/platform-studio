@@ -25,6 +25,7 @@
     FormActions,
     Input,
     PageHeader,
+    PasswordInput,
     Stack,
     Switch,
     type SwitchController,
@@ -95,10 +96,10 @@
                 required
               >
                 {#snippet children(control)}
-                  <Input
+                  <PasswordInput
                     {...control}
+                    controller={controller.passwordVisibility.currentPassword}
                     name="currentPassword"
-                    type="password"
                     autocomplete="current-password"
                     readonly={passwordSubmitting}
                   />
@@ -112,10 +113,10 @@
                 required
               >
                 {#snippet children(control)}
-                  <Input
+                  <PasswordInput
                     {...control}
+                    controller={controller.passwordVisibility.newPassword}
                     name="password"
-                    type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
                   />
@@ -128,10 +129,10 @@
                 required
               >
                 {#snippet children(control)}
-                  <Input
+                  <PasswordInput
                     {...control}
+                    controller={controller.passwordVisibility.confirmPassword}
                     name="confirmPassword"
-                    type="password"
                     autocomplete="new-password"
                     readonly={passwordSubmitting}
                   />

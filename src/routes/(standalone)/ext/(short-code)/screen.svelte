@@ -15,7 +15,7 @@
   import { submitThrough } from "#lib/ui/form-submission.js";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Button, Field, FormActions, Input, Link, StatusState } from "@a-novel-kit/uikit";
+  import { Button, Field, FormActions, Link, PasswordInput, StatusState } from "@a-novel-kit/uikit";
 
   let { controller }: ShortCodeScreenProps = $props();
 
@@ -114,7 +114,13 @@
           required
         >
           {#snippet children(control)}
-            <Input {...control} name="password" type="password" autocomplete="new-password" readonly={submitting} />
+            <PasswordInput
+              {...control}
+              controller={controller.passwordVisibility.newPassword}
+              name="password"
+              autocomplete="new-password"
+              readonly={submitting}
+            />
           {/snippet}
         </Field>
         <Field
@@ -124,10 +130,10 @@
           required
         >
           {#snippet children(control)}
-            <Input
+            <PasswordInput
               {...control}
+              controller={controller.passwordVisibility.confirmPassword}
               name="confirmPassword"
-              type="password"
               autocomplete="new-password"
               readonly={submitting}
             />

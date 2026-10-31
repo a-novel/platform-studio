@@ -16,7 +16,8 @@ describe("fixed visual review controllers", () => {
     render(ShortCodeStory, { initialModel }, withLocale());
     await page.getByLabelText(/^New password/).fill("long memorable test password");
     await page.getByLabelText("Confirm new password", { exact: false }).fill("long memorable test password");
-    await page.getByRole("button").click();
-    await expect.element(page.getByRole("button")).toBeEnabled();
+    const submit = page.getByRole("button", { name: "Reset password" });
+    await submit.click();
+    await expect.element(submit).toBeEnabled();
   });
 });

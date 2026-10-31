@@ -218,4 +218,20 @@ describe("account screen", () => {
     );
     for (const form of document.querySelectorAll("form")) await expectFormActionLayout(form);
   });
+
+  const passwordLabels = [/^Current password/, /^New password/, /^Confirm new password/];
+
+  it.each([0, 1, 2])("reveals only password field %i from its own toggle", async (index) => {
+    const actions = { password: "?/password", email: "?/email", logout: "?/logout" };
+    render(
+      AccountScreen,
+      { controller: createAccountScreenController({ model: readyAccount, actions }) },
+      withLocale()
+    );
+    await page.getByRole("button", { name: "Show password" }).nth(index).click();
+
+    for (const [field, label] of passwordLabels.entries()) {
+      await expect.element(page.getByLabelText(label)).toHaveAttribute("type", field === index ? "text" : "password");
+    }
+  });
 });

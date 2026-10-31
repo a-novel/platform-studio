@@ -21,6 +21,7 @@
   import { untrack } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
+  import type { PasswordInputController } from "@a-novel-kit/uikit";
 
   let { initialModel, telemetryChoice }: AccountScreenStoryProps = $props();
   const i18n = getI18nContext();
@@ -57,10 +58,12 @@
     logout: "/storybook/account/logout",
   };
   const model = $derived(localizeClaimExpiries(structuredClone(initialModel)));
+  const masked: PasswordInputController = { state: { pressed: false }, setPressed: () => {}, toggle: () => {} };
   const controller: AccountScreenController = {
     get state() {
       return { model, actions };
     },
+    passwordVisibility: { currentPassword: masked, newPassword: masked, confirmPassword: masked },
     synchronize: () => {},
     submitPassword: () => false,
     submitEmail: () => false,

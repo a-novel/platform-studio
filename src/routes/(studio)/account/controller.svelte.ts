@@ -1,5 +1,7 @@
 import { validateEmailUpdate, validatePasswordChange } from "#lib/application/auth/forms.js";
-import type { AccountFormActions, AccountScreenModel } from "#lib/application/auth/types.js";
+import type { AccountFormActions, AccountPasswordField, AccountScreenModel } from "#lib/application/auth/types.js";
+
+import { type PasswordInputController, createPressedController } from "@a-novel-kit/uikit";
 
 /** State rendered by the account-management component. */
 export interface AccountScreenControllerState {
@@ -10,6 +12,8 @@ export interface AccountScreenControllerState {
 /** Pure account-management state and form transitions. */
 export interface AccountScreenController {
   readonly state: AccountScreenControllerState;
+  /** Shows or hides each password field's value. */
+  readonly passwordVisibility: Record<AccountPasswordField, PasswordInputController>;
   /** Reconciles a completed route load or action with the rendered account state. */
   synchronize(model: AccountScreenModel, actions: AccountFormActions): void;
   /** Validates password fields into state and reports whether native submission may continue. */
@@ -43,6 +47,11 @@ export function createAccountScreenController({
   return {
     get state() {
       return { model, actions };
+    },
+    passwordVisibility: {
+      currentPassword: createPressedController(),
+      newPassword: createPressedController(),
+      confirmPassword: createPressedController(),
     },
     synchronize(nextModel, nextActions) {
       model = nextModel;
