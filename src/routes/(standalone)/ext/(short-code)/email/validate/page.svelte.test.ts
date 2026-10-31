@@ -59,7 +59,7 @@ describe("automatic email validation", () => {
     const heading = page.getByRole("heading", { level: 1 });
     await expect.element(heading).toBeVisible();
     expect(page.getByRole("heading").elements()).toHaveLength(1);
-    expect(document.title).toBe(`${title} — Agora Studio`);
+    expect(document.title).toBe(`${title} | Agora Studio`);
   });
 
   it("keeps a failed server action visible without restarting it on mount", async () => {
