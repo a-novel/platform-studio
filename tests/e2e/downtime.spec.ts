@@ -48,7 +48,7 @@ test.describe("maintenance in progress", () => {
       await test.step(route, async () => {
         const response = await page.goto(route);
         expect(response?.status()).toBe(503);
-        await expect(page).toHaveTitle("Maintenance in progress — Agora Studio");
+        await expect(page).toHaveTitle("Maintenance in progress | Agora Studio");
         await expect(page.getByRole("heading", { level: 1, name: "Temporarily unavailable" })).toBeVisible();
       });
     }
