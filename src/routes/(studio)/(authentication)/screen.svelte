@@ -14,7 +14,7 @@
   import { submitThrough } from "#lib/ui/form-submission.js";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Alert, Button, Field, FormActions, InlineMessage, Input } from "@a-novel-kit/uikit";
+  import { Alert, Button, Field, FormActions, InlineMessage, Input, PasswordInput } from "@a-novel-kit/uikit";
 
   let { controller }: AuthenticationPanelProps = $props();
 
@@ -66,7 +66,13 @@
         required
       >
         {#snippet children(control)}
-          <Input {...control} name="password" type="password" autocomplete="current-password" readonly={submitting} />
+          <PasswordInput
+            {...control}
+            controller={controller.passwordVisibility}
+            name="password"
+            autocomplete="current-password"
+            readonly={submitting}
+          />
         {/snippet}
       </Field>
     {/if}

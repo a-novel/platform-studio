@@ -30,13 +30,15 @@ describe("secure-link screen", () => {
     const form = document.querySelector("form");
     if (!form) throw new Error("Expected password form");
     expect(form.noValidate).toBe(true);
+    // The two show-password toggles are buttons too.
+    const submit = page.getByRole("button", { name: /account|compte/ });
     const minimum = Number(PasswordSchema.minLength);
     const password = "x".repeat(minimum - 1);
     await page.getByLabelText(locale === "fr" ? /^Nouveau mot de passe/ : /^New password/).fill(password);
     await page
       .getByLabelText(locale === "fr" ? /Confirmez le nouveau mot de passe/ : /Confirm new password/)
       .fill("different-password");
-    await page.getByRole("button").click();
+    await submit.click();
     const message =
       locale === "fr" ? `Utilisez au moins ${minimum} caractères.` : `Use at least ${minimum} characters.`;
     await expect.element(page.getByText(message)).toBeVisible();
@@ -50,8 +52,8 @@ describe("secure-link screen", () => {
     await page
       .getByLabelText(locale === "fr" ? /Confirmez le nouveau mot de passe/ : /Confirm new password/)
       .fill("valid-password");
-    await page.getByRole("button").click();
-    await expect.element(page.getByRole("button")).toBeDisabled();
+    await submit.click();
+    await expect.element(submit).toBeDisabled();
     expect(controller.state.model.state).toEqual({ status: "submitting" });
     expect(Object.fromEntries(new FormData(form))).toEqual({
       password: "valid-password",

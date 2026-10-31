@@ -1,6 +1,8 @@
 import { validateNewPassword } from "#lib/application/auth/forms.js";
 import type { ShortCodeActionData, ShortCodePageData } from "#lib/application/auth/short-code-route.js";
-import type { ShortCodeScreenModel } from "#lib/application/auth/types.js";
+import type { ShortCodePasswordField, ShortCodeScreenModel } from "#lib/application/auth/types.js";
+
+import { type PasswordInputController, createPressedController } from "@a-novel-kit/uikit";
 
 /** A link in one of these statuses is completing, completed or unusable, and ignores another submission. */
 const lockedStatuses = new Set(["submitting", "success", "missing", "invalid"]);
@@ -16,6 +18,8 @@ export interface ShortCodeScreenControllerState {
 /** Pure secure-link state and form transitions. */
 export interface ShortCodeScreenController {
   readonly state: ShortCodeScreenControllerState;
+  /** Shows or hides each password field's value. */
+  readonly passwordVisibility: Record<ShortCodePasswordField, PasswordInputController>;
   /** Reconciles a completed route load or action with the rendered secure-link state. */
   synchronize(state: ShortCodeScreenControllerState): void;
   /** Validates password forms into state before submission. Email confirmation needs no form values. */
@@ -39,6 +43,7 @@ export function createShortCodeScreenController({
     get state() {
       return state;
     },
+    passwordVisibility: { newPassword: createPressedController(), confirmPassword: createPressedController() },
     synchronize(nextState) {
       state = nextState;
     },
