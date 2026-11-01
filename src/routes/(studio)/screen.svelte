@@ -20,6 +20,7 @@
   import studioIcon96 from "@a-novel-kit/ui-images/files/icon/96x96/studio-icon.png";
   import {
     Alert,
+    Avatar,
     Button,
     Dialog,
     DowntimeBanner,
@@ -27,6 +28,7 @@
     InlineMessage,
     NavList,
     SkipLink,
+    VisuallyHidden,
   } from "@a-novel-kit/uikit";
 
   import {
@@ -72,6 +74,7 @@
         ]
       : []
   );
+  const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
   /** The account widget's notice while the session is loading, unavailable or stopped for maintenance. */
   const sessionNotice = $derived.by(() => {
     if (model.session.status === "loading") return { tone: "loading", message: t("shell.sessionLoading") } as const;
@@ -155,8 +158,9 @@
         <!-- A title crowds the narrow rail, so the alert has none. -->
         <Alert tone={sessionNotice.tone}>{sessionNotice.message}</Alert>
       {/if}
-    {:else if model.session.status === "authenticated"}
+    {:else if authenticatedSession}
       {#if accountHref}
+        {@const name = authenticatedSession.displayName}
         <!-- The account platform serves the account page, which opens beside Studio. -->
         <Button
           class="shell-account-button {compact ? 'compact-control' : ''}"
@@ -164,19 +168,25 @@
           tone="neutral"
           size="sm"
           square={compact}
-          aria-label={t("shell.manageAccountInNewTab")}
-          title={compact ? t("shell.manageAccount") : undefined}
+          title={name ? t("shell.manageAccountFor", { name }) : compact ? t("shell.manageAccount") : undefined}
           href={accountHref}
           target="_blank"
           rel="noopener noreferrer"
         >
           <span class="account-action-icon" aria-hidden="true">
-            <CircleUserRound size="var(--icon-size-sm)" />
+            {#if name}
+              <Avatar label={name} initials={authenticatedSession.initials} size="sm" />
+            {:else}
+              <CircleUserRound size="var(--icon-size-sm)" />
+            {/if}
           </span>
-          {#if !compact}
-            <span class="account-label">{t("shell.manageAccount")}</span>
+          {#if compact}
+            <VisuallyHidden>{name ? t("shell.manageAccountFor", { name }) : t("shell.manageAccount")}</VisuallyHidden>
+          {:else}
+            <span class="account-label">{name ?? t("shell.manageAccount")}</span>
             <span class="new-tab-icon" aria-hidden="true"><ExternalLink size="var(--icon-size-sm)" /></span>
           {/if}
+          <VisuallyHidden>{t("shell.opensInNewTab")}</VisuallyHidden>
         </Button>
       {/if}
       <form class="logout-form" method="POST" action={logoutAction} onsubmit={submitLogout}>
@@ -440,6 +450,7 @@
     min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .new-tab-icon {

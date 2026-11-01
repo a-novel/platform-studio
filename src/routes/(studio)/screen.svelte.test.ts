@@ -118,11 +118,14 @@ describe("studio shell screen", () => {
     await expect.element(page.getByRole("link", { name: "Accueil" })).not.toHaveAttribute("aria-current");
   });
 
-  it("links the account page on the account platform and keeps logout visible", async () => {
-    const shell = controller({ session: { status: "authenticated" } });
+  it("names the account and opens its page on the account platform in a new tab", async () => {
+    const shell = controller({ session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" } });
     render(Screen, { controller: shell }, withLocale());
 
-    const accountLink = page.getByRole("link", { name: "Manage your account (opens in a new tab)" });
+    const accountLink = page.getByRole("link", { name: "Maya Chen (opens in a new tab)" });
+    await expect.element(accountLink).toHaveAttribute("title", "Manage account for Maya Chen");
+    // The initials avatar leads the name.
+    expect(accountLink.element().textContent).toMatch(/MC\s*Maya Chen/);
     await expect.element(accountLink).toHaveAttribute("href", "https://account.example.test/account");
     await expect.element(accountLink).toHaveAttribute("target", "_blank");
     await expect.element(accountLink).toHaveAttribute("rel", "noopener noreferrer");
@@ -136,6 +139,42 @@ describe("studio shell screen", () => {
     expect(shell.state.model.session.status).toBe("anonymous");
   });
 
+  it("names the account in the collapsed rail without visible text", async () => {
+    const session = { status: "authenticated", displayName: "Maya Chen", initials: "MC" } as const;
+    render(Screen, { controller: controller({ rail: "collapsed", session }) }, withLocale("fr"));
+
+    const accountLink = page.getByRole("link", {
+      name: "Gérer le compte de Maya Chen (s’ouvre dans un nouvel onglet)",
+    });
+    await expect.element(accountLink).toHaveAttribute("title", "Gérer le compte de Maya Chen");
+  });
+
+  it("names no one before the account's email is known", async () => {
+    render(Screen, { controller: controller({ session: { status: "authenticated" } }) }, withLocale("fr"));
+
+    const accountLink = page.getByRole("link", { name: "Gérer votre compte (s’ouvre dans un nouvel onglet)" });
+    await expect.element(accountLink.getByText("Gérer votre compte", { exact: true })).toBeVisible();
+    await expect.element(accountLink).toHaveAttribute("target", "_blank");
+  });
+
+  it("contains a long account name in the mobile drawer", async () => {
+    await page.viewport(390, 844);
+    const displayName = "Alexandrine de la Bibliothèque des Mondes Imaginaires";
+    render(
+      Screen,
+      {
+        controller: controller({ drawerOpen: true, session: { status: "authenticated", displayName, initials: "AB" } }),
+      },
+      withLocale()
+    );
+
+    const navigation = page.getByRole("dialog", { name: "Studio" });
+    await expect.element(navigation).toBeVisible();
+    const accountName = navigation.getByText(displayName).element();
+    expect(accountName.scrollWidth).toBeGreaterThan(accountName.clientWidth);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
+  });
+
   it.each(["anonymous", "authenticated"] as const)(
     "preserves %s navigation surfaces and control styles across desktop and mobile",
     async (status) => {
@@ -147,7 +186,7 @@ describe("studio shell screen", () => {
           {
             controller: controller({
               drawerOpen: width < 768,
-              session: { status },
+              session: status === "authenticated" ? { status, displayName: "Maya Chen", initials: "MC" } : { status },
             }),
           },
           withLocale()
@@ -157,7 +196,7 @@ describe("studio shell screen", () => {
         await surface.getByRole("img", { name: "Studio" }).hover();
         const controls = [surface.getByRole("link", { name: "Home" })];
         if (status === "authenticated") {
-          controls.push(surface.getByRole("link", { name: "Manage your account (opens in a new tab)" }));
+          controls.push(surface.getByRole("link", { name: "Maya Chen (opens in a new tab)" }));
           controls.push(surface.getByRole("button", { name: "Log out" }));
         } else {
           controls.push(surface.getByRole("link", { name: "Log in" }));
@@ -212,12 +251,13 @@ describe("studio shell screen", () => {
 
   const drawerLabels = [
     ["anonymous", ["Home", "Log in", "Register"]],
-    ["authenticated", ["Home", "Manage your account", "Log out"]],
+    ["authenticated", ["Home", "Maya Chen", "Log out"]],
   ] as const;
 
   it.each(drawerLabels)("aligns the mobile drawer labels of an %s visitor", async (status, labels) => {
     await page.viewport(390, 844);
-    render(Screen, { controller: controller({ drawerOpen: true, session: { status } }) }, withLocale());
+    const session = status === "authenticated" ? { status, displayName: "Maya Chen", initials: "MC" } : { status };
+    render(Screen, { controller: controller({ drawerOpen: true, session }) }, withLocale());
 
     const navigation = page.getByRole("dialog", { name: "Studio" });
     await expect.element(navigation).toBeVisible();

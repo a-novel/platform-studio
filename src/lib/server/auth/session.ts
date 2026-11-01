@@ -7,6 +7,7 @@ import {
   type TokenResponse,
   authorizationCodeExchange,
   claimsGet,
+  credentialsGetSelf,
   refreshTokenGrant,
   tokenRevoke,
 } from "@a-novel/service-authentication-rest";
@@ -15,6 +16,7 @@ import type { Cookies } from "@sveltejs/kit";
 
 const accessTokenCookie = "studio_access_token";
 const refreshTokenCookie = "studio_refresh_token";
+const identityHandleCookie = "studio_identity_handle";
 const rejectedSessionStatuses = [401, 403] as const;
 
 /** SessionCookies is the part of SvelteKit's `Cookies` API the session uses. */
@@ -27,6 +29,7 @@ export interface SessionCookies {
 /** SessionClient is the part of the authentication API the session calls. */
 export interface SessionClient {
   claims(accessToken: string): Promise<Claims>;
+  email(accessToken: string): Promise<string>;
   exchange(grant: AuthorizationCodeGrant): Promise<TokenResponse>;
   refresh(refreshToken: string): Promise<TokenResponse>;
   revoke(accessToken: string, refreshToken: string): Promise<void>;
@@ -37,7 +40,7 @@ export type ResolvedSession =
   | { status: "none" }
   | { status: "unavailable" }
   | { status: "downtime" }
-  | { status: "available"; accessToken: string; refreshToken?: string; claims: Claims };
+  | { status: "available"; accessToken: string; refreshToken?: string; identityHandle?: string; claims: Claims };
 /** AuthenticatedSession is an available session that belongs to a user account. */
 export type AuthenticatedSession = Omit<Extract<ResolvedSession, { status: "available" }>, "claims"> & {
   claims: Claims & { userID: string };
@@ -84,12 +87,13 @@ export class AuthenticationSession {
     const refreshToken = this.cookies.get(refreshTokenCookie);
 
     if (!accessToken) {
-      if (refreshToken) this.clear();
+      if (refreshToken || this.cookies.get(identityHandleCookie)) this.clear();
       return { status: "none" };
     }
 
     try {
-      return { status: "available", accessToken, refreshToken, claims: await this.client.claims(accessToken) };
+      const claims = await this.client.claims(accessToken);
+      return { status: "available", accessToken, refreshToken, identityHandle: this.readIdentityHandle(), claims };
     } catch (error) {
       if (isDowntimeError(error)) return { status: "downtime" };
       if (!isSessionRejection(error)) return { status: "unavailable" };
@@ -110,7 +114,7 @@ export class AuthenticationSession {
       const claims = await this.client.claims(accessToken);
       this.accept(accessToken);
 
-      return { status: "available", accessToken, refreshToken, claims };
+      return { status: "available", accessToken, refreshToken, identityHandle: this.readIdentityHandle(), claims };
     } catch (error) {
       if (isSessionRejection(error)) {
         this.clear();
@@ -135,11 +139,15 @@ export class AuthenticationSession {
 
   /**
    * Trades an authorization code from the account platform for a token pair in its session, and keeps
-   * the pair. A refused code throws an `OAuthError`.
+   * the pair with the handle of the account's email, which names the visitor in the shell. A refused
+   * code throws an `OAuthError`.
    */
   async signIn(grant: AuthorizationCodeGrant): Promise<void> {
     const tokens = await this.client.exchange(grant);
     this.accept(tokens.access_token, tokens.refresh_token);
+
+    // Without the email, the visitor is signed in all the same, and the shell names no one.
+    this.rememberIdentity(await this.client.email(tokens.access_token).catch(() => ""));
   }
 
   /**
@@ -168,12 +176,33 @@ export class AuthenticationSession {
     if (refreshToken) this.cookies.set(refreshTokenCookie, refreshToken, this.cookieOptions());
   }
 
+  /** Keeps the local part of an email address as the shell's display handle, or none for a blank one. */
+  private rememberIdentity(email: string): void {
+    this.check = undefined;
+
+    const separator = email.lastIndexOf("@");
+    const handle = separator > 0 ? email.slice(0, separator) : "";
+
+    if (handle.length === 0 || handle.length > 64) {
+      this.cookies.delete(identityHandleCookie, { path: "/" });
+      return;
+    }
+
+    this.cookies.set(identityHandleCookie, handle, this.cookieOptions());
+  }
+
   /** Removes every session cookie, which signs the visitor out locally. */
   private clear(): void {
     this.check = undefined;
 
     this.cookies.delete(accessTokenCookie, { path: "/" });
     this.cookies.delete(refreshTokenCookie, { path: "/" });
+    this.cookies.delete(identityHandleCookie, { path: "/" });
+  }
+
+  private readIdentityHandle(): string | undefined {
+    const handle = this.cookies.get(identityHandleCookie);
+    return handle && handle.length <= 64 && !handle.includes("@") ? handle : undefined;
   }
 
   private cookieOptions(): Parameters<Cookies["set"]>[2] {
@@ -200,6 +229,7 @@ function isSessionRejection(error: unknown): boolean {
 export function createSessionClient(api: AuthenticationApi): SessionClient {
   return {
     claims: async (accessToken) => await claimsGet(api, accessToken),
+    email: async (accessToken) => (await credentialsGetSelf(api, accessToken)).email,
     exchange: async (grant) => await authorizationCodeExchange(api, grant),
     refresh: async (refreshToken) => await refreshTokenGrant(api, refreshToken),
     revoke: async (accessToken, refreshToken) => await tokenRevoke(api, accessToken, { refreshToken }),

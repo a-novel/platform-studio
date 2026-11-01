@@ -36,12 +36,27 @@ account. A signed-in visitor manages their account on the account platform too.
 
 ### Authenticated
 
-"Manage your account" opens the account page on the account platform in a new tab, and "Log out"
-ends the session on every platform.
+The account button shows the visitor's name and initials, taken from their email when they sign in,
+and opens the account page on the account platform in a new tab. "Log out" ends the session on every
+platform.
 
 <ResponsiveStoryPair
   desktop={ShellStories.Authenticated}
   mobile={ShellStories.AuthenticatedMobile}
+  meta={ShellStories}
+/>
+
+### Account without a name
+
+Until the authentication service gives Studio the account's email, the button names no one.
+
+<Canvas of={ShellStories.AccountWithoutAName} />
+
+### Long account name
+
+<ResponsiveStoryPair
+  desktop={ShellStories.LongAccountName}
+  mobile={ShellStories.LongAccountNameMobile}
   meta={ShellStories}
 />
 

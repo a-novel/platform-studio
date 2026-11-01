@@ -4,7 +4,7 @@ export type ShellSession =
   | { status: "loading" }
   | { status: "error" }
   | { status: "downtime" }
-  | { status: "authenticated" };
+  | { status: "authenticated"; displayName?: string; initials?: string };
 
 /** Serializable state consumed by the pure Studio shell. */
 export interface StudioShellViewModel {

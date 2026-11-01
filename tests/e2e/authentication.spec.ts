@@ -52,7 +52,8 @@ async function signIn(page: Page, account: Account, isMobile: boolean, path = "/
 /** The account link that tells the visitor is signed in. */
 async function accountLink(page: Page, isMobile: boolean) {
   await openAccountControls(page, isMobile);
-  return page.getByRole("link", { name: "Manage your account (opens in a new tab)", exact: true });
+  // The account button bears the visitor's name, or "Manage your account" while Studio cannot read it.
+  return page.getByRole("link", { name: /\(opens in a new tab\)$/ });
 }
 
 /** Studio's cookies, the pending sign-in's included. The account platform's share the host. */
@@ -87,7 +88,9 @@ test("signs in from signed out through the account platform and returns to the p
   });
 
   const cookies = await studioCookies(context);
-  expect(cookies.map((cookie) => cookie.name).sort()).toEqual(["studio_access_token", "studio_refresh_token"]);
+  const names = cookies.map((cookie) => cookie.name);
+  expect(names).toEqual(expect.arrayContaining(["studio_access_token", "studio_refresh_token"]));
+  expect(names).not.toContain("studio_sign_in");
   expect(cookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
 
   // The session survives a new page load, which the checkpoint captures on the home page.

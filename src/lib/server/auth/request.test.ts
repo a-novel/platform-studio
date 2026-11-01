@@ -84,13 +84,13 @@ describe("Studio session at the request boundary", () => {
     expect(fetchService).not.toHaveBeenCalled();
   });
 
-  it("exposes only the verified session status to the browser", async () => {
-    const { event } = request("/account", tokenCookies);
+  it("exposes only a verified display identity to the browser", async () => {
+    const { event } = request("/account", { ...tokenCookies, studio_identity_handle: "maya.chen" });
     fetchService.mockResolvedValueOnce(Response.json(identity));
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: null,
       ...accountLinks,
-      session: { status: "authenticated" },
+      session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
       authorization: "allowed",
     });
     expect(fetchService).toHaveBeenCalledOnce();
@@ -182,12 +182,16 @@ describe("Studio session at the request boundary", () => {
   });
 
   it("logs out locally even while authentication is unreachable", async () => {
-    const { event, values, cookies } = request("/auth/logout?returnTo=https://attacker.invalid", tokenCookies);
+    const { event, values, cookies } = request("/auth/logout?returnTo=https://attacker.invalid", {
+      ...tokenCookies,
+      studio_identity_handle: "maya.chen",
+    });
     await expect(logoutAuthentication(event)).rejects.toMatchObject({ status: 303, location: "/" });
     expect(values.size).toBe(0);
     expect(cookies.delete.mock.calls).toEqual([
       ["studio_access_token", { path: "/" }],
       ["studio_refresh_token", { path: "/" }],
+      ["studio_identity_handle", { path: "/" }],
     ]);
     // The unreachable session check leaves nothing to revoke.
     expect(fetchService).toHaveBeenCalledOnce();
@@ -217,6 +221,20 @@ function callback(response: Record<string, string | string[]>, signIn?: string) 
   }
   return request(`/auth/callback?${parameters}`, signIn === undefined ? {} : { studio_sign_in: signIn });
 }
+
+const tokenResponse = {
+  access_token: "new-access",
+  token_type: "Bearer",
+  expires_in: 3600,
+  refresh_token: "new-refresh",
+};
+const selfCredentials = {
+  id: userId,
+  email: "maya.chen@example.com",
+  role: Role.User,
+  createdAt: "2026-11-01T00:00:00Z",
+  updatedAt: "2026-11-01T00:00:00Z",
+};
 
 describe("sign-in through the account platform at the request boundary", () => {
   it("sends the visitor to the account platform with a fresh state and an S256 PKCE challenge", async () => {
@@ -254,14 +272,9 @@ describe("sign-in through the account platform at the request boundary", () => {
       { code: "private-code", state: pending.state, iss: "https://account.test" },
       cookie
     );
-    fetchService.mockResolvedValueOnce(
-      Response.json({
-        access_token: "new-access",
-        token_type: "Bearer",
-        expires_in: 3600,
-        refresh_token: "new-refresh",
-      })
-    );
+    fetchService
+      .mockResolvedValueOnce(Response.json(tokenResponse))
+      .mockResolvedValueOnce(Response.json(selfCredentials));
 
     const response = await completeSignIn(event);
 
@@ -271,23 +284,46 @@ describe("sign-in through the account platform at the request boundary", () => {
       "cache-control": "no-store",
       "referrer-policy": "no-referrer",
     });
-    expect(sentRequest()).toEqual({
-      url: "https://authentication.test/v2/oauth/token",
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded", "x-client-ip": "192.0.2.1" },
-      body: expect.anything(),
+    const [tokenUrl, tokenRequest] = fetchService.mock.calls[0] ?? [];
+    const [selfUrl, selfRequest] = fetchService.mock.calls[1] ?? [];
+    expect([tokenUrl, tokenRequest?.method]).toEqual(["https://authentication.test/v2/oauth/token", "POST"]);
+    expect(Object.fromEntries(new Headers(tokenRequest?.headers))).toEqual({
+      "content-type": "application/x-www-form-urlencoded",
+      "x-client-ip": "192.0.2.1",
     });
-    expect(Object.fromEntries(new URLSearchParams(String(fetchService.mock.lastCall?.[1]?.body)))).toEqual({
+    expect(Object.fromEntries(new URLSearchParams(String(tokenRequest?.body)))).toEqual({
       grant_type: "authorization_code",
       code: "private-code",
       code_verifier: pending.verifier,
       redirect_uri: "https://studio.test/auth/callback",
     });
+    // The new access token reads the account's email once, which names the visitor in the shell.
+    expect([selfUrl, new Headers(selfRequest?.headers).get("authorization")]).toEqual([
+      "https://authentication.test/v2/credentials/self",
+      "Bearer new-access",
+    ]);
+    expect(Object.fromEntries(values)).toEqual({
+      studio_access_token: "new-access",
+      studio_refresh_token: "new-refresh",
+      studio_identity_handle: "maya.chen",
+    });
+    expect(cookies.delete).toHaveBeenCalledWith("studio_sign_in", { path: "/auth/callback" });
+  });
+
+  it("completes the sign-in without a name when Authentication keeps the account from Studio", async () => {
+    const { cookie, pending } = await startedSignIn();
+    const { event, values } = callback({ code: "c", state: pending.state, iss: "https://account.test" }, cookie);
+    fetchService
+      .mockResolvedValueOnce(Response.json(tokenResponse))
+      .mockResolvedValueOnce(new Response("client token", { status: 403 }));
+
+    const response = await completeSignIn(event);
+
+    expect(response.headers.get("location")).toBe("/privacy?panel=telemetry");
     expect(Object.fromEntries(values)).toEqual({
       studio_access_token: "new-access",
       studio_refresh_token: "new-refresh",
     });
-    expect(cookies.delete).toHaveBeenCalledWith("studio_sign_in", { path: "/auth/callback" });
   });
 
   const refusedResponses: Array<[string, (pending: { state: string }) => Record<string, string | string[]>]> = [

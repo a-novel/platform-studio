@@ -37,6 +37,7 @@ function createClient(): {
 } {
   return {
     claims: vi.fn<SessionClient["claims"]>(),
+    email: vi.fn<SessionClient["email"]>(),
     exchange: vi.fn<SessionClient["exchange"]>(),
     refresh: vi.fn<SessionClient["refresh"]>(),
     revoke: vi.fn<SessionClient["revoke"]>(),
@@ -73,6 +74,7 @@ describe("AuthenticationSession", () => {
   it("returns verified authenticated claims without exposing cookies to the browser", async () => {
     cookies.values.set("studio_access_token", "access");
     cookies.values.set("studio_refresh_token", "refresh");
+    cookies.values.set("studio_identity_handle", "maya.chen");
     client.claims.mockResolvedValue({
       userID: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
       roles: [Role.User],
@@ -85,24 +87,42 @@ describe("AuthenticationSession", () => {
       status: "available",
       accessToken: "access",
       refreshToken: "refresh",
+      identityHandle: "maya.chen",
       claims: { roles: [Role.User] },
     });
   });
 
-  it("keeps the token pair of an exchanged code in secure HTTP-only cookies", async () => {
+  it("keeps the token pair of an exchanged code and the email's handle in secure HTTP-only cookies", async () => {
     client.exchange.mockResolvedValue(tokenResponse("access", "refresh"));
+    client.email.mockResolvedValue("maya.chen@example.com");
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
     await session.signIn(grant);
 
     expect(client.exchange).toHaveBeenCalledExactlyOnceWith(grant);
+    expect(client.email).toHaveBeenCalledExactlyOnceWith("access");
     expect(Object.fromEntries(cookies.values)).toEqual({
       studio_access_token: "access",
       studio_refresh_token: "refresh",
+      studio_identity_handle: "maya.chen",
     });
     for (const { options } of cookies.writes) {
       expect(options).toEqual({ httpOnly: true, path: "/", sameSite: "lax", secure: true });
     }
+  });
+
+  it("signs in without a name, and forgets a former one, when the email cannot be read", async () => {
+    cookies.values.set("studio_identity_handle", "former.visitor");
+    client.exchange.mockResolvedValue(tokenResponse("access", "refresh"));
+    client.email.mockRejectedValue(new HttpError(403, "client token"));
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await session.signIn(grant);
+
+    expect(Object.fromEntries(cookies.values)).toEqual({
+      studio_access_token: "access",
+      studio_refresh_token: "refresh",
+    });
   });
 
   it("keeps the cookies as they were when Authentication refuses the code", async () => {
@@ -131,6 +151,7 @@ describe("AuthenticationSession", () => {
     cookies.values.set("studio_access_token", "access");
     client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
     client.exchange.mockResolvedValue(tokenResponse("new-access", "new-refresh"));
+    client.email.mockResolvedValue("maya.chen@example.com");
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
     await session.current();
@@ -196,14 +217,26 @@ describe("AuthenticationSession", () => {
     }
   );
 
-  it("clears a stale refresh token when the access token is missing", async () => {
-    cookies.values.set("studio_refresh_token", "stale-cookie");
+  it.each(["studio_refresh_token", "studio_identity_handle"])(
+    "clears a stale %s when the access token is missing",
+    async (name) => {
+      cookies.values.set(name, "stale-cookie");
+      const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+      await expect(session.current()).resolves.toEqual({ status: "none" });
+      expect(cookies.values.size).toBe(0);
+      expect(client.claims).not.toHaveBeenCalled();
+      expect(client.refresh).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(["maya.chen@example.com", "a".repeat(65)])("shows no name for the malformed handle %s", async (handle) => {
+    cookies.values.set("studio_access_token", "access");
+    cookies.values.set("studio_identity_handle", handle);
+    client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
-    await expect(session.current()).resolves.toEqual({ status: "none" });
-    expect(cookies.values.size).toBe(0);
-    expect(client.claims).not.toHaveBeenCalled();
-    expect(client.refresh).not.toHaveBeenCalled();
+    await expect(session.current()).resolves.toMatchObject({ status: "available", identityHandle: undefined });
   });
 
   it.each([401, 403])("clears an access token rejected with %s when it cannot be refreshed", async (status) => {
@@ -241,6 +274,7 @@ describe("AuthenticationSession", () => {
   it("ends the session on every platform before removing every cookie on logout", async () => {
     cookies.values.set("studio_access_token", "access");
     cookies.values.set("studio_refresh_token", "refresh");
+    cookies.values.set("studio_identity_handle", "maya.chen");
     client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
     client.revoke.mockResolvedValue();
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
@@ -298,10 +332,11 @@ describe("AuthenticationSession", () => {
 
   it("drops the secure flag only on plain HTTP, for local stacks", async () => {
     client.exchange.mockResolvedValue(tokenResponse("access", "refresh"));
+    client.email.mockResolvedValue("maya.chen@example.com");
     const session = new AuthenticationSession(client, cookies, new URL("http://127.0.0.1:4173/"));
 
     await session.signIn(grant);
 
-    expect(cookies.writes.map(({ options }) => options?.secure)).toEqual([false, false]);
+    expect(cookies.writes.map(({ options }) => options?.secure)).toEqual([false, false, false]);
   });
 });

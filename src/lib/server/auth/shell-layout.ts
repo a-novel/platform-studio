@@ -1,3 +1,4 @@
+import { accountDisplayFromHandle } from "#lib/application/shell/account-display.js";
 import type { ShellSession, StudioShellViewModel } from "#lib/application/shell/types.js";
 
 import { readStudioDowntime } from "../downtime";
@@ -48,7 +49,7 @@ function readAccountLinks(): { accountHref: string | null; invitationHref: strin
   }
 }
 
-/** Resolves the session the shell shows, which tells the browser nothing beyond its status. */
+/** Resolves the session the shell shows, exposing only a display name to the browser. */
 async function readShellSession(event: AuthenticationEvent): Promise<ShellSession> {
   // A started downtime stops Authentication, so the shell doesn't ask it for the session.
   if (isDowntimeStarted(await readStudioDowntime())) return { status: "downtime" };
@@ -57,6 +58,7 @@ async function readShellSession(event: AuthenticationEvent): Promise<ShellSessio
   if (resolved.status === "downtime") return { status: "downtime" };
   if (resolved.status === "unavailable") return { status: "error" };
   if (resolved.status === "none" || !resolved.claims.userID) return { status: "anonymous" };
+  if (resolved.identityHandle) return { status: "authenticated", ...accountDisplayFromHandle(resolved.identityHandle) };
   return { status: "authenticated" };
 }
 

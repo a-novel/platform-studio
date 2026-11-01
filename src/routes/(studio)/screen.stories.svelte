@@ -19,7 +19,19 @@
   };
   const authenticated: StudioShellViewModel = {
     ...anonymous,
+    session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
+  };
+  const unnamedAccount: StudioShellViewModel = {
+    ...anonymous,
     session: { status: "authenticated" },
+  };
+  const longAccountName: StudioShellViewModel = {
+    ...anonymous,
+    session: {
+      status: "authenticated",
+      displayName: "Alexandrine de la Bibliothèque des Mondes Imaginaires",
+      initials: "AB",
+    },
   };
   const loadingAccount: StudioShellViewModel = {
     ...anonymous,
@@ -110,7 +122,7 @@
   async function verifyAuthenticatedActions({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    const account = canvas.getByRole("link", { name: t("shell.manageAccountInNewTab") });
+    const account = canvas.getByRole("link", { name: `Maya Chen ${t("shell.opensInNewTab")}` });
     await expect(account).toHaveAttribute("href", "#account");
     await expect(account).toHaveAttribute("target", "_blank");
     await expect(canvas.getByRole("button", { name: t("shell.logout") })).toBeVisible();
@@ -129,7 +141,7 @@
     const navigation = canvas.getByRole("dialog", { name: t("shell.brand") });
     const labelStarts = [
       within(navigation).getByText(t("shell.home")).getBoundingClientRect().left,
-      within(navigation).getByText(t("shell.manageAccount")).getBoundingClientRect().left,
+      within(navigation).getByText("Maya Chen").getBoundingClientRect().left,
       within(navigation).getByText(t("shell.logout")).getBoundingClientRect().left,
     ];
 
@@ -187,6 +199,24 @@
   play={verifyAuthenticatedMobileLayout}
 >
   <StoryHarness initialModel={withOpenMobileNavigation(authenticated)} />
+</Story>
+
+<Story name="Account without a name" exportName="AccountWithoutAName" asChild>
+  <StoryHarness initialModel={unnamedAccount} />
+</Story>
+
+<Story name="Long account name" exportName="LongAccountName" asChild>
+  <StoryHarness initialModel={longAccountName} />
+</Story>
+
+<Story
+  name="Long account name, mobile"
+  exportName="LongAccountNameMobile"
+  globals={reviewStoryGlobals.mobile}
+  asChild
+  play={verifyExpandedMobileNavigation}
+>
+  <StoryHarness initialModel={withOpenMobileNavigation(longAccountName)} />
 </Story>
 
 <Story name="Loading account" asChild>
