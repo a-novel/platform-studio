@@ -35,7 +35,7 @@ test.describe("scheduled maintenance", () => {
 test.describe("maintenance in progress", () => {
   test.use({ baseURL: studioOrigin("started") });
 
-  test("locks sign-in, the account and emailed links until operators clear it", async ({ page }, info) => {
+  test("locks sign-in until operators clear it", async ({ page }, info) => {
     await page.goto("/");
     await expect(banner(page, "Maintenance in progress")).toContainText("Jan 12, 2099");
 
@@ -43,15 +43,5 @@ test.describe("maintenance in progress", () => {
     await expect(page.getByRole("dialog").getByRole("heading", { name: "Temporarily unavailable" })).toBeVisible();
     await expect(page.getByLabel(/^Email address/)).toHaveCount(0);
     await screenshot(page, info, "maintenance-sign-in");
-
-    for (const route of ["/account", "/ext/account/create"]) {
-      await test.step(route, async () => {
-        const response = await page.goto(route);
-        expect(response?.status()).toBe(503);
-        await expect(page).toHaveTitle("Maintenance in progress | Agora Studio");
-        await expect(page.getByRole("heading", { level: 1, name: "Temporarily unavailable" })).toBeVisible();
-      });
-    }
-    await screenshot(page, info, "maintenance-page");
   });
 });

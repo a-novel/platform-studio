@@ -10,9 +10,10 @@ async function login(page: Page, account: { email: string; password: string }) {
   await page.getByRole("dialog").getByRole("button", { name: "Log in", exact: true }).click();
 }
 
-async function choosePassword(page: Page, password: string) {
-  await page.getByLabel(/^New password/).fill(password);
-  await page.getByLabel(/^Confirm new password/).fill(password);
+/** The account link that names the signed-in visitor: in the rail, or in the menu on a phone. */
+async function accountLink(page: Page, isMobile: boolean) {
+  if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+  return page.getByRole("link", { name: "Studio Tester", exact: true });
 }
 
 async function authenticationResponds(): Promise<boolean> {
@@ -23,20 +24,18 @@ async function authenticationResponds(): Promise<boolean> {
   }
 }
 
-test("login returns to the protected account, survives reload and logout protects it again", async ({
+test("login keeps the session in secure cookies across reloads, and logout revokes it", async ({
   page,
   context,
   account,
+  isMobile,
 }, info) => {
-  await page.goto("/account");
-  await expect(page).toHaveURL(/auth=login&returnTo=%2Faccount/);
+  await page.goto("/?auth=login");
   await expect(page).toHaveTitle("Log in | Agora Studio");
 
   await login(page, account);
-  await expect(page).toHaveURL("/account");
-  await expect(page).toHaveTitle("Account settings | Agora Studio");
-  await expect(page.getByRole("heading", { name: "Manage your account", exact: true })).toBeVisible();
-  await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL("/");
+  await expect(page).toHaveTitle("Home | Agora Studio");
 
   const cookies = (await context.cookies()).filter((cookie) => cookie.name.startsWith("studio_"));
   expect(cookies.map((cookie) => cookie.name)).toEqual(
@@ -45,16 +44,12 @@ test("login returns to the protected account, survives reload and logout protect
   expect(cookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
 
   await page.reload();
-  await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Account settings | Agora Studio");
-  const perRunValues = ["Account ID", "Current email", "Access expires", "Session expires"].map((label) =>
-    page.getByText(label, { exact: true }).locator("+ dd")
-  );
-  await screenshot(page, info, "authenticated-account", perRunValues);
+  // The account page lives on the account platform, which the account name opens.
+  await expect(await accountLink(page, isMobile)).toHaveAttribute("href", "https://account.example.test/account");
+  await screenshot(page, info, "authenticated-shell");
 
   await page.getByRole("button", { name: "Log out", exact: true }).last().click();
   await expect(page).toHaveURL("/");
-  await expect(page).toHaveTitle("Home | Agora Studio");
   expect((await context.cookies()).filter((cookie) => cookie.name.startsWith("studio_"))).toEqual([]);
 
   // Logout revoked the refresh token, so the service refuses to renew the session with it.
@@ -65,38 +60,9 @@ test("login returns to the protected account, survives reload and logout protect
     body: JSON.stringify({ accessToken: tokens.studio_access_token, refreshToken: tokens.studio_refresh_token }),
   });
   expect(renewal.status).toBe(403);
-
-  await page.goto("/account");
-  await expect(page).toHaveURL(/auth=login&returnTo=%2Faccount/);
-  await expect(page.getByLabel(/^Current password/)).toHaveCount(0);
 });
 
-test("a real invitation creates an account and cannot be reused", async ({ page, invitation }, info) => {
-  await page.goto(invitation.link);
-  await expect(page.getByRole("heading", { name: "Create your Agora account" })).toBeVisible();
-  await expect(page).toHaveTitle("Create account | Agora Studio");
-  await screenshot(page, info, "invitation-password-form");
-
-  await choosePassword(page, "Invitation-password-42!");
-  await page.getByRole("button", { name: "Create account", exact: true }).click();
-  await expect(page).toHaveURL("/ext/account/create?result=success");
-  await expect(page.getByText("Your account is ready.", { exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Account created | Agora Studio");
-  await screenshot(page, info, "invitation-completed");
-
-  await page.getByRole("link", { name: "Continue to Studio" }).click();
-  await page.goto("/account");
-  await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
-
-  await page.goto(invitation.link);
-  await choosePassword(page, "Another-password-42!");
-  await page.getByRole("button", { name: "Create account", exact: true }).click();
-  await expect(page).toHaveURL("/ext/account/create?result=invalid");
-  await expect(page.getByRole("heading", { name: "This link is not valid" })).toBeVisible();
-  await expect(page).toHaveTitle("Create account: Invalid link | Agora Studio");
-});
-
-test("password recovery follows the delivered email and replaces the old password", async ({ page, account }, info) => {
+test("a password reset request sends a link to the account platform", async ({ page, account }) => {
   await page.goto("/?auth=reset");
   await expect(page).toHaveTitle("Reset password | Agora Studio");
   await page.getByLabel(/^Email address/).fill(account.email);
@@ -104,54 +70,9 @@ test("password recovery follows the delivered email and replaces the old passwor
   await expect(page.getByText(account.email, { exact: true })).toBeVisible();
   await expect(page).toHaveTitle("Reset password: Check your inbox | Agora Studio");
 
-  const link = await emailLink(account.email, "/ext/password/reset");
-  await page.goto(link);
-  await expect(page).toHaveTitle("Reset password | Agora Studio");
-  await screenshot(page, info, "password-reset-form");
-
-  await choosePassword(page, "Recovered-password-42!");
-  await page.getByRole("button", { name: "Reset password", exact: true }).click();
-  await expect(page).toHaveURL("/ext/password/reset?result=success");
-  await expect(page.getByText("Your password was reset.", { exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Password reset | Agora Studio");
-  await screenshot(page, info, "password-recovered");
-
-  await page.getByRole("link", { name: "Log in", exact: true }).click();
-  await login(page, account);
-  await expect(page.getByText("The email address or password is incorrect.", { exact: true })).toBeVisible();
-  await login(page, { ...account, password: "Recovered-password-42!" });
-  await expect(page).toHaveURL("/");
-  await page.goto("/account");
-  await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
-});
-
-test("account forms change the password and confirm an email update", async ({ page, account }, info) => {
-  await page.goto("/?auth=login&returnTo=%2Faccount");
-  await login(page, account);
-
-  await page.getByLabel(/^Current password/).fill(account.password);
-  await choosePassword(page, "Changed-password-42!");
-  await page.getByRole("button", { name: "Change password", exact: true }).click();
-  await expect(page.getByText("Your password was changed.", { exact: true })).toBeVisible();
-
-  const email = `updated-${account.email}`;
-  await page.getByLabel(/^New email address/).fill(email);
-  await page.getByRole("button", { name: "Send link", exact: true }).click();
-  await expect(page.getByText("Check your inbox", { exact: true })).toBeVisible();
-  await expect(page.getByText(email, { exact: true })).toBeVisible();
-
-  await page.goto(await emailLink(email, "/ext/email/validate"));
-  await expect(page).toHaveURL("/ext/email/validate?result=success");
-  await expect(page.getByText("Your email address was updated.", { exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Email updated | Agora Studio");
-  await screenshot(page, info, "email-confirmed");
-
-  await page.goto("/account");
-  await page.getByRole("button", { name: "Log out", exact: true }).last().click();
-  await page.goto("/?auth=login&returnTo=%2Faccount");
-  await login(page, { email, password: "Changed-password-42!" });
-  await expect(page).toHaveURL("/account");
-  await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
+  // The authentication service builds the link from its own platform URL, which names the account
+  // platform; Studio no longer serves it.
+  expect(await emailLink(account.email, "/ext/password/reset")).toContain("/ext/password/reset?");
 });
 
 test("dialog history and keyboard dismissal restore the shell focus", async ({ page, isMobile }) => {
@@ -214,17 +135,20 @@ test("an authentication outage preserves the session and recovers after reload",
   page,
   context,
   account,
+  isMobile,
 }, info) => {
-  await page.goto("/?auth=login&returnTo=%2Faccount");
+  await page.goto("/?auth=login");
   await login(page, account);
-  await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL("/");
 
   const cookies = await context.cookies();
   try {
     await compose("stop", "authentication");
     await page.reload();
-    await expect(page.getByText("Session details unavailable", { exact: true })).toBeVisible();
-    await expect(page).toHaveTitle("Account settings: Session details unavailable | Agora Studio");
+    if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+    await expect(
+      page.getByText("Account details are unavailable.", { exact: true }).filter({ visible: true })
+    ).toBeVisible();
     expect(await context.cookies()).toEqual(cookies);
     await screenshot(page, info, "recoverable-service-outage");
   } finally {
@@ -232,16 +156,15 @@ test("an authentication outage preserves the session and recovers after reload",
     await expect.poll(authenticationResponds, { timeout: 30_000 }).toBe(true);
   }
 
-  await page.reload();
-  await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Account settings | Agora Studio");
+  await page.goto("/");
+  await expect(await accountLink(page, isMobile)).toBeVisible();
 });
 
 test.describe("native forms without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
   test("shell links open, switch and close usable authentication forms", async ({ page, isMobile }) => {
-    await page.goto("/?returnTo=%2Faccount");
+    await page.goto("/?returnTo=%2Fprivacy");
     if (isMobile) {
       await page.getByRole("link", { name: "Open navigation", exact: true }).click();
       await expect(page.getByRole("dialog", { name: "Studio", exact: true })).toBeVisible();
@@ -268,40 +191,17 @@ test.describe("native forms without JavaScript", () => {
 
     await dialog.getByRole("link", { name: "Close dialog" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(page).toHaveURL("/?returnTo=%2Faccount");
+    await expect(page).toHaveURL("/?returnTo=%2Fprivacy");
   });
 
-  test("login validates on the server and returns to the protected destination", async ({ page, account }) => {
-    await page.goto("/account");
+  test("login validates on the server and returns where it started", async ({ page, account }) => {
+    await page.goto("/?auth=login&returnTo=%2Fprivacy");
     await expect(page.getByRole("dialog", { name: "Log in", exact: true })).toBeVisible();
     await login(page, { ...account, password: "Incorrect-password-42!" });
     await expect(page.getByText("The email address or password is incorrect.", { exact: true })).toBeVisible();
 
     await login(page, account);
-    await expect(page).toHaveURL("/account");
-    await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
-  });
-
-  test("an invitation, password change and logout work with server-rendered forms", async ({ page, invitation }) => {
-    const password = "Native-form-password-42!";
-    await page.goto(invitation.link);
-    await expect(page).toHaveTitle("Create account | Agora Studio");
-    await choosePassword(page, password);
-    await page.getByRole("button", { name: "Create account", exact: true }).click();
-    await expect(page).toHaveURL("/ext/account/create?result=success");
-    await expect(page).toHaveTitle("Account created | Agora Studio");
-
-    await page.goto("/account");
-    await expect(page).toHaveTitle("Account settings | Agora Studio");
-    await expect(page.getByText("auth:user", { exact: true })).toBeVisible();
-
-    await page.getByLabel(/^Current password/).fill(password);
-    await choosePassword(page, "Updated-native-password-42!");
-    await page.getByRole("button", { name: "Change password", exact: true }).click();
-    await expect(page.getByText("Your password was changed.", { exact: true })).toBeVisible();
-
-    await page.getByRole("button", { name: "Log out", exact: true }).last().click();
-    await page.goto("/account");
-    await expect(page).toHaveURL(/auth=login&returnTo=%2Faccount/);
+    await expect(page).toHaveURL("/privacy");
+    await expect(page).toHaveTitle("Privacy | Agora Studio");
   });
 });
