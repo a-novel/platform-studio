@@ -7,6 +7,9 @@ x-postgres-environment: &postgres-environment
   POSTGRES_HOST_AUTH_METHOD: scram-sha-256
   POSTGRES_INITDB_ARGS: --auth=scram-sha-256
 
+# Stands in for the cluster's service-account issuer, so Authentication tells its callers apart as in production.
+x-service-token-issuer: &service-token-issuer http://service-token-issuer:8080
+
 x-postgres-healthcheck: &postgres-healthcheck
   test: ["CMD", "pg_isready", "-U", "postgres"]
   interval: 1s
@@ -52,6 +55,19 @@ services:
       POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
 
+  service-token-issuer:
+    image: ghcr.io/a-novel/service-authentication/service-token-issuer:v2.23.0@sha256:2c5b45d9f187b83b0c5f8d1dc3907b778bae8ada10d1cb3bb1c515a6cfaf2685
+    ports:
+      - "127.0.0.1:14101:8080"
+    environment:
+      SERVICE_TOKEN_ISSUER: *service-token-issuer
+    # Podman ignores the image's own check, so the wait of authentication needs this one.
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8080/.well-known/openid-configuration"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
   # Holds the network authentication joins, so the outage journey's restart leaves the host's
   # interfaces alone. A new interface makes Chromium abort loading pages with ERR_NETWORK_CHANGED.
   authentication-network:
@@ -74,6 +90,8 @@ services:
         condition: service_healthy
       mailserver:
         condition: service_started
+      service-token-issuer:
+        condition: service_healthy
     command:
       - sh
       - -c
@@ -90,7 +108,8 @@ services:
       POSTGRES_TLS_ENABLED: "false"
       SERVICE_JSON_KEYS_HOST: service-json-keys
       SERVICE_JSON_KEYS_PORT: 8080
-      PLATFORM_AUTH_URL: http://127.0.0.1:4173
+      # Email links open the account platform, which serves every account form.
+      PLATFORM_AUTH_URL: http://127.0.0.1:14102
       SMTP_SENDER_DOMAIN: mailserver
       SMTP_ADDR: mailserver:1025
       SMTP_SENDER_NAME: Studio integration tests
@@ -99,3 +118,43 @@ services:
       SMTP_FORCE_UNENCRYPTED: "true"
       # Every journey comes from one address and mints its own anonymous session.
       REST_RATE_LIMITS_ENABLED: "false"
+      SERVICE_TOKEN_ISSUER: *service-token-issuer
+      SERVICE_TOKEN_AUDIENCE: authentication
+      SERVICE_TOKEN_CALLERS: system:serviceaccount:account:web,system:serviceaccount:studio:web
+      # Studio as production registers it, on the address of the journeys' Studio server.
+      OAUTH_CLIENTS: >-
+        {"studio": {"redirectURI": "http://127.0.0.1:4173/auth/callback",
+        "caller": "system:serviceaccount:studio:web"}}
+
+  # The account platform, where Studio signs people in.
+  account:
+    image: ghcr.io/a-novel/platform-account:v1.1.0@sha256:6071899972c6eea30fd9e181abed2e4c3a4ee4f4c61975a7ff92226151b032c0
+    ports:
+      - "127.0.0.1:14102:3000"
+    depends_on:
+      authentication:
+        condition: service_healthy
+    # The platform reads its service token from a file, as a pod reads its projected token. A token
+    # lasts an hour, longer than a run.
+    command:
+      - sh
+      - -c
+      - >-
+        wget -qO /tmp/service-token
+        "http://service-token-issuer:8080/token?subject=system:serviceaccount:account:web&audience=authentication" &&
+        exec node build
+    # Podman ignores the image's own check, so the journeys' wait needs this one.
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3000/ping"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+    environment:
+      AUTHENTICATION_SERVICE_URL: http://authentication-network:8080
+      SERVICE_TOKEN_PATH: /tmp/service-token
+      # The platform derives its origin, which its form posts and its issuer use, from each request,
+      # over https unless this header names another protocol. The journeys' browser sends it.
+      PROTOCOL_HEADER: x-forwarded-proto
+      STUDIO_URL: http://127.0.0.1:4173
+      # The issuer answers 404 at once, which the platform reads as no planned downtime.
+      DOWNTIME_URL: http://service-token-issuer:8080/downtime.json

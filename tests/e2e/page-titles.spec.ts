@@ -9,10 +9,7 @@ const locales = [
     locale: "en-US",
     routes: [
       ["/", "Home"],
-      ["/?auth=login", "Log in"],
-      ["/?auth=register", "Join the Agora invitation list"],
-      ["/?auth=reset", "Reset password"],
-      ["/?auth=unknown&email=private@example.test", "Home"],
+      ["/auth/sign-in/failed?returnTo=%2Fprivacy", "We couldn’t log you in"],
       ["/privacy", "Privacy"],
       ["/page-that-does-not-exist", "Page not found"],
     ],
@@ -21,10 +18,7 @@ const locales = [
     locale: "fr-FR",
     routes: [
       ["/", "Accueil"],
-      ["/?auth=login", "Connectez-vous"],
-      ["/?auth=register", "Rejoignez la liste d’invitation Agora"],
-      ["/?auth=reset", "Réinitialiser le mot de passe"],
-      ["/?auth=unknown&email=private@example.test", "Accueil"],
+      ["/auth/sign-in/failed?returnTo=%2Fprivacy", "Nous n’avons pas pu vous connecter"],
       ["/privacy", "Confidentialité"],
       ["/page-that-does-not-exist", "Page introuvable"],
     ],
@@ -32,12 +26,7 @@ const locales = [
 ] as const;
 
 /** Fixed checkpoint names, so a copy change shows as a reviewable diff. */
-const checkpoints: Partial<Record<string, string>> = {
-  "/": "home",
-  "/?auth=login": "login",
-  "/?auth=register": "join-the-agora-invitation-list",
-  "/?auth=reset": "reset-password",
-};
+const checkpoints: Partial<Record<string, string>> = { "/": "home" };
 
 /** Opens a route and checks its tab title. A capturing run also records the route's checkpoint. */
 async function expectTitle(page: Page, info: TestInfo, route: string, title: string, capture: boolean) {
@@ -49,7 +38,6 @@ async function expectTitle(page: Page, info: TestInfo, route: string, title: str
   const checkpoint = checkpoints[route];
   if (!capture || !checkpoint) return;
 
-  if (route !== "/") await expect(page.getByRole("dialog")).toBeVisible();
   await screenshot(page, info, checkpoint);
 }
 
@@ -58,7 +46,7 @@ for (const { locale, routes } of locales) {
     test.describe(`${locale}, JavaScript ${javaScriptEnabled ? "enabled" : "disabled"}`, () => {
       test.use({ locale, javaScriptEnabled });
 
-      test("page titles identify each route and authentication task", async ({ page }, info) => {
+      test("page titles identify each route", async ({ page }, info) => {
         const capture = locale === "en-US" && javaScriptEnabled;
         for (const [route, title] of routes) {
           await test.step(route, () => expectTitle(page, info, route, title, capture));
