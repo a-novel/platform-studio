@@ -69,7 +69,7 @@ describe("studio shell screen", () => {
     await expect.element(signIn).toHaveAttribute("data-sveltekit-reload", "true");
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
 
-    const invitation = page.getByRole("link", { name: "Request an invitation" });
+    const invitation = page.getByRole("link", { name: "Register" });
     await expect.element(invitation).toHaveAttribute("href", "https://account.example.test/?auth=register");
     expect(getComputedStyle(invitation.element()).justifyContent).toBe("flex-start");
     await expect.element(page.getByRole("button", { name: "Log out" })).not.toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("studio shell screen", () => {
     );
 
     await expect.element(page.getByRole("link", { name: "Log in" })).toBeVisible();
-    await expect.element(page.getByRole("link", { name: "Request an invitation" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("link", { name: "Register" })).not.toBeInTheDocument();
   });
 
   it("keeps the collapsed Home destination accessible by name", async () => {
@@ -101,7 +101,7 @@ describe("studio shell screen", () => {
       .element(page.getByRole("button", { name: "Développer la navigation" }))
       .toHaveAttribute("aria-expanded", "false");
     await expect.element(page.getByRole("link", { name: "Se connecter" })).toBeVisible();
-    await expect.element(page.getByRole("link", { name: "Demander une invitation" })).toBeVisible();
+    await expect.element(page.getByRole("link", { name: "S’inscrire" })).toBeVisible();
   });
 
   it("lists Privacy only while Studio collects browser telemetry", async () => {
@@ -122,13 +122,15 @@ describe("studio shell screen", () => {
     const shell = controller({ session: { status: "authenticated" } });
     render(Screen, { controller: shell }, withLocale());
 
-    const accountLink = page.getByRole("link", { name: "Manage your account" });
+    const accountLink = page.getByRole("link", { name: "Manage your account (opens in a new tab)" });
     await expect.element(accountLink).toHaveAttribute("href", "https://account.example.test/account");
+    await expect.element(accountLink).toHaveAttribute("target", "_blank");
+    await expect.element(accountLink).toHaveAttribute("rel", "noopener noreferrer");
     expect(getComputedStyle(accountLink.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     expect(getComputedStyle(accountLink.element()).borderTopStyle).toBe("none");
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Log in" })).not.toBeInTheDocument();
-    await expect.element(page.getByRole("link", { name: "Request an invitation" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("link", { name: "Register" })).not.toBeInTheDocument();
 
     await page.getByRole("button", { name: "Log out" }).click();
     expect(shell.state.model.session.status).toBe("anonymous");
@@ -155,11 +157,11 @@ describe("studio shell screen", () => {
         await surface.getByRole("img", { name: "Studio" }).hover();
         const controls = [surface.getByRole("link", { name: "Home" })];
         if (status === "authenticated") {
-          controls.push(surface.getByRole("link", { name: "Manage your account" }));
+          controls.push(surface.getByRole("link", { name: "Manage your account (opens in a new tab)" }));
           controls.push(surface.getByRole("button", { name: "Log out" }));
         } else {
           controls.push(surface.getByRole("link", { name: "Log in" }));
-          controls.push(surface.getByRole("link", { name: "Request an invitation" }));
+          controls.push(surface.getByRole("link", { name: "Register" }));
         }
 
         const resting = await Promise.all(controls.map((control) => settledStyle(control.element())));
@@ -209,7 +211,7 @@ describe("studio shell screen", () => {
   });
 
   const drawerLabels = [
-    ["anonymous", ["Home", "Log in", "Request an invitation"]],
+    ["anonymous", ["Home", "Log in", "Register"]],
     ["authenticated", ["Home", "Manage your account", "Log out"]],
   ] as const;
 

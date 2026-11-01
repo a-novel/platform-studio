@@ -52,7 +52,7 @@ async function signIn(page: Page, account: Account, isMobile: boolean, path = "/
 /** The account link that tells the visitor is signed in. */
 async function accountLink(page: Page, isMobile: boolean) {
   await openAccountControls(page, isMobile);
-  return page.getByRole("link", { name: "Manage your account", exact: true });
+  return page.getByRole("link", { name: "Manage your account (opens in a new tab)", exact: true });
 }
 
 /** Studio's cookies, the pending sign-in's included. The account platform's share the host. */
@@ -196,10 +196,10 @@ test("a failed exchange returns to the signed-out page, whose retry signs in", a
   await expect(await accountLink(page, isMobile)).toBeVisible();
 });
 
-test("the invitation link opens the account platform's invitation request", async ({ page, isMobile }) => {
+test("Register opens the account platform's invitation request", async ({ page, isMobile }) => {
   await page.goto("/");
   await openAccountControls(page, isMobile);
-  await page.getByRole("link", { name: "Request an invitation", exact: true }).click();
+  await page.getByRole("link", { name: "Register", exact: true }).click();
 
   await expect(page).toHaveURL(`${accountOrigin}/?auth=register`);
   await expect(page.getByRole("dialog", { name: "Join the Agora invitation list" })).toBeVisible();

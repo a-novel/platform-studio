@@ -61,10 +61,7 @@
     await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "96");
 
     await expect(canvas.getByRole("link", { name: t("shell.signIn") })).toHaveAttribute("href", "#sign-in");
-    await expect(canvas.getByRole("link", { name: t("shell.requestInvitation") })).toHaveAttribute(
-      "href",
-      "#invitation"
-    );
+    await expect(canvas.getByRole("link", { name: t("shell.register") })).toHaveAttribute("href", "#invitation");
     await expect(canvas.queryByRole("button", { name: t("shell.logout") })).not.toBeInTheDocument();
   }
 
@@ -113,13 +110,14 @@
   async function verifyAuthenticatedActions({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    const account = canvas.getByRole("link", { name: t("shell.manageAccount") });
+    const account = canvas.getByRole("link", { name: t("shell.manageAccountInNewTab") });
     await expect(account).toHaveAttribute("href", "#account");
+    await expect(account).toHaveAttribute("target", "_blank");
     await expect(canvas.getByRole("button", { name: t("shell.logout") })).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: t("shell.logout") }));
     await expect(account).toBeVisible();
     await expect(canvas.queryByRole("link", { name: t("shell.signIn") })).not.toBeInTheDocument();
-    await expect(canvas.queryByRole("link", { name: t("shell.requestInvitation") })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("link", { name: t("shell.register") })).not.toBeInTheDocument();
     clearFocus();
   }
 

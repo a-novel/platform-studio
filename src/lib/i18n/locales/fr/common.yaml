@@ -36,10 +36,11 @@ shell:
   homeTitle: Accueil
   logout: Se déconnecter
   manageAccount: Gérer votre compte
+  manageAccountInNewTab: Gérer votre compte (s’ouvre dans un nouvel onglet)
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
   privacy: Confidentialité
-  requestInvitation: Demander une invitation
+  register: S’inscrire
   sessionDowntime: Compte indisponible pendant la maintenance.
   sessionLoading: Chargement du compte
   sessionUnavailable: Informations du compte indisponibles.

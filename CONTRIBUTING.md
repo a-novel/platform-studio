@@ -50,7 +50,7 @@ The Studio server is the only caller of platform services.
 
 - People sign in on the account platform. `/auth/sign-in` starts an authorization request there, and
   `/auth/callback` checks its `state` and `iss`, then exchanges the code. Studio serves no account
-  form: "Request an invitation" and the account page open the account platform.
+  form: "Register" and the account page open the account platform.
 - Forms post to same-origin server actions and work without JavaScript.
 - Tokens live in HttpOnly cookies. They never reach browser storage, page data, logs, or stories.
 - Email links under `/ext` never echo their code. A GET only parses the link, completion posts to the

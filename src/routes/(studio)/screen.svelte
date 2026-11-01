@@ -31,6 +31,7 @@
 
   import {
     CircleUserRound,
+    ExternalLink,
     House,
     LogIn,
     LogOut,
@@ -104,8 +105,6 @@
 
 {#snippet privacyIcon()}<ShieldCheck size="var(--icon-size-sm)" />{/snippet}
 
-{#snippet accountIcon()}<CircleUserRound size="var(--icon-size-sm)" />{/snippet}
-
 {#snippet brand(compact: boolean)}
   <span class="brand" class:compact>
     {#if compact}
@@ -158,11 +157,27 @@
       {/if}
     {:else if model.session.status === "authenticated"}
       {#if accountHref}
-        <NavList
-          {compact}
+        <!-- The account platform serves the account page, which opens beside Studio. -->
+        <Button
+          class="shell-account-button {compact ? 'compact-control' : ''}"
+          variant="ghost"
+          tone="neutral"
+          size="sm"
+          square={compact}
+          aria-label={t("shell.manageAccountInNewTab")}
           title={compact ? t("shell.manageAccount") : undefined}
-          items={[{ href: accountHref, label: t("shell.manageAccount"), icon: accountIcon }]}
-        />
+          href={accountHref}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="account-action-icon" aria-hidden="true">
+            <CircleUserRound size="var(--icon-size-sm)" />
+          </span>
+          {#if !compact}
+            <span class="account-label">{t("shell.manageAccount")}</span>
+            <span class="new-tab-icon" aria-hidden="true"><ExternalLink size="var(--icon-size-sm)" /></span>
+          {/if}
+        </Button>
       {/if}
       <form class="logout-form" method="POST" action={logoutAction} onsubmit={submitLogout}>
         <Button
@@ -206,14 +221,14 @@
           tone="neutral"
           size="sm"
           square={compact}
-          aria-label={compact ? t("shell.requestInvitation") : undefined}
-          title={compact ? t("shell.requestInvitation") : undefined}
+          aria-label={compact ? t("shell.register") : undefined}
+          title={compact ? t("shell.register") : undefined}
           href={invitationHref}
         >
           <span class="account-action-icon" aria-hidden="true">
             <UserRoundPlus size="var(--icon-size-sm)" />
           </span>
-          {#if !compact}<span>{t("shell.requestInvitation")}</span>{/if}
+          {#if !compact}<span>{t("shell.register")}</span>{/if}
         </Button>
       {/if}
     {/if}
@@ -418,6 +433,19 @@
     justify-content: center;
     align-items: center;
     inline-size: var(--control-height-sm);
+  }
+
+  .account-label {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .new-tab-icon {
+    display: inline-flex;
+    flex: none;
+    color: var(--color-text-secondary);
   }
 
   .compact-status {
