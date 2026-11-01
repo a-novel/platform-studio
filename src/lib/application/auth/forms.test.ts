@@ -1,21 +1,10 @@
-import {
-  validateEmailRequest,
-  validateEmailUpdate,
-  validateInvitationRequest,
-  validateLogin,
-  validateNewPassword,
-  validatePasswordChange,
-} from "./forms";
+import { validateEmailRequest, validateInvitationRequest, validateLogin } from "./forms";
 import { formData } from "./forms.fixture";
 
 import { describe, expect, it } from "vitest";
 
 import {
-  CredentialsCreateRequestSchema,
-  CredentialsResetPasswordRequestSchema,
-  CredentialsUpdatePasswordRequestSchema,
   PasswordSchema,
-  ShortCodeCreateEmailUpdateRequestSchema,
   ShortCodeCreatePasswordResetRequestSchema,
   ShortCodeCreateRegisterRequestSchema,
   TokenCreateRequestSchema,
@@ -30,31 +19,15 @@ describe("service-derived auth validation", () => {
     Number(PasswordSchema.maxLength),
     Number(PasswordSchema.maxLength) + 1,
   ];
-  const newPasswordSchemas = [
-    CredentialsCreateRequestSchema.pick({ password: true }),
-    CredentialsResetPasswordRequestSchema.pick({ password: true }),
-  ];
-
-  it.each(passwordLengths)("matches each service password schema at length %i", (length) => {
+  it.each(passwordLengths)("matches the service login schema at password length %i", (length) => {
     expect(PasswordSchema.minLength).toBeGreaterThan(0);
     expect(PasswordSchema.maxLength).toBeGreaterThan(Number(PasswordSchema.minLength));
     const password = "x".repeat(length);
-    const values = { email: "creator@example.test", password, currentPassword: password, confirmPassword: password };
-    const input = formData(values);
-    expect(validateLogin(input).success).toBe(TokenCreateRequestSchema.safeParse(values).success);
-    expect(validatePasswordChange(input).success).toBe(
-      CredentialsUpdatePasswordRequestSchema.safeParse(values).success
-    );
-    for (const schema of newPasswordSchemas) {
-      expect(validateNewPassword(input).success).toBe(schema.safeParse(values).success);
-    }
+    const values = { email: "creator@example.test", password };
+    expect(validateLogin(formData(values)).success).toBe(TokenCreateRequestSchema.safeParse(values).success);
   });
 
-  const emailRequestSchemas = [
-    ShortCodeCreateRegisterRequestSchema,
-    ShortCodeCreatePasswordResetRequestSchema,
-    ShortCodeCreateEmailUpdateRequestSchema,
-  ];
+  const emailRequestSchemas = [ShortCodeCreateRegisterRequestSchema, ShortCodeCreatePasswordResetRequestSchema];
   const longEmail = `${"a".repeat(400)}@example.test`;
   const emails = ["creator@example.test", "a+b@example.test", "not-an-email", "", longEmail];
 
@@ -62,7 +35,6 @@ describe("service-derived auth validation", () => {
     for (const schema of emailRequestSchemas) {
       const expected = schema.pick({ email: true }).safeParse({ email }).success;
       expect(validateEmailRequest(formData({ email })).success).toBe(expected);
-      expect(validateEmailUpdate(formData({ email })).success).toBe(expected);
     }
   });
 
@@ -89,19 +61,13 @@ describe("service-derived auth validation", () => {
   });
 
   it("returns API bounds as translation values without echoing credentials", () => {
-    const input = formData({
-      password: "s".repeat(Number(PasswordSchema.maxLength) + 1),
-      confirmPassword: "different-password",
-    });
-    const result = validateNewPassword(input);
+    const result = validateLogin(
+      formData({ email: "creator@example.test", password: "s".repeat(Number(PasswordSchema.maxLength) + 1) })
+    );
     expect(result).toEqual({
       success: false,
-      issues: [
-        { field: "newPassword", feedback: "maxLength", limit: PasswordSchema.maxLength },
-        { field: "confirmPassword", feedback: "passwordMismatch" },
-      ],
+      issues: [{ field: "password", feedback: "maxLength", limit: PasswordSchema.maxLength }],
     });
-    expect(JSON.stringify(result)).not.toContain("different-password");
     expect(JSON.stringify(result)).not.toContain("ssss");
     expect(
       validateLogin(
@@ -123,29 +89,6 @@ describe("service-derived auth validation", () => {
         { field: "password", feedback: "password" },
       ],
     });
-    expect(validateEmailUpdate(input)).toEqual({ success: false, issues: [{ field: "newEmail", feedback: "email" }] });
-    expect(validatePasswordChange(formData({ password: "valid-password" }))).toEqual({
-      success: false,
-      issues: [
-        { field: "currentPassword", feedback: "currentPassword" },
-        { field: "confirmPassword", feedback: "confirmPassword" },
-      ],
-    });
-  });
-
-  it("requires confirmation and strips it from valid service input", () => {
-    const values = { password: "new-password", confirmPassword: "other-password", currentPassword: "old-password" };
-    for (const validate of [validateNewPassword, validatePasswordChange]) {
-      expect(validate(formData(values))).toEqual({
-        success: false,
-        issues: [{ field: "confirmPassword", feedback: "passwordMismatch" }],
-      });
-    }
-    values.confirmPassword = values.password;
-    expect(validateNewPassword(formData(values))).toEqual({ success: true, value: { password: values.password } });
-    expect(validatePasswordChange(formData(values))).toEqual({
-      success: true,
-      value: { password: values.password, currentPassword: values.currentPassword },
-    });
+    expect(validateEmailRequest(input)).toEqual({ success: false, issues: [{ field: "email", feedback: "email" }] });
   });
 });

@@ -47,37 +47,6 @@ describe("Studio request hook", () => {
     expect(french.locals.i18n).not.toBe(english.locals.i18n);
   });
 
-  it.each([200, 400, 303, 503])("protects secure-link responses with status %s", async (status) => {
-    const resolved = new Response("private page", {
-      status,
-      headers: {
-        "cache-control": "public",
-        "content-type": "text/html",
-        location: "/ext/account/create?result=success",
-      },
-    });
-    const response = await handle({
-      event: event("/ext/account/create?shortCode=private-code"),
-      resolve: vi.fn().mockResolvedValue(resolved),
-    });
-    expect(response.status).toBe(status);
-    expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(response.headers.get("referrer-policy")).toBe("strict-origin");
-    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
-    expect(response.headers.get("content-type")).toBe("text/html");
-    expect(response.headers.get("location")).toBe("/ext/account/create?result=success");
-    await expect(response.text()).resolves.toBe("private page");
-  });
-
-  it("preserves caching policy on ordinary pages", async () => {
-    const response = await handle({
-      event: event("/"),
-      resolve: vi.fn().mockResolvedValue(new Response("home", { headers: { "cache-control": "private" } })),
-    });
-    expect(response.headers.get("cache-control")).toBe("private");
-    expect(response.headers.has("x-robots-tag")).toBe(false);
-  });
-
   it.each([
     { name: "hands the request's trace to the page", traced: true, want: `${TRACE_ID}-${SPAN_ID}-1` },
     { name: "leaves the page's trace empty while tracing is off", traced: false, want: "" },

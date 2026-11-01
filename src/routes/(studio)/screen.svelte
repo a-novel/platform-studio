@@ -14,6 +14,7 @@
 
 <script lang="ts">
   import { getStudioDowntime, hasStudioDowntime } from "#lib/ui/downtime.svelte.js";
+  import { hasTelemetryPreference } from "#lib/ui/telemetry-preference.js";
 
   import AuthenticationPanel from "./(authentication)/screen.svelte";
 
@@ -34,7 +35,7 @@
     SkipLink,
   } from "@a-novel-kit/uikit";
 
-  import { House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "@lucide/svelte";
+  import { House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, ShieldCheck, X } from "@lucide/svelte";
 
   let { controller, children }: StudioShellProps = $props();
 
@@ -55,6 +56,19 @@
   const authenticationId = `${componentId}-authentication`;
   const compactRail = $derived(model.rail === "collapsed");
   const { t } = getI18nContext();
+  // Only a Studio that collects browser telemetry asks for consent, so only it offers to change the answer.
+  const privacyItems = $derived(
+    hasTelemetryPreference()
+      ? [
+          {
+            href: controller.state.privacyHref,
+            label: t("shell.privacy"),
+            current: model.activeNavigation === "privacy",
+            icon: privacyIcon,
+          },
+        ]
+      : []
+  );
   const authenticatedSession = $derived(model.session.status === "authenticated" ? model.session : null);
   /** The account widget's notice while the session is loading, unavailable or stopped for maintenance. */
   const sessionNotice = $derived.by(() => {
@@ -100,6 +114,8 @@
 
 {#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
 
+{#snippet privacyIcon()}<ShieldCheck size="var(--icon-size-sm)" />{/snippet}
+
 {#snippet accountIcon()}
   {#if authenticatedSession}
     <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
@@ -139,6 +155,7 @@
           current: model.activeNavigation === "home",
           icon: homeIcon,
         },
+        ...privacyItems,
       ]}
     />
   </nav>
@@ -156,19 +173,21 @@
         <Alert tone={sessionNotice.tone}>{sessionNotice.message}</Alert>
       {/if}
     {:else if authenticatedSession}
-      <NavList
-        {compact}
-        title={compact ? authenticatedSession.displayName : t("shell.manageAccount")}
-        items={[
-          {
-            href: accountHref,
-            label: compact
-              ? t("shell.manageAccountFor", { name: authenticatedSession.displayName })
-              : authenticatedSession.displayName,
-            icon: accountIcon,
-          },
-        ]}
-      />
+      {#if accountHref}
+        <NavList
+          {compact}
+          title={compact ? authenticatedSession.displayName : t("shell.manageAccount")}
+          items={[
+            {
+              href: accountHref,
+              label: compact
+                ? t("shell.manageAccountFor", { name: authenticatedSession.displayName })
+                : authenticatedSession.displayName,
+              icon: accountIcon,
+            },
+          ]}
+        />
+      {/if}
       <form class="logout-form" method="POST" action={logoutAction} onsubmit={submitLogout}>
         <Button
           class="shell-account-button {compact ? 'compact-control' : ''}"

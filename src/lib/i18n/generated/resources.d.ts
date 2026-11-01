@@ -32,77 +32,21 @@ export default interface Resources {
       }
     },
     "authFlow": {
-      "expiryUnavailable": "Not provided",
       "feedback": {
-        "emailUpdated": "Your email address was updated.",
         "invalidCredentials": "The email address or password is incorrect.",
-        "invalidCurrentPassword": "Your current password is incorrect.",
-        "passwordChanged": "Your password was changed.",
-        "passwordReset": "Your password was reset.",
-        "registrationCompleted": "Your account is ready.",
         "serviceUnavailable": "Please try again in a few minutes.",
-        "sessionUnavailable": "We couldn’t verify your session. Please reload the page in a few minutes.",
         "tooManyAttempts": "Too many attempts. Please wait a few minutes before trying again."
       },
       "validation": {
-        "confirmPassword": "Confirm your new password.",
-        "currentPassword": "Enter your current password.",
         "email": "Enter a valid email address.",
         "maxLength_one": "Use no more than {{count}} character.",
         "maxLength_other": "Use no more than {{count}} characters.",
         "minLength_one": "Use at least {{count}} character.",
         "minLength_other": "Use at least {{count}} characters.",
-        "password": "Enter your password.",
-        "passwordMismatch": "The passwords do not match."
+        "password": "Enter your password."
       }
     },
     "authUi": {
-      "account": {
-        "claims": {
-          "accessExpiresAt": "Access expires",
-          "noRoles": "No roles assigned",
-          "refreshExpiresAt": "Session expires",
-          "roles": "Roles",
-          "title": "Your session",
-          "userId": "Account ID"
-        },
-        "description": "Your personal information and security settings.",
-        "email": {
-          "current": "Current email",
-          "description": "A confirmation link will be sent to your new email.",
-          "hint": "Your current email remains active until you confirm.",
-          "label": "New email address",
-          "pending": "Awaiting confirmation",
-          "pendingDescription": "If no other account uses the new address, you’ll receive a confirmation link there.",
-          "pendingExpiry": "Link expires {{date}}",
-          "pendingTitle": "Check your inbox",
-          "resend": "Send another link",
-          "submit": "Send link",
-          "submitting": "Sending link…",
-          "title": "Email",
-          "unavailable": "Your current email can’t be shown right now."
-        },
-        "loadErrorTitle": "Session details unavailable",
-        "loadingTitle": "Loading session",
-        "logout": {
-          "description": "You’ll be logged out of Studio on this device.",
-          "submit": "Log out",
-          "submitting": "Logging out…"
-        },
-        "password": {
-          "confirmLabel": "Confirm new password",
-          "currentLabel": "Current password",
-          "hint": "Choose a long, memorable password.",
-          "newLabel": "New password",
-          "submit": "Change password",
-          "submitting": "Changing password…",
-          "title": "Password"
-        },
-        "privacy": {
-          "title": "Privacy"
-        },
-        "title": "Manage your account"
-      },
       "authentication": {
         "emailLabel": "Email address",
         "journeys": {
@@ -127,55 +71,18 @@ export default interface Resources {
         "passwordLabel": "Password",
         "pendingTitle": "Check your inbox"
       },
-      "serviceUnavailable": "Temporarily unavailable",
-      "shortCode": {
-        "confirmPasswordLabel": "Confirm new password",
-        "continue": "Continue to Studio",
-        "journeys": {
-          "emailUpdate": {
-            "submit": "Update email",
-            "submitting": "Updating email…",
-            "unavailableTitle": "Email update unavailable"
-          },
-          "passwordReset": {
-            "description": "Choose a new password to regain access to your account.",
-            "submit": "Reset password",
-            "submitting": "Resetting password…",
-            "title": "Reset your Agora password"
-          },
-          "register": {
-            "description": "Choose the password you’ll log in with.",
-            "submit": "Create account",
-            "submitting": "Creating account…",
-            "title": "Create your Agora account"
-          }
-        },
-        "newPasswordLabel": "New password",
-        "restart": "Request a new link",
-        "states": {
-          "invalid": {
-            "description": "This link may have expired, already been used, or been copied incorrectly.",
-            "title": "This link is not valid"
-          },
-          "missing": {
-            "description": "Open the complete link from your email or request a new one.",
-            "title": "This link is incomplete"
-          }
-        }
-      }
+      "serviceUnavailable": "Temporarily unavailable"
     },
     "pageTitles": {
-      "account": "Account settings",
-      "accountCreated": "Account created",
       "brand": "Agora Studio",
-      "confirmEmail": "Confirm email",
-      "createAccount": "Create account",
-      "emailUpdated": "Email updated",
-      "incompleteLink": "Incomplete link",
-      "invalidLink": "Invalid link",
-      "passwordReset": "Password reset",
+      "privacy": "Privacy",
       "resetPassword": "Reset password",
       "withState": "{{title}}: {{status}}"
+    },
+    "privacy": {
+      "description": "Choose what Studio collects on this device.",
+      "noTelemetry": "Studio collects no metrics or logs on this device.",
+      "title": "Privacy"
     },
     "shell": {
       "accountFallback": "Account",
@@ -206,6 +113,7 @@ export default interface Resources {
       "manageAccountFor": "Manage account for {{name}}",
       "navigation": "Studio navigation",
       "openNavigation": "Open navigation",
+      "privacy": "Privacy",
       "sessionDowntime": "Account unavailable during maintenance.",
       "sessionLoading": "Loading account",
       "sessionUnavailable": "Account details are unavailable.",
@@ -213,7 +121,7 @@ export default interface Resources {
       "skipToContent": "Skip to content"
     },
     "telemetryConsent": {
-      "change": "Change this anytime from the account management menu.",
+      "change": "Change this anytime from the Privacy page.",
       "message": "We sometimes collect error logs and performance metrics to improve our products. No personal information is recorded or shared.",
       "title": "Metrics and log collection"
     }

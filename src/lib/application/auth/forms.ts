@@ -1,10 +1,7 @@
 import type { AuthenticationValidation, FormIssue } from "./types";
 
 import {
-  CredentialsCreateRequestSchema,
-  CredentialsUpdatePasswordRequestSchema,
   EmailSchema,
-  PasswordSchema,
   ShortCodeCreateRegisterRequestSchema,
   TokenCreateRequestSchema,
   WaitlistJoinRequestSchema,
@@ -22,33 +19,11 @@ const emailRequestSchema = ShortCodeCreateRegisterRequestSchema.pick({ email: tr
 const invitationRequestSchema = WaitlistJoinRequestSchema.pick({ email: true }).extend({
   email: z.string().trim().pipe(WaitlistJoinRequestSchema.shape.email),
 });
-const passwordSchema = CredentialsCreateRequestSchema.pick({ password: true }).extend({
-  confirmPassword: PasswordSchema,
-});
-const matchingPasswords = ({ password, confirmPassword }: z.infer<typeof passwordSchema>) =>
-  password === confirmPassword;
-const confirmationError = { path: ["confirmPassword"], error: "passwordMismatch" };
-const newPasswordSchema = passwordSchema
-  .refine(matchingPasswords, confirmationError)
-  .transform(({ password }) => ({ password }));
-const passwordChangeSchema = CredentialsUpdatePasswordRequestSchema.extend({ confirmPassword: PasswordSchema })
-  .refine(matchingPasswords, confirmationError)
-  .transform(({ currentPassword, password }) => ({ currentPassword, password }));
 
 function validationMessage(issue: z.core.$ZodIssue, empty: boolean): AuthenticationValidation {
   if (issue.code === "too_big") return { feedback: "maxLength", limit: Number(issue.maximum) };
   if (issue.code === "too_small" && !empty) return { feedback: "minLength", limit: Number(issue.minimum) };
-  if (issue.code === "custom") return { feedback: "passwordMismatch" };
-  switch (issue.path[0]) {
-    case "email":
-      return { feedback: "email" };
-    case "currentPassword":
-      return { feedback: "currentPassword" };
-    case "confirmPassword":
-      return { feedback: "confirmPassword" };
-    default:
-      return { feedback: "password" };
-  }
+  return { feedback: issue.path[0] === "email" ? "email" : "password" };
 }
 
 function textValue(form: FormData, name: string): string {
@@ -83,19 +58,3 @@ export const validateEmailRequest = formValidator(emailRequestSchema, { email: "
 
 /** Preserves email casing for the service's case-sensitive membership checks. */
 export const validateInvitationRequest = formValidator(invitationRequestSchema, { email: "email" } as const);
-
-/** Returns email-update errors under the account screen's field name. */
-export const validateEmailUpdate = formValidator(emailRequestSchema, { email: "newEmail" } as const);
-
-/** Extends the service password-change request with confirmation, stripped from successful output. */
-export const validatePasswordChange = formValidator(passwordChangeSchema, {
-  currentPassword: "currentPassword",
-  password: "newPassword",
-  confirmPassword: "confirmPassword",
-} as const);
-
-/** Checks registration/reset passwords and strips the UI-only confirmation. */
-export const validateNewPassword = formValidator(newPasswordSchema, {
-  password: "newPassword",
-  confirmPassword: "confirmPassword",
-} as const);

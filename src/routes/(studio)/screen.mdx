@@ -1,6 +1,6 @@
 import * as ShellStories from "./screen.stories.svelte";
 
-import { Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
+import { Canvas, Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook";
 
 <Meta of={ShellStories} />
 
@@ -46,11 +46,20 @@ exists.
 
 ### Authenticated
 
+The account name opens the account page on the account platform.
+
 <ResponsiveStoryPair
   desktop={ShellStories.Authenticated}
   mobile={ShellStories.AuthenticatedMobile}
   meta={ShellStories}
 />
+
+### Privacy destination
+
+While Studio collects browser telemetry, the rail lists Privacy, where the visitor changes the consent
+banner's answer.
+
+<Canvas of={ShellStories.PrivacyDestination} />
 
 ### Loading account
 
