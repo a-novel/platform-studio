@@ -31,53 +31,9 @@ export default interface Resources {
         "title": "Access temporarily unavailable"
       }
     },
-    "authFlow": {
-      "feedback": {
-        "invalidCredentials": "The email address or password is incorrect.",
-        "serviceUnavailable": "Please try again in a few minutes.",
-        "tooManyAttempts": "Too many attempts. Please wait a few minutes before trying again."
-      },
-      "validation": {
-        "email": "Enter a valid email address.",
-        "maxLength_one": "Use no more than {{count}} character.",
-        "maxLength_other": "Use no more than {{count}} characters.",
-        "minLength_one": "Use at least {{count}} character.",
-        "minLength_other": "Use at least {{count}} characters.",
-        "password": "Enter your password."
-      }
-    },
-    "authUi": {
-      "authentication": {
-        "emailLabel": "Email address",
-        "journeys": {
-          "login": {
-            "submit": "Log in",
-            "submitting": "Logging in…"
-          },
-          "register": {
-            "accountExists": "This email is already registered. You can log in to your account.",
-            "alreadyWaitlisted": "This email is already on the invitation list.",
-            "recordedDescription": "Your invitation will be sent to",
-            "recordedTitle": "You’re on the invitation list",
-            "submit": "Join the list",
-            "submitting": "Joining the list…"
-          },
-          "reset": {
-            "pendingDescription": "If this email is registered, you’ll receive a password reset link at",
-            "submit": "Send link",
-            "submitting": "Sending link…"
-          }
-        },
-        "passwordLabel": "Password",
-        "pendingTitle": "Check your inbox"
-      },
-      "serviceUnavailable": "Temporarily unavailable"
-    },
     "pageTitles": {
       "brand": "Agora Studio",
-      "privacy": "Privacy",
-      "resetPassword": "Reset password",
-      "withState": "{{title}}: {{status}}"
+      "privacy": "Privacy"
     },
     "privacy": {
       "description": "Choose what we collect on this device.",
@@ -85,24 +41,7 @@ export default interface Resources {
       "title": "Privacy"
     },
     "shell": {
-      "accountFallback": "Account",
-      "auth": {
-        "createAccount": "Request an invitation",
-        "forgotPassword": "Forgot password?",
-        "login": {
-          "title": "Log in"
-        },
-        "register": {
-          "description": "Access is currently by invitation. We’ll contact you when yours is available.",
-          "title": "Join the Agora invitation list"
-        },
-        "reset": {
-          "description": "You’ll receive an email link to choose a new password.",
-          "title": "Reset your password"
-        }
-      },
       "brand": "Studio",
-      "closeAuthentication": "Close dialog",
       "closeNavigation": "Close navigation",
       "collapseNavigation": "Collapse navigation",
       "expandNavigation": "Expand navigation",
@@ -113,12 +52,21 @@ export default interface Resources {
       "manageAccountFor": "Manage account for {{name}}",
       "navigation": "Studio navigation",
       "openNavigation": "Open navigation",
+      "opensInNewTab": "(opens in a new tab)",
       "privacy": "Privacy",
+      "register": "Register",
       "sessionDowntime": "Account unavailable during maintenance.",
       "sessionLoading": "Loading account",
       "sessionUnavailable": "Account details are unavailable.",
       "signIn": "Log in",
       "skipToContent": "Skip to content"
+    },
+    "signInFailed": {
+      "rateLimited": "Too many attempts. Please wait a few minutes before trying again.",
+      "rejected": "The login took too long or was interrupted. Please try again.",
+      "retry": "Try again",
+      "title": "We couldn’t log you in",
+      "unavailable": "Login is temporarily unavailable. Please try again in a few minutes."
     },
     "telemetryConsent": {
       "change": "Change this anytime from the Privacy page.",

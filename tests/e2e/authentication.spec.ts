@@ -1,19 +1,63 @@
-import { compose, emailLink, expect, test } from "./fixtures";
+import { accountOrigin, compose, expect, test } from "./fixtures";
+import { callerFetch, studioCaller } from "./service-token";
 
 import { screenshot } from "@a-novel-kit/nodelib-test/playwright";
+import { AuthenticationApi, refreshTokenGrant } from "@a-novel/service-authentication-rest";
 
-import type { Page } from "playwright/test";
+import type { BrowserContext, Page } from "playwright/test";
 
-async function login(page: Page, account: { email: string; password: string }) {
-  await page.getByLabel(/^Email address/).fill(account.email);
-  await page.getByLabel(/^Password/).fill(account.password);
-  await page.getByRole("dialog").getByRole("button", { name: "Log in", exact: true }).click();
+const studioOrigin = "http://127.0.0.1:4173";
+const studioApi = new AuthenticationApi("http://127.0.0.1:14100", callerFetch(studioCaller));
+
+interface Account {
+  email: string;
+  password: string;
 }
 
-/** The account link that names the signed-in visitor: in the rail, or in the menu on a phone. */
-async function accountLink(page: Page, isMobile: boolean) {
+/** Opens the menu that holds the account controls on a phone. The rail shows them on a desktop. */
+async function openAccountControls(page: Page, isMobile: boolean) {
   if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
-  return page.getByRole("link", { name: "Studio Tester", exact: true });
+}
+
+/** Fills and submits the account platform's login dialog. */
+async function submitLogin(page: Page, account: Account) {
+  const dialog = page.getByRole("dialog", { name: "Log in" });
+  await dialog.getByLabel(/^Email address/).fill(account.email);
+  await dialog.getByLabel(/^Password/).fill(account.password);
+  await dialog.getByRole("button", { name: "Log in", exact: true }).click();
+}
+
+/** Logs in on the account platform, where a sign-in from Studio lands a visitor signed out there. */
+async function logInOnAccountPlatform(page: Page, account: Account) {
+  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/\?auth=login&returnTo=%2Fauthorize%3F/);
+  await submitLogin(page, account);
+}
+
+/** Opens a session on the account platform itself, before the visitor reaches Studio. */
+async function openAccountSession(page: Page, account: Account) {
+  await page.goto(`${accountOrigin}/?auth=login`);
+  await submitLogin(page, account);
+  await expect(page.getByRole("button", { name: "Log out", exact: true }).last()).toBeAttached();
+}
+
+/** Signs in from the Studio page at `path`, through the account platform's login. */
+async function signIn(page: Page, account: Account, isMobile: boolean, path = "/") {
+  await page.goto(path);
+  await openAccountControls(page, isMobile);
+  await page.getByRole("link", { name: "Log in", exact: true }).click();
+  await logInOnAccountPlatform(page, account);
+  await expect(page).toHaveURL(path);
+}
+
+/** The account link, named after the email of the fixtures' accounts, which tells the visitor is signed in. */
+async function accountLink(page: Page, isMobile: boolean) {
+  await openAccountControls(page, isMobile);
+  return page.getByRole("link", { name: "Studio Tester (opens in a new tab)", exact: true });
+}
+
+/** Studio's cookies, the pending sign-in's included. The account platform's share the host. */
+async function studioCookies(context: BrowserContext) {
+  return (await context.cookies()).filter((cookie) => cookie.name.startsWith("studio_"));
 }
 
 async function authenticationResponds(): Promise<boolean> {
@@ -24,92 +68,145 @@ async function authenticationResponds(): Promise<boolean> {
   }
 }
 
-test("login keeps the session in secure cookies across reloads, and logout revokes it", async ({
+test("signs in from signed out through the account platform and returns to the page", async ({
   page,
   context,
   account,
   isMobile,
 }, info) => {
-  await page.goto("/?auth=login");
-  await expect(page).toHaveTitle("Log in | Agora Studio");
+  const callback = page.waitForRequest((request) => request.url().startsWith(`${studioOrigin}/auth/callback?`));
+  await signIn(page, account, isMobile, "/privacy");
 
-  await login(page, account);
-  await expect(page).toHaveURL("/");
-  await expect(page).toHaveTitle("Home | Agora Studio");
+  // The callback strips the code from the address bar and from any referrer.
+  const response = await (await callback).response();
+  expect(response?.status()).toBe(303);
+  expect(response?.headers()).toMatchObject({
+    location: "/privacy",
+    "cache-control": "no-store",
+    "referrer-policy": "no-referrer",
+  });
 
-  const cookies = (await context.cookies()).filter((cookie) => cookie.name.startsWith("studio_"));
-  expect(cookies.map((cookie) => cookie.name)).toEqual(
-    expect.arrayContaining(["studio_access_token", "studio_refresh_token"])
-  );
+  const cookies = await studioCookies(context);
+  expect(cookies.map((cookie) => cookie.name).sort()).toEqual([
+    "studio_access_token",
+    "studio_identity_handle",
+    "studio_refresh_token",
+  ]);
   expect(cookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
 
-  await page.reload();
-  // The account page lives on the account platform, which the account name opens.
-  await expect(await accountLink(page, isMobile)).toHaveAttribute("href", "https://account.example.test/account");
-  await screenshot(page, info, "authenticated-shell");
-
-  await page.getByRole("button", { name: "Log out", exact: true }).last().click();
-  await expect(page).toHaveURL("/");
-  expect((await context.cookies()).filter((cookie) => cookie.name.startsWith("studio_"))).toEqual([]);
-
-  // Logout revoked the refresh token, so the service refuses to renew the session with it.
-  const tokens = Object.fromEntries(cookies.map((cookie) => [cookie.name, cookie.value]));
-  const renewal = await fetch("http://127.0.0.1:14100/v2/session", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ accessToken: tokens.studio_access_token, refreshToken: tokens.studio_refresh_token }),
-  });
-  expect(renewal.status).toBe(403);
-});
-
-test("a password reset request sends a link to the account platform", async ({ page, account }) => {
-  await page.goto("/?auth=reset");
-  await expect(page).toHaveTitle("Reset password | Agora Studio");
-  await page.getByLabel(/^Email address/).fill(account.email);
-  await page.getByRole("button", { name: "Send link", exact: true }).click();
-  await expect(page.getByText(account.email, { exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Reset password: Check your inbox | Agora Studio");
-
-  // The authentication service builds the link from its own platform URL, which names the account
-  // platform; Studio no longer serves it.
-  expect(await emailLink(account.email, "/ext/password/reset")).toContain("/ext/password/reset?");
-});
-
-test("dialog history and keyboard dismissal restore the shell focus", async ({ page, isMobile }) => {
+  // The session survives a new page load, which the checkpoint captures on the home page.
   await page.goto("/");
-  await expect(page).toHaveTitle("Home | Agora Studio");
-  if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+  await expect(await accountLink(page, isMobile)).toHaveAttribute("href", `${accountOrigin}/account`);
+  await screenshot(page, info, "authenticated-shell");
+});
 
-  const trigger = page.getByRole("link", { name: "Log in", exact: true });
-  await trigger.click();
-  await expect(page.getByRole("dialog", { name: "Log in", exact: true })).toBeVisible();
-  await expect(page).toHaveTitle("Log in | Agora Studio");
-  await expect(page.getByRole("link", { name: "Close dialog" })).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByLabel(/^Email address/)).toBeFocused();
-  await page.getByRole("link", { name: "Forgot password?" }).click();
-  await expect(page).toHaveURL(isMobile ? "/?menu=open&auth=reset" : "/?auth=reset");
-  await expect(page).toHaveTitle("Reset password | Agora Studio");
+test("signs in without a form while the account platform's session is open", async ({
+  page,
+  context,
+  account,
+  isMobile,
+}) => {
+  await openAccountSession(page, account);
 
-  await page.goBack();
-  await expect(page).toHaveURL(isMobile ? "/?menu=open" : "/");
-  await expect(page).toHaveTitle("Home | Agora Studio");
-  await expect(page.getByRole("dialog", { name: /^(Log in|Reset your password)$/ })).toHaveCount(0);
+  // The account platform's app list opens Studio's sign-in, which comes back signed in.
+  await page.getByRole("button", { name: "Agora apps", exact: true }).click();
+  await page.getByRole("navigation", { name: "Agora apps" }).getByRole("link", { name: "Studio", exact: true }).click();
+  await expect(page).toHaveURL(`${studioOrigin}/`);
+  await expect(await accountLink(page, isMobile)).toBeVisible();
 
-  await page.goForward();
-  await expect(page.getByRole("dialog", { name: "Reset your password" })).toBeVisible();
-  await expect(page).toHaveTitle("Reset password | Agora Studio");
+  // Studio's own "Log in" comes back the same way once its cookies are gone.
+  await context.clearCookies({ name: /^studio_/ });
+  await page.goto("/privacy");
+  await openAccountControls(page, isMobile);
+  await page.getByRole("link", { name: "Log in", exact: true }).click();
+  await expect(page).toHaveURL("/privacy");
+  await expect(await accountLink(page, isMobile)).toBeVisible();
+});
 
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: /^(Log in|Reset your password)$/ })).toHaveCount(0);
-  await expect(page).toHaveURL(isMobile ? "/?menu=open" : "/");
-  await expect(page).toHaveTitle("Home | Agora Studio");
-  await expect(trigger).toBeFocused();
+test("logging out of Studio ends the session on the account platform too", async ({
+  page,
+  context,
+  account,
+  isMobile,
+}) => {
+  await signIn(page, account, isMobile);
+  const tokens = Object.fromEntries((await studioCookies(context)).map((cookie) => [cookie.name, cookie.value]));
 
-  if (isMobile) {
-    await page.keyboard.press("Escape");
-    await expect(page.getByRole("link", { name: "Open navigation", exact: true })).toBeFocused();
-  }
+  await openAccountControls(page, isMobile);
+  await page.getByRole("button", { name: "Log out", exact: true }).click();
+  await expect(page).toHaveURL("/");
+  expect(await studioCookies(context)).toEqual([]);
+
+  // Authentication ended the whole session, so Studio's refresh token no longer renews it.
+  await expect(refreshTokenGrant(studioApi, tokens.studio_refresh_token ?? "")).rejects.toMatchObject({
+    response: { error: "invalid_grant" },
+  });
+
+  // The account platform finds its session ended on its next request.
+  await page.goto(`${accountOrigin}/account`);
+  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/\?auth=login&returnTo=%2Faccount$/);
+
+  // A new sign-in from Studio asks for the password again.
+  await page.goto("/");
+  await openAccountControls(page, isMobile);
+  await page.getByRole("link", { name: "Log in", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
+});
+
+test("logging out of the account platform ends Studio's session on its next request", async ({
+  page,
+  context,
+  account,
+  isMobile,
+}) => {
+  await signIn(page, account, isMobile);
+
+  await page.goto(`${accountOrigin}/`);
+  await page.getByRole("button", { name: "Log out", exact: true }).last().click();
+  await expect(page).toHaveURL(`${accountOrigin}/`);
+
+  await page.goto("/");
+  await openAccountControls(page, isMobile);
+  await expect(page.getByRole("link", { name: "Log in", exact: true })).toBeVisible();
+  expect(await studioCookies(context)).toEqual([]);
+});
+
+test("a failed exchange returns to the signed-out page, whose retry signs in", async ({
+  page,
+  context,
+  account,
+  isMobile,
+}, info) => {
+  await openAccountSession(page, account);
+
+  // The browser's own requests follow the sign-in to the code, which reaches Studio altered, so
+  // Authentication refuses the exchange.
+  const authorization = await page.request.get("/auth/sign-in?returnTo=%2Fprivacy", { maxRedirects: 0 });
+  const response = await page.request.get(authorization.headers().location ?? "", { maxRedirects: 0 });
+  const callback = new URL(response.headers().location ?? "");
+  expect(callback.searchParams.get("code")).toEqual(expect.any(String));
+  callback.searchParams.set("code", "forged-code");
+  await page.goto(callback.href);
+
+  await expect(page).toHaveURL("/auth/sign-in/failed?returnTo=%2Fprivacy");
+  await expect(page).toHaveTitle("We couldn’t log you in | Agora Studio");
+  await expect(page.getByRole("heading", { name: "We couldn’t log you in", level: 1 })).toBeVisible();
+  expect(await studioCookies(context)).toEqual([]);
+  await screenshot(page, info, "sign-in-failed");
+
+  // The account platform's session is still open, so the retry comes back signed in without a form.
+  await page.getByRole("link", { name: "Try again", exact: true }).click();
+  await expect(page).toHaveURL("/privacy");
+  await expect(await accountLink(page, isMobile)).toBeVisible();
+});
+
+test("Register opens the account platform's invitation request", async ({ page, isMobile }) => {
+  await page.goto("/");
+  await openAccountControls(page, isMobile);
+  await page.getByRole("link", { name: "Register", exact: true }).click();
+
+  await expect(page).toHaveURL(`${accountOrigin}/?auth=register`);
+  await expect(page.getByRole("dialog", { name: "Join the Agora invitation list" })).toBeVisible();
 });
 
 test("navigation controls preserve the rail preference and drawer focus", async ({ page, isMobile }) => {
@@ -137,15 +234,13 @@ test("an authentication outage preserves the session and recovers after reload",
   account,
   isMobile,
 }, info) => {
-  await page.goto("/?auth=login");
-  await login(page, account);
-  await expect(page).toHaveURL("/");
+  await signIn(page, account, isMobile);
 
   const cookies = await context.cookies();
   try {
     await compose("stop", "authentication");
     await page.reload();
-    if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+    await openAccountControls(page, isMobile);
     await expect(
       page.getByText("Account details are unavailable.", { exact: true }).filter({ visible: true })
     ).toBeVisible();
@@ -160,11 +255,15 @@ test("an authentication outage preserves the session and recovers after reload",
   await expect(await accountLink(page, isMobile)).toBeVisible();
 });
 
-test.describe("native forms without JavaScript", () => {
+test.describe("without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
-  test("shell links open, switch and close usable authentication forms", async ({ page, isMobile }) => {
-    await page.goto("/?returnTo=%2Fprivacy");
+  test("shell links open and close the menu, and sign in through the account platform", async ({
+    page,
+    account,
+    isMobile,
+  }) => {
+    await page.goto("/privacy");
     if (isMobile) {
       await page.getByRole("link", { name: "Open navigation", exact: true }).click();
       await expect(page.getByRole("dialog", { name: "Studio", exact: true })).toBeVisible();
@@ -174,33 +273,8 @@ test.describe("native forms without JavaScript", () => {
     }
 
     await page.getByRole("link", { name: "Log in", exact: true }).click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog.getByLabel(/^Email address/)).toBeVisible();
+    await logInOnAccountPlatform(page, account);
 
-    await dialog.getByRole("link", { name: "Forgot password?" }).click();
-    await expect(page).toHaveTitle("Reset password | Agora Studio");
-    await page.getByRole("button", { name: "Send link", exact: true }).click();
-    await expect(dialog.getByText("Enter a valid email address.", { exact: true })).toBeVisible();
-
-    await dialog.getByRole("link", { name: "Log in", exact: true }).click();
-    await dialog.getByRole("link", { name: "Request an invitation", exact: true }).click();
-    await expect(page).toHaveTitle("Join the Agora invitation list | Agora Studio");
-    await dialog.getByLabel(/^Email address/).fill("invalid");
-    await dialog.getByRole("button", { name: "Join the list", exact: true }).click();
-    await expect(dialog.getByText("Enter a valid email address.", { exact: true })).toBeVisible();
-
-    await dialog.getByRole("link", { name: "Close dialog" }).click();
-    await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(page).toHaveURL("/?returnTo=%2Fprivacy");
-  });
-
-  test("login validates on the server and returns where it started", async ({ page, account }) => {
-    await page.goto("/?auth=login&returnTo=%2Fprivacy");
-    await expect(page.getByRole("dialog", { name: "Log in", exact: true })).toBeVisible();
-    await login(page, { ...account, password: "Incorrect-password-42!" });
-    await expect(page.getByText("The email address or password is incorrect.", { exact: true })).toBeVisible();
-
-    await login(page, account);
     await expect(page).toHaveURL("/privacy");
     await expect(page).toHaveTitle("Privacy | Agora Studio");
   });

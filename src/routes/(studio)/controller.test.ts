@@ -1,50 +1,29 @@
-import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
-import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
+import { type StudioShellControllerOptions, createStudioShellController } from "./controller.svelte";
 
 import { describe, expect, it, vi } from "vitest";
 
+const links = {
+  homeHref: "/",
+  accountHref: "https://account.example.test/account",
+  invitationHref: "https://account.example.test/?auth=register",
+  privacyHref: "/privacy",
+  logoutAction: "/logout",
+};
+
+function shell(options: Partial<StudioShellControllerOptions> = {}) {
+  return createStudioShellController({
+    model: { activeNavigation: "home", drawerOpen: false, rail: "expanded", session: { status: "anonymous" } },
+    ...links,
+    allowNativeLogout: false,
+    ...options,
+  });
+}
+
 describe("createStudioShellController", () => {
   it("accepts semantic shell transitions", () => {
-    const onAuthViewChange = vi.fn();
     const onRailChange = vi.fn();
     const onDrawerChange = vi.fn();
-    let url = new URL("https://studio.example.test/base/?document=42&menu=open&returnTo=%2Faccount#selection");
-    const authentication = createAuthenticationPanelController({
-      model: readyAuthenticationModel("login"),
-      action: "/auth",
-      allowNativeSubmission: false,
-    });
-    const controller = createStudioShellController({
-      model: {
-        activeNavigation: "home",
-        authView: "login",
-        drawerOpen: false,
-        rail: "expanded",
-        session: { status: "anonymous" },
-      },
-      homeHref: "/",
-      accountHref: "https://account.example.test/account",
-      privacyHref: "/privacy",
-      logoutAction: "/logout",
-      authentication,
-      allowNativeLogout: false,
-      onAuthViewChange,
-      onRailChange,
-      onDrawerChange,
-      getUrl: () => url,
-    });
-
-    expect(controller.authenticationHref("register")).toBe(
-      "/base/?document=42&returnTo=%2Faccount&auth=register#selection"
-    );
-    expect(controller.navigationHref(false)).toBe("/base/?document=42&returnTo=%2Faccount#selection");
-    url = new URL("https://studio.example.test/base/account?auth=login");
-    expect(controller.authenticationHref(null)).toBe("/base/account");
-
-    controller.authenticationDialog.close();
-    expect(controller.state.model.authView).toBeNull();
-    expect(controller.authenticationDialog.state.open).toBe(false);
-    expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith(null);
+    const controller = shell({ onRailChange, onDrawerChange });
 
     controller.navigationDialog.open();
     expect(onDrawerChange).toHaveBeenCalledExactlyOnceWith(true);
@@ -60,110 +39,52 @@ describe("createStudioShellController", () => {
     expect(controller.navigationDialog.state.open).toBe(true);
     controller.navigationDialog.toggle();
     expect(controller.navigationDialog.state.open).toBe(false);
-
-    controller.authenticationDialog.open();
-    controller.authenticationDialog.open();
-    expect(controller.authenticationDialog.state.open).toBe(true);
-    expect(onAuthViewChange).toHaveBeenCalledTimes(2);
-    controller.authenticationDialog.toggle();
-    expect(controller.authenticationDialog.state.open).toBe(false);
-    controller.authenticationDialog.toggle();
-    expect(controller.state.model.authView).toBe("login");
-    expect(onAuthViewChange.mock.calls).toEqual([[null], ["login"], [null], ["login"]]);
+    expect(onDrawerChange.mock.calls).toEqual([[true], [false], [true], [false]]);
 
     for (const session of [{ status: "anonymous" }, { status: "loading" }, { status: "error" }] as const) {
-      controller.synchronizeRoute({ activeNavigation: "home", authView: null, session });
+      controller.synchronizeRoute({ activeNavigation: "home", session });
       expect(controller.logout()).toBe(false);
       expect(controller.state.model.session).toEqual(session);
     }
   });
 
+  it("links the menu and a sign-in that returns to the current page without the open menu", () => {
+    let url = new URL("https://studio.example.test/base/?document=42&menu=open#selection");
+    const controller = shell({ getUrl: () => url });
+
+    expect(controller.navigationHref(false)).toBe("/base/?document=42#selection");
+    expect(controller.navigationHref(true)).toBe("/base/?document=42&menu=open#selection");
+    expect(controller.signInHref()).toBe("/auth/sign-in?returnTo=%2Fbase%2F%3Fdocument%3D42%23selection");
+
+    url = new URL("https://studio.example.test/auth/sign-in/failed?returnTo=%2Fprivacy&reason=unavailable");
+    expect(controller.signInHref()).toBe("/auth/sign-in?returnTo=%2Fprivacy");
+  });
+
   it("synchronizes route state around accepted shell transitions", () => {
-    const onAuthViewChange = vi.fn();
-    const authentication = createAuthenticationPanelController({
-      model: readyAuthenticationModel("login"),
-      action: "/auth/login",
-      allowNativeSubmission: false,
-    });
-    const controller = createStudioShellController({
-      model: {
-        activeNavigation: "home",
-        authView: null,
-        drawerOpen: false,
-        rail: "expanded",
-        session: { status: "anonymous" },
-      },
-      homeHref: "/",
-      accountHref: "https://account.example.test/account",
-      privacyHref: "/privacy",
-      logoutAction: "/logout",
-      authentication,
-      resolveAuthentication: (view) => ({
-        model: readyAuthenticationModel(view),
-        action: `/auth/${view}`,
-      }),
-      allowNativeLogout: false,
-      onAuthViewChange,
-    });
-
-    controller.openAuthentication("register");
-    expect(controller.state.model.authView).toBe("register");
-    expect(controller.authentication.state).toEqual({
-      model: { journey: "register", state: { status: "ready" } },
-      action: "/auth/register",
-    });
-    expect(onAuthViewChange).toHaveBeenCalledExactlyOnceWith("register");
-
-    controller.openAuthentication("register");
-    controller.authenticationDialog.close();
-    expect(onAuthViewChange).toHaveBeenLastCalledWith(null);
+    const controller = shell();
 
     controller.synchronizeRail("collapsed");
     controller.synchronizeRail("collapsed");
     controller.navigationDialog.open();
     expect(controller.state.model.rail).toBe("collapsed");
 
-    controller.synchronizeRoute({
+    controller.synchronizeRoute({ activeNavigation: null, session: { status: "authenticated" } });
+    expect(controller.state.model).toEqual({
       activeNavigation: null,
-      authView: "reset",
-      session: { status: "authenticated", displayName: "Maya Chen" },
-      authentication: {
-        model: readyAuthenticationModel("reset"),
-        action: "/auth/reset",
-      },
-    });
-    expect(controller.state.model).toMatchObject({
-      activeNavigation: null,
-      authView: "reset",
       rail: "collapsed",
       drawerOpen: true,
-      session: { status: "authenticated", displayName: "Maya Chen" },
+      session: { status: "authenticated" },
     });
-    expect(controller.authentication.state.action).toBe("/auth/reset");
-    expect(onAuthViewChange.mock.calls).toEqual([["register"], [null]]);
+    expect(controller.state).toMatchObject(links);
 
     expect(controller.logout()).toBe(false);
     expect(controller.state.model.session.status).toBe("anonymous");
   });
 
   it("allows native logout without replacing the authenticated session", () => {
-    const authentication = createAuthenticationPanelController({
-      model: readyAuthenticationModel("login"),
-      action: "/auth",
-    });
-    const controller = createStudioShellController({
-      model: {
-        activeNavigation: "home",
-        authView: null,
-        drawerOpen: false,
-        rail: "expanded",
-        session: { status: "authenticated", displayName: "Maya Chen" },
-      },
-      homeHref: "/",
-      accountHref: "https://account.example.test/account",
-      privacyHref: "/privacy",
-      logoutAction: "/logout",
-      authentication,
+    const controller = shell({
+      model: { activeNavigation: "home", drawerOpen: false, rail: "expanded", session: { status: "authenticated" } },
+      allowNativeLogout: true,
     });
 
     expect(controller.logout()).toBe(true);

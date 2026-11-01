@@ -1,11 +1,6 @@
-import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
-import { withAuthView, withNavigationOpen } from "#lib/application/shell/auth-dialog-state.js";
-import type { AuthDialogView, ShellSession, StudioShellViewModel } from "#lib/application/shell/types.js";
-
-import type {
-  AuthenticationPanelController,
-  AuthenticationPanelControllerState,
-} from "./(authentication)/controller.svelte";
+import { signInHref } from "#lib/application/auth/navigation.js";
+import { withNavigationOpen } from "#lib/application/shell/navigation-state.js";
+import type { ShellSession, StudioShellViewModel } from "#lib/application/shell/types.js";
 
 import { SvelteURL } from "svelte/reactivity";
 
@@ -17,6 +12,8 @@ export interface StudioShellControllerState {
   homeHref: string;
   /** The account page on the account platform, absent while the server cannot read where it lives. */
   accountHref: string | null;
+  /** The invitation request on the account platform, absent while the server cannot read where it lives. */
+  invitationHref: string | null;
   privacyHref: string;
   logoutAction: string;
 }
@@ -25,28 +22,25 @@ export interface StudioShellControllerState {
 export interface StudioShellRouteState {
   activeNavigation: StudioShellViewModel["activeNavigation"];
   session: ShellSession;
-  authView: AuthDialogView | null;
   drawerOpen?: boolean;
-  authentication?: AuthenticationPanelControllerState;
 }
 
 /** Pure state and transitions consumed by the Studio shell component. */
 export interface StudioShellController {
   readonly state: StudioShellControllerState;
-  readonly authentication: AuthenticationPanelController;
   readonly navigationDialog: OpenController;
-  readonly authenticationDialog: OpenController;
-  /** Native navigation destination for an authentication view or its dismissal. */
-  authenticationHref(view: AuthDialogView | null): string;
   /** Native navigation destination for the mobile menu. */
   navigationHref(open: boolean): string;
-  /** Shows one authentication journey. */
-  openAuthentication(view: AuthDialogView): void;
+  /**
+   * Starts a sign-in through the account platform that returns to the current page, or to the page a
+   * `returnTo` parameter names.
+   */
+  signInHref(): string;
   /** Switches between the expanded and collapsed navigation rail. */
   toggleRail(): void;
   /** Requests logout and reports whether native form submission should continue. */
   logout(): boolean;
-  /** Reconciles route-owned state after navigation or form actions. */
+  /** Reconciles route-owned state after navigation. */
   synchronizeRoute(state: StudioShellRouteState): void;
   /** Reconciles the persisted navigation-rail preference. */
   synchronizeRail(rail: StudioShellViewModel["rail"]): void;
@@ -54,13 +48,8 @@ export interface StudioShellController {
 
 /** Configuration for the default Studio shell controller. */
 export interface StudioShellControllerOptions extends StudioShellControllerState {
-  authentication: AuthenticationPanelController;
-  /** Resolves the form state used when the user selects an authentication journey. */
-  resolveAuthentication?: (view: AuthDialogView) => AuthenticationPanelControllerState;
   /** Allows the browser to submit the logout form after the controller accepts it. */
   allowNativeLogout?: boolean;
-  /** Observes accepted authentication-view changes. */
-  onAuthViewChange?: (view: AuthDialogView | null) => void;
   /** Observes accepted navigation-rail changes. */
   onRailChange?: (rail: StudioShellViewModel["rail"]) => void;
   /** Current base-resolved route, including query and fragment state. */
@@ -74,28 +63,15 @@ export function createStudioShellController({
   model: initialModel,
   homeHref,
   accountHref,
+  invitationHref,
   privacyHref,
   logoutAction,
-  authentication,
-  resolveAuthentication,
   allowNativeLogout = true,
-  onAuthViewChange,
   onRailChange,
   getUrl = () => new SvelteURL(homeHref, "https://studio.invalid"),
   onDrawerChange,
 }: StudioShellControllerOptions): StudioShellController {
   let model = $state(initialModel);
-
-  function setAuthentication(view: AuthDialogView | null) {
-    if (model.authView === view) return;
-
-    model = { ...model, authView: view };
-    if (view) {
-      const nextAuthentication = resolveAuthentication?.(view);
-      if (nextAuthentication) authentication.synchronize(nextAuthentication.model, nextAuthentication.action);
-    }
-    onAuthViewChange?.(view);
-  }
 
   function setDrawerOpen(open: boolean) {
     if (model.drawerOpen === open) return;
@@ -116,25 +92,16 @@ export function createStudioShellController({
     toggle: () => setDrawerOpen(!model.drawerOpen),
   };
 
-  const authenticationDialog: OpenController = {
-    get state() {
-      return { open: model.authView !== null };
-    },
-    open: () => setAuthentication(model.authView ?? "login"),
-    close: () => setAuthentication(null),
-    toggle: () => setAuthentication(model.authView === null ? "login" : null),
-  };
-
   return {
     get state() {
-      return { model, homeHref, accountHref, privacyHref, logoutAction };
+      return { model, homeHref, accountHref, invitationHref, privacyHref, logoutAction };
     },
-    authentication,
     navigationDialog,
-    authenticationDialog,
-    authenticationHref: (view) => href(withAuthView(withNavigationOpen(getUrl(), false), view)),
     navigationHref: (open) => href(withNavigationOpen(getUrl(), open)),
-    openAuthentication: setAuthentication,
+    signInHref() {
+      const url = withNavigationOpen(getUrl(), false);
+      return signInHref(url.searchParams.get("returnTo") ?? href(url));
+    },
     toggleRail() {
       const rail = model.rail === "expanded" ? "collapsed" : "expanded";
       model = { ...model, rail };
@@ -150,20 +117,11 @@ export function createStudioShellController({
         ...model,
         activeNavigation: routeState.activeNavigation,
         session: routeState.session,
-        authView: routeState.authView,
         drawerOpen: routeState.drawerOpen ?? model.drawerOpen,
       };
-      if (routeState.authentication) {
-        authentication.synchronize(routeState.authentication.model, routeState.authentication.action);
-      }
     },
     synchronizeRail(rail) {
       if (model.rail !== rail) model = { ...model, rail };
     },
   };
-}
-
-/** Creates the ready authentication model shared by shell controllers and stories. */
-export function readyAuthenticationModel(view: AuthDialogView): AuthenticationPanelModel {
-  return { journey: view, state: { status: "ready" } } as AuthenticationPanelModel;
 }

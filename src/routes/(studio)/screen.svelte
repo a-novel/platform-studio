@@ -1,6 +1,4 @@
 <script module lang="ts">
-  import type { AuthDialogView } from "#lib/application/shell/types.js";
-
   import type { StudioShellController } from "./controller.svelte";
 
   import type { Snippet } from "svelte";
@@ -16,8 +14,6 @@
   import { getStudioDowntime, hasStudioDowntime } from "#lib/ui/downtime.svelte.js";
   import { hasTelemetryPreference } from "#lib/ui/telemetry-preference.js";
 
-  import AuthenticationPanel from "./(authentication)/screen.svelte";
-
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import studioBanner from "@a-novel-kit/ui-images/files/banner/80h/studio-banner.png";
   import studioIcon48 from "@a-novel-kit/ui-images/files/icon/48x48/studio-icon.png";
@@ -28,32 +24,41 @@
     Button,
     Dialog,
     DowntimeBanner,
-    DowntimeState,
     IconButton,
     InlineMessage,
     NavList,
     SkipLink,
+    VisuallyHidden,
   } from "@a-novel-kit/uikit";
 
-  import { House, LogIn, LogOut, Menu, PanelLeftClose, PanelLeftOpen, ShieldCheck, X } from "@lucide/svelte";
+  import {
+    CircleUserRound,
+    ExternalLink,
+    House,
+    LogIn,
+    LogOut,
+    Menu,
+    PanelLeftClose,
+    PanelLeftOpen,
+    ShieldCheck,
+    UserRoundPlus,
+    X,
+  } from "@lucide/svelte";
 
   let { controller, children }: StudioShellProps = $props();
 
   // Stories and tests render the shell without the app's downtime tracking.
   const studioDowntime = hasStudioDowntime() ? getStudioDowntime() : undefined;
-  const stoppedUntil = $derived(studioDowntime?.started ? studioDowntime.downtime?.end : undefined);
 
   const model = $derived(controller.state.model);
   const homeHref = $derived(controller.state.homeHref);
   const accountHref = $derived(controller.state.accountHref);
+  const invitationHref = $derived(controller.state.invitationHref);
   const logoutAction = $derived(controller.state.logoutAction);
-  const authenticationState = $derived(controller.authentication.state.model.state.status);
-  const authActionsVisible = $derived(authenticationState !== "pending-email" && authenticationState !== "recorded");
 
   const componentId = $props.id();
   const desktopNavigationId = `${componentId}-desktop-navigation`;
   const drawerId = `${componentId}-navigation-drawer`;
-  const authenticationId = `${componentId}-authentication`;
   const compactRail = $derived(model.rail === "collapsed");
   const { t } = getI18nContext();
   // Only a Studio that collects browser telemetry asks for consent, so only it offers to change the answer.
@@ -76,19 +81,6 @@
     if (model.session.status === "error") return { tone: "error", message: t("shell.sessionUnavailable") } as const;
     if (model.session.status === "downtime") return { tone: "warning", message: t("shell.sessionDowntime") } as const;
     return null;
-  });
-  const authDialogTitle = $derived.by(() => {
-    if (authenticationState === "pending-email") return t("authUi.authentication.pendingTitle");
-    if (authenticationState === "recorded") return t("authUi.authentication.journeys.register.recordedTitle");
-    if (model.authView === "register") return t("shell.auth.register.title");
-    if (model.authView === "reset") return t("shell.auth.reset.title");
-    return t("shell.auth.login.title");
-  });
-  const authDialogDescription = $derived.by(() => {
-    if (!authActionsVisible) return undefined;
-    if (model.authView === "register") return t("shell.auth.register.description");
-    if (model.authView === "reset") return t("shell.auth.reset.description");
-    return undefined;
   });
 
   function closeDrawerAfterNavigation(event: MouseEvent) {
@@ -115,12 +107,6 @@
 {#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
 
 {#snippet privacyIcon()}<ShieldCheck size="var(--icon-size-sm)" />{/snippet}
-
-{#snippet accountIcon()}
-  {#if authenticatedSession}
-    <Avatar label={authenticatedSession.displayName} initials={authenticatedSession.initials} size="sm" />
-  {/if}
-{/snippet}
 
 {#snippet brand(compact: boolean)}
   <span class="brand" class:compact>
@@ -174,19 +160,34 @@
       {/if}
     {:else if authenticatedSession}
       {#if accountHref}
-        <NavList
-          {compact}
-          title={compact ? authenticatedSession.displayName : t("shell.manageAccount")}
-          items={[
-            {
-              href: accountHref,
-              label: compact
-                ? t("shell.manageAccountFor", { name: authenticatedSession.displayName })
-                : authenticatedSession.displayName,
-              icon: accountIcon,
-            },
-          ]}
-        />
+        {@const name = authenticatedSession.displayName}
+        <!-- The account platform serves the account page, which opens beside Studio. -->
+        <Button
+          class="shell-account-button {compact ? 'compact-control' : ''}"
+          variant="ghost"
+          tone="neutral"
+          size="sm"
+          square={compact}
+          title={name ? t("shell.manageAccountFor", { name }) : compact ? t("shell.manageAccount") : undefined}
+          href={accountHref}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="account-action-icon" aria-hidden="true">
+            {#if name}
+              <Avatar label={name} initials={authenticatedSession.initials} size="sm" />
+            {:else}
+              <CircleUserRound size="var(--icon-size-sm)" />
+            {/if}
+          </span>
+          {#if compact}
+            <VisuallyHidden>{name ? t("shell.manageAccountFor", { name }) : t("shell.manageAccount")}</VisuallyHidden>
+          {:else}
+            <span class="account-label">{name ?? t("shell.manageAccount")}</span>
+            <span class="new-tab-icon" aria-hidden="true"><ExternalLink size="var(--icon-size-sm)" /></span>
+          {/if}
+          <VisuallyHidden>{t("shell.opensInNewTab")}</VisuallyHidden>
+        </Button>
       {/if}
       <form class="logout-form" method="POST" action={logoutAction} onsubmit={submitLogout}>
         <Button
@@ -206,6 +207,7 @@
         </Button>
       </form>
     {:else}
+      <!-- The sign-in route redirects to the account platform, which the client router cannot render. -->
       <Button
         class="shell-account-button {compact ? 'compact-control' : ''}"
         variant="ghost"
@@ -214,37 +216,33 @@
         square={compact}
         aria-label={compact ? t("shell.signIn") : undefined}
         title={compact ? t("shell.signIn") : undefined}
-        href={controller.authenticationHref("login")}
-        onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication("login"))}
+        href={controller.signInHref()}
+        data-sveltekit-reload
       >
         <span class="account-action-icon" aria-hidden="true">
           <LogIn size="var(--icon-size-sm)" />
         </span>
         {#if !compact}<span>{t("shell.signIn")}</span>{/if}
       </Button>
+      {#if invitationHref}
+        <Button
+          class="shell-account-button {compact ? 'compact-control' : ''}"
+          variant="ghost"
+          tone="neutral"
+          size="sm"
+          square={compact}
+          aria-label={compact ? t("shell.register") : undefined}
+          title={compact ? t("shell.register") : undefined}
+          href={invitationHref}
+        >
+          <span class="account-action-icon" aria-hidden="true">
+            <UserRoundPlus size="var(--icon-size-sm)" />
+          </span>
+          {#if !compact}<span>{t("shell.register")}</span>{/if}
+        </Button>
+      {/if}
     {/if}
   </div>
-{/snippet}
-
-{#snippet authLink(view: AuthDialogView, label: string)}
-  <Button
-    variant="ghost"
-    tone="neutral"
-    size="sm"
-    href={controller.authenticationHref(view)}
-    onclick={(event: MouseEvent) => navigate(event, () => controller.openAuthentication(view))}
-  >
-    {label}
-  </Button>
-{/snippet}
-
-{#snippet authActions()}
-  {#if model.authView === "login"}
-    {@render authLink("reset", t("shell.auth.forgotPassword"))}
-    {@render authLink("register", t("shell.auth.createAccount"))}
-  {:else if model.authView}
-    {@render authLink("login", t("shell.signIn"))}
-  {/if}
 {/snippet}
 
 <div class="shell-viewport">
@@ -333,32 +331,6 @@
         {@render accountWidget(false)}
       </div>
     </div>
-  </Dialog>
-
-  <Dialog
-    id={authenticationId}
-    controller={controller.authenticationDialog}
-    title={authDialogTitle}
-    description={authDialogDescription}
-    actions={authActionsVisible && !stoppedUntil ? authActions : undefined}
-  >
-    {#snippet headerActions()}
-      <IconButton
-        label={t("shell.closeAuthentication")}
-        variant="ghost"
-        tone="neutral"
-        size="sm"
-        href={controller.authenticationHref(null)}
-        onclick={(event: MouseEvent) => navigate(event, () => controller.authenticationDialog.close())}
-      >
-        <X size="var(--icon-size-sm)" aria-hidden="true" />
-      </IconButton>
-    {/snippet}
-    {#if stoppedUntil && model.authView}
-      <DowntimeState end={stoppedUntil} timeZone={studioDowntime?.timeZone} headingLevel={3} />
-    {:else if model.authView}
-      <AuthenticationPanel controller={controller.authentication} />
-    {/if}
   </Dialog>
 </div>
 
@@ -471,6 +443,20 @@
     justify-content: center;
     align-items: center;
     inline-size: var(--control-height-sm);
+  }
+
+  .account-label {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .new-tab-icon {
+    display: inline-flex;
+    flex: none;
+    color: var(--color-text-secondary);
   }
 
   .compact-status {

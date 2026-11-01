@@ -6,25 +6,15 @@ import { Canvas, Meta, ResponsiveStoryPair } from "@a-novel-kit/uikit-storybook"
 
 # Platform shell
 
-The shell frames every Studio page with its navigation, its account controls and the authentication
-dialogs. Each preview holds one state fixed, so dismissing a dialog or a menu leaves it as it was.
+The shell frames every Studio page with its navigation and its account controls. Each preview holds
+one state fixed, so dismissing a menu leaves it as it was.
 
 Expanded headers show the padded Studio wordmark, and the compact rail shows the icon. On mobile, the
 wordmark and the menu control stay aligned between the closed header and the open menu.
 
-Dialog titles and fields share a leading edge. UIKit owns the header controls, the fullscreen menu,
-the compact navigation and the action spacing. Service errors sit above the submit button, which
-stays apart from the fields. Mobile actions stack at full width. Desktop actions keep their natural
-width, with secondary actions at the end of the footer. Completion states drop the footer.
-
-A request explains the next step before submission. Once the request is recorded or sent, the dialog
-heading becomes the outcome, with one compact status message and the submitted address below it.
-
-Validation previews use the same API schemas as the controllers. Invalid credentials read apart from
-service outages, which share a short heading and recovery guidance across forms. A successful login
-redirects. Invitation requests acknowledge list membership, with distinct warnings for existing
-accounts and repeated requests. Recovery acknowledges delivery without disclosing whether an account
-exists.
+People sign in on the account platform. "Log in" starts the request there and returns to the current
+page, and "Register" opens the account platform's invitation request, the only way to get an
+account. A signed-in visitor manages their account on the account platform too.
 
 ## Navigation and account
 
@@ -46,11 +36,27 @@ exists.
 
 ### Authenticated
 
-The account name opens the account page on the account platform.
+The account button shows the visitor's name and initials, taken from their email when they sign in,
+and opens the account page on the account platform in a new tab. "Log out" ends the session on every
+platform.
 
 <ResponsiveStoryPair
   desktop={ShellStories.Authenticated}
   mobile={ShellStories.AuthenticatedMobile}
+  meta={ShellStories}
+/>
+
+### Account without a name
+
+When Studio cannot read the account's email at sign-in, the button names no one.
+
+<Canvas of={ShellStories.AccountWithoutAName} />
+
+### Long account name
+
+<ResponsiveStoryPair
+  desktop={ShellStories.LongAccountName}
+  mobile={ShellStories.LongAccountNameMobile}
   meta={ShellStories}
 />
 
@@ -72,149 +78,3 @@ banner's answer.
 ### Account unavailable
 
 <ResponsiveStoryPair desktop={ShellStories.AccountError} mobile={ShellStories.AccountErrorMobile} meta={ShellStories} />
-
-### Long account name
-
-<ResponsiveStoryPair
-  desktop={ShellStories.LongAccountName}
-  mobile={ShellStories.LongAccountNameMobile}
-  meta={ShellStories}
-/>
-
-## Login
-
-### Default
-
-<ResponsiveStoryPair
-  desktop={ShellStories.LoginModalDesktop}
-  mobile={ShellStories.LoginModalMobile}
-  meta={ShellStories}
-/>
-
-### Submitting
-
-<ResponsiveStoryPair desktop={ShellStories.LoginSubmitting} mobile={ShellStories.LoginSubmitting} meta={ShellStories} />
-
-### Validation errors
-
-<ResponsiveStoryPair
-  desktop={ShellStories.LoginValidationError}
-  mobile={ShellStories.LoginValidationError}
-  meta={ShellStories}
-/>
-
-### Invalid credentials
-
-<ResponsiveStoryPair
-  desktop={ShellStories.LoginServiceError}
-  mobile={ShellStories.LoginServiceError}
-  meta={ShellStories}
-/>
-
-### Service unavailable
-
-<ResponsiveStoryPair
-  desktop={ShellStories.LoginServiceUnavailable}
-  mobile={ShellStories.LoginServiceUnavailable}
-  meta={ShellStories}
-/>
-
-## Invitation list
-
-### Default
-
-<ResponsiveStoryPair
-  desktop={ShellStories.InvitationListDesktop}
-  mobile={ShellStories.InvitationListMobile}
-  meta={ShellStories}
-/>
-
-### Submitting
-
-<ResponsiveStoryPair
-  desktop={ShellStories.InvitationRequestSubmitting}
-  mobile={ShellStories.InvitationRequestSubmitting}
-  meta={ShellStories}
-/>
-
-### Validation errors
-
-<ResponsiveStoryPair
-  desktop={ShellStories.InvitationRequestValidationError}
-  mobile={ShellStories.InvitationRequestValidationError}
-  meta={ShellStories}
-/>
-
-### Service unavailable
-
-<ResponsiveStoryPair
-  desktop={ShellStories.InvitationListUnavailable}
-  mobile={ShellStories.InvitationListUnavailable}
-  meta={ShellStories}
-/>
-
-### Account already exists
-
-<ResponsiveStoryPair
-  desktop={ShellStories.InvitationAccountExists}
-  mobile={ShellStories.InvitationAccountExists}
-  meta={ShellStories}
-/>
-
-### Already requested
-
-<ResponsiveStoryPair
-  desktop={ShellStories.InvitationAlreadyRequested}
-  mobile={ShellStories.InvitationAlreadyRequested}
-  meta={ShellStories}
-/>
-
-### Request recorded
-
-<ResponsiveStoryPair
-  desktop={ShellStories.InvitationRequestRecorded}
-  mobile={ShellStories.InvitationRequestRecorded}
-  meta={ShellStories}
-/>
-
-## Reset password
-
-### Default
-
-<ResponsiveStoryPair
-  desktop={ShellStories.PasswordResetModalDesktop}
-  mobile={ShellStories.PasswordResetModalMobile}
-  meta={ShellStories}
-/>
-
-### Submitting
-
-<ResponsiveStoryPair
-  desktop={ShellStories.PasswordResetSubmitting}
-  mobile={ShellStories.PasswordResetSubmitting}
-  meta={ShellStories}
-/>
-
-### Validation errors
-
-<ResponsiveStoryPair
-  desktop={ShellStories.PasswordResetValidationError}
-  mobile={ShellStories.PasswordResetValidationError}
-  meta={ShellStories}
-/>
-
-### Service unavailable
-
-<ResponsiveStoryPair
-  desktop={ShellStories.PasswordResetServiceUnavailable}
-  mobile={ShellStories.PasswordResetServiceUnavailable}
-  meta={ShellStories}
-/>
-
-### Confirmation pending
-
-<ResponsiveStoryPair
-  desktop={ShellStories.PasswordResetEmailPending}
-  mobile={ShellStories.PasswordResetEmailPending}
-  meta={ShellStories}
-/>
