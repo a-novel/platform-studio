@@ -6,7 +6,7 @@
 
   const { t } = getI18nContext();
 
-  // Only a Studio that collects browser telemetry asks for consent, so only it has an answer to change.
+  // Only a platform that collects browser telemetry asks for consent, so only it has an answer to change.
   const telemetry = hasTelemetryPreference() ? getTelemetryPreference() : undefined;
   const telemetrySwitch: SwitchController = {
     get state() {
@@ -25,6 +25,7 @@
       <Card surface="raised">
         {#if telemetry}
           <Switch
+            class="telemetry-setting"
             controller={telemetrySwitch}
             label={t("telemetryConsent.title")}
             description={t("telemetryConsent.message")}
@@ -42,6 +43,10 @@
   .privacy-screen {
     padding-inline: var(--layout-gutter);
     padding-block: var(--space-6) var(--space-12);
+  }
+
+  .privacy-screen :global(.telemetry-setting) {
+    display: flex;
   }
 
   p {

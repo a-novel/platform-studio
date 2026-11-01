@@ -10,14 +10,14 @@
   import { expect, userEvent, within } from "storybook/test";
 
   const { Story } = defineMeta({
-    title: "Studio/Privacy",
+    title: "Shell/Privacy",
     component: PrivacyStory,
     parameters: {
       layout: "fullscreen",
       docs: {
         description: {
           component:
-            "Where a visitor changes the telemetry answer this device gave the consent banner. Studio keeps it because the answer lives on the device, per site.",
+            "Where a visitor changes the telemetry answer this device gave the consent banner. Every platform keeps one, because the answer lives on the device, per site.",
         },
       },
     },

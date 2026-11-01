@@ -80,8 +80,8 @@ export default interface Resources {
       "withState": "{{title}}: {{status}}"
     },
     "privacy": {
-      "description": "Choose what Studio collects on this device.",
-      "noTelemetry": "Studio collects no metrics or logs on this device.",
+      "description": "Choose what we collect on this device.",
+      "noTelemetry": "We collect no metrics or logs on this device.",
       "title": "Privacy"
     },
     "shell": {

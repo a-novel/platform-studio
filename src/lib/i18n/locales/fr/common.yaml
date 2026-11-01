@@ -61,8 +61,8 @@ pageTitles:
   resetPassword: Réinitialiser le mot de passe
   withState: "{{title}}: {{status}}"
 privacy:
-  description: Choisissez ce que Studio collecte sur cet appareil.
-  noTelemetry: Studio ne collecte ni métriques ni journaux sur cet appareil.
+  description: Choisissez ce que nous collectons sur cet appareil.
+  noTelemetry: Nous ne collectons ni métriques ni journaux sur cet appareil.
   title: Confidentialité
 shell:
   accountFallback: Compte

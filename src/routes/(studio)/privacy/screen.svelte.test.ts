@@ -20,10 +20,10 @@ describe("privacy screen", () => {
     await expect.element(setting).toBeChecked();
   });
 
-  it("says so when Studio collects nothing", async () => {
+  it("says so when the platform collects nothing", async () => {
     render(PrivacyStory, { collects: false }, withLocale("fr"));
 
     await expect.element(page.getByRole("switch")).not.toBeInTheDocument();
-    await expect.element(page.getByText("Studio ne collecte ni métriques ni journaux sur cet appareil.")).toBeVisible();
+    await expect.element(page.getByText("Nous ne collectons ni métriques ni journaux sur cet appareil.")).toBeVisible();
   });
 });

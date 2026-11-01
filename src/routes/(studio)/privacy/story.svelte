@@ -3,7 +3,7 @@
 
   /** Storybook harness around the pure privacy screen. */
   export interface PrivacyScreenStoryProps {
-    /** Whether Studio collects browser telemetry, which installs the preference the screen changes. */
+    /** Whether the platform collects browser telemetry, which installs the preference the screen changes. */
     collects?: boolean;
     /** The visitor's telemetry answer; the switch then changes it within the story. */
     telemetryChoice?: TelemetryChoice;
