@@ -48,6 +48,9 @@ Layouts follow these rules:
 
 The Studio server is the only caller of platform services.
 
+- People sign in on the account platform. `/auth/sign-in` starts an authorization request there, and
+  `/auth/callback` checks its `state` and `iss`, then exchanges the code. Studio serves no account
+  form: "Request an invitation" and the account page open the account platform.
 - Forms post to same-origin server actions and work without JavaScript.
 - Tokens live in HttpOnly cookies. They never reach browser storage, page data, logs, or stories.
 - Email links under `/ext` never echo their code. A GET only parses the link, completion posts to the
@@ -58,8 +61,8 @@ The Studio server is the only caller of platform services.
 - Pages render user content as text. ESLint rejects `{@html}`.
 - A service outage keeps the session cookies and shows a recoverable state. Only a rejected token
   logs the user out.
-- Logout revokes the session's refresh token, then clears the cookies. A failed revocation still
-  logs the user out of the browser.
+- Logout ends the session on every platform, then clears the cookies. A failed revocation still logs
+  the user out of the browser.
 
 ## Writing copy
 
@@ -133,12 +136,13 @@ The `with-feature-env` label publishes the pull request's image as
 ### End-to-end journeys
 
 The journeys run the production build against the disposable services of `builds/compose.e2e.yaml`,
-and create accounts from real invitation emails. They also replay the essential forms with JavaScript
-disabled. One case stops the authentication container to simulate an outage, so the suite runs one
-worker at a time.
+and create accounts from real invitation emails. The stack runs the account platform, where the
+journeys sign in, and a service-token issuer that lets the authentication service tell Studio apart.
+They also replay the essential forms with JavaScript disabled. One case stops the authentication
+container to simulate an outage, so the suite runs one worker at a time.
 
-Install the browser once, then run the suite. It needs ports 4173 to 4175, 4180, 14100, and 14825
-free. With Docker Compose, omit `E2E_CONTAINER_ENGINE`.
+Install the browser once, then run the suite. It needs ports 4173 to 4175, 4180, 14100 to 14102, and
+14825 free. With Docker Compose, omit `E2E_CONTAINER_ENGINE`.
 
 ```bash
 pnpm exec playwright install --with-deps chromium
