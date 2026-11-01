@@ -49,11 +49,10 @@ async function signIn(page: Page, account: Account, isMobile: boolean, path = "/
   await expect(page).toHaveURL(path);
 }
 
-/** The account link that tells the visitor is signed in. */
+/** The account link, named after the email of the fixtures' accounts, which tells the visitor is signed in. */
 async function accountLink(page: Page, isMobile: boolean) {
   await openAccountControls(page, isMobile);
-  // The account button bears the visitor's name, or "Manage your account" while Studio cannot read it.
-  return page.getByRole("link", { name: /\(opens in a new tab\)$/ });
+  return page.getByRole("link", { name: "Studio Tester (opens in a new tab)", exact: true });
 }
 
 /** Studio's cookies, the pending sign-in's included. The account platform's share the host. */
@@ -88,9 +87,11 @@ test("signs in from signed out through the account platform and returns to the p
   });
 
   const cookies = await studioCookies(context);
-  const names = cookies.map((cookie) => cookie.name);
-  expect(names).toEqual(expect.arrayContaining(["studio_access_token", "studio_refresh_token"]));
-  expect(names).not.toContain("studio_sign_in");
+  expect(cookies.map((cookie) => cookie.name).sort()).toEqual([
+    "studio_access_token",
+    "studio_identity_handle",
+    "studio_refresh_token",
+  ]);
   expect(cookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
 
   // The session survives a new page load, which the checkpoint captures on the home page.
