@@ -1,10 +1,8 @@
 import { createStudioI18n } from "#lib/i18n/instance.js";
 
-import { accountActions, loadAccount } from "./account-route";
 import { authenticationActions } from "./authentication-route";
 import { logoutAuthentication } from "./logout";
 import { loadStudioShell } from "./shell-layout";
-import { loadShortCodeRoute, submitShortCodeRoute } from "./short-code-route";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -13,6 +11,7 @@ import { Role } from "@a-novel/service-authentication-rest";
 import type { Cookies, RequestEvent } from "@sveltejs/kit";
 
 const env = vi.hoisted(() => ({
+  ACCOUNT_URL: "https://account.test",
   AUTHENTICATION_SERVICE_AUDIENCE: undefined,
   AUTHENTICATION_SERVICE_URL: "https://authentication.test",
   DOWNTIME_URL: undefined,
@@ -39,18 +38,8 @@ function sentRequest() {
 }
 
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
-const credentials = {
-  id: userId,
-  email: "maya.chen@example.com",
-  role: Role.User,
-  createdAt: "2026-01-01T00:00:00Z",
-  updatedAt: "2026-01-01T00:00:00Z",
-};
 const identity = { userID: userId, roles: [Role.User] };
 const tokenCookies = { studio_access_token: "private-access", studio_refresh_token: "private-refresh" };
-const password = { password: "replacement-password", confirmPassword: "replacement-password" };
-const encodedEmail = Buffer.from("maya.chen@example.com").toString("base64url");
-const registrationLink = `/ext/account/create?shortCode=private-code&target=${encodedEmail}`;
 
 function request(path: string, cookieValues: Record<string, string> = {}, fields?: Record<string, string>) {
   const values = new Map(Object.entries(cookieValues));
@@ -163,6 +152,7 @@ describe("Studio session at the request boundary", () => {
     const { event } = request("/");
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: "home",
+      accountHref: "https://account.test/account",
       session: { status: "anonymous" },
       authorization: "anonymous",
     });
@@ -174,6 +164,7 @@ describe("Studio session at the request boundary", () => {
     fetchService.mockResolvedValueOnce(Response.json(identity));
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: null,
+      accountHref: "https://account.test/account",
       session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
       authorization: "allowed",
     });
@@ -189,18 +180,13 @@ describe("Studio session at the request boundary", () => {
     });
   });
 
-  it("checks the session once for the shell and page loads of one request", async () => {
-    const { event } = request("/account", tokenCookies);
-    fetchService.mockImplementation(async (url) =>
-      Response.json(String(url).endsWith("/credentials/self") ? credentials : identity)
-    );
+  it("checks the session once for the loads of one request", async () => {
+    const { event } = request("/", tokenCookies);
+    fetchService.mockImplementation(async () => Response.json(identity));
 
-    await Promise.all([loadStudioShell(event), loadAccount(event)]);
+    await Promise.all([loadStudioShell(event), loadStudioShell(event)]);
 
-    expect(fetchService.mock.calls.map(([url]) => url)).toEqual([
-      "https://authentication.test/v2/session",
-      "https://authentication.test/v2/credentials/self",
-    ]);
+    expect(fetchService.mock.calls.map(([url]) => url)).toEqual(["https://authentication.test/v2/session"]);
   });
 
   it("uses a localized account label when the identity cookie contains a full email", async () => {
@@ -223,7 +209,9 @@ describe("Studio session at the request boundary", () => {
   it("renders an unavailable session when runtime configuration is missing", async () => {
     env.AUTHENTICATION_SERVICE_URL = "";
     const { event } = request("/", tokenCookies);
-    await expect(loadStudioShell(event)).resolves.toMatchObject({
+    await expect(loadStudioShell(event)).resolves.toEqual({
+      activeNavigation: "home",
+      accountHref: null,
       session: { status: "error" },
       authorization: "unavailable",
     });
@@ -237,6 +225,7 @@ describe("Studio session at the request boundary", () => {
       .mockResolvedValueOnce(new Response("private service detail", { status: 503 }));
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: "home",
+      accountHref: "https://account.test/account",
       session: { status: "error" },
       authorization: "unavailable",
     });
@@ -321,211 +310,6 @@ describe("Studio session at the request boundary", () => {
     // The unreachable session check leaves nothing to revoke.
     expect(fetchService).toHaveBeenCalledOnce();
   });
-
-  it("returns an account recap without serializing access or refresh credentials", async () => {
-    const { event } = request("/account", tokenCookies);
-    fetchService.mockResolvedValueOnce(Response.json(identity)).mockResolvedValueOnce(Response.json(credentials));
-    await expect(loadAccount(event)).resolves.toEqual({
-      authorization: "allowed",
-      accountModel: {
-        claims: {
-          status: "ready",
-          userId,
-          roles: [Role.User],
-          accessExpiresAt: "Non renseignée",
-          refreshExpiresAt: "Non renseignée",
-        },
-        credentials: { status: "ready", email: credentials.email },
-        passwordState: { status: "ready" },
-        emailState: { status: "ready" },
-        logoutState: "ready",
-      },
-    });
-  });
-
-  it("changes a password only after verifying the session and omits confirmation from the API request", async () => {
-    const { event } = request("/account?/password", tokenCookies, {
-      currentPassword: "old-password",
-      ...password,
-    });
-    fetchService.mockResolvedValueOnce(Response.json(identity)).mockResolvedValueOnce(Response.json(credentials));
-    await expect(accountActions.password(event)).resolves.toEqual({
-      accountAction: { kind: "password", state: { status: "success", feedback: "passwordChanged" } },
-    });
-    expect(fetchService).toHaveBeenCalledTimes(2);
-    expect(sentRequest()).toEqual({
-      url: "https://authentication.test/v2/credentials/password",
-      method: "PATCH",
-      headers: {
-        "content-type": "application/json",
-        authorization: "Bearer private-access",
-        "x-client-ip": "192.0.2.1",
-      },
-      body: expect.any(String),
-    });
-    expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual({
-      currentPassword: "old-password",
-      password: password.password,
-    });
-  });
-
-  it("reuses an account action's session check for the loads that render its result", async () => {
-    const { event } = request("/account?/password", tokenCookies, { currentPassword: "old-password", ...password });
-    fetchService.mockImplementation(async (url) =>
-      Response.json(String(url).endsWith("/v2/session") ? identity : credentials)
-    );
-
-    await accountActions.password(event);
-    await Promise.all([loadStudioShell(event), loadAccount(event)]);
-
-    expect(fetchService.mock.calls.map(([url]) => url)).toEqual([
-      "https://authentication.test/v2/session",
-      "https://authentication.test/v2/credentials/password",
-      "https://authentication.test/v2/credentials/self",
-    ]);
-  });
-
-  it.each(["password", "email"] as const)("redirects anonymous %s changes before any mutation", async (action) => {
-    const { event } = request(
-      "/account",
-      {},
-      {
-        currentPassword: "old-password",
-        ...password,
-        email: "new@example.com",
-      }
-    );
-    await expect(accountActions[action](event)).rejects.toMatchObject({
-      status: 303,
-      location: "/?auth=login&returnTo=%2Faccount",
-    });
-    expect(fetchService).not.toHaveBeenCalled();
-  });
-});
-
-const journeys = [
-  {
-    journey: "register",
-    path: registrationLink,
-    endpoint: "/v2/credentials",
-    body: { email: "maya.chen@example.com", password: password.password, shortCode: "private-code" },
-    response: { accessToken: "registered-access", refreshToken: "registered-refresh" },
-    continueHref: "/",
-    restartHref: "/?auth=register",
-  },
-  {
-    journey: "password-reset",
-    path: `/ext/password/reset?shortCode=private-code&target=${userId}`,
-    endpoint: "/v2/credentials/password",
-    body: { password: password.password, shortCode: "private-code", userID: userId },
-    response: credentials,
-    continueHref: "/?auth=login",
-    restartHref: "/?auth=reset",
-  },
-  {
-    journey: "email-update",
-    path: `/ext/email/validate?shortCode=private-code&target=${userId}&source=${encodedEmail}`,
-    endpoint: "/v2/credentials/email",
-    body: { shortCode: "private-code", userID: userId },
-    response: credentials,
-    continueHref: "/account",
-    restartHref: "/account",
-  },
-] as const;
-
-describe("secure-link request boundary", () => {
-  it.each(journeys)("loads $journey without returning link secrets or consuming it", async (scenario) => {
-    const { event } = request(scenario.path);
-    await expect(loadShortCodeRoute(scenario.journey, event)).resolves.toEqual({
-      links: { continueHref: scenario.continueHref, restartHref: scenario.restartHref },
-      model: { journey: scenario.journey, state: { status: "ready" } },
-    });
-    expect(fetchService).not.toHaveBeenCalled();
-  });
-
-  it.each(journeys)("completes $journey and redirects to a URL without credentials", async (scenario) => {
-    const { event, values } = request(scenario.path, {}, scenario.journey === "email-update" ? {} : password);
-    fetchService
-      .mockResolvedValueOnce(Response.json({ accessToken: "anonymous-access", refreshToken: "" }))
-      .mockResolvedValueOnce(Response.json(scenario.response));
-    await expect(submitShortCodeRoute(scenario.journey, event)).rejects.toMatchObject({
-      status: 303,
-      location: event.url.pathname + "?result=success",
-    });
-    expect(fetchService).toHaveBeenCalledTimes(2);
-    expect(sentRequest()).toEqual({
-      url: "https://authentication.test" + scenario.endpoint,
-      method: scenario.journey === "email-update" ? "PATCH" : "PUT",
-      headers: {
-        "content-type": "application/json",
-        authorization: "Bearer anonymous-access",
-        "x-client-ip": "192.0.2.1",
-      },
-      body: expect.any(String),
-    });
-    expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual(scenario.body);
-    expect(Object.fromEntries(values)).toEqual(
-      scenario.journey === "register"
-        ? {
-            studio_access_token: "registered-access",
-            studio_refresh_token: "registered-refresh",
-            studio_identity_handle: "maya.chen",
-          }
-        : scenario.journey === "email-update"
-          ? { studio_access_token: "anonymous-access", studio_identity_handle: "maya.chen" }
-          : { studio_access_token: "anonymous-access" }
-    );
-  });
-
-  it("returns safe field errors without creating a session or consuming the link", async () => {
-    const { event } = request(registrationLink, {}, { password: "private-password", confirmPassword: "mismatch" });
-    await expect(submitShortCodeRoute("register", event)).resolves.toMatchObject({
-      status: 400,
-      data: {
-        shortCode: {
-          journey: "register",
-          state: { status: "validation-error", issues: [{ field: "confirmPassword", feedback: "passwordMismatch" }] },
-        },
-      },
-    });
-    expect(fetchService).not.toHaveBeenCalled();
-  });
-
-  it.each(["/ext/account/create", registrationLink + "&shortCode=duplicate"])(
-    "redirects malformed link %s without contacting authentication",
-    async (path) => {
-      const { event } = request(path, {}, password);
-      await expect(submitShortCodeRoute("register", event)).rejects.toMatchObject({
-        status: 303,
-        location: "/ext/account/create?result=invalid",
-      });
-      expect(fetchService).not.toHaveBeenCalled();
-    }
-  );
-
-  it.each([403, 404, 409])("removes rejected link credentials after HTTP %s", async (status) => {
-    const { event, values } = request(registrationLink, {}, password);
-    fetchService
-      .mockResolvedValueOnce(Response.json({ accessToken: "anonymous-access", refreshToken: "" }))
-      .mockResolvedValueOnce(new Response("private rejection detail", { status }));
-    await expect(submitShortCodeRoute("register", event)).rejects.toMatchObject({
-      status: 303,
-      location: "/ext/account/create?result=invalid",
-    });
-    expect(values.has("studio_identity_handle")).toBe(false);
-    expect(values.has("studio_refresh_token")).toBe(false);
-  });
-
-  it("returns a retryable outage without echoing secrets or claiming completion", async () => {
-    const { event } = request(registrationLink, {}, password);
-    fetchService
-      .mockResolvedValueOnce(Response.json({ accessToken: "anonymous-access", refreshToken: "" }))
-      .mockResolvedValueOnce(new Response("private service detail", { status: 503 }));
-    await expect(submitShortCodeRoute("register", event)).resolves.toEqual({
-      status: 503,
-      data: { shortCode: { journey: "register", state: { status: "service-error", feedback: "serviceUnavailable" } } },
-    });
-  });
 });
 
 describe("planned downtime at the request boundary", () => {
@@ -542,27 +326,19 @@ describe("planned downtime at the request boundary", () => {
 
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: "home",
+      accountHref: "https://account.test/account",
       session: { status: "downtime" },
       authorization: "unavailable",
     });
     expect(fetchService).not.toHaveBeenCalled();
   });
 
-  it("refuses sign-in, account and secure links without calling authentication", async () => {
+  it("refuses sign-in without calling authentication", async () => {
     published.downtime = started();
 
     await expect(
       authenticationActions.default(request("/?auth=login", {}, { email: "a@b.test", password: "p" }).event)
     ).rejects.toMatchObject(downtimeRefusal);
-    await expect(loadAccount(request("/account", { studio_access_token: "access" }).event)).rejects.toMatchObject(
-      downtimeRefusal
-    );
-    await expect(loadShortCodeRoute("register", request(registrationLink).event)).rejects.toMatchObject(
-      downtimeRefusal
-    );
-    await expect(submitShortCodeRoute("register", request(registrationLink, {}, password).event)).rejects.toMatchObject(
-      downtimeRefusal
-    );
     expect(fetchService).not.toHaveBeenCalled();
   });
 
@@ -574,9 +350,6 @@ describe("planned downtime at the request boundary", () => {
     for (const downtime of harmless) {
       published.downtime = downtime;
 
-      await expect(loadShortCodeRoute("register", request(registrationLink).event)).resolves.toMatchObject({
-        model: { journey: "register" },
-      });
       await expect(loadStudioShell(request("/").event)).resolves.toMatchObject({ session: { status: "anonymous" } });
     }
   });
@@ -593,8 +366,5 @@ describe("planned downtime at the request boundary", () => {
     await expect(
       loadStudioShell(request("/", { studio_access_token: "access", studio_refresh_token: "refresh" }).event)
     ).resolves.toMatchObject({ session: { status: "downtime" }, authorization: "unavailable" });
-    await expect(loadAccount(request("/account", { studio_access_token: "access" }).event)).rejects.toMatchObject(
-      downtimeRefusal
-    );
   });
 });

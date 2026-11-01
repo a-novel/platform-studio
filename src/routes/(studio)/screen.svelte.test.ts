@@ -6,6 +6,7 @@ import { withLocale } from "#lib/i18n/provider.fixture.js";
 import { createAuthenticationPanelController } from "./(authentication)/controller.svelte";
 import { createStudioShellController, readyAuthenticationModel } from "./controller.svelte";
 import Screen from "./screen.svelte";
+import StudioShellStory from "./story.svelte";
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
@@ -40,7 +41,8 @@ function controller(
   return createStudioShellController({
     model: shellModel,
     homeHref: "/",
-    accountHref: "/account",
+    accountHref: "https://account.example.test/account",
+    privacyHref: "/privacy",
     logoutAction: "/auth/logout",
     authentication,
     resolveAuthentication: (view) => ({ model: readyAuthenticationModel(view), action: "/auth" }),
@@ -99,6 +101,20 @@ describe("studio shell screen", () => {
       .toHaveAttribute("aria-expanded", "false");
   });
 
+  it("lists Privacy only while Studio collects browser telemetry", async () => {
+    const view = await render(StudioShellStory, { initialModel: model() }, withLocale());
+    await expect.element(page.getByRole("link", { name: "Privacy" })).not.toBeInTheDocument();
+    await view.unmount();
+
+    render(
+      StudioShellStory,
+      { initialModel: model({ activeNavigation: "privacy" }), collectsTelemetry: true },
+      withLocale("fr")
+    );
+    await expect.element(page.getByRole("link", { name: "Confidentialité" })).toHaveAttribute("aria-current", "page");
+    await expect.element(page.getByRole("link", { name: "Accueil" })).not.toHaveAttribute("aria-current");
+  });
+
   it("links the account name directly and keeps logout visible", async () => {
     const shell = controller({
       session: {
@@ -116,7 +132,7 @@ describe("studio shell screen", () => {
     );
 
     const accountLink = page.getByRole("link", { name: "Maya Chen" });
-    await expect.element(accountLink).toHaveAttribute("href", "/account");
+    await expect.element(accountLink).toHaveAttribute("href", "https://account.example.test/account");
     expect(getComputedStyle(accountLink.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     expect(getComputedStyle(accountLink.element()).borderTopStyle).toBe("none");
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();

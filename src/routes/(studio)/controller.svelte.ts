@@ -15,7 +15,9 @@ import type { OpenController } from "@a-novel-kit/uikit";
 export interface StudioShellControllerState {
   model: StudioShellViewModel;
   homeHref: string;
-  accountHref: string;
+  /** The account page on the account platform, absent while the server cannot read where it lives. */
+  accountHref: string | null;
+  privacyHref: string;
   logoutAction: string;
 }
 
@@ -72,6 +74,7 @@ export function createStudioShellController({
   model: initialModel,
   homeHref,
   accountHref,
+  privacyHref,
   logoutAction,
   authentication,
   resolveAuthentication,
@@ -124,7 +127,7 @@ export function createStudioShellController({
 
   return {
     get state() {
-      return { model, homeHref, accountHref, logoutAction };
+      return { model, homeHref, accountHref, privacyHref, logoutAction };
     },
     authentication,
     navigationDialog,

@@ -1,15 +1,11 @@
 import { resolveLocale } from "#lib/i18n/config.js";
 import { createStudioI18n } from "#lib/i18n/instance.js";
-import { secureShortCodeResponse } from "#lib/server/auth/short-code-response.js";
 
 import { SpanStatusCode } from "@opentelemetry/api";
 import type { RequestEvent } from "@sveltejs/kit";
 import type { Handle } from "@sveltejs/kit/hooks";
 
-/**
- * Gives each request its own locale and translations, hands its trace to the page, keeps email-link
- * pages out of caches and referrers, and traces the response.
- */
+/** Gives each request its own locale and translations, hands its trace to the page, and traces the response. */
 export const handle: Handle = async ({ event, resolve }) => {
   const locale = resolveLocale(event.request.headers.get("accept-language"));
 
@@ -22,7 +18,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   });
 
   traceResponse(event, response);
-  return event.url.pathname.startsWith("/ext/") ? secureShortCodeResponse(response) : response;
+  return response;
 };
 
 // The browser's page load continues the request's trace from this tag, as `traceId-spanId-sampled`.

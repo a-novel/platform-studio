@@ -48,7 +48,9 @@
       session: initialRoute.session,
     },
     homeHref: resolve(""),
-    accountHref: resolve("account"),
+    // The account page lives on the account platform, at an address no navigation changes.
+    accountHref: untrack(() => data.accountHref),
+    privacyHref: resolve("privacy"),
     logoutAction: resolve("auth/logout"),
     authentication,
     resolveAuthentication: authenticationState,

@@ -21,20 +21,11 @@ access:
     description: Votre session est conservée. Veuillez recharger cette page dans quelques minutes.
     title: Accès temporairement indisponible
 authFlow:
-  expiryUnavailable: Non renseignée
   feedback:
-    emailUpdated: Votre courriel a été mis à jour.
     invalidCredentials: Le courriel ou le mot de passe est incorrect.
-    invalidCurrentPassword: Votre mot de passe actuel est incorrect.
-    passwordChanged: Votre mot de passe a été modifié.
-    passwordReset: Votre mot de passe a été réinitialisé.
-    registrationCompleted: Votre compte est prêt.
     serviceUnavailable: Veuillez réessayer dans quelques minutes.
-    sessionUnavailable: Impossible de vérifier votre session. Veuillez recharger la page dans quelques minutes.
     tooManyAttempts: Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.
   validation:
-    confirmPassword: Confirmez votre nouveau mot de passe.
-    currentPassword: Saisissez votre mot de passe actuel.
     email: Saisissez un courriel valide.
     maxLength_one: Utilisez au maximum {{count}} caractère.
     maxLength_many: Utilisez au maximum {{count}} caractères.
@@ -43,48 +34,7 @@ authFlow:
     minLength_many: Utilisez au moins {{count}} caractères.
     minLength_other: Utilisez au moins {{count}} caractères.
     password: Saisissez votre mot de passe.
-    passwordMismatch: Les mots de passe ne correspondent pas.
 authUi:
-  account:
-    claims:
-      accessExpiresAt: Expiration de l’accès
-      noRoles: Aucun rôle attribué
-      refreshExpiresAt: Expiration de la session
-      roles: Rôles
-      title: Votre session
-      userId: Identifiant du compte
-    description: Vos informations personnelles et vos paramètres de sécurité.
-    email:
-      current: Courriel actuel
-      description: Un lien de confirmation sera envoyé à votre nouveau courriel.
-      hint: Votre courriel actuel reste actif jusqu’à confirmation.
-      label: Nouveau courriel
-      pending: En attente de confirmation
-      pendingDescription: Si aucun autre compte n’utilise la nouvelle adresse, vous y recevrez un lien de confirmation.
-      pendingExpiry: Le lien expire le {{date}}
-      pendingTitle: Consultez votre messagerie
-      resend: Envoyer un autre lien
-      submit: Envoyer le lien
-      submitting: Envoi du lien…
-      title: Courriel
-      unavailable: Votre courriel actuel ne peut pas être affiché pour le moment.
-    loadErrorTitle: Détails de la session indisponibles
-    loadingTitle: Chargement de la session
-    logout:
-      description: Vous serez déconnecté de Studio sur cet appareil.
-      submit: Se déconnecter
-      submitting: Déconnexion…
-    password:
-      confirmLabel: Confirmez le nouveau mot de passe
-      currentLabel: Mot de passe actuel
-      hint: Choisissez un mot de passe long et facile à retenir.
-      newLabel: Nouveau mot de passe
-      submit: Changer le mot de passe
-      submitting: Modification du mot de passe…
-      title: Mot de passe
-    privacy:
-      title: Confidentialité
-    title: Gérez votre compte
   authentication:
     emailLabel: Courriel
     journeys:
@@ -105,45 +55,15 @@ authUi:
     passwordLabel: Mot de passe
     pendingTitle: Consultez votre messagerie
   serviceUnavailable: Temporairement indisponible
-  shortCode:
-    confirmPasswordLabel: Confirmez le nouveau mot de passe
-    continue: Continuer vers Studio
-    journeys:
-      emailUpdate:
-        submit: Mettre à jour le courriel
-        submitting: Mise à jour du courriel…
-        unavailableTitle: Mise à jour du courriel indisponible
-      passwordReset:
-        description: Choisissez un nouveau mot de passe pour retrouver l’accès à votre compte.
-        submit: Réinitialiser le mot de passe
-        submitting: Réinitialisation du mot de passe…
-        title: Réinitialisez votre mot de passe Agora
-      register:
-        description: Choisissez un mot de passe pour vous connecter.
-        submit: Créer le compte
-        submitting: Création du compte…
-        title: Créez votre compte Agora
-    newPasswordLabel: Nouveau mot de passe
-    restart: Demander un nouveau lien
-    states:
-      invalid:
-        description: Ce lien a peut-être expiré ou a déjà été utilisé. Il peut aussi être incomplet.
-        title: Ce lien n’est pas valide
-      missing:
-        description: Ouvrez le lien complet reçu par courriel ou demandez-en un nouveau.
-        title: Ce lien est incomplet
 pageTitles:
-  account: Paramètres du compte
-  accountCreated: Compte créé
   brand: Agora Studio
-  confirmEmail: Confirmer le courriel
-  createAccount: Créer un compte
-  emailUpdated: Courriel mis à jour
-  incompleteLink: Lien incomplet
-  invalidLink: Lien invalide
-  passwordReset: Mot de passe réinitialisé
+  privacy: Confidentialité
   resetPassword: Réinitialiser le mot de passe
   withState: "{{title}}: {{status}}"
+privacy:
+  description: Choisissez ce que nous collectons sur cet appareil.
+  noTelemetry: Nous ne collectons ni métriques ni journaux sur cet appareil.
+  title: Confidentialité
 shell:
   accountFallback: Compte
   auth:
@@ -169,12 +89,13 @@ shell:
   manageAccountFor: Gérer le compte de {{name}}
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
+  privacy: Confidentialité
   sessionDowntime: Compte indisponible pendant la maintenance.
   sessionLoading: Chargement du compte
   sessionUnavailable: Informations du compte indisponibles.
   signIn: Se connecter
   skipToContent: Aller au contenu
 telemetryConsent:
-  change: Modifiable à tout moment depuis le menu de gestion du compte.
+  change: Modifiable à tout moment depuis la page Confidentialité.
   message: Nous collectons parfois des journaux d’erreurs et des métriques de performances, à des fins d’amélioration de nos produits. Aucune information personnelle n’est enregistrée ou partagée.
   title: Collecte des métriques et des journaux

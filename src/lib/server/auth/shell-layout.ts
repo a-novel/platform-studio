@@ -1,7 +1,8 @@
 import { accountDisplayFromHandle } from "#lib/application/shell/account-display.js";
-import type { ShellSession } from "#lib/application/shell/types.js";
+import type { ShellSession, StudioShellViewModel } from "#lib/application/shell/types.js";
 
 import { readStudioDowntime } from "../downtime";
+import { getRuntimeConfig } from "../runtime-config.server";
 import { type AuthenticationEvent, getAuthenticationContext } from "./context";
 import type { ResolvedSession } from "./session";
 
@@ -21,16 +22,29 @@ const shellAuthorization = {
 
 type ShellEvent = AuthenticationEvent & Pick<RequestEvent, "locals">;
 
-/** Loads the shell's navigation state, session display and page authorization. */
+/** The rail destination each Studio page belongs to. */
+const navigation: Record<string, StudioShellViewModel["activeNavigation"]> = { "/": "home", "/privacy": "privacy" };
+
+/** Loads the shell's navigation state, account link, session display and page authorization. */
 export const loadStudioShell = async (event: ShellEvent) => {
   const session = await readShellSession(event);
 
   return {
-    activeNavigation: event.url.pathname === "/" ? ("home" as const) : null,
+    activeNavigation: navigation[event.url.pathname] ?? null,
+    accountHref: readAccountHref(),
     session,
     authorization: shellAuthorization[session.status],
   };
 };
+
+/** Links the account page on the account platform, or nothing while the runtime configuration is invalid. */
+function readAccountHref(): string | null {
+  try {
+    return new URL("/account", getRuntimeConfig().accountUrl).href;
+  } catch {
+    return null;
+  }
+}
 
 /** Resolves the session the shell shows, exposing only a display identity to the browser. */
 async function readShellSession(event: ShellEvent): Promise<ShellSession> {
