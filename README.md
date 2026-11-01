@@ -44,33 +44,36 @@ shows every screen state.
 ## Deploying
 
 Run a tag from the [latest release](https://github.com/a-novel/platform-studio/releases/latest) and
-point it at the authentication service. The image runs as a non-root user on port `3000`, and its
-container healthcheck calls `/ping`.
+point it at the authentication service and the account platform. The image runs as a non-root user
+on port `3000`, and its container healthcheck calls `/ping`.
 
 ```bash
 PLATFORM_STUDIO_VERSION="vX.Y.Z"
 AUTHENTICATION_SERVICE_URL="https://authentication.example.com"
+ACCOUNT_URL="https://account.example.com"
 podman run --detach --name platform-studio --publish 3000:3000 \
   --env AUTHENTICATION_SERVICE_URL="$AUTHENTICATION_SERVICE_URL" \
+  --env ACCOUNT_URL="$ACCOUNT_URL" \
   ghcr.io/a-novel/platform-studio:"$PLATFORM_STUDIO_VERSION"
 ```
 
 ### Configuration
 
-| Name                              | Required       | Description                                                                                                          |
-| --------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `AUTHENTICATION_SERVICE_URL`      | Yes            | Base HTTP or HTTPS URL for the authentication service.                                                               |
-| `AUTHENTICATION_SERVICE_AUDIENCE` | Cloud Run      | Audience of the Google ID token the authentication service's IAM admits. Studio fetches it from the metadata server. |
-| `SERVICE_TOKEN_PATH`              | Kubernetes     | File of the projected service token, sent instead of a Google ID token. Studio reads it on every call.               |
-| `ADDRESS_HEADER`, `XFF_DEPTH`     | Behind a proxy | Where the visitor's IP is read, which Studio forwards for rate limiting. On Cloud Run, `X-Forwarded-For` and `1`.    |
-| `HEALTHCHECK_TIMEOUT_MS`          | No             | Downstream timeout from 100 to 10,000 ms. The default is 2,000.                                                      |
-| `DOWNTIME_URL`                    | No             | Planned downtime document. The default is the one infra publishes.                                                   |
-| `OTEL`                            | No             | `true` records traces, continuing an incoming `traceparent`.                                                         |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`     | No             | Exports traces over OTLP/HTTP to this base URL instead of stdout.                                                    |
-| `OTEL_EXPORTER_OTLP_HEADERS`      | No             | Headers each export sends, such as the backend's key. Inject it as a secret.                                         |
-| `OTEL_EXPORTER_OTLP_COMPRESSION`  | No             | `gzip` compresses each export.                                                                                       |
-| `HOST`                            | No             | Listen address. The image sets `0.0.0.0`.                                                                            |
-| `PORT`                            | No             | Listen port. The image sets `3000`.                                                                                  |
+| Name                              | Required       | Description                                                                                                                        |
+| --------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `AUTHENTICATION_SERVICE_URL`      | Yes            | Base HTTP or HTTPS URL for the authentication service.                                                                             |
+| `ACCOUNT_URL`                     | Yes            | Public URL of the account platform, where the account name leads. Read when the server starts, so a new URL needs only a redeploy. |
+| `AUTHENTICATION_SERVICE_AUDIENCE` | Cloud Run      | Audience of the Google ID token the authentication service's IAM admits. Studio fetches it from the metadata server.               |
+| `SERVICE_TOKEN_PATH`              | Kubernetes     | File of the projected service token, sent instead of a Google ID token. Studio reads it on every call.                             |
+| `ADDRESS_HEADER`, `XFF_DEPTH`     | Behind a proxy | Where the visitor's IP is read, which Studio forwards for rate limiting. On Cloud Run, `X-Forwarded-For` and `1`.                  |
+| `HEALTHCHECK_TIMEOUT_MS`          | No             | Downstream timeout from 100 to 10,000 ms. The default is 2,000.                                                                    |
+| `DOWNTIME_URL`                    | No             | Planned downtime document. The default is the one infra publishes.                                                                 |
+| `OTEL`                            | No             | `true` records traces, continuing an incoming `traceparent`.                                                                       |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`     | No             | Exports traces over OTLP/HTTP to this base URL instead of stdout.                                                                  |
+| `OTEL_EXPORTER_OTLP_HEADERS`      | No             | Headers each export sends, such as the backend's key. Inject it as a secret.                                                       |
+| `OTEL_EXPORTER_OTLP_COMPRESSION`  | No             | `gzip` compresses each export.                                                                                                     |
+| `HOST`                            | No             | Listen address. The image sets `0.0.0.0`.                                                                                          |
+| `PORT`                            | No             | Listen port. The image sets `3000`.                                                                                                |
 
 ## Operational endpoints
 
@@ -92,7 +95,7 @@ pnpm install
 pnpm dev
 ```
 
-The committed `.env.local` reads the service port from that environment. `pnpm storybook` serves the
+The committed `.env.local` reads the service port from that environment, and points the account name at the account platform's development server. `pnpm storybook` serves the
 screen catalog at `http://localhost:6006`.
 
 ## Contributing
