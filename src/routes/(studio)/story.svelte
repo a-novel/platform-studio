@@ -1,5 +1,4 @@
 <script module lang="ts">
-  import type { AuthenticationPanelModel } from "#lib/application/auth/types.js";
   import type { StudioShellViewModel } from "#lib/application/shell/types.js";
 
   import type { Snippet } from "svelte";
@@ -7,10 +6,9 @@
   /** Fixed-state Storybook harness around the pure shell. */
   export interface StudioShellStoryProps {
     initialModel: StudioShellViewModel;
-    initialAuthenticationModel?: AuthenticationPanelModel;
     /** Whether Studio collects browser telemetry, which adds the Privacy destination. */
     collectsTelemetry?: boolean;
-    /** A started planned downtime, which the shell announces and locks the sign-in dialog for. */
+    /** A started planned downtime, which the shell announces. */
     downtime?: { start: Date; end: Date };
     /** Content after the home page, such as filler to scroll past sticky elements. */
     children?: Snippet;
@@ -22,13 +20,12 @@
   import { setTelemetryPreference } from "#lib/ui/telemetry-preference.js";
 
   import HomeScreen from "./(home)/screen.svelte";
-  import { type StudioShellController, readyAuthenticationModel } from "./controller.svelte";
+  import type { StudioShellController } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
   import { untrack } from "svelte";
 
-  let { initialModel, initialAuthenticationModel, collectsTelemetry, downtime, children }: StudioShellStoryProps =
-    $props();
+  let { initialModel, collectsTelemetry, downtime, children }: StudioShellStoryProps = $props();
 
   if (untrack(() => collectsTelemetry))
     setTelemetryPreference({ pending: false, choice: "accepted", choose: () => {} });
@@ -48,20 +45,10 @@
         model: initialModel,
         homeHref: "#home",
         accountHref: "#account",
+        invitationHref: "#invitation",
         privacyHref: "#privacy",
         logoutAction: "#logout",
       };
-    },
-    authentication: {
-      get state() {
-        return {
-          model: initialAuthenticationModel ?? readyAuthenticationModel(initialModel.authView ?? "login"),
-          action: "#auth",
-        };
-      },
-      passwordVisibility: { state: { pressed: false }, setPressed: () => {}, toggle: () => {} },
-      synchronize: () => {},
-      submit: () => false,
     },
     navigationDialog: {
       get state() {
@@ -71,17 +58,8 @@
       close: () => {},
       toggle: () => {},
     },
-    authenticationDialog: {
-      get state() {
-        return { open: initialModel.authView !== null };
-      },
-      open: () => {},
-      close: () => {},
-      toggle: () => {},
-    },
-    openAuthentication: () => {},
-    authenticationHref: (view) => `#${view ?? "home"}`,
     navigationHref: (open) => (open ? "#navigation" : "#home"),
+    signInHref: () => "#sign-in",
     toggleRail: () => {},
     logout: () => false,
     synchronizeRoute: () => {},

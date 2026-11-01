@@ -3,13 +3,12 @@ import {
   AuthenticationUnavailableError,
   type SessionClient,
   type SessionCookies,
-  readTokenExpiry,
 } from "./session";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "@a-novel-kit/nodelib-browser/http";
-import { Role } from "@a-novel/service-authentication-rest";
+import { OAuthError, Role } from "@a-novel/service-authentication-rest";
 
 type CookieSetOptions = Parameters<SessionCookies["set"]>[2];
 
@@ -38,18 +37,22 @@ function createClient(): {
 } {
   return {
     claims: vi.fn<SessionClient["claims"]>(),
-    createAnonymous: vi.fn<SessionClient["createAnonymous"]>(),
-    login: vi.fn<SessionClient["login"]>(),
+    exchange: vi.fn<SessionClient["exchange"]>(),
     refresh: vi.fn<SessionClient["refresh"]>(),
     revoke: vi.fn<SessionClient["revoke"]>(),
   };
 }
 
-function createJwt(expiry: number): string {
-  const header = Buffer.from(JSON.stringify({ alg: "none", typ: "JWT" })).toString("base64url");
-  const payload = Buffer.from(JSON.stringify({ exp: expiry })).toString("base64url");
-  return `${header}.${payload}.signature`;
+/** A token response of Authentication's token endpoint. A refresh carries no refresh token. */
+function tokenResponse(accessToken: string, refreshToken?: string) {
+  return { access_token: accessToken, token_type: "Bearer", expires_in: 3600, refresh_token: refreshToken };
 }
+
+function oauthError(error: string) {
+  return new OAuthError("refused", { error });
+}
+
+const grant = { code: "code", code_verifier: "verifier", redirect_uri: "https://studio.test/auth/callback" };
 
 describe("AuthenticationSession", () => {
   let client: ReturnType<typeof createClient>;
@@ -60,21 +63,21 @@ describe("AuthenticationSession", () => {
     cookies = new MemoryCookies();
   });
 
-  it("does not create an anonymous session during an ordinary request", async () => {
+  it("asks Authentication nothing for a visitor without cookies", async () => {
     const session = new AuthenticationSession(client, cookies, new URL("http://studio.test/"));
 
     await expect(session.current()).resolves.toEqual({ status: "none" });
-    expect(client.createAnonymous).not.toHaveBeenCalled();
+    expect(client.claims).not.toHaveBeenCalled();
   });
 
   it("returns verified authenticated claims without exposing cookies to the browser", async () => {
     cookies.values.set("studio_access_token", "access");
     cookies.values.set("studio_refresh_token", "refresh");
-    cookies.values.set("studio_identity_handle", "maya.chen");
     client.claims.mockResolvedValue({
       userID: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
       roles: [Role.User],
       refreshTokenID: "refresh-id",
+      clientID: "studio",
     });
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
@@ -82,24 +85,34 @@ describe("AuthenticationSession", () => {
       status: "available",
       accessToken: "access",
       refreshToken: "refresh",
-      identityHandle: "maya.chen",
       claims: { roles: [Role.User] },
     });
   });
 
-  it("stores only the email handle in an HTTP-only identity cookie", async () => {
-    client.login.mockResolvedValue({ accessToken: "access", refreshToken: "refresh" });
+  it("keeps the token pair of an exchanged code in secure HTTP-only cookies", async () => {
+    client.exchange.mockResolvedValue(tokenResponse("access", "refresh"));
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
-    await session.login("maya.chen@example.com", "valid-password");
+    await session.signIn(grant);
 
-    expect(cookies.values.get("studio_identity_handle")).toBe("maya.chen");
-    expect(cookies.writes.at(-1)?.options).toMatchObject({
-      httpOnly: true,
-      path: "/",
-      sameSite: "lax",
-      secure: true,
+    expect(client.exchange).toHaveBeenCalledExactlyOnceWith(grant);
+    expect(Object.fromEntries(cookies.values)).toEqual({
+      studio_access_token: "access",
+      studio_refresh_token: "refresh",
     });
+    for (const { options } of cookies.writes) {
+      expect(options).toEqual({ httpOnly: true, path: "/", sameSite: "lax", secure: true });
+    }
+  });
+
+  it("keeps the cookies as they were when Authentication refuses the code", async () => {
+    cookies.values.set("studio_access_token", "previous-access");
+    client.exchange.mockRejectedValue(oauthError("invalid_grant"));
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await expect(session.signIn(grant)).rejects.toBeInstanceOf(OAuthError);
+    expect(cookies.writes).toHaveLength(0);
+    expect(cookies.deletions).toHaveLength(0);
   });
 
   it("shares one session check between the concurrent loads of a request", async () => {
@@ -117,11 +130,11 @@ describe("AuthenticationSession", () => {
   it("checks the session again once its cookies change", async () => {
     cookies.values.set("studio_access_token", "access");
     client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
-    client.login.mockResolvedValue({ accessToken: "new-access", refreshToken: "new-refresh" });
+    client.exchange.mockResolvedValue(tokenResponse("new-access", "new-refresh"));
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
     await session.current();
-    await session.login("maya.chen@example.com", "valid-password");
+    await session.signIn(grant);
 
     await expect(session.current()).resolves.toMatchObject({ accessToken: "new-access" });
     expect(client.claims).toHaveBeenCalledTimes(2);
@@ -136,58 +149,65 @@ describe("AuthenticationSession", () => {
     expect(cookies.values.get("studio_access_token")).toBe("anonymous-access");
   });
 
-  it("refreshes a rejected access token and stores the replacement", async () => {
+  it("refreshes a rejected access token at the token endpoint and keeps the refresh token", async () => {
     cookies.values.set("studio_access_token", "expired-access");
     cookies.values.set("studio_refresh_token", "refresh");
-    client.claims.mockRejectedValueOnce(new HttpError(403, "expired")).mockResolvedValueOnce({
+    client.claims.mockRejectedValueOnce(new HttpError(401, "expired")).mockResolvedValueOnce({
       userID: "140f24ee-1531-4a9d-ace8-20b38e1b21bc",
       roles: [Role.User],
     });
-    client.refresh.mockResolvedValue({
-      accessToken: "fresh-access",
-      refreshToken: "refresh",
-    });
+    client.refresh.mockResolvedValue(tokenResponse("fresh-access"));
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
     await expect(session.current()).resolves.toMatchObject({
       status: "available",
       accessToken: "fresh-access",
-    });
-    expect(cookies.values.get("studio_access_token")).toBe("fresh-access");
-    expect(client.refresh).toHaveBeenCalledWith({
-      accessToken: "expired-access",
       refreshToken: "refresh",
+    });
+    expect(client.refresh).toHaveBeenCalledExactlyOnceWith("refresh");
+    expect(Object.fromEntries(cookies.values)).toEqual({
+      studio_access_token: "fresh-access",
+      studio_refresh_token: "refresh",
     });
   });
 
-  it("clears a token pair rejected during refresh", async () => {
+  it("signs the visitor out once the session ended or was signed out on another platform", async () => {
     cookies.values.set("studio_access_token", "expired-access");
-    cookies.values.set("studio_refresh_token", "expired-refresh");
-    cookies.values.set("studio_identity_handle", "maya.chen");
-    client.claims.mockRejectedValue(new HttpError(403, "expired"));
-    client.refresh.mockRejectedValue(new HttpError(403, "expired"));
+    cookies.values.set("studio_refresh_token", "revoked-refresh");
+    client.claims.mockRejectedValue(new HttpError(401, "signed out"));
+    client.refresh.mockRejectedValue(oauthError("invalid_grant"));
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
     await expect(session.current()).resolves.toEqual({ status: "none" });
     expect(cookies.values.size).toBe(0);
   });
 
-  it.each(["studio_refresh_token", "studio_identity_handle"])(
-    "clears a stale %s when the access token is missing",
-    async (name) => {
-      cookies.values.set(name, "stale-cookie");
+  it.each(["invalid_client", "invalid_request", "unsupported_grant_type"])(
+    "keeps the cookies when the token endpoint refuses Studio with %s",
+    async (error) => {
+      cookies.values.set("studio_access_token", "expired-access");
+      cookies.values.set("studio_refresh_token", "refresh");
+      client.claims.mockRejectedValue(new HttpError(401, "expired"));
+      client.refresh.mockRejectedValue(oauthError(error));
       const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
-      await expect(session.current()).resolves.toEqual({ status: "none" });
-      expect(cookies.values.size).toBe(0);
-      expect(client.claims).not.toHaveBeenCalled();
-      expect(client.refresh).not.toHaveBeenCalled();
+      await expect(session.current()).resolves.toEqual({ status: "unavailable" });
+      expect(cookies.deletions).toHaveLength(0);
     }
   );
 
+  it("clears a stale refresh token when the access token is missing", async () => {
+    cookies.values.set("studio_refresh_token", "stale-cookie");
+    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+
+    await expect(session.current()).resolves.toEqual({ status: "none" });
+    expect(cookies.values.size).toBe(0);
+    expect(client.claims).not.toHaveBeenCalled();
+    expect(client.refresh).not.toHaveBeenCalled();
+  });
+
   it.each([401, 403])("clears an access token rejected with %s when it cannot be refreshed", async (status) => {
     cookies.values.set("studio_access_token", "expired-access");
-    cookies.values.set("studio_identity_handle", "maya.chen");
     client.claims.mockRejectedValue(new HttpError(status, "expired"));
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
@@ -200,63 +220,13 @@ describe("AuthenticationSession", () => {
     cookies.values.set("studio_access_token", "expired-access");
     cookies.values.set("studio_refresh_token", "refresh");
     client.claims.mockRejectedValue(new HttpError(401, "invalid claims"));
-    client.refresh.mockResolvedValue({ accessToken: "unverified-access", refreshToken: "new-refresh" });
+    client.refresh.mockResolvedValue(tokenResponse("unverified-access"));
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
     await expect(session.current()).resolves.toEqual({ status: "none" });
     expect(client.claims).toHaveBeenLastCalledWith("unverified-access");
     expect(cookies.writes).toHaveLength(0);
     expect(cookies.values.size).toBe(0);
-  });
-
-  it("reuses an existing verified session for a short-code operation", async () => {
-    cookies.values.set("studio_access_token", "access");
-    client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
-    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
-
-    await expect(session.anonymousAccessToken()).resolves.toBe("access");
-    expect(client.createAnonymous).not.toHaveBeenCalled();
-    expect(cookies.writes).toHaveLength(0);
-  });
-
-  it("refuses to replace an unavailable session with an anonymous one", async () => {
-    cookies.values.set("studio_access_token", "access");
-    client.claims.mockRejectedValue(new Error("network unavailable"));
-    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
-
-    await expect(session.anonymousAccessToken()).rejects.toBeInstanceOf(AuthenticationUnavailableError);
-    expect(client.createAnonymous).not.toHaveBeenCalled();
-    expect(cookies.values.get("studio_access_token")).toBe("access");
-  });
-
-  it("creates an anonymous token only when a protected anonymous operation needs it", async () => {
-    client.createAnonymous.mockResolvedValue({
-      accessToken: "anonymous-access",
-      refreshToken: "",
-    });
-    const session = new AuthenticationSession(client, cookies, new URL("http://studio.test/"));
-
-    await expect(session.anonymousAccessToken()).resolves.toBe("anonymous-access");
-    expect(cookies.values.get("studio_access_token")).toBe("anonymous-access");
-    expect(cookies.values.has("studio_refresh_token")).toBe(false);
-  });
-
-  it("keeps an anonymous token across browser restarts until it expires", async () => {
-    const accessToken = createJwt(1_800_000_000);
-    client.createAnonymous.mockResolvedValue({ accessToken, refreshToken: "" });
-    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
-
-    await session.anonymousAccessToken();
-
-    expect(cookies.writes[0]?.options).toMatchObject({ expires: new Date(1_800_000_000 * 1000) });
-  });
-
-  it("ends a signed-in session with the browser", () => {
-    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
-
-    session.accept({ accessToken: createJwt(1_800_000_000), refreshToken: "refresh" });
-
-    expect(cookies.writes[0]?.options).not.toHaveProperty("expires");
   });
 
   it("does not turn an authentication outage into an anonymous session", async () => {
@@ -268,27 +238,9 @@ describe("AuthenticationSession", () => {
     expect(cookies.values.get("studio_access_token")).toBe("access");
   });
 
-  it.each([
-    ["an unchanged", "maya.chen@example.com", 1, []],
-    ["a changed", "maya.writes@example.com", 2, ["maya.writes"]],
-  ])("checks the session again only after %s identity handle", async (_, email, checks, writes) => {
-    cookies.values.set("studio_access_token", "access");
-    cookies.values.set("studio_identity_handle", "maya.chen");
-    client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
-    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
-
-    await session.current();
-    session.rememberIdentity(email);
-    await session.current();
-
-    expect(client.claims).toHaveBeenCalledTimes(checks);
-    expect(cookies.writes.map(({ value }) => value)).toEqual(writes);
-  });
-
-  it("revokes the refresh token before removing every cookie on logout", async () => {
+  it("ends the session on every platform before removing every cookie on logout", async () => {
     cookies.values.set("studio_access_token", "access");
     cookies.values.set("studio_refresh_token", "refresh");
-    cookies.values.set("studio_identity_handle", "maya.chen");
     client.claims.mockResolvedValue({ roles: [Role.User], userID: "test-user" });
     client.revoke.mockResolvedValue();
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
@@ -305,13 +257,13 @@ describe("AuthenticationSession", () => {
     client.claims
       .mockRejectedValueOnce(new HttpError(401, "expired"))
       .mockResolvedValueOnce({ roles: [Role.User], userID: "test-user" });
-    client.refresh.mockResolvedValue({ accessToken: "fresh-access", refreshToken: "fresh-refresh" });
+    client.refresh.mockResolvedValue(tokenResponse("fresh-access"));
     client.revoke.mockResolvedValue();
     const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
 
     await session.logout();
 
-    expect(client.revoke).toHaveBeenCalledWith("fresh-access", "fresh-refresh");
+    expect(client.revoke).toHaveBeenCalledWith("fresh-access", "refresh");
     expect(cookies.values.size).toBe(0);
   });
 
@@ -344,27 +296,12 @@ describe("AuthenticationSession", () => {
     expect(cookies.values.size).toBe(0);
   });
 
-  it("uses secure HTTP-only SameSite cookies on HTTPS", () => {
-    const session = new AuthenticationSession(client, cookies, new URL("https://studio.test/"));
+  it("drops the secure flag only on plain HTTP, for local stacks", async () => {
+    client.exchange.mockResolvedValue(tokenResponse("access", "refresh"));
+    const session = new AuthenticationSession(client, cookies, new URL("http://127.0.0.1:4173/"));
 
-    session.accept({ accessToken: "access", refreshToken: "refresh" });
+    await session.signIn(grant);
 
-    expect(cookies.writes).toHaveLength(2);
-    expect(cookies.writes[0]?.options).toMatchObject({
-      httpOnly: true,
-      path: "/",
-      sameSite: "lax",
-      secure: true,
-    });
-  });
-});
-
-describe("readTokenExpiry", () => {
-  it("reads a JWT expiry for display", () => {
-    expect(readTokenExpiry(createJwt(1_800_000_000))?.toISOString()).toBe("2027-01-15T08:00:00.000Z");
-  });
-
-  it.each(["not-a-jwt", "a.invalid-json.c", createJwt(-1)])("rejects malformed or invalid expiry data", (token) => {
-    expect(readTokenExpiry(token)).toBeNull();
+    expect(cookies.writes.map(({ options }) => options?.secure)).toEqual([false, false]);
   });
 });

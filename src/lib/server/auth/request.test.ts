@@ -1,8 +1,8 @@
-import { createStudioI18n } from "#lib/i18n/instance.js";
-
-import { authenticationActions } from "./authentication-route";
 import { logoutAuthentication } from "./logout";
 import { loadStudioShell } from "./shell-layout";
+import { completeSignIn, startSignIn } from "./sign-in";
+
+import { createHash } from "node:crypto";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -38,10 +38,14 @@ function sentRequest() {
 }
 
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
-const identity = { userID: userId, roles: [Role.User] };
+const identity = { userID: userId, roles: [Role.User], clientID: "studio" };
 const tokenCookies = { studio_access_token: "private-access", studio_refresh_token: "private-refresh" };
+const accountLinks = {
+  accountHref: "https://account.test/account",
+  invitationHref: "https://account.test/?auth=register",
+};
 
-function request(path: string, cookieValues: Record<string, string> = {}, fields?: Record<string, string>) {
+function request(path: string, cookieValues: Record<string, string> = {}) {
   const values = new Map(Object.entries(cookieValues));
   const cookies = {
     get: vi.fn((name: string) => values.get(name)),
@@ -53,13 +57,7 @@ function request(path: string, cookieValues: Record<string, string> = {}, fields
     }),
   };
   const url = new URL(path, "https://studio.test");
-  const event = {
-    cookies,
-    getClientAddress: () => "192.0.2.1",
-    url,
-    locals: { locale: "fr", i18n: createStudioI18n("fr") },
-    request: new Request(url, fields ? { method: "POST", body: new URLSearchParams(fields) } : undefined),
-  } as unknown as RequestEvent;
+  const event = { cookies, getClientAddress: () => "192.0.2.1", url } as unknown as RequestEvent;
   return { event, cookies, values };
 }
 
@@ -74,98 +72,25 @@ afterEach(() => {
   published.downtime = null;
 });
 
-describe("invitation requests at the request boundary", () => {
-  const email = "Creator@Example.test";
-
-  it.each(["en", "fr"] as const)("records a request using the published client and %s locale", async (locale) => {
-    const { event, cookies } = request("/?auth=register", {}, { email });
-    event.locals.locale = locale;
-    fetchService
-      .mockResolvedValueOnce(Response.json({ accessToken: "anonymous-access", refreshToken: "anonymous-refresh" }))
-      .mockResolvedValueOnce(new Response(null, { status: 202 }));
-    await expect(authenticationActions.default(event)).resolves.toEqual({
-      authentication: { journey: "register", state: { status: "recorded", email } },
-    });
-    expect(fetchService).toHaveBeenCalledTimes(2);
-    expect(sentRequest()).toEqual({
-      url: "https://authentication.test/v2/waitlist",
-      method: "PUT",
-      headers: {
-        "content-type": "application/json",
-        authorization: "Bearer anonymous-access",
-        "x-client-ip": "192.0.2.1",
-      },
-      body: JSON.stringify({ email, lang: locale }),
-    });
-    expect(cookies.set).toHaveBeenCalledWith("studio_access_token", "anonymous-access", {
-      httpOnly: true,
-      path: "/",
-      sameSite: "lax",
-      secure: true,
-    });
-  });
-
-  it.each(["account_exists", "already_waitlisted"])("returns the validated %s warning", async (code) => {
-    const { event } = request("/?auth=register", {}, { email });
-    fetchService
-      .mockResolvedValueOnce(Response.json({ accessToken: "anonymous-access", refreshToken: "anonymous-refresh" }))
-      .mockResolvedValueOnce(Response.json({ code, detail: "private service detail" }, { status: 409 }));
-    await expect(authenticationActions.default(event)).resolves.toEqual({
-      status: 409,
-      data: { authentication: { journey: "register", state: { status: "conflict", code } } },
-    });
-  });
-
-  const unacknowledged = [
-    ["storage unavailable", new Response("private service detail", { status: 503 })],
-    ["unknown conflict", Response.json({ code: "private service detail" }, { status: 409 })],
-    ["malformed conflict", new Response("private service detail", { status: 409 })],
-    ["network failure", new Error("private service detail")],
-  ] as const;
-
-  it.each(unacknowledged)("never acknowledges a request after %s", async (_, outcome) => {
-    const { event } = request("/?auth=register", {}, { email });
-    fetchService.mockResolvedValueOnce(
-      Response.json({ accessToken: "anonymous-access", refreshToken: "anonymous-refresh" })
-    );
-    if (outcome instanceof Error) fetchService.mockRejectedValueOnce(outcome);
-    else fetchService.mockResolvedValueOnce(outcome as Response);
-    await expect(authenticationActions.default(event)).resolves.toEqual({
-      status: 503,
-      data: {
-        authentication: { journey: "register", state: { status: "service-error", feedback: "serviceUnavailable" } },
-      },
-    });
-    expect(fetchService).toHaveBeenCalledTimes(2);
-  });
-
-  it("does not contact the waitlist when the anonymous session fails", async () => {
-    const { event } = request("/?auth=register", {}, { email });
-    fetchService.mockResolvedValueOnce(new Response(null, { status: 503 }));
-    await expect(authenticationActions.default(event)).resolves.toMatchObject({ status: 503 });
-    expect(fetchService).toHaveBeenCalledTimes(1);
-  });
-});
-
 describe("Studio session at the request boundary", () => {
   it("serves an anonymous home without calling authentication", async () => {
     const { event } = request("/");
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: "home",
-      accountHref: "https://account.test/account",
+      ...accountLinks,
       session: { status: "anonymous" },
       authorization: "anonymous",
     });
     expect(fetchService).not.toHaveBeenCalled();
   });
 
-  it("exposes only a verified display identity to the browser", async () => {
-    const { event } = request("/account", { ...tokenCookies, studio_identity_handle: "maya.chen" });
+  it("exposes only the verified session status to the browser", async () => {
+    const { event } = request("/account", tokenCookies);
     fetchService.mockResolvedValueOnce(Response.json(identity));
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: null,
-      accountHref: "https://account.test/account",
-      session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
+      ...accountLinks,
+      session: { status: "authenticated" },
       authorization: "allowed",
     });
     expect(fetchService).toHaveBeenCalledOnce();
@@ -189,14 +114,6 @@ describe("Studio session at the request boundary", () => {
     expect(fetchService.mock.calls.map(([url]) => url)).toEqual(["https://authentication.test/v2/session"]);
   });
 
-  it("uses a localized account label when the identity cookie contains a full email", async () => {
-    const { event } = request("/", { ...tokenCookies, studio_identity_handle: "maya.chen@example.com" });
-    fetchService.mockResolvedValueOnce(Response.json(identity));
-    await expect(loadStudioShell(event)).resolves.toMatchObject({
-      session: { status: "authenticated", displayName: "Compte", initials: "A" },
-    });
-  });
-
   it("keeps anonymous service claims out of authenticated UI", async () => {
     const { event } = request("/", tokenCookies);
     fetchService.mockResolvedValueOnce(Response.json({ roles: [Role.Anon] }));
@@ -212,6 +129,7 @@ describe("Studio session at the request boundary", () => {
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: "home",
       accountHref: null,
+      invitationHref: null,
       session: { status: "error" },
       authorization: "unavailable",
     });
@@ -225,58 +143,26 @@ describe("Studio session at the request boundary", () => {
       .mockResolvedValueOnce(new Response("private service detail", { status: 503 }));
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: "home",
-      accountHref: "https://account.test/account",
+      ...accountLinks,
       session: { status: "error" },
       authorization: "unavailable",
     });
     expect(sentRequest()).toEqual({
-      url: "https://authentication.test/v2/session",
-      method: "PATCH",
-      headers: { "content-type": "application/json", "x-client-ip": "192.0.2.1" },
-      body: expect.any(String),
+      url: "https://authentication.test/v2/oauth/token",
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", "x-client-ip": "192.0.2.1" },
+      body: expect.anything(),
     });
-    expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual({
-      accessToken: "private-access",
-      refreshToken: "private-refresh",
+    expect(Object.fromEntries(new URLSearchParams(String(fetchService.mock.lastCall?.[1]?.body)))).toEqual({
+      grant_type: "refresh_token",
+      refresh_token: "private-refresh",
     });
     expect(Object.fromEntries(values)).toEqual(tokenCookies);
     expect(cookies.set).not.toHaveBeenCalled();
     expect(cookies.delete).not.toHaveBeenCalled();
   });
 
-  it("logs in through the service and stores credentials only in secure cookies", async () => {
-    const { event, cookies, values } = request(
-      "/?auth=login&returnTo=%2Faccount",
-      {},
-      {
-        email: "maya.chen@example.com",
-        password: "private-password",
-      }
-    );
-    fetchService.mockResolvedValueOnce(Response.json({ accessToken: "new-access", refreshToken: "new-refresh" }));
-    await expect(authenticationActions.default(event)).rejects.toMatchObject({ status: 303, location: "/account" });
-    expect(fetchService).toHaveBeenCalledOnce();
-    expect(sentRequest()).toEqual({
-      url: "https://authentication.test/v2/session",
-      method: "PUT",
-      headers: { "content-type": "application/json", "x-client-ip": "192.0.2.1" },
-      body: expect.any(String),
-    });
-    expect(JSON.parse(fetchService.mock.lastCall?.[1]?.body as string)).toEqual({
-      email: "maya.chen@example.com",
-      password: "private-password",
-    });
-    expect(Object.fromEntries(values)).toEqual({
-      studio_access_token: "new-access",
-      studio_refresh_token: "new-refresh",
-      studio_identity_handle: "maya.chen",
-    });
-    for (const [, , options] of cookies.set.mock.calls) {
-      expect(options).toEqual({ httpOnly: true, path: "/", sameSite: "lax", secure: true });
-    }
-  });
-
-  it("revokes the refresh token at the service on logout", async () => {
+  it("ends the session on every platform at the service on logout", async () => {
     const { event, values } = request("/auth/logout", tokenCookies);
     fetchService
       .mockResolvedValueOnce(Response.json(identity))
@@ -296,19 +182,181 @@ describe("Studio session at the request boundary", () => {
   });
 
   it("logs out locally even while authentication is unreachable", async () => {
-    const { event, values, cookies } = request("/auth/logout?returnTo=https://attacker.invalid", {
-      ...tokenCookies,
-      studio_identity_handle: "maya.chen",
-    });
+    const { event, values, cookies } = request("/auth/logout?returnTo=https://attacker.invalid", tokenCookies);
     await expect(logoutAuthentication(event)).rejects.toMatchObject({ status: 303, location: "/" });
     expect(values.size).toBe(0);
     expect(cookies.delete.mock.calls).toEqual([
       ["studio_access_token", { path: "/" }],
       ["studio_refresh_token", { path: "/" }],
-      ["studio_identity_handle", { path: "/" }],
     ]);
     // The unreachable session check leaves nothing to revoke.
     expect(fetchService).toHaveBeenCalledOnce();
+  });
+});
+
+/** Starts a sign-in and returns the redirect, the pending sign-in it keeps and that cookie's value. */
+async function startedSignIn(path = "/auth/sign-in?returnTo=%2Fprivacy%3Fpanel%3Dtelemetry") {
+  const { event, cookies, values } = request(path);
+  const redirect = await startSignIn(event).catch((thrown: unknown) => thrown as { status: number; location: string });
+  const cookie = values.get("studio_sign_in") ?? "";
+
+  return {
+    redirect,
+    cookie,
+    options: cookies.set.mock.lastCall?.[2],
+    pending: JSON.parse(cookie) as { state: string; verifier: string; returnTo: string },
+    authorization: new URL(redirect.location),
+  };
+}
+
+/** The callback request that brings an authorization response back to Studio. */
+function callback(response: Record<string, string | string[]>, signIn?: string) {
+  const parameters = new URLSearchParams();
+  for (const [name, values] of Object.entries(response)) {
+    for (const value of [values].flat()) parameters.append(name, value);
+  }
+  return request(`/auth/callback?${parameters}`, signIn === undefined ? {} : { studio_sign_in: signIn });
+}
+
+describe("sign-in through the account platform at the request boundary", () => {
+  it("sends the visitor to the account platform with a fresh state and an S256 PKCE challenge", async () => {
+    const { redirect, options, pending, authorization } = await startedSignIn();
+
+    expect(redirect.status).toBe(303);
+    expect(authorization.origin + authorization.pathname).toBe("https://account.test/authorize");
+    expect(Object.fromEntries(authorization.searchParams)).toEqual({
+      response_type: "code",
+      client_id: "studio",
+      redirect_uri: "https://studio.test/auth/callback",
+      state: pending.state,
+      code_challenge: createHash("sha256").update(pending.verifier).digest("base64url"),
+      code_challenge_method: "S256",
+    });
+    expect(pending.returnTo).toBe("/privacy?panel=telemetry");
+    expect(pending.state).toMatch(/^[\w-]{43}$/);
+    expect(pending.verifier).toMatch(/^[\w-]{43}$/);
+    expect(options).toEqual({ httpOnly: true, path: "/auth/callback", sameSite: "lax", secure: true, maxAge: 600 });
+    expect(fetchService).not.toHaveBeenCalled();
+
+    const another = await startedSignIn();
+    expect(another.pending.state).not.toBe(pending.state);
+    expect(another.pending.verifier).not.toBe(pending.verifier);
+  });
+
+  it.each(["https://attacker.invalid/", "/auth/logout"])("returns to the home page instead of %s", async (target) => {
+    const { pending } = await startedSignIn(`/auth/sign-in?returnTo=${encodeURIComponent(target)}`);
+    expect(pending.returnTo).toBe("/");
+  });
+
+  it("exchanges the code with its verifier, keeps the tokens and returns the visitor without a referrer", async () => {
+    const { cookie, pending } = await startedSignIn();
+    const { event, cookies, values } = callback(
+      { code: "private-code", state: pending.state, iss: "https://account.test" },
+      cookie
+    );
+    fetchService.mockResolvedValueOnce(
+      Response.json({
+        access_token: "new-access",
+        token_type: "Bearer",
+        expires_in: 3600,
+        refresh_token: "new-refresh",
+      })
+    );
+
+    const response = await completeSignIn(event);
+
+    expect(response.status).toBe(303);
+    expect(Object.fromEntries(response.headers)).toEqual({
+      location: "/privacy?panel=telemetry",
+      "cache-control": "no-store",
+      "referrer-policy": "no-referrer",
+    });
+    expect(sentRequest()).toEqual({
+      url: "https://authentication.test/v2/oauth/token",
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", "x-client-ip": "192.0.2.1" },
+      body: expect.anything(),
+    });
+    expect(Object.fromEntries(new URLSearchParams(String(fetchService.mock.lastCall?.[1]?.body)))).toEqual({
+      grant_type: "authorization_code",
+      code: "private-code",
+      code_verifier: pending.verifier,
+      redirect_uri: "https://studio.test/auth/callback",
+    });
+    expect(Object.fromEntries(values)).toEqual({
+      studio_access_token: "new-access",
+      studio_refresh_token: "new-refresh",
+    });
+    expect(cookies.delete).toHaveBeenCalledWith("studio_sign_in", { path: "/auth/callback" });
+  });
+
+  const refusedResponses: Array<[string, (pending: { state: string }) => Record<string, string | string[]>]> = [
+    ["another state", () => ({ code: "c", state: "forged", iss: "https://account.test" })],
+    ["a repeated state", ({ state }) => ({ code: "c", state: [state, state], iss: "https://account.test" })],
+    ["no issuer", ({ state }) => ({ code: "c", state })],
+    ["another issuer", ({ state }) => ({ code: "c", state, iss: "https://attacker.invalid" })],
+    ["no code", ({ state }) => ({ state, iss: "https://account.test" })],
+    ["a refusal", ({ state }) => ({ error: "invalid_request", state, iss: "https://account.test" })],
+  ];
+
+  it.each(refusedResponses)("fails a response with %s without exchanging anything", async (_, response) => {
+    const { cookie, pending } = await startedSignIn();
+    const { event, cookies, values } = callback(response(pending), cookie);
+
+    const result = await completeSignIn(event);
+
+    expect(result.headers.get("location")).toBe("/auth/sign-in/failed?returnTo=%2Fprivacy%3Fpanel%3Dtelemetry");
+    expect(result.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(fetchService).not.toHaveBeenCalled();
+    expect(values.size).toBe(0);
+    expect(cookies.delete).toHaveBeenCalledWith("studio_sign_in", { path: "/auth/callback" });
+  });
+
+  it.each([
+    ["no sign-in was started", undefined],
+    ["the pending sign-in is malformed", "{not json"],
+    ["the pending sign-in misses its verifier", JSON.stringify({ state: "s", returnTo: "/privacy" })],
+  ])("fails a response toward the home page when %s", async (_, signIn) => {
+    const { event } = callback({ code: "c", state: "s", iss: "https://account.test" }, signIn);
+
+    const result = await completeSignIn(event);
+
+    expect(result.headers.get("location")).toBe("/auth/sign-in/failed?returnTo=%2F");
+    expect(fetchService).not.toHaveBeenCalled();
+  });
+
+  it.each(["temporarily_unavailable", "server_error"])("asks to retry later after a %s refusal", async (error) => {
+    const { cookie, pending } = await startedSignIn();
+    const { event } = callback({ error, state: pending.state, iss: "https://account.test" }, cookie);
+
+    const result = await completeSignIn(event);
+
+    expect(result.headers.get("location")).toBe(
+      "/auth/sign-in/failed?returnTo=%2Fprivacy%3Fpanel%3Dtelemetry&reason=unavailable"
+    );
+    expect(fetchService).not.toHaveBeenCalled();
+  });
+
+  const failedExchanges: Array<[string, () => Promise<Response>, string]> = [
+    ["a refused code", async () => Response.json({ error: "invalid_grant" }, { status: 400 }), ""],
+    ["a rate limit", async () => new Response("slow down", { status: 429 }), "&reason=rate-limited"],
+    ["an outage", async () => new Response("private service detail", { status: 503 }), "&reason=unavailable"],
+    ["a rejected service token", async () => new Response(null, { status: 401 }), "&reason=unavailable"],
+    ["an unreachable service", async () => Promise.reject(new Error("network unavailable")), "&reason=unavailable"],
+  ];
+
+  it.each(failedExchanges)("keeps the visitor signed out after %s", async (_, answer, reason) => {
+    const { cookie, pending } = await startedSignIn();
+    const { event, values } = callback({ code: "c", state: pending.state, iss: "https://account.test" }, cookie);
+    fetchService.mockImplementationOnce(answer);
+
+    const result = await completeSignIn(event);
+
+    expect(result.headers.get("location")).toBe(
+      `/auth/sign-in/failed?returnTo=%2Fprivacy%3Fpanel%3Dtelemetry${reason}`
+    );
+    expect(fetchService).toHaveBeenCalledOnce();
+    expect(values.size).toBe(0);
   });
 });
 
@@ -326,19 +374,19 @@ describe("planned downtime at the request boundary", () => {
 
     await expect(loadStudioShell(event)).resolves.toEqual({
       activeNavigation: "home",
-      accountHref: "https://account.test/account",
+      ...accountLinks,
       session: { status: "downtime" },
       authorization: "unavailable",
     });
     expect(fetchService).not.toHaveBeenCalled();
   });
 
-  it("refuses sign-in without calling authentication", async () => {
+  it("refuses to start a sign-in, and leaves no pending sign-in behind", async () => {
     published.downtime = started();
+    const { event, cookies } = request("/auth/sign-in?returnTo=%2Fprivacy");
 
-    await expect(
-      authenticationActions.default(request("/?auth=login", {}, { email: "a@b.test", password: "p" }).event)
-    ).rejects.toMatchObject(downtimeRefusal);
+    await expect(startSignIn(event)).rejects.toMatchObject(downtimeRefusal);
+    expect(cookies.set).not.toHaveBeenCalled();
     expect(fetchService).not.toHaveBeenCalled();
   });
 
