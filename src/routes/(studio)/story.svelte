@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { StudioShellViewModel } from "#lib/application/shell/types.js";
+  import type { StudioShellViewModel } from "./controller.svelte";
 
   import type { Snippet } from "svelte";
 
