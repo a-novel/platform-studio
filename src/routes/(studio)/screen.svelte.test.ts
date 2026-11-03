@@ -1,6 +1,6 @@
-import type { StudioShellViewModel } from "#lib/application/shell/types.js";
 import { withLocale } from "#lib/i18n/provider.fixture.js";
 
+import type { StudioShellViewModel } from "./controller.svelte";
 import { createStudioShellController } from "./controller.svelte";
 import Screen from "./screen.svelte";
 import StudioShellStory from "./story.svelte";
