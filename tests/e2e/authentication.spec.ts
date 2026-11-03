@@ -111,8 +111,9 @@ test("signs in without a form while the account platform's session is open", asy
 }) => {
   await openAccountSession(page, account);
 
-  // The account platform's app list opens Studio's sign-in, which comes back signed in.
-  await page.getByRole("button", { name: "Agora apps", exact: true }).click();
+  // The account platform's app list, in its rail or its phone menu, opens Studio's sign-in, which
+  // comes back signed in.
+  await openAccountControls(page, isMobile);
   await page.getByRole("navigation", { name: "Agora apps" }).getByRole("link", { name: "Studio", exact: true }).click();
   await expect(page).toHaveURL(`${studioOrigin}/`);
   await expect(await accountLink(page, isMobile)).toBeVisible();
