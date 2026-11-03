@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getStudioDowntime } from "#lib/ui/downtime.svelte.js";
+  import { hasTelemetryPreference } from "#lib/ui/telemetry-preference.js";
   import { afterNavigate, goto } from "$app/navigation";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
@@ -25,8 +27,10 @@
     // The account platform serves these pages, at addresses no navigation changes.
     accountHref: untrack(() => data.accountHref),
     invitationHref: untrack(() => data.invitationHref),
-    privacyHref: resolve("privacy"),
+    // Only a Studio that collects browser telemetry asks for consent, so only it offers to change the answer.
+    privacyHref: hasTelemetryPreference() ? resolve("privacy") : null,
     logoutAction: resolve("auth/logout"),
+    studioDowntime: getStudioDowntime(),
     getUrl: () => new URL(currentHref),
     onDrawerChange: (open) => showShallow(withNavigationOpen(new URL(window.location.href), open)),
     onRailChange: (rail) => writeRailCollapsed(window.localStorage, rail === "collapsed"),

@@ -11,9 +11,6 @@
 </script>
 
 <script lang="ts">
-  import { getStudioDowntime, hasStudioDowntime } from "#lib/ui/downtime.svelte.js";
-  import { hasTelemetryPreference } from "#lib/ui/telemetry-preference.js";
-
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import studioBanner from "@a-novel-kit/ui-images/files/banner/80h/studio-banner.png";
   import studioIcon48 from "@a-novel-kit/ui-images/files/icon/48x48/studio-icon.png";
@@ -47,26 +44,24 @@
 
   let { controller, children }: StudioShellProps = $props();
 
-  // Stories and tests render the shell without the app's downtime tracking.
-  const studioDowntime = hasStudioDowntime() ? getStudioDowntime() : undefined;
-
   const model = $derived(controller.state.model);
   const homeHref = $derived(controller.state.homeHref);
   const accountHref = $derived(controller.state.accountHref);
   const invitationHref = $derived(controller.state.invitationHref);
   const logoutAction = $derived(controller.state.logoutAction);
+  const privacyHref = $derived(controller.state.privacyHref);
+  const studioDowntime = $derived(controller.state.studioDowntime);
 
   const componentId = $props.id();
   const desktopNavigationId = `${componentId}-desktop-navigation`;
   const drawerId = `${componentId}-navigation-drawer`;
   const compactRail = $derived(model.rail === "collapsed");
   const { t } = getI18nContext();
-  // Only a Studio that collects browser telemetry asks for consent, so only it offers to change the answer.
   const privacyItems = $derived(
-    hasTelemetryPreference()
+    privacyHref
       ? [
           {
-            href: controller.state.privacyHref,
+            href: privacyHref,
             label: t("shell.privacy"),
             current: model.activeNavigation === "privacy",
             icon: privacyIcon,

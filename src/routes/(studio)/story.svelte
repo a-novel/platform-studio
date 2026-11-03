@@ -5,54 +5,53 @@
 
   /** Fixed-state Storybook harness around the pure shell. */
   export interface StudioShellStoryProps {
-    initialModel: StudioShellViewModel;
+    model: StudioShellViewModel;
     /** Whether Studio collects browser telemetry, which adds the Privacy destination. */
     collectsTelemetry?: boolean;
-    /** A started planned downtime, which the shell announces. */
+    /** Whether the server could read where the account platform lives, which its links need. */
+    accountLinks?: boolean;
+    /** A planned downtime, which the shell announces. */
     downtime?: { start: Date; end: Date };
+    /** Whether that downtime has started. */
+    started?: boolean;
     /** Content after the home page, such as filler to scroll past sticky elements. */
     children?: Snippet;
   }
 </script>
 
 <script lang="ts">
-  import { setStudioDowntime } from "#lib/ui/downtime.svelte.js";
-  import { setTelemetryPreference } from "#lib/ui/telemetry-preference.js";
-
   import HomeScreen from "./(home)/screen.svelte";
   import type { StudioShellController } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
-  import { untrack } from "svelte";
-
-  let { initialModel, collectsTelemetry, downtime, children }: StudioShellStoryProps = $props();
-
-  if (untrack(() => collectsTelemetry))
-    setTelemetryPreference({ pending: false, choice: "accepted", choose: () => {} });
-
-  const startedDowntime = untrack(() => downtime);
-  if (startedDowntime) {
-    setStudioDowntime({
-      downtime: { components: ["service-authentication.database"], ...startedDowntime },
-      started: true,
-      timeZone: "UTC",
-    });
-  }
+  let {
+    model,
+    collectsTelemetry,
+    accountLinks = true,
+    downtime,
+    started = true,
+    children,
+  }: StudioShellStoryProps = $props();
 
   const controller: StudioShellController = {
     get state() {
       return {
-        model: initialModel,
+        model,
         homeHref: "#home",
-        accountHref: "#account",
-        invitationHref: "#invitation",
-        privacyHref: "#privacy",
+        accountHref: accountLinks ? "#account" : null,
+        invitationHref: accountLinks ? "#invitation" : null,
+        privacyHref: collectsTelemetry ? "#privacy" : null,
         logoutAction: "#logout",
+        studioDowntime: downtime && {
+          downtime: { components: ["service-authentication.database"], ...downtime },
+          started,
+          timeZone: "UTC",
+        },
       };
     },
     navigationDialog: {
       get state() {
-        return { open: initialModel.drawerOpen };
+        return { open: model.drawerOpen };
       },
       open: () => {},
       close: () => {},

@@ -1,4 +1,5 @@
 import { signInHref } from "#lib/application/auth/navigation.js";
+import type { StudioDowntime } from "#lib/ui/downtime.svelte.js";
 
 import { withNavigationOpen } from "./navigation-state";
 
@@ -30,8 +31,11 @@ export interface StudioShellControllerState {
   accountHref: string | null;
   /** The invitation request on the account platform, absent while the server cannot read where it lives. */
   invitationHref: string | null;
-  privacyHref: string;
+  /** The Privacy page, absent on a platform that collects no browser telemetry and so asks nothing. */
+  privacyHref: string | null;
   logoutAction: string;
+  /** The planned downtime the shell announces, absent where nothing tracks it. */
+  studioDowntime?: StudioDowntime;
 }
 
 /** Route-owned state synchronized into the shell after navigation. */
@@ -82,6 +86,7 @@ export function createStudioShellController({
   invitationHref,
   privacyHref,
   logoutAction,
+  studioDowntime,
   allowNativeLogout = true,
   onRailChange,
   getUrl = () => new SvelteURL(homeHref, "https://studio.invalid"),
@@ -110,7 +115,7 @@ export function createStudioShellController({
 
   return {
     get state() {
-      return { model, homeHref, accountHref, invitationHref, privacyHref, logoutAction };
+      return { model, homeHref, accountHref, invitationHref, privacyHref, logoutAction, studioDowntime };
     },
     navigationDialog,
     navigationHref: (open) => href(withNavigationOpen(getUrl(), open)),

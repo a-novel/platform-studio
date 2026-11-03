@@ -29,7 +29,7 @@ function controller(patch: Partial<StudioShellViewModel> = {}) {
     homeHref: "/",
     accountHref: "https://account.example.test/account",
     invitationHref: "https://account.example.test/?auth=register",
-    privacyHref: "/privacy",
+    privacyHref: null,
     logoutAction: "/auth/logout",
     allowNativeLogout: false,
   });
@@ -105,13 +105,13 @@ describe("studio shell screen", () => {
   });
 
   it("lists Privacy only while Studio collects browser telemetry", async () => {
-    const view = await render(StudioShellStory, { initialModel: model() }, withLocale());
+    const view = await render(StudioShellStory, { model: model() }, withLocale());
     await expect.element(page.getByRole("link", { name: "Privacy" })).not.toBeInTheDocument();
     await view.unmount();
 
     render(
       StudioShellStory,
-      { initialModel: model({ activeNavigation: "privacy" }), collectsTelemetry: true },
+      { model: model({ activeNavigation: "privacy" }), collectsTelemetry: true },
       withLocale("fr")
     );
     await expect.element(page.getByRole("link", { name: "Confidentialité" })).toHaveAttribute("aria-current", "page");
