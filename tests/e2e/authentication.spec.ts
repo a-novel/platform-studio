@@ -57,7 +57,7 @@ async function accountLink(page: Page, isMobile: boolean) {
 
 /** Studio's cookies, the pending sign-in's included. The account platform's share the host. */
 async function studioCookies(context: BrowserContext) {
-  return (await context.cookies()).filter((cookie) => cookie.name.startsWith("studio_"));
+  return (await context.cookies()).filter((cookie) => cookie.name.startsWith("__Host-studio_"));
 }
 
 async function authenticationResponds(): Promise<boolean> {
@@ -82,17 +82,20 @@ test("signs in from signed out through the account platform and returns to the p
   expect(response?.status()).toBe(303);
   expect(response?.headers()).toMatchObject({
     location: "/privacy",
-    "cache-control": "no-store",
+    // The callback sets the session, so the request hook keeps it out of every cache.
+    "cache-control": "private, no-store",
     "referrer-policy": "no-referrer",
   });
 
   const cookies = await studioCookies(context);
   expect(cookies.map((cookie) => cookie.name).sort()).toEqual([
-    "studio_access_token",
-    "studio_identity_handle",
-    "studio_refresh_token",
+    "__Host-studio_access_token",
+    "__Host-studio_identity_handle",
+    "__Host-studio_refresh_token",
   ]);
-  expect(cookies.every((cookie) => cookie.httpOnly && cookie.sameSite === "Lax")).toBe(true);
+  expect(
+    cookies.every((cookie) => cookie.httpOnly && cookie.secure && cookie.path === "/" && cookie.sameSite === "Lax")
+  ).toBe(true);
 
   // The session survives a new page load, which the checkpoint captures on the home page.
   await page.goto("/");
@@ -115,7 +118,7 @@ test("signs in without a form while the account platform's session is open", asy
   await expect(await accountLink(page, isMobile)).toBeVisible();
 
   // Studio's own "Log in" comes back the same way once its cookies are gone.
-  await context.clearCookies({ name: /^studio_/ });
+  await context.clearCookies({ name: /^__Host-studio_/ });
   await page.goto("/privacy");
   await openAccountControls(page, isMobile);
   await page.getByRole("link", { name: "Log in", exact: true }).click();
@@ -138,7 +141,7 @@ test("logging out of Studio ends the session on the account platform too", async
   expect(await studioCookies(context)).toEqual([]);
 
   // Authentication ended the whole session, so Studio's refresh token no longer renews it.
-  await expect(refreshTokenGrant(studioApi, tokens.studio_refresh_token ?? "")).rejects.toMatchObject({
+  await expect(refreshTokenGrant(studioApi, tokens["__Host-studio_refresh_token"] ?? "")).rejects.toMatchObject({
     response: { error: "invalid_grant" },
   });
 
