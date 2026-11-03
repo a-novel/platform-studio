@@ -128,7 +128,7 @@ services:
 
   # The account platform, where Studio signs people in.
   account:
-    image: ghcr.io/a-novel/platform-account:v1.1.1@sha256:55122fad58cd9cb0437870ce2c0c7d05be85bc2f3fb4111f400be438eb4130ba
+    image: ghcr.io/a-novel/platform-account:v1.2.1@sha256:9c12c8b7ebc154b6a819f170296e4abcafbd7aa6b2c5cbc63d2547c96814020f
     ports:
       - "127.0.0.1:14102:3000"
     depends_on:
