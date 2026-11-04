@@ -57,7 +57,7 @@ services:
 
   # JSON keys' public API, whose keys verify access tokens on Studio.
   json-keys-rest:
-    image: ghcr.io/a-novel/service-json-keys/rest:v2.15.3@sha256:d8d11315fd7015e2e7297018a895e94fff4eb3408e5164b72ec44935fea19bbf
+    image: ghcr.io/a-novel/service-json-keys/rest:v2.15.5@sha256:27a759371b27892f9ac8b38f9332fa6f56dc5fe4b3c205c91b7a90bab7d92b02
     ports:
       - "127.0.0.1:14103:8080"
     # The gRPC server's start migrates the database and creates the keys this server lists.
