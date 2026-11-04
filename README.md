@@ -58,9 +58,11 @@ Kubernetes service account whose token `SERVICE_TOKEN_PATH` holds.
 ```bash
 PLATFORM_STUDIO_VERSION="vX.Y.Z"
 AUTHENTICATION_SERVICE_URL="https://authentication.example.com"
+JSON_KEYS_SERVICE_URL="https://json-keys.example.com"
 ACCOUNT_URL="https://account.example.com"
 podman run --detach --name platform-studio --publish 3000:3000 \
   --env AUTHENTICATION_SERVICE_URL="$AUTHENTICATION_SERVICE_URL" \
+  --env JSON_KEYS_SERVICE_URL="$JSON_KEYS_SERVICE_URL" \
   --env ACCOUNT_URL="$ACCOUNT_URL" \
   ghcr.io/a-novel/platform-studio:"$PLATFORM_STUDIO_VERSION"
 ```
@@ -70,6 +72,7 @@ podman run --detach --name platform-studio --publish 3000:3000 \
 | Name                             | Required       | Description                                                                                                                                                                             |
 | -------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AUTHENTICATION_SERVICE_URL`     | Yes            | Base HTTP or HTTPS URL for the authentication service.                                                                                                                                  |
+| `JSON_KEYS_SERVICE_URL`          | Yes            | Base HTTP or HTTPS URL for the JSON keys service's REST API, whose public keys verify access tokens.                                                                                    |
 | `ACCOUNT_URL`                    | Yes            | Public URL of the account platform, where visitors sign in and manage their account. Its origin is the issuer Studio expects.                                                           |
 | `SERVICE_TOKEN_PATH`             | Kubernetes     | File of the projected service token, which identifies Studio as a client. Studio reads it on every call.                                                                                |
 | `ADDRESS_HEADER`, `XFF_DEPTH`    | Behind a proxy | Where the visitor's IP is read, which Studio forwards for rate limiting. Behind the cluster's load balancer, `X-Forwarded-For` and `2`: it appends the visitor's address, then its own. |

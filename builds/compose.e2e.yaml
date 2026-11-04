@@ -55,6 +55,29 @@ services:
       POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
 
+  # JSON keys' public API, whose keys verify access tokens on Studio.
+  json-keys-rest:
+    image: ghcr.io/a-novel/service-json-keys/rest:v2.15.5@sha256:27a759371b27892f9ac8b38f9332fa6f56dc5fe4b3c205c91b7a90bab7d92b02
+    ports:
+      - "127.0.0.1:14103:8080"
+    # The gRPC server's start migrates the database and creates the keys this server lists.
+    depends_on:
+      service-json-keys:
+        condition: service_healthy
+    # Podman ignores the image's own check, so the journeys' wait needs this one.
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8080/v2/ping"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+    environment:
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: "false"
+
   service-token-issuer:
     image: ghcr.io/a-novel/service-authentication/service-token-issuer:v2.24.0@sha256:da68c92a0d595f33aa8c202787e3dad8fdf395ef6ad285d7bf86756498e1b4b4
     ports:
