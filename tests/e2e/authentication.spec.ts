@@ -159,7 +159,8 @@ test("logging out of Studio ends the session on the account platform too", async
     response: { error: "invalid_grant" },
   });
 
-  // The account platform finds its session ended on its next request.
+  // The account platform trusts a recent check for five minutes, then finds the session ended.
+  await context.clearCookies({ name: "__Host-account_session_checked" });
   await page.goto(`${accountOrigin}/account`);
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/\?auth=login&returnTo=%2Faccount$/);
 
