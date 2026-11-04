@@ -1,18 +1,25 @@
-import { type StudioShellControllerOptions, createStudioShellController } from "./controller.svelte";
+import {
+  type StudioShellControllerOptions,
+  type StudioShellData,
+  createStudioShellController,
+} from "./controller.svelte";
 
 import { describe, expect, it, vi } from "vitest";
 
-const links = {
-  homeHref: "/",
+const accountLinks = {
   accountHref: "https://account.example.test/account",
   invitationHref: "https://account.example.test/?auth=register",
+};
+
+const links = {
+  homeHref: "/",
   privacyHref: "/privacy",
   logoutAction: "/logout",
 };
 
 function shell(options: Partial<StudioShellControllerOptions> = {}) {
   return createStudioShellController({
-    model: { activeNavigation: "home", drawerOpen: false, rail: "expanded", session: { status: "anonymous" } },
+    getData: () => ({ activeNavigation: "home", session: { status: "anonymous" }, ...accountLinks }),
     ...links,
     allowNativeLogout: false,
     ...options,
@@ -23,7 +30,8 @@ describe("createStudioShellController", () => {
   it("accepts semantic shell transitions", () => {
     const onRailChange = vi.fn();
     const onDrawerChange = vi.fn();
-    const controller = shell({ onRailChange, onDrawerChange });
+    let data: StudioShellData = { activeNavigation: "home", session: { status: "anonymous" }, ...accountLinks };
+    const controller = shell({ getData: () => data, onRailChange, onDrawerChange });
 
     controller.navigationDialog.open();
     expect(onDrawerChange).toHaveBeenCalledExactlyOnceWith(true);
@@ -42,7 +50,7 @@ describe("createStudioShellController", () => {
     expect(onDrawerChange.mock.calls).toEqual([[true], [false], [true], [false]]);
 
     for (const session of [{ status: "anonymous" }, { status: "loading" }, { status: "error" }] as const) {
-      controller.synchronizeRoute({ activeNavigation: "home", session });
+      data = { ...data, session };
       expect(controller.logout()).toBe(false);
       expect(controller.state.model.session).toEqual(session);
     }
@@ -60,22 +68,29 @@ describe("createStudioShellController", () => {
     expect(controller.signInHref()).toBe("/auth/sign-in?returnTo=%2Fprivacy");
   });
 
-  it("synchronizes route state around accepted shell transitions", () => {
-    const controller = shell();
+  it("derives the menu from the URL and the rest of the shell from the load data", () => {
+    let data: StudioShellData = { activeNavigation: "home", session: { status: "anonymous" }, ...accountLinks };
+    let url = new URL("https://studio.example.test/?menu=open");
+    const controller = shell({ getData: () => data, getUrl: () => url });
 
     controller.synchronizeRail("collapsed");
     controller.synchronizeRail("collapsed");
-    controller.navigationDialog.open();
-    expect(controller.state.model.rail).toBe("collapsed");
-
-    controller.synchronizeRoute({ activeNavigation: null, session: { status: "authenticated" } });
     expect(controller.state.model).toEqual({
-      activeNavigation: null,
+      activeNavigation: "home",
       rail: "collapsed",
       drawerOpen: true,
-      session: { status: "authenticated" },
+      session: { status: "anonymous" },
     });
-    expect(controller.state).toMatchObject(links);
+
+    data = { activeNavigation: null, session: { status: "authenticated" }, accountHref: null, invitationHref: null };
+    url = new URL("https://studio.example.test/privacy");
+    expect(controller.state).toEqual({
+      model: { activeNavigation: null, rail: "collapsed", drawerOpen: false, session: { status: "authenticated" } },
+      ...links,
+      accountHref: null,
+      invitationHref: null,
+      studioDowntime: undefined,
+    });
 
     expect(controller.logout()).toBe(false);
     expect(controller.state.model.session.status).toBe("anonymous");
@@ -83,7 +98,7 @@ describe("createStudioShellController", () => {
 
   it("allows native logout without replacing the authenticated session", () => {
     const controller = shell({
-      model: { activeNavigation: "home", drawerOpen: false, rail: "expanded", session: { status: "authenticated" } },
+      getData: () => ({ activeNavigation: "home", session: { status: "authenticated" }, ...accountLinks }),
       allowNativeLogout: true,
     });
 
