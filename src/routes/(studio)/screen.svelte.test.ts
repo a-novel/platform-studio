@@ -34,7 +34,7 @@ function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel 
 }
 
 function controller(patch: Partial<StudioShellViewModel> = {}, options: Partial<StudioShellControllerOptions> = {}) {
-  const { rail, drawerOpen, ...data } = model(patch);
+  const { drawerOpen, ...data } = model(patch);
   const url = withNavigationOpen(new URL("https://studio.example.test/"), drawerOpen);
   const shell = createStudioShellController({
     getData: () => ({ ...data, ...accountLinks }),
@@ -45,7 +45,6 @@ function controller(patch: Partial<StudioShellViewModel> = {}, options: Partial<
     allowNativeLogout: false,
     ...options,
   });
-  shell.synchronizeRail(rail);
   return shell;
 }
 
@@ -140,17 +139,16 @@ describe("studio shell screen", () => {
     await expect.element(page.getByRole("link", { name: "Privacy" })).not.toBeInTheDocument();
   });
 
-  it("names the account and opens its page on the account platform in a new tab", async () => {
+  it("names the account and opens its page on the account platform in the same tab", async () => {
     const shell = controller({ session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" } });
     render(Screen, { controller: shell }, withLocale());
 
-    const accountLink = page.getByRole("link", { name: "Maya Chen (opens in a new tab)" });
+    const accountLink = page.getByRole("link", { name: "Maya Chen" });
     await expect.element(accountLink).toHaveAttribute("title", "Manage account for Maya Chen");
     // The initials avatar leads the name.
     expect(accountLink.element().textContent).toMatch(/MC\s*Maya Chen/);
     await expect.element(accountLink).toHaveAttribute("href", "https://account.example.test/account");
-    await expect.element(accountLink).toHaveAttribute("target", "_blank");
-    await expect.element(accountLink).toHaveAttribute("rel", "noopener noreferrer");
+    await expect.element(accountLink).not.toHaveAttribute("target");
     expect(getComputedStyle(accountLink.element()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     expect(getComputedStyle(accountLink.element()).borderTopStyle).toBe("none");
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
@@ -166,7 +164,7 @@ describe("studio shell screen", () => {
     render(Screen, { controller: controller({ rail: "collapsed", session }) }, withLocale("fr"));
 
     const accountLink = page.getByRole("link", {
-      name: "Gérer mon compte (Maya Chen) (s’ouvre dans un nouvel onglet)",
+      name: "Gérer mon compte (Maya Chen)",
     });
     await expect.element(accountLink).toHaveAttribute("title", "Gérer mon compte (Maya Chen)");
   });
@@ -180,7 +178,7 @@ describe("studio shell screen", () => {
     } as const;
     render(Screen, { controller: controller({ session }) }, withLocale());
 
-    const accountLink = page.getByRole("link", { name: "Maya Chen (opens in a new tab)" });
+    const accountLink = page.getByRole("link", { name: "Maya Chen" });
     await expect.element(accountLink).toBeVisible();
     const picture = accountLink.element().querySelector("img");
     expect(picture?.getAttribute("src")).toBe(portraitPicture);
@@ -191,9 +189,8 @@ describe("studio shell screen", () => {
   it("names no one before the account's email is known", async () => {
     render(Screen, { controller: controller({ session: { status: "authenticated" } }) }, withLocale("fr"));
 
-    const accountLink = page.getByRole("link", { name: "Gérer mon compte (s’ouvre dans un nouvel onglet)" });
+    const accountLink = page.getByRole("link", { name: "Gérer mon compte" });
     await expect.element(accountLink.getByText("Gérer mon compte", { exact: true })).toBeVisible();
-    await expect.element(accountLink).toHaveAttribute("target", "_blank");
   });
 
   it("contains a long account name in the mobile drawer", async () => {
@@ -235,7 +232,7 @@ describe("studio shell screen", () => {
         await surface.getByRole("img", { name: "Studio" }).hover();
         const controls = [surface.getByRole("link", { name: "Home" })];
         if (status === "authenticated") {
-          controls.push(surface.getByRole("link", { name: "Maya Chen (opens in a new tab)" }));
+          controls.push(surface.getByRole("link", { name: "Maya Chen" }));
           controls.push(surface.getByRole("button", { name: "Log out" }));
         } else {
           controls.push(surface.getByRole("link", { name: "Log in" }));

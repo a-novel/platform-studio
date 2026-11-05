@@ -39,7 +39,6 @@ shell:
   manageAccountFor: Gérer mon compte ({{name}})
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
-  opensInNewTab: (s’ouvre dans un nouvel onglet)
   privacy: Confidentialité
   register: M’inscrire
   sessionDowntime: Compte indisponible pendant la maintenance.

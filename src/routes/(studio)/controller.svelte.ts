@@ -44,8 +44,8 @@ export interface StudioShellControllerState {
   studioDowntime?: StudioDowntime;
 }
 
-/** The layout's load data the shell renders: the page's destination, the session and the account links. */
-export type StudioShellData = Pick<StudioShellViewModel, "activeNavigation" | "session"> &
+/** The layout's load data the shell renders: the page's destination, the session, the rail and the account links. */
+export type StudioShellData = Pick<StudioShellViewModel, "activeNavigation" | "session" | "rail"> &
   Pick<StudioShellControllerState, "accountHref" | "invitationHref">;
 
 /** Pure state and transitions consumed by the Studio shell component. */
@@ -63,8 +63,6 @@ export interface StudioShellController {
   toggleRail(): void;
   /** Requests logout and reports whether native form submission should continue. */
   logout(): boolean;
-  /** Reconciles the persisted navigation-rail preference. */
-  synchronizeRail(rail: StudioShellViewModel["rail"]): void;
 }
 
 /** Configuration for the default Studio shell controller. */
@@ -96,7 +94,8 @@ export function createStudioShellController({
   getUrl = () => new SvelteURL(homeHref, "https://studio.invalid"),
   onDrawerChange,
 }: StudioShellControllerOptions): StudioShellController {
-  let rail = $state<StudioShellViewModel["rail"]>("expanded");
+  // The rail the server read from the visitor's cookie, until they toggle it.
+  let rail = $derived(getData().rail);
   // The URL owns the menu: a transition opens or closes it at once, and the next URL, such as Back's, decides again.
   let drawerOpen = $derived(readNavigationOpen(getUrl().searchParams));
   // A logout the browser does not submit signs the shell out until the next load.
@@ -152,9 +151,6 @@ export function createStudioShellController({
       if (session.status !== "authenticated") return false;
       if (!allowNativeLogout) session = { status: "anonymous" };
       return allowNativeLogout;
-    },
-    synchronizeRail(next) {
-      rail = next;
     },
   };
 }
