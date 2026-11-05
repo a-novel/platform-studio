@@ -337,7 +337,7 @@
   }
 
   .shell {
-    --studio-rail-width: clamp(var(--layout-sidebar-min), var(--layout-sidebar), 18rem);
+    --studio-rail-width: var(--layout-sidebar);
 
     display: grid;
     grid-template-columns: var(--studio-rail-width) minmax(0, 1fr);
