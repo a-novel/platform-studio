@@ -48,8 +48,8 @@ shows every screen state.
 ## Deploying
 
 Run a tag from the [latest release](https://github.com/a-novel/platform-studio/releases/latest) and
-point it at the authentication service and the account platform. The image runs as a non-root user
-on port `3000`, and its container healthcheck calls `/ping`.
+point it at the authentication and profile services and the account platform. The image runs as a
+non-root user on port `3000`, and its container healthcheck calls `/ping`.
 
 Signing in needs Studio registered in the authentication service's `OAUTH_CLIENTS`, as the client
 `studio`. Its redirect URI is `/auth/callback` on Studio's public origin, and its caller is the
@@ -59,10 +59,12 @@ Kubernetes service account whose token `SERVICE_TOKEN_PATH` holds.
 PLATFORM_STUDIO_VERSION="vX.Y.Z"
 AUTHENTICATION_SERVICE_URL="https://authentication.example.com"
 JSON_KEYS_SERVICE_URL="https://json-keys.example.com"
+PROFILE_SERVICE_URL="https://profile.example.com"
 ACCOUNT_URL="https://account.example.com"
 podman run --detach --name platform-studio --publish 3000:3000 \
   --env AUTHENTICATION_SERVICE_URL="$AUTHENTICATION_SERVICE_URL" \
   --env JSON_KEYS_SERVICE_URL="$JSON_KEYS_SERVICE_URL" \
+  --env PROFILE_SERVICE_URL="$PROFILE_SERVICE_URL" \
   --env ACCOUNT_URL="$ACCOUNT_URL" \
   ghcr.io/a-novel/platform-studio:"$PLATFORM_STUDIO_VERSION"
 ```
@@ -73,8 +75,10 @@ podman run --detach --name platform-studio --publish 3000:3000 \
 | -------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AUTHENTICATION_SERVICE_URL`     | Yes            | Base HTTP or HTTPS URL for the authentication service.                                                                                                                                  |
 | `JSON_KEYS_SERVICE_URL`          | Yes            | Base HTTP or HTTPS URL for the JSON keys service's REST API, whose public keys verify access tokens.                                                                                    |
+| `PROFILE_SERVICE_URL`            | Yes            | Base HTTP or HTTPS URL for the profile service, which stores each user's username and picture.                                                                                          |
 | `ACCOUNT_URL`                    | Yes            | Public URL of the account platform, where visitors sign in and manage their account. Its origin is the issuer Studio expects.                                                           |
-| `SERVICE_TOKEN_PATH`             | Kubernetes     | File of the projected service token, which identifies Studio as a client. Studio reads it on every call.                                                                                |
+| `SERVICE_TOKEN_PATH`             | Kubernetes     | File of the projected service token, which identifies Studio to Authentication as a client. Studio reads it on every call.                                                              |
+| `PROFILE_SERVICE_TOKEN_PATH`     | Kubernetes     | File of the projected service token that proves Studio's identity to the profile service.                                                                                               |
 | `ADDRESS_HEADER`, `XFF_DEPTH`    | Behind a proxy | Where the visitor's IP is read, which Studio forwards for rate limiting. Behind the cluster's load balancer, `X-Forwarded-For` and `2`: it appends the visitor's address, then its own. |
 | `HEALTHCHECK_TIMEOUT_MS`         | No             | Downstream timeout from 100 to 10,000 ms. The default is 2,000.                                                                                                                         |
 | `DOWNTIME_URL`                   | No             | Planned downtime document. The default is the one infra publishes.                                                                                                                      |
@@ -98,16 +102,18 @@ podman run --detach --name platform-studio --publish 3000:3000 \
 
 Installing Studio's packages needs your
 [GitHub Packages token](https://a-novel-kit.github.io/stack/dependencies/node#configure). Start the
-authentication service, then Studio:
+authentication and profile services, then Studio:
 
 ```bash
 a-novel run start service-authentication/rest
+a-novel run start service-profile/rest
 eval "$(a-novel run env service-authentication)"
+eval "$(a-novel run env service-profile)"
 pnpm install
 pnpm dev
 ```
 
-The committed `.env.local` reads the service port from that environment, and points the account
+The committed `.env.local` reads the services' ports from that environment, and points the account
 links at the account platform's development server. `pnpm storybook` serves the screen catalog at
 `http://localhost:6006`.
 
