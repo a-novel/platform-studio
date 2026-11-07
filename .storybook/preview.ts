@@ -1,11 +1,9 @@
 import StudioI18nProvider from "../src/lib/i18n/StudioI18nProvider.svelte";
-import { type Locale, defaultLocale, supportedLocales } from "../src/lib/i18n/config";
+import { defaultLocale, localeNames, supportedLocales } from "../src/lib/i18n/config";
 import { storybookLocale } from "../src/lib/i18n/storybook";
 import "../src/lib/ui/lamp.css";
 
 import type { Preview } from "@storybook/sveltekit";
-
-const localeNames: Record<Locale, string> = { en: "English", fr: "Français" };
 
 const preview: Preview = {
   initialGlobals: {
