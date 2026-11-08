@@ -20,7 +20,7 @@ import "@a-novel-kit/uikit-tokens/tokens.css";
 
 const accountLinks = {
   accountHref: "https://account.example.test/account",
-  invitationHref: "https://account.example.test/?auth=register",
+  invitationHref: "https://account.example.test/account?auth=register",
 };
 
 function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel {
@@ -83,7 +83,7 @@ describe("studio shell screen", () => {
     expect(getComputedStyle(signIn.element()).justifyContent).toBe("flex-start");
 
     const invitation = page.getByRole("link", { name: "Register" });
-    await expect.element(invitation).toHaveAttribute("href", "https://account.example.test/?auth=register");
+    await expect.element(invitation).toHaveAttribute("href", "https://account.example.test/account?auth=register");
     expect(getComputedStyle(invitation.element()).justifyContent).toBe("flex-start");
     await expect.element(page.getByRole("button", { name: "Log out" })).not.toBeInTheDocument();
   });
