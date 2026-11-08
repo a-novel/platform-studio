@@ -11,10 +11,13 @@
 
   import { onMount } from "svelte";
 
-  import lightFavicon from "@a-novel-kit/ui-images/files/icon/32x32/studio-icon-light.png";
+  import lightFavicon from "@a-novel-kit/ui-images/files/icon/32x32/studio-icon-light.png?no-inline";
   // Each icon follows the browser theme; the app itself stays dark. Firefox ignores `media` and
-  // shows the last icon, so the light one comes last.
-  import darkFavicon from "@a-novel-kit/ui-images/files/icon/32x32/studio-icon.png";
+  // shows the last icon, so the light one comes last. The icons stay files rather than inline data:
+  // a password manager's icon service downloads them from these links, and cannot read a data URL.
+  import darkFavicon from "@a-novel-kit/ui-images/files/icon/32x32/studio-icon.png?no-inline";
+  // Opaque and large, for a phone's home screen and a password manager's list.
+  import touchIcon from "@a-novel-kit/ui-images/files/icon/192x192/studio-icon-black.png?no-inline";
   import type { ConsentController } from "@a-novel-kit/uikit";
   import "@a-novel-kit/uikit-fonts/fonts.css";
   import "@a-novel-kit/uikit-tokens/tokens.css";
@@ -50,6 +53,7 @@
 <svelte:head>
   <link rel="icon" type="image/png" href={darkFavicon} media="(prefers-color-scheme: dark)" />
   <link rel="icon" type="image/png" href={lightFavicon} media="(prefers-color-scheme: light)" />
+  <link rel="apple-touch-icon" href={touchIcon} />
 </svelte:head>
 
 <StudioI18nProvider locale={data.locale}>
