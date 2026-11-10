@@ -34,7 +34,8 @@ export const load: PageServerLoad = async (event) => {
 };
 ```
 
-Anonymous requests sign in through the account platform, then return to a sanitized destination.
+A visitor without an account goes straight to the sign-in, the account platform's login dialog, then
+returns to a sanitized destination: no page asks them to sign in first.
 Denied accounts receive HTTP 403. A failed verification receives HTTP 503 and keeps the session.
 
 A protected route wraps its UI in `AccessBoundary.svelte`. The wrapper inherits the

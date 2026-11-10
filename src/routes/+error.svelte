@@ -21,4 +21,4 @@
 
 <PageTitle title={errorPageTitle(t, page.status, downtime !== undefined)} />
 
-<Screen status={page.status} homeHref={resolve("")} retryHref={currentPath} {downtime} />
+<Screen status={page.status} homeHref={resolve("projects")} retryHref={currentPath} {downtime} />

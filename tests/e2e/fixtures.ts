@@ -13,7 +13,7 @@ import {
   tokenCreateAnon,
 } from "@a-novel/service-authentication-rest";
 
-import { test as base } from "playwright/test";
+import { type Page, test as base, expect } from "playwright/test";
 import { z } from "zod";
 
 /** The account platform, where Studio signs people in. */
@@ -44,7 +44,7 @@ interface Invitation {
   email: string;
   link: string;
 }
-interface Account {
+export interface Account {
   email: string;
   password: string;
 }
@@ -80,3 +80,27 @@ export const test = base.extend<{ invitation: Invitation; account: Account }, { 
 });
 
 export { expect } from "playwright/test";
+
+/** Studio's home, which `/` leads to. A visitor without an account goes from it straight to the login. */
+export const home = "/projects";
+
+/** Fills and submits the account platform's login dialog. */
+export async function submitLogin(page: Page, account: Account) {
+  const dialog = page.getByRole("dialog", { name: "Log in" });
+  await dialog.getByLabel(/^Email address/).fill(account.email);
+  await dialog.getByLabel(/^Password/).fill(account.password);
+  await dialog.getByRole("button", { name: "Log in", exact: true }).click();
+}
+
+/** Logs in on the account platform, where a sign-in from Studio lands a visitor signed out there. */
+export async function logInOnAccountPlatform(page: Page, account: Account) {
+  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/account\?auth=login&returnTo=%2Fauthorize%3F/);
+  await submitLogin(page, account);
+}
+
+/** Opens Studio's home, which sends the visitor to the account platform's login, and logs in there. */
+export async function signIn(page: Page, account: Account) {
+  await page.goto(home);
+  await logInOnAccountPlatform(page, account);
+  await expect(page).toHaveURL(home);
+}

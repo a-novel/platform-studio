@@ -30,11 +30,11 @@ describe("Studio request hook", () => {
     const resolve = vi.fn<Parameters<Handle>[0]["resolve"]>(async (request, options) => {
       await Promise.resolve();
       const html = await options?.transformPageChunk?.({ html: '<html lang="%lang%">', done: true });
-      return new Response(html + request.locals.i18n.t("shell.home"));
+      return new Response(html + request.locals.i18n.t("shell.projects"));
     });
     const [fr, en] = await Promise.all([handle({ event: french, resolve }), handle({ event: english, resolve })]);
-    await expect(fr.text()).resolves.toBe('<html lang="fr">Accueil');
-    await expect(en.text()).resolves.toBe('<html lang="en">Home');
+    await expect(fr.text()).resolves.toBe('<html lang="fr">Projets');
+    await expect(en.text()).resolves.toBe('<html lang="en">Projects');
     expect(french.locals.locale).toBe("fr");
     expect(english.locals.locale).toBe("en");
     expect(french.locals.i18n).not.toBe(english.locals.i18n);

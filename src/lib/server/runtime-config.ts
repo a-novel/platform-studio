@@ -19,6 +19,7 @@ const runtimeEnvironmentSchema = {
     minimum: 100,
   }),
   jsonKeysServiceUrl: environmentHttpUrl("JSON_KEYS_SERVICE_URL"),
+  narrativeEngineServiceUrl: environmentHttpUrl("NARRATIVE_ENGINE_SERVICE_URL"),
   profileServiceUrl: environmentHttpUrl("PROFILE_SERVICE_URL"),
 } as const;
 
@@ -28,6 +29,8 @@ export type RuntimeConfig = EnvironmentOutput<typeof runtimeEnvironmentSchema> &
   serviceTokenPath?: string;
   /** The file of the projected service token Studio sends to the profile service. Unset outside Kubernetes. */
   profileServiceTokenPath?: string;
+  /** The file of the projected service token Studio sends to the narrative engine. Unset outside Kubernetes. */
+  narrativeEngineServiceTokenPath?: string;
 };
 
 /** Parses Studio's environment variables without retaining invalid values. */
@@ -39,5 +42,6 @@ export function parseRuntimeConfig(environment: EnvironmentSource): RuntimeConfi
     ),
     serviceTokenPath: environment.SERVICE_TOKEN_PATH || undefined,
     profileServiceTokenPath: environment.PROFILE_SERVICE_TOKEN_PATH || undefined,
+    narrativeEngineServiceTokenPath: environment.NARRATIVE_ENGINE_SERVICE_TOKEN_PATH || undefined,
   };
 }

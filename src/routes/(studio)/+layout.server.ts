@@ -21,7 +21,10 @@ const shellAuthorization = {
 } as const satisfies Record<ShellSession["status"], AuthorizationStatus>;
 
 /** The rail destination each Studio page belongs to. */
-const navigation: Record<string, StudioShellViewModel["activeNavigation"]> = { "/": "home", "/privacy": "privacy" };
+const navigation: Record<string, StudioShellViewModel["activeNavigation"]> = {
+  "/projects": "projects",
+  "/privacy": "privacy",
+};
 
 /** Loads the shell's navigation state, account platform links, session and page authorization. */
 export const load: LayoutServerLoad = async (event) => {

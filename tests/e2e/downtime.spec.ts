@@ -16,7 +16,8 @@ test.describe("scheduled maintenance", () => {
     page,
     request,
   }, info) => {
-    await page.goto("/");
+    // The privacy page stays open to a visitor without an account, and the shell announces maintenance.
+    await page.goto("/privacy");
     // Published as 06:00 to 08:30 UTC, an hour later in Paris in January. No-break spaces keep the
     // time frame on one line.
     await expect(banner(page, "Scheduled maintenance")).toContainText(/Jan\s12,\s2099,\s7:00\s–\s9:30\sAM\sGMT\+1/);
@@ -29,7 +30,7 @@ test.describe("scheduled maintenance", () => {
 
   test("turns into maintenance in progress when the start passes", async ({ page }) => {
     await page.clock.install({ time: new Date("2099-01-12T05:59:00Z") });
-    await page.goto("/");
+    await page.goto("/privacy");
     await expect(banner(page, "Scheduled maintenance")).toBeVisible();
     await page.clock.fastForward("01:00");
     await expect(banner(page, "Maintenance in progress")).toBeVisible();
@@ -40,7 +41,7 @@ test.describe("maintenance in progress", () => {
   test.use({ baseURL: studioOrigin("started") });
 
   test("locks sign-in until operators clear it", async ({ page, isMobile }, info) => {
-    await page.goto("/");
+    await page.goto("/privacy");
     await expect(banner(page, "Maintenance in progress")).toContainText("Jan 12, 2099");
     if (!isMobile) {
       const rail = page.getByRole("complementary");

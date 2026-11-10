@@ -29,13 +29,25 @@ export const GET: RequestHandler = async ({ fetch }) => {
           url: new URL("v2/healthcheck", `${config.jsonKeysServiceUrl}/`),
         };
       },
+      narrativeEngine: () => {
+        const config = getRuntimeConfig();
+
+        return {
+          timeoutMs: config.healthcheckTimeoutMs,
+          url: new URL("v1/healthcheck", `${config.narrativeEngineServiceUrl}/`),
+        };
+      },
     },
-    // Probes prove Studio's identity to Authentication like any call, but are made for no visitor.
-    // JSON keys' API is public, so its probe carries no token.
+    // Probes prove Studio's identity to Authentication and the narrative engine like any call, but are
+    // made for no visitor. JSON keys' API is public, so its probe carries no token.
     fetch: async (input, init) => {
-      const { authenticationServiceUrl, serviceTokenPath } = getRuntimeConfig();
-      const identity = String(input).startsWith(`${authenticationServiceUrl}/`) ? { serviceTokenPath } : {};
-      return await serviceFetch(identity, fetch)(input, init);
+      const config = getRuntimeConfig();
+      const tokens = [
+        [config.authenticationServiceUrl, config.serviceTokenPath],
+        [config.narrativeEngineServiceUrl, config.narrativeEngineServiceTokenPath],
+      ] as const;
+      const serviceTokenPath = tokens.find(([url]) => String(input).startsWith(`${url}/`))?.[1];
+      return await serviceFetch({ serviceTokenPath }, fetch)(input, init);
     },
   });
 

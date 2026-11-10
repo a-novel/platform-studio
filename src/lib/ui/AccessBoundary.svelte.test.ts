@@ -20,7 +20,9 @@ describe("protected page presentation", () => {
     async (status) => {
       render(AccessBoundary, { ...links, controller: { state: { status } }, children }, withLocale());
       await expect.element(page.getByText("Private content")).not.toBeInTheDocument();
+      // A protected page's load sends a visitor without an account to the sign-in, so the boundary waits.
       await expect.element(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
       if (status === "unavailable")
         await expect
           .element(page.getByRole("link", { name: "Reload page" }))

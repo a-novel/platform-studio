@@ -24,7 +24,7 @@ const accountLinks = {
 
 function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel {
   return {
-    activeNavigation: "home",
+    activeNavigation: "projects",
     drawerOpen: false,
     rail: "expanded",
     session: { status: "anonymous" },
@@ -38,7 +38,7 @@ function controller(patch: Partial<StudioShellViewModel> = {}, options: Partial<
   const shell = createStudioShellController({
     getData: () => ({ ...data, ...accountLinks }),
     getUrl: () => url,
-    homeHref: "/",
+    homeHref: "/projects",
     privacyHref: null,
     logoutAction: "/auth/logout",
     allowNativeLogout: false,
@@ -71,11 +71,11 @@ describe("studio shell screen", () => {
     await page.viewport(1280, 800);
   });
 
-  it("exposes the empty workspace, current Home destination, and the account platform's entry points", async () => {
+  it("exposes the empty workspace, current Projects destination, and the account platform's entry points", async () => {
     render(Screen, { controller: controller() }, withLocale());
 
     await expect.element(page.getByRole("main")).toBeVisible();
-    await expect.element(page.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
+    await expect.element(page.getByRole("link", { name: "Projects" })).toHaveAttribute("aria-current", "page");
     await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "96");
 
     const signIn = page.getByRole("link", { name: "Log in" });
@@ -101,7 +101,7 @@ describe("studio shell screen", () => {
     await expect.element(page.getByRole("link", { name: "Register" })).not.toBeInTheDocument();
   });
 
-  it("keeps the collapsed Home destination accessible by name", async () => {
+  it("keeps the collapsed Projects destination accessible by name", async () => {
     render(
       Screen,
       {
@@ -110,7 +110,7 @@ describe("studio shell screen", () => {
       withLocale("fr")
     );
 
-    await expect.element(page.getByRole("link", { name: "Accueil" })).toBeVisible();
+    await expect.element(page.getByRole("link", { name: "Projets" })).toBeVisible();
     await expect.element(page.getByRole("img", { name: "Studio" })).toHaveAttribute("width", "24");
     await expect
       .element(page.getByRole("button", { name: "Développer la navigation" }))
@@ -130,7 +130,7 @@ describe("studio shell screen", () => {
       withLocale("fr")
     );
     await expect.element(page.getByRole("link", { name: "Confidentialité" })).toHaveAttribute("aria-current", "page");
-    await expect.element(page.getByRole("link", { name: "Accueil" })).not.toHaveAttribute("aria-current");
+    await expect.element(page.getByRole("link", { name: "Projets" })).not.toHaveAttribute("aria-current");
   });
 
   it("leaves Privacy to the account once the visitor is logged in", async () => {
@@ -232,7 +232,7 @@ describe("studio shell screen", () => {
         const surface = page.getByRole(width < 768 ? "dialog" : "complementary", { name: /Studio/ });
         await expect.element(surface).toBeVisible();
         await surface.getByRole("img", { name: "Studio" }).hover();
-        const controls = [surface.getByRole("link", { name: "Home" })];
+        const controls = [surface.getByRole("link", { name: "Projects" })];
         if (status === "authenticated") {
           controls.push(surface.getByRole("link", { name: "Maya Chen" }));
           controls.push(surface.getByRole("button", { name: "Log out" }));
@@ -309,8 +309,8 @@ describe("studio shell screen", () => {
   });
 
   const drawerLabels = [
-    ["anonymous", ["Home", "Log in", "Register"]],
-    ["authenticated", ["Home", "Maya Chen", "Log out"]],
+    ["anonymous", ["Projects", "Log in", "Register"]],
+    ["authenticated", ["Projects", "Maya Chen", "Log out"]],
   ] as const;
 
   it.each(drawerLabels)("aligns the mobile drawer labels of an %s visitor", async (status, labels) => {

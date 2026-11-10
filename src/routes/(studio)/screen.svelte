@@ -30,7 +30,7 @@
 
   import {
     CircleUserRound,
-    House,
+    LibraryBig,
     LogIn,
     LogOut,
     Menu,
@@ -82,7 +82,7 @@
   }
 </script>
 
-{#snippet homeIcon()}<House size="var(--icon-size-sm)" />{/snippet}
+{#snippet projectsIcon()}<LibraryBig size="var(--icon-size-sm)" />{/snippet}
 
 {#snippet brand(compact: boolean)}
   <span class="brand" class:compact>
@@ -113,9 +113,9 @@
       items={[
         {
           href: homeHref,
-          label: t("shell.home"),
-          current: model.activeNavigation === "home",
-          icon: homeIcon,
+          label: t("shell.projects"),
+          current: model.activeNavigation === "projects",
+          icon: projectsIcon,
         },
       ]}
     />
@@ -551,6 +551,7 @@
 
     .workspace {
       --shell-sticky-top: var(--shell-header-block-size);
+      --shell-sticky-bottom: var(--shell-banner-block-size);
 
       padding-block-start: var(--shell-header-block-size);
     }

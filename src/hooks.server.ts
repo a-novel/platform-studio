@@ -29,7 +29,10 @@ export const handle: Handle = async ({ event, resolve }) => {
   // the responses without one.
   response.headers.set("x-frame-options", "DENY");
   // A response rendered with a session is the visitor's alone, so no cache may keep it (RFC 9111 §5.2.2.5).
-  if (hasSession(event.cookies)) response.headers.set("cache-control", "private, no-store");
+  // A response that already keeps itself private, such as a project's picture, keeps its own policy.
+  if (hasSession(event.cookies) && !response.headers.get("cache-control")?.startsWith("private")) {
+    response.headers.set("cache-control", "private, no-store");
+  }
 
   traceResponse(event, response);
   return response;

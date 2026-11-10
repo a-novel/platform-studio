@@ -29,26 +29,128 @@ export default interface Resources {
     },
     "pageTitles": {
       "brand": "Agora Studio",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "projects": "Projects"
     },
     "privacy": {
       "description": "Choose what we collect on this device, in every Agora app.",
       "noTelemetry": "We collect no metrics or logs on this device.",
       "title": "Privacy"
     },
+    "projects": {
+      "columns": {
+        "label": "Columns",
+        "one": "One column",
+        "three": "Three columns",
+        "two": "Two columns"
+      },
+      "dialog": {
+        "cancel": "Cancel",
+        "create": "Create project",
+        "createTitle": "New project",
+        "feedback": {
+          "notFound": "This project no longer exists. Close this window to see your projects.",
+          "projectsFull": "You already have 100 projects, the most an account can hold.",
+          "serviceUnavailable": "We couldn’t save your project. Please try again in a few minutes.",
+          "tooManyAttempts": "Too many attempts. Please wait a few minutes before trying again."
+        },
+        "genres": "Genres",
+        "genresHint": "Up to 10.",
+        "genresTooMany": "A project holds 10 genres at most.",
+        "language": "Language",
+        "languageHint": "The language you write in. The engine writes in it too.",
+        "languageRequired": "Choose the language you write in.",
+        "logo": {
+          "hint": "Shown in place of its title.",
+          "label": "Logo"
+        },
+        "premise": "Premise",
+        "premiseHint": "The heart of it, in a few sentences. The engine keeps it in mind with every suggestion.",
+        "premiseTooLong": "A premise holds 20,000 characters at most.",
+        "refusals": {
+          "format": "Agora couldn’t read this picture. Try another image.",
+          "tooLarge": "This picture is too large. Choose a simpler image.",
+          "unreadable": "This file can’t be opened as an image. Choose another one."
+        },
+        "removePicture": "Remove picture",
+        "saving": "Saving…",
+        "tags": "Tags",
+        "tagsHint": "Separated by commas. Up to 10, of 24 characters each.",
+        "tagsTooLong": "A tag holds 24 characters at most.",
+        "tagsTooMany": "A project holds 10 tags at most.",
+        "title": "Title",
+        "titleRequired": "Give the project a title.",
+        "titleTooLong": "A title holds 80 characters at most."
+      },
+      "empty": {
+        "action": "Start crafting now",
+        "description": "Shape your story, step by step. Ideas too vast to hold in your head find their place here, and your boldest ambition becomes a manuscript.",
+        "title": "A home for your stories…"
+      },
+      "genres": {
+        "actionAdventure": "Action & adventure",
+        "alternateHistory": "Alternate history",
+        "biographical": "Biographical",
+        "childrens": "Children’s",
+        "comedy": "Comedy",
+        "comingOfAge": "Coming of age",
+        "contemporary": "Contemporary",
+        "crime": "Crime",
+        "drama": "Drama",
+        "dystopia": "Dystopia",
+        "erotica": "Erotica",
+        "espionage": "Espionage",
+        "fairyTale": "Fairy tale",
+        "fantasy": "Fantasy",
+        "gothic": "Gothic",
+        "historical": "Historical",
+        "horror": "Horror",
+        "literary": "Literary",
+        "magicalRealism": "Magical realism",
+        "mystery": "Mystery",
+        "mythology": "Mythology",
+        "noir": "Noir",
+        "philosophical": "Philosophical",
+        "political": "Political",
+        "postApocalyptic": "Post-apocalyptic",
+        "psychological": "Psychological",
+        "romance": "Romance",
+        "satire": "Satire",
+        "scienceFiction": "Science fiction",
+        "sliceOfLife": "Slice of life",
+        "spiritual": "Spiritual",
+        "superhero": "Superhero",
+        "supernatural": "Supernatural",
+        "thriller": "Thriller",
+        "tragedy": "Tragedy",
+        "war": "War",
+        "western": "Western",
+        "youngAdult": "Young adult"
+      },
+      "new": "New project",
+      "row": {
+        "created": "Created {{when}}",
+        "edited": "Edited {{when}}"
+      },
+      "title": "Projects",
+      "unavailable": {
+        "description": "We couldn’t load your projects. Please reload this page in a few minutes.",
+        "rateLimited": "Too many requests. Please wait a few minutes, then reload this page.",
+        "title": "Your projects are unavailable"
+      }
+    },
     "shell": {
       "brand": "Studio",
       "closeNavigation": "Close navigation",
       "collapseNavigation": "Collapse navigation",
       "expandNavigation": "Expand navigation",
-      "home": "Home",
-      "homeTitle": "Home",
       "logout": "Log out",
       "manageAccount": "Manage your account",
       "manageAccountFor": "Manage account for {{name}}",
       "navigation": "Studio navigation",
       "openNavigation": "Open navigation",
       "privacy": "Privacy",
+      "projects": "Projects",
       "register": "Register",
       "signIn": "Log in",
       "skipToContent": "Skip to content"

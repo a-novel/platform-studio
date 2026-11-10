@@ -13,7 +13,7 @@
   import { expect, userEvent, within } from "storybook/test";
 
   const anonymous: StudioShellViewModel = {
-    activeNavigation: "home",
+    activeNavigation: "projects",
     drawerOpen: false,
     rail: "expanded",
     session: { status: "anonymous" },
@@ -67,7 +67,7 @@
   async function verifyAnonymousAuthentication({ canvasElement, globals }: PlayContext) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    await expect(canvas.getByRole("link", { name: t("shell.home") })).toHaveAttribute("aria-current", "page");
+    await expect(canvas.getByRole("link", { name: t("shell.projects") })).toHaveAttribute("aria-current", "page");
     await expect(canvas.getByRole("img", { name: t("shell.brand") })).toHaveAttribute("width", "96");
 
     await expect(canvas.getByRole("link", { name: t("shell.signIn") })).toHaveAttribute("href", "#sign-in");
@@ -138,7 +138,7 @@
     const t = createStorybookTranslator(globals);
     const navigation = canvas.getByRole("dialog", { name: t("shell.brand") });
     const labelStarts = [
-      within(navigation).getByText(t("shell.home")).getBoundingClientRect().left,
+      within(navigation).getByText(t("shell.projects")).getBoundingClientRect().left,
       within(navigation).getByText("Maya Chen").getBoundingClientRect().left,
       within(navigation).getByText(t("shell.logout")).getBoundingClientRect().left,
     ];
