@@ -10,9 +10,8 @@ import type { OpenController } from "@a-novel-kit/uikit";
 /** Session states the shell can render without owning session logic. */
 export type ShellSession =
   | { status: "anonymous" }
+  /** A session whose account could not be read yet. The shell shows a placeholder and asks again. */
   | { status: "loading" }
-  | { status: "error" }
-  | { status: "downtime" }
   | {
       status: "authenticated";
       displayName?: string;
@@ -148,7 +147,7 @@ export function createStudioShellController({
       onRailChange?.(rail);
     },
     logout() {
-      if (session.status !== "authenticated") return false;
+      if (session.status === "anonymous") return false;
       if (!allowNativeLogout) session = { status: "anonymous" };
       return allowNativeLogout;
     },

@@ -6,13 +6,11 @@
 
   let {
     status,
-    signInHref,
     homeHref,
     retryHref,
     downtime,
   }: {
     status: number;
-    signInHref: string;
     homeHref: string;
     retryHref: string;
     /** Set when a planned downtime stopped the services the page needs. */
@@ -32,11 +30,10 @@
 {:else if status === 403 || status === 503}
   <AccessBoundary
     controller={{ state: { status: status === 403 ? "forbidden" : "unavailable" } }}
-    {signInHref}
     {homeHref}
     {retryHref}
   />
-{:else}
+{:else if status !== 401}
   <div class="error-page">
     <StatusState
       tone="error"
@@ -50,6 +47,8 @@
     </StatusState>
   </div>
 {/if}
+
+<!-- A page that needs a login shows nothing of its own: its load sends the visitor to the sign-in. -->
 
 <style>
   .error-page {
