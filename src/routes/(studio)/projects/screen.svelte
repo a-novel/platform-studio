@@ -175,23 +175,20 @@ invited to create the first one. The dialog creates a project.
     display: none;
   }
 
-  /* A row's end draws the line between its neighbors. Each row overhangs its cell by that line, and the list clips
-     the one at the page's edge. */
+  /* Each row takes the height it needs, and the rows run down one column before the next. A row's end draws the line
+     under it, and the column rule the line between columns. Native masonry (display: grid-lanes) would place the
+     rows across the columns instead; as of November 2026 only Safari ships it. */
   .rows {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+    column-rule: var(--border-width-thin) solid var(--color-border-divider);
     margin: 0;
     padding: 0;
-    overflow: clip;
     list-style: none;
   }
 
   .rows > li {
-    display: grid;
-    margin-inline-end: calc(-1 * var(--border-width-thin));
-    border-inline-end: var(--border-width-thin) solid var(--color-border-divider);
+    break-inside: avoid;
     border-block-end: var(--border-width-thin) solid var(--color-border-divider);
-    min-inline-size: 0;
   }
 
   .phone-bar {
@@ -212,7 +209,7 @@ invited to create the first one. The dialog creates a project.
 
     .rows[data-columns="2"],
     .rows[data-columns="3"] {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      columns: 2;
     }
   }
 
@@ -222,7 +219,7 @@ invited to create the first one. The dialog creates a project.
     }
 
     .rows[data-columns="3"] {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      columns: 3;
     }
   }
 

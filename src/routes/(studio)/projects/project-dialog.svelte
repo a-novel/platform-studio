@@ -205,7 +205,7 @@ Creates a project: its title, language, premise and tags, and its logo.
   }
 
   .genre:has(:checked) {
-    background: var(--color-lamp-violet);
+    background: var(--base-pressure);
     color: var(--color-text-inverse);
     font-weight: var(--font-weight-bold);
   }

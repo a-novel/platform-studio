@@ -84,8 +84,7 @@ when it was edited and created, and in what language.
 </article>
 
 <style>
-  /* The row's text lines up with the page's own, across the gutter the row spans. In rows of the same height, the
-     last line stays at the bottom. */
+  /* The row's text lines up with the page's own, across the gutter the row spans. */
   .project {
     display: flex;
     flex-direction: column;
@@ -145,9 +144,9 @@ when it was edited and created, and in what language.
     list-style: none;
   }
 
-  /* Genres take Studio's own violet, which no badge tone carries. */
+  /* Genres take the magenta, as tags take the blue: no badge tone carries it. */
   .genres :global(.genre) {
-    --badge-accent: var(--color-lamp-violet);
+    --badge-accent: var(--base-pressure);
   }
 
   /* The dates at the start of the row's last line, and the language at its end. */
@@ -156,7 +155,6 @@ when it was edited and created, and in what language.
     justify-content: space-between;
     align-items: center;
     gap: var(--space-3);
-    margin-block-start: auto;
     padding-block-start: var(--space-1);
     color: var(--color-text-muted);
     font-size: var(--font-size-xs);
