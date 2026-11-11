@@ -6,17 +6,21 @@
   import { resolve } from "$app/paths";
 
   import { saveProjectColumns } from "./columns";
-  import { type SaveResult, createProjectsController } from "./controller.svelte";
+  import { type ProjectRow, type SaveResult, createProjectsController } from "./controller.svelte";
+  import { projectRow } from "./rows";
   import Screen from "./screen.svelte";
 
-  import { untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
-  import { Language } from "@a-novel/service-narrative-engine-rest";
+  import { Language, ProjectPageSchema } from "@a-novel/service-narrative-engine-rest";
 
   let { data } = $props();
   const { t } = getI18nContext();
   const unavailable: SaveResult = { status: "failed", feedback: "serviceUnavailable" };
+  // Leaving the page stops the pages still trying to load.
+  const lifetime = new AbortController();
+  onDestroy(() => lifetime.abort());
 
   const controller = createProjectsController({
     getModel: () => data.projects,
@@ -26,7 +30,26 @@
     initialColumns: untrack(() => data.columns),
     onColumnsChange: saveProjectColumns,
     submit,
+    fetchPage,
   });
+
+  /** Fetches the projects after the first `offset`, trying again ever more slowly until it can. */
+  async function fetchPage(offset: number): Promise<ProjectRow[]> {
+    const url = `${resolve("projects")}/list?${new URLSearchParams({ offset: String(offset) })}`;
+    for (let wait = 1000; ; wait = Math.min(wait * 2, 30_000)) {
+      try {
+        const response = await fetch(url, { signal: lifetime.signal, redirect: "manual" });
+        // A session that ended since the page loaded signs in again, through the page's own load.
+        if (response.type === "opaqueredirect") window.location.reload();
+        if (response.ok) return ProjectPageSchema.parse(await response.json()).projects.map(projectRow);
+        await response.body?.cancel();
+      } catch {
+        // A network failure tries again, unless the page is gone.
+      }
+      lifetime.signal.throwIfAborted();
+      await new Promise((settle) => setTimeout(settle, wait));
+    }
+  }
 
   /** Posts the save action, and reloads the projects once one saved, even when a picture then failed. */
   async function submit(form: FormData): Promise<SaveResult> {

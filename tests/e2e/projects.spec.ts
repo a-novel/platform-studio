@@ -44,7 +44,8 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   await dialog.getByRole("textbox", { name: "Premise" }).fill("Marie attend un homme qui ne viendra pas.");
   await dialog.getByRole("checkbox", { name: "Drama", exact: true }).check({ force: true });
   await dialog.getByRole("checkbox", { name: "Historical", exact: true }).check({ force: true });
-  await dialog.getByRole("textbox", { name: "Tags" }).fill("Roman maritime, Années 50");
+  // A space ends each tag, written in lower-kebab-case.
+  await dialog.getByRole("textbox", { name: "Tags" }).pressSequentially("Roman-Maritime Années-50 ");
   await dialog.getByLabel("Logo", { exact: true }).setInputFiles(logo);
   await dialog.getByRole("button", { name: "Create project", exact: true }).click();
   await expect(dialog).toBeHidden();
@@ -53,8 +54,8 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   await expect(harbor.getByRole("img", { name: "Français", exact: true })).toBeVisible();
   await expect(harbor.getByText("Drama", { exact: true })).toBeVisible();
   await expect(harbor.getByText("Historical", { exact: true })).toBeVisible();
-  await expect(harbor.getByText("Roman maritime", { exact: true })).toBeVisible();
-  await expect(harbor.getByText("Années 50", { exact: true })).toBeVisible();
+  await expect(harbor.getByText("roman-maritime", { exact: true })).toBeVisible();
+  await expect(harbor.getByText("années-50", { exact: true })).toBeVisible();
   await expect(harbor.locator("img")).toHaveCount(1);
   for (const image of await harbor.locator("img").all()) await expect.poll(() => loaded(image)).toBe(true);
 

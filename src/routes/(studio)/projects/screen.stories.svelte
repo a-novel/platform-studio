@@ -11,9 +11,11 @@
   import type { StoryContext } from "@storybook/sveltekit";
   import { expect, fn, userEvent, within } from "storybook/test";
 
-  const ready: ProjectsModel = { status: "ready", now, projects };
-  const stress: ProjectsModel = { status: "ready", now, projects: [longest, ...projects] };
-  const empty: ProjectsModel = { status: "ready", now, projects: [] };
+  const ready: ProjectsModel = { status: "ready", now, projects, total: projects.length };
+  const stress: ProjectsModel = { status: "ready", now, projects: [longest, ...projects], total: 5 };
+  const empty: ProjectsModel = { status: "ready", now, projects: [], total: 0 };
+  const firstPage: ProjectsModel = { status: "ready", now, projects, total: 41 };
+  const filledDialog = { genres: ["mystery", "historical", "drama"], tags: ["roman-maritime", "années-50"] };
   const createRequests = fn();
 
   const { Story } = defineMeta({
@@ -128,7 +130,11 @@
   name="New project, with its logo"
   exportName="NewProjectLogo"
   args={{
-    controller: fixedProjectsController({ model: ready, editor: newProjectEditor({ logo: chosenLogo }) }),
+    controller: fixedProjectsController(
+      { model: ready, editor: newProjectEditor({ logo: chosenLogo }) },
+      undefined,
+      filledDialog
+    ),
   }}
   globals={reviewStoryGlobals.desktop}
 />
@@ -137,9 +143,31 @@
   name="New project, mobile"
   exportName="NewProjectMobile"
   args={{
-    controller: fixedProjectsController({ model: ready, editor: newProjectEditor({ logo: chosenLogo }) }),
+    controller: fixedProjectsController(
+      { model: ready, editor: newProjectEditor({ logo: chosenLogo }) },
+      undefined,
+      filledDialog
+    ),
   }}
   globals={reviewStoryGlobals.mobile}
+/>
+
+<Story
+  name="New project, choosing its language"
+  exportName="NewProjectLanguage"
+  args={{
+    controller: fixedProjectsController({ model: ready, editor: newProjectEditor() }, undefined, {
+      languageOpen: true,
+    }),
+  }}
+  globals={reviewStoryGlobals.desktop}
+/>
+
+<Story
+  name="Loading the next page"
+  exportName="LoadingMore"
+  args={{ controller: fixedProjectsController({ model: firstPage, columns: 2, more: "loading" }) }}
+  globals={reviewStoryGlobals.desktop}
 />
 
 <Story

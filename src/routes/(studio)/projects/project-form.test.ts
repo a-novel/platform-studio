@@ -40,6 +40,13 @@ describe("readProjectForm", () => {
     expect(readProjectForm(tooMany)).toEqual({ success: false, issues: [{ field: "genres", code: "tooMany" }] });
   });
 
+  it("reads the tags the field sent, and the text still typed in it, in lower-kebab-case once each", () => {
+    const sent = form(fields);
+    for (const tag of ["roman-maritime", "années-50", "Huis Clos, roman-maritime", ""]) sent.append("tags", tag);
+
+    expect(readProjectForm(sent)).toMatchObject({ value: { tags: ["roman-maritime", "années-50", "huis", "clos"] } });
+  });
+
   it("ignores an empty file input", () => {
     const result = readProjectForm(form({ ...fields, logo: new File([], "") }));
 

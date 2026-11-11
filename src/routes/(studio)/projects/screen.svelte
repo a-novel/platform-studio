@@ -1,7 +1,8 @@
 <!--
 @component
-The writer's projects, most recently edited first, as rows of one, two or three columns. A writer without any is
-invited to create the first one. The dialog creates a project.
+The writer's projects, most recently edited first, as rows of one, two or three columns, with how many they hold. The
+next page loads as the writer nears the end of the list. A writer without any is invited to create the first one. The
+dialog creates a project.
 -->
 <script lang="ts">
   import type { ProjectsController } from "./controller.svelte";
@@ -14,10 +15,12 @@ invited to create the first one. The dialog creates a project.
   import {
     Button,
     ButtonGroup,
+    Card,
     EmptyState,
     IconButton,
     Link,
     PageHeader,
+    Spinner,
     StatusState,
     StickyBar,
   } from "@a-novel-kit/uikit";
@@ -29,6 +32,24 @@ invited to create the first one. The dialog creates a project.
   const genres = $derived(genreNames(t));
   const model = $derived(controller.state.model);
   const listing = $derived(model?.status === "ready" && model.projects.length > 0 ? model : null);
+  const shown = $derived(controller.state.pages.reduce((sum, page) => sum + page.length, 0));
+
+  // The next page loads while the end of the list is half a screen away.
+  let nearEnd = $state(false);
+  $effect(() => {
+    if (nearEnd && controller.state.more === "idle") void controller.loadMore();
+  });
+
+  function watchEnd(element: HTMLElement) {
+    const observer = new IntersectionObserver((entries) => (nearEnd = entries.some((entry) => entry.isIntersecting)), {
+      rootMargin: "0px 0px 50% 0px",
+    });
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+      nearEnd = false;
+    };
+  }
 
   const columnOptions = $derived([
     { columns: 1, label: t("projects.columns.one"), Icon: Rows3 },
@@ -48,7 +69,10 @@ invited to create the first one. The dialog creates a project.
   <div class="projects-screen" class:filled={listing !== null}>
     {#if listing}
       <StickyBar edge="start" bleed>
-        <PageHeader title={t("projects.title")}>
+        <PageHeader
+          title={t("projects.title")}
+          description={t("projects.count", { loaded: shown, count: listing.total })}
+        >
           {#snippet actions()}
             <div class="header-actions">
               <div class="column-options">
@@ -73,14 +97,24 @@ invited to create the first one. The dialog creates a project.
         </PageHeader>
       </StickyBar>
 
-      <div class="content">
-        <ul class="rows" data-columns={controller.state.columns}>
-          {#each listing.projects as project (project.id)}
-            <li>
-              <ProjectRow {project} now={listing.now} {genres} />
-            </li>
-          {/each}
-        </ul>
+      <div class="content" data-columns={controller.state.columns}>
+        <!-- Each page lays its own columns out, so the rows a page adds never move the ones above. -->
+        {#each controller.state.pages as page, index (index)}
+          <ul class="rows">
+            {#each page as project (project.id)}
+              <li>
+                <Card surface="ghost">
+                  <ProjectRow {project} now={listing.now} {genres} />
+                </Card>
+              </li>
+            {/each}
+          </ul>
+        {/each}
+        {#if controller.state.more !== "done"}
+          <div class="loader" {@attach watchEnd}>
+            <Spinner label={t("projects.loadingMore")} />
+          </div>
+        {/if}
       </div>
 
       <div class="phone-bar">
@@ -141,11 +175,17 @@ invited to create the first one. The dialog creates a project.
     padding-block: 0;
   }
 
-  /* The rows sit on the page itself and span its gutters, so their lines and backgrounds reach its edges. */
+  /* A card holds its premise at the long readable measure, plus the card's padding, so a wide screen
+     stops the columns there, centered, instead of stretching each card across it. */
   .content {
-    margin-inline: calc(-1 * var(--layout-gutter));
-    padding-block-end: var(--space-12);
+    --columns: 1;
+    --card-max: calc(var(--layout-readable-measure-long) + 2 * var(--space-4));
+    justify-self: center;
+    box-sizing: border-box;
+    padding-block: var(--space-4) var(--space-12);
+    inline-size: 100%;
     min-inline-size: 0;
+    max-inline-size: calc(var(--columns) * var(--card-max) + (var(--columns) - 1) * var(--space-4));
   }
 
   .state {
@@ -175,12 +215,13 @@ invited to create the first one. The dialog creates a project.
     display: none;
   }
 
-  /* Each row takes the height it needs, and the rows run down one column before the next. A row's end draws the line
-     under it, and the column rule the line between columns. Native masonry (display: grid-lanes) would place the
-     rows across the columns instead; as of November 2026 only Safari ships it. */
+  /* A mosaic: each card takes the height it needs, and the cards run down one column before the next, never
+     aligned across columns. A card's padding below it spaces it from the next, since a column break truncates
+     margins. Native masonry (display: grid-lanes) would place the cards across the columns instead; as of
+     November 2026 only Safari ships it. */
   .rows {
-    column-gap: 0;
-    column-rule: var(--border-width-thin) solid var(--color-border-divider);
+    column-gap: var(--space-4);
+    columns: var(--columns);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -188,7 +229,13 @@ invited to create the first one. The dialog creates a project.
 
   .rows > li {
     break-inside: avoid;
-    border-block-end: var(--border-width-thin) solid var(--color-border-divider);
+    padding-block-end: var(--space-4);
+  }
+
+  .loader {
+    display: grid;
+    place-items: center;
+    padding-block: var(--space-6);
   }
 
   .phone-bar {
@@ -207,9 +254,9 @@ invited to create the first one. The dialog creates a project.
       display: block;
     }
 
-    .rows[data-columns="2"],
-    .rows[data-columns="3"] {
-      columns: 2;
+    .content[data-columns="2"],
+    .content[data-columns="3"] {
+      --columns: 2;
     }
   }
 
@@ -218,8 +265,8 @@ invited to create the first one. The dialog creates a project.
       display: inline-flex;
     }
 
-    .rows[data-columns="3"] {
-      columns: 3;
+    .content[data-columns="3"] {
+      --columns: 3;
     }
   }
 

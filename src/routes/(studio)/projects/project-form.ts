@@ -1,5 +1,6 @@
 import type { ProjectIssue } from "./controller.svelte";
 
+import { kebabTag } from "@a-novel-kit/uikit";
 import {
   type Language,
   LanguageSchema,
@@ -37,10 +38,13 @@ function readGenres(form: FormData): string[] {
 }
 
 /** Reads the tags, written in one field and separated by commas. */
+/**
+ * Reads the tags the field sent, then the text still typed in it, which a form without scripting sends whole: a
+ * space or a comma ends a tag, and each is written in lower-kebab-case, as the field writes them.
+ */
 function readTags(form: FormData): string[] {
-  const tags = text(form, "tags")
-    .split(",")
-    .map((tag) => tag.trim());
+  const values = form.getAll("tags").filter((value) => typeof value === "string");
+  const tags = values.flatMap((value) => value.split(/[\s,]+/u)).map(kebabTag);
 
   return [...new Set(tags.filter(Boolean))];
 }

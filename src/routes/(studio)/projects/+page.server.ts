@@ -4,8 +4,9 @@ import { getNarrativeEngine } from "#lib/server/narrative-engine/context.js";
 
 import type { Actions, PageServerLoad } from "./$types";
 import { PROJECT_COLUMNS_COOKIE, parseProjectColumns } from "./columns";
-import type { LogoRefusal, ProjectRow, ProjectsModel, SaveFeedback, SaveResult } from "./controller.svelte";
+import type { LogoRefusal, ProjectsModel, SaveFeedback, SaveResult } from "./controller.svelte";
 import { readProjectForm } from "./project-form";
+import { PROJECTS_PAGE, projectRow } from "./rows";
 
 import { isHttpStatusError, isHttpError as isServiceError } from "@a-novel-kit/nodelib-browser/http";
 import {
@@ -21,12 +22,9 @@ import {
 
 import { fail, isHttpError, isRedirect, redirect } from "@sveltejs/kit";
 
-/** An owner holds 100 projects at most, so one page lists them all. */
-const projectsLimit = 100;
-
 /**
- * Lists the writer's projects, most recently edited first. A visitor without an account goes straight to the
- * sign-in, and comes back here once signed in.
+ * Lists the first page of the writer's projects, most recently edited first, with how many they hold in all. A
+ * visitor without an account goes straight to the sign-in, and comes back here once signed in.
  */
 export const load: PageServerLoad = async (event) => {
   const { session } = await event.parent();
@@ -37,35 +35,17 @@ export const load: PageServerLoad = async (event) => {
 
   const { session: account } = await requireAuthorization(event);
   try {
-    const page = await projectList(getNarrativeEngine(event), account.accessToken, { limit: projectsLimit });
+    const page = await projectList(getNarrativeEngine(event), account.accessToken, { limit: PROJECTS_PAGE });
+    const projects = page.projects.map(projectRow);
     return {
       columns,
-      projects: { status: "ready", now: new Date(), projects: page.projects.map(projectRow) } satisfies ProjectsModel,
+      projects: { status: "ready", now: new Date(), projects, total: page.total } satisfies ProjectsModel,
     };
   } catch (error) {
     const status = isHttpStatusError(error, 429) ? "rate-limited" : "unavailable";
     return { columns, projects: { status } satisfies ProjectsModel };
   }
 };
-
-/** Turns a project into its row, whose logo loads from Studio under an address that names its version. */
-function projectRow(project: Project): ProjectRow {
-  return {
-    id: project.id,
-    title: project.title,
-    premise: project.premise,
-    language: project.language,
-    genres: project.genres,
-    tags: project.tags,
-    createdAt: project.createdAt,
-    editedAt: project.editedAt,
-    logo: project.logoVersion ? logoHref(project.id, project.logoVersion) : undefined,
-  };
-}
-
-function logoHref(projectID: string, version: string): string {
-  return `/projects/${projectID}/logo?${new URLSearchParams({ v: version })}`;
-}
 
 export const actions = {
   /**

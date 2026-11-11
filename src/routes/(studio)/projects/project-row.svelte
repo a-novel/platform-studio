@@ -1,7 +1,7 @@
 <!--
 @component
-One of the writer's projects as a row: its logo or else its title, its premise, its genres and tags, then discreetly
-when it was edited and created, and in what language.
+One of the writer's projects, set in a card: its logo or else its title, its premise, its genres and tags, then
+discreetly when it was edited and created, and in what language.
 -->
 <script lang="ts">
   import { localeNames } from "#lib/i18n/config.js";
@@ -24,21 +24,6 @@ when it was edited and created, and in what language.
   } = $props();
   const i18n = getI18nContext();
   const { t } = i18n;
-
-  /** Lets the keyboard reach a premise that scrolls: taller than its six lines, away from a phone. */
-  function focusableWhenScrolling(element: HTMLElement) {
-    const update = () => {
-      if (getComputedStyle(element).overflowY === "auto" && element.scrollHeight > element.clientHeight)
-        element.tabIndex = 0;
-      else element.removeAttribute("tabindex");
-    };
-    update();
-
-    const observer = new ResizeObserver(update);
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }
 </script>
 
 <article class="project" aria-labelledby="project-{project.id}">
@@ -51,13 +36,13 @@ when it was edited and created, and in what language.
   </h2>
 
   {#if project.premise}
-    <p class="premise" {@attach focusableWhenScrolling}>{project.premise}</p>
+    <p class="premise">{project.premise}</p>
   {/if}
 
   {#if project.genres.length > 0}
-    <ul class="labels genres">
+    <ul class="labels">
       {#each project.genres as genre (genre)}
-        <li><Badge class="genre">{genres[genre] ?? genre}</Badge></li>
+        <li><Badge tone="accent">{genres[genre] ?? genre}</Badge></li>
       {/each}
     </ul>
   {/if}
@@ -84,13 +69,10 @@ when it was edited and created, and in what language.
 </article>
 
 <style>
-  /* The row's text lines up with the page's own, across the gutter the row spans. */
   .project {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    padding-inline: var(--layout-gutter);
-    padding-block: var(--space-4);
   }
 
   h2,
@@ -125,15 +107,16 @@ when it was edited and created, and in what language.
     object-position: left;
   }
 
-  /* Six lines, and the rest a scroll away. */
+  /* As the title, the premise stops at its last line, six of them, a phone's five, and ends on an ellipsis. */
   .premise {
-    max-inline-size: var(--layout-readable-measure);
-    max-block-size: 6lh;
-    overflow-y: auto;
-    scrollbar-width: thin;
+    display: -webkit-box;
+    overflow: hidden;
     color: var(--color-text-muted);
     white-space: pre-line;
     overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
   }
 
   .labels {
@@ -142,11 +125,6 @@ when it was edited and created, and in what language.
     gap: var(--space-1);
     padding: 0;
     list-style: none;
-  }
-
-  /* Genres take the magenta, as tags take the blue: no badge tone carries it. */
-  .genres :global(.genre) {
-    --badge-accent: var(--base-pressure);
   }
 
   /* The dates at the start of the row's last line, and the language at its end. */
@@ -166,14 +144,9 @@ when it was edited and created, and in what language.
     gap: 0 var(--space-3);
   }
 
-  /* On a phone a second scroll area would fight the page's, so the premise stops at five lines; the dates stack to
-     leave the row more room. */
+  /* A phone stacks the dates to leave the row more room. */
   @container projects (max-width: 34rem) {
     .premise {
-      display: -webkit-box;
-      max-block-size: none;
-      overflow: hidden;
-      -webkit-box-orient: vertical;
       -webkit-line-clamp: 5;
       line-clamp: 5;
     }

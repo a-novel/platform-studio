@@ -43,7 +43,7 @@ export const harbor: ProjectRow = {
   premise: "Marie attend un homme qui ne viendra pas, dans un port où les phares ne s’éteignent jamais.",
   language: Language.Fr,
   genres: ["drama", "historical"],
-  tags: ["Roman maritime", "Années 50"],
+  tags: ["roman-maritime", "années-50"],
   createdAt: new Date(now.getTime() - 40 * day),
   editedAt: new Date(now.getTime() - 5 * 60_000),
   logo: lanternLogo,
@@ -56,7 +56,7 @@ export const cartographer: ProjectRow = {
     "A mapmaker who only draws places that no longer exist is hired to chart a town that has not been built yet, and finds her own name already on its streets.",
   language: Language.En,
   genres: ["magicalRealism", "mystery"],
-  tags: ["Slow burn"],
+  tags: ["slow-burn"],
   createdAt: new Date(now.getTime() - 9 * day),
   editedAt: new Date(now.getTime() - 3 * hour),
 };
@@ -79,7 +79,7 @@ export const notebooks: ProjectRow = {
   premise: "Un immeuble, six étages, une seule nuit de panne.",
   language: Language.Fr,
   genres: ["psychological"],
-  tags: ["Huis clos"],
+  tags: ["huis-clos"],
   createdAt: new Date(now.getTime() - 70 * day),
   editedAt: new Date(now.getTime() - 21 * day),
 };
@@ -105,13 +105,13 @@ export const longest: ProjectRow = {
     "sliceOfLife",
     "historical",
   ],
-  tags: Array.from({ length: 10 }, (_, index) => `${index} a tag at its full size`.slice(0, 24)),
+  tags: Array.from({ length: 10 }, (_, index) => `${index}-a-tag-at-its-full-size`),
   createdAt: new Date(now.getTime() - 3 * day),
   editedAt: new Date(now.getTime() - 30 * 60_000),
 };
 
 /** A logo chosen in the dialog, waiting for the project to save. */
-export const chosenLogo: LogoDraft = { status: "chosen", file: new File([], "logo"), src: lanternLogo };
+export const chosenLogo: LogoDraft = { status: "chosen", file: new File([], "lantern.png"), src: lanternLogo };
 
 /** The dialog opened on a new project. */
 export function newProjectEditor(change: Partial<ProjectEditor> = {}): ProjectEditor {
@@ -129,10 +129,11 @@ export function newProjectEditor(change: Partial<ProjectEditor> = {}): ProjectEd
 /** A projects controller that renders one fixed state and reports every request to `spy`. */
 export function fixedProjectsController(
   state: Partial<ProjectsControllerState>,
-  spy: (request: string, ...args: unknown[]) => void = () => {}
+  spy: (request: string, ...args: unknown[]) => void = () => {},
+  dialog: { genres?: readonly string[]; tags?: readonly string[]; languageOpen?: boolean } = {}
 ): ProjectsController {
   const languageSelect: SelectController<Language> = {
-    state: { open: false, value: Language.En },
+    state: { open: dialog.languageOpen ?? false, value: Language.En },
     open: () => spy("languageSelect.open"),
     close: () => spy("languageSelect.close"),
     toggle: () => spy("languageSelect.toggle"),
@@ -140,7 +141,15 @@ export function fixedProjectsController(
   };
 
   return {
-    state: { model: null, editor: null, retryHref: "/projects", columns: 1, ...state },
+    state: {
+      model: null,
+      editor: null,
+      retryHref: "/projects",
+      columns: 1,
+      pages: state.model?.status === "ready" ? [state.model.projects] : [],
+      more: "done",
+      ...state,
+    },
     editorDialog: {
       state: { open: Boolean(state.editor) },
       open: () => spy("editorDialog.open"),
@@ -148,6 +157,13 @@ export function fixedProjectsController(
       toggle: () => spy("editorDialog.toggle"),
     },
     languageSelect,
+    genreChips: { state: { value: dialog.genres ?? [] }, setValue: (value) => spy("genreChips.setValue", value) },
+    tagInput: {
+      state: { tags: dialog.tags ?? [] },
+      add: (text) => spy("tagInput.add", text),
+      remove: (index) => spy("tagInput.remove", index),
+    },
+    loadMore: async () => spy("loadMore"),
     setColumns: (columns) => spy("setColumns", columns),
     create: () => spy("create"),
     chooseLogo: async (file) => spy("chooseLogo", file),

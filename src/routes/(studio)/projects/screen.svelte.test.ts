@@ -12,14 +12,14 @@ import {
 } from "./projects.fixture";
 import ProjectsScreen from "./screen.svelte";
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";
 
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
 
-const ready = { status: "ready", now, projects } as const;
+const ready = { status: "ready", now, projects, total: projects.length } as const;
 
 describe("projects screen", () => {
   it("lists each project as a row with its language, genres and tags, which offers no edit", async () => {
@@ -36,8 +36,40 @@ describe("projects screen", () => {
     const row = page.getByRole("article", { name: notebooks.title });
     await expect.element(row.getByRole("img", { name: "Français" })).toBeVisible();
     await expect.element(row.getByText("Psychological")).toBeVisible();
-    await expect.element(row.getByText("Huis clos")).toBeVisible();
+    await expect.element(row.getByText("huis-clos")).toBeVisible();
     await expect.element(row.getByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("counts the projects shown out of every project, and asks for the next page once the end comes near", async () => {
+    const spy = vi.fn();
+    const model: ProjectsModel = { ...ready, total: 41 };
+    render(ProjectsScreen, { controller: fixedProjectsController({ model, more: "idle" }, spy) }, withLocale());
+
+    await expect.element(page.getByText(`${ready.projects.length} / 41 projects`)).toBeVisible();
+    const loader = page.getByText("Loading more projects");
+    await expect.element(loader).toBeInTheDocument();
+    loader.element().scrollIntoView();
+    await expect.poll(() => spy.mock.calls).toContainEqual(["loadMore"]);
+  });
+
+  it("keeps each card at the long readable measure, centered, on a wide screen", async () => {
+    await page.viewport(1920, 1080);
+    onTestFinished(() => page.viewport(414, 896));
+    render(ProjectsScreen, { controller: fixedProjectsController({ model: ready }) }, withLocale());
+    const article = page.getByRole("article", { name: notebooks.title });
+    await expect.element(article).toBeVisible();
+
+    const card = article.element().closest("li")!;
+    const measure = card.parentElement!.appendChild(document.createElement("div"));
+    measure.style.inlineSize = "calc(var(--layout-readable-measure-long) + 2 * var(--space-4))";
+    const expected = measure.getBoundingClientRect().width;
+    measure.remove();
+
+    const box = card.getBoundingClientRect();
+    // An unknown token would leave both at the whole width, so the card must stay well under it.
+    expect(box.width).toBeLessThan(window.innerWidth / 2);
+    expect(box.width).toBeCloseTo(expected, 0);
+    expect(box.left).toBeCloseTo(window.innerWidth - box.right, 0);
   });
 
   it("shows a logo in place of the title, and takes no room for one the project lacks", async () => {
@@ -54,7 +86,7 @@ describe("projects screen", () => {
 
   it("invites a writer without projects to create the first one", async () => {
     const spy = vi.fn();
-    const empty: ProjectsModel = { status: "ready", now, projects: [] };
+    const empty: ProjectsModel = { status: "ready", now, projects: [], total: 0 };
     render(ProjectsScreen, { controller: fixedProjectsController({ model: empty }, spy) }, withLocale("fr"));
 
     await expect.element(page.getByRole("heading", { name: "Un foyer pour vos histoires…" })).toBeVisible();
@@ -102,7 +134,7 @@ describe("projects screen", () => {
     await userEvent.upload(page.getByLabelText("Logo"), file);
     expect(spy).toHaveBeenCalledWith("chooseLogo", file);
 
-    await page.getByRole("button", { name: "Remove picture" }).click();
+    await page.getByRole("button", { name: "Remove the file" }).click();
     expect(spy).toHaveBeenCalledWith("removeLogo");
   });
 

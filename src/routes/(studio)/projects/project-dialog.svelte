@@ -1,6 +1,6 @@
 <!--
 @component
-Creates a project: its title, language, premise and tags, and its logo.
+Creates a project: its title, language, premise, genres and tags, and its logo.
 -->
 <script lang="ts">
   import { localeNames } from "#lib/i18n/config.js";
@@ -12,16 +12,17 @@ Creates a project: its title, language, premise and tags, and its logo.
   import {
     Alert,
     Button,
+    ChipGroup,
     Dialog,
     Field,
-    Fieldset,
-    InlineMessage,
     Input,
+    LanguageName,
     Select,
     type SelectOption,
+    TagInput,
     Textarea,
   } from "@a-novel-kit/uikit";
-  import { Language } from "@a-novel/service-narrative-engine-rest";
+  import { Language, PROJECT_TAG_CHARS_MAX } from "@a-novel/service-narrative-engine-rest";
 
   let {
     controller,
@@ -38,7 +39,11 @@ Creates a project: its title, language, premise and tags, and its logo.
   const formId = $props.id();
 
   const busy = $derived(editor.saving || editor.readingLogo);
-  const genreChoices = $derived(Object.entries(genres).toSorted(([, a], [, b]) => a.localeCompare(b, i18n.language)));
+  const genreChoices = $derived(
+    Object.entries(genres)
+      .map(([value, label]) => ({ value, label }))
+      .toSorted((a, b) => a.label.localeCompare(b.label, i18n.language))
+  );
   const issues = $derived(editor.failure?.status === "invalid" ? editor.failure.issues : []);
   const feedback = $derived(editor.failure?.status === "failed" ? editor.failure.feedback : null);
 
@@ -92,6 +97,11 @@ Creates a project: its title, language, premise and tags, and its logo.
   }
 </script>
 
+<!-- Each language reads in its own words, as in the account's preferences. -->
+{#snippet languageOption(option: SelectOption<Language>)}
+  <LanguageName locale={option.value} name={option.label} />
+{/snippet}
+
 <Dialog controller={controller.editorDialog} title={t("projects.dialog.createTitle")} closeOnBackdrop={!busy}>
   <form
     id="{formId}-form"
@@ -110,7 +120,13 @@ Creates a project: its title, language, premise and tags, and its logo.
 
     <Field label={t("projects.dialog.language")} hint={t("projects.dialog.languageHint")} error={issue("language")}>
       {#snippet children(control)}
-        <Select {...control} name="language" options={languages} controller={controller.languageSelect} />
+        <Select
+          {...control}
+          name="language"
+          options={languages}
+          controller={controller.languageSelect}
+          renderOption={languageOption}
+        />
       {/snippet}
     </Field>
 
@@ -120,23 +136,19 @@ Creates a project: its title, language, premise and tags, and its logo.
       {/snippet}
     </Field>
 
-    <Fieldset legend={t("projects.dialog.genres")} description={t("projects.dialog.genresHint")}>
-      <div class="genres">
-        {#each genreChoices as [genre, name] (genre)}
-          <label class="genre">
-            <input type="checkbox" name="genres" value={genre} />
-            {name}
-          </label>
-        {/each}
-      </div>
-      {#if issue("genres")}
-        <InlineMessage tone="error">{issue("genres")}</InlineMessage>
-      {/if}
-    </Fieldset>
+    <ChipGroup
+      legend={t("projects.dialog.genres")}
+      hint={t("projects.dialog.genresHint")}
+      error={issue("genres")}
+      name="genres"
+      tone="accent"
+      options={genreChoices}
+      controller={controller.genreChips}
+    />
 
     <Field label={t("projects.dialog.tags")} hint={t("projects.dialog.tagsHint")} error={issue("tags")}>
       {#snippet children(control)}
-        <Input {...control} name="tags" autocomplete="off" />
+        <TagInput {...control} name="tags" maxlength={PROJECT_TAG_CHARS_MAX} controller={controller.tagInput} />
       {/snippet}
     </Field>
 
@@ -167,56 +179,5 @@ Creates a project: its title, language, premise and tags, and its logo.
   .project-form {
     display: grid;
     gap: var(--space-4);
-  }
-
-  .genres {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1-5);
-  }
-
-  /* A real checkbox covers each choice, unseen, so the keyboard, the form and assistive technology need nothing else.
-     A chosen genre takes the violet it shows with on its row. */
-  .genre {
-    display: inline-flex;
-    position: relative;
-    align-items: center;
-    cursor: pointer;
-    border-radius: var(--radius-sm);
-    background: var(--color-control-surface);
-    padding-inline: var(--space-2);
-    min-block-size: var(--control-height-sm);
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-sm);
-  }
-
-  .genre input {
-    position: absolute;
-    opacity: 0;
-    cursor: inherit;
-    margin: 0;
-    inset: 0;
-  }
-
-  @media (hover: hover) {
-    .genre:hover {
-      background: var(--color-control-surface-hover);
-    }
-  }
-
-  .genre:has(:checked) {
-    background: var(--base-pressure);
-    color: var(--color-text-inverse);
-    font-weight: var(--font-weight-bold);
-  }
-
-  .genre:has(:focus-visible) {
-    box-shadow: var(--shadow-focus-ring);
-  }
-
-  @media (forced-colors: active) {
-    .genre:has(:checked) {
-      outline: var(--border-width-strong) solid Highlight;
-    }
   }
 </style>

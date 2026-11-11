@@ -83,15 +83,16 @@ describe("projects page load", () => {
     expect(projectList).not.toHaveBeenCalled();
   });
 
-  it("lists the writer's projects in one page, with picture addresses that name their versions", async () => {
-    vi.mocked(projectList).mockResolvedValue({ projects: [project], total: 1 });
+  it("lists the first page of the writer's projects with their total, and logo addresses that name their versions", async () => {
+    vi.mocked(projectList).mockResolvedValue({ projects: [project], total: 41 });
 
     const data = await load(loadEvent("authenticated"));
 
-    expect(projectList).toHaveBeenCalledExactlyOnceWith(api, "fixture-access", { limit: 100 });
+    expect(projectList).toHaveBeenCalledExactlyOnceWith(api, "fixture-access", { limit: 20 });
     expect(data).toMatchObject({
       projects: {
         status: "ready",
+        total: 41,
         projects: [
           {
             id: projectID,

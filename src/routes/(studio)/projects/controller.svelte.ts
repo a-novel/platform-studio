@@ -1,13 +1,18 @@
 import type { ProjectColumns } from "./columns";
 import { LOGO_REMOVED_FIELD } from "./project-form";
+import { unseenRows } from "./rows";
 
 import {
+  type ChipGroupController,
   type OpenController,
   type PictureLimits,
   type SelectController,
+  type TagInputController,
   type WholePictureFiles,
   browserPictureFiles,
   createSelectController,
+  createTagInputController,
+  createValueController,
 } from "@a-novel-kit/uikit";
 import { type Language, PROJECT_LOGO_RULES } from "@a-novel/service-narrative-engine-rest";
 
@@ -34,8 +39,10 @@ export type ProjectsModel =
       status: "ready";
       /** When the server read the projects, which their ages count from. */
       now: Date;
-      /** Most recently edited first. */
+      /** The first page, most recently edited first. */
       projects: ProjectRow[];
+      /** How many projects the writer holds in all. */
+      total: number;
     }
   | { status: "unavailable" }
   | { status: "rate-limited" };
@@ -98,6 +105,10 @@ export interface ProjectsControllerState {
   retryHref: string;
   /** The columns the writer chose, which a page too narrow for them reduces. */
   columns: ProjectColumns;
+  /** The pages of projects shown, the model's own first, each laid out on its own; empty until it is ready. */
+  pages: ProjectRow[][];
+  /** Whether more projects remain to load, and whether the next page is loading. */
+  more: "idle" | "loading" | "done";
 }
 
 /** Pure state and transitions consumed by the projects screen. */
@@ -107,6 +118,12 @@ export interface ProjectsController {
   readonly editorDialog: OpenController;
   /** Picks the project's language in the dialog. */
   readonly languageSelect: SelectController<Language>;
+  /** Picks the project's genres in the dialog. */
+  readonly genreChips: ChipGroupController;
+  /** Collects the project's tags in the dialog. */
+  readonly tagInput: TagInputController;
+  /** Loads the next page of projects, unless one is loading or none remains. */
+  loadMore(): Promise<void>;
   /** Lays the projects out in this many columns. */
   setColumns(columns: ProjectColumns): void;
   /** Opens the dialog on a new project. */
@@ -132,6 +149,8 @@ export interface ProjectsControllerOptions {
   onColumnsChange?: (columns: ProjectColumns) => void;
   /** Submits the save action, and reloads the page's data once a project saved. */
   submit: (form: FormData) => Promise<SaveResult>;
+  /** Fetches the projects after the first `offset`, trying again until it can. Rejects once the page is gone. */
+  fetchPage: (offset: number) => Promise<ProjectRow[]>;
   /** Decodes and encodes pictures; the browser's canvas by default. */
   pictures?: WholePictureFiles;
   /** Shows a chosen logo before it saves; the browser's object URLs by default. */
@@ -157,6 +176,7 @@ export function createProjectsController({
   initialColumns,
   onColumnsChange,
   submit,
+  fetchPage,
   pictures = browserPictureFiles,
   previews = browserPreviews,
 }: ProjectsControllerOptions): ProjectsController {
@@ -166,8 +186,45 @@ export function createProjectsController({
   let opening = 0;
   let choice = 0;
   const languageSelect = createSelectController<Language>({ initialValue: defaultLanguage });
+  let genreChips = $state(createGenreChips());
+  let tagInput = $state(createTagInputController());
+  // The pages loaded after the model's own, for the model they follow: a reload starts the list over.
+  let loaded = $state.raw<{ model: ProjectsModel; pages: ProjectRow[][]; loading: boolean; exhausted: boolean }>();
 
-  const state = $derived<ProjectsControllerState>({ model: getModel(), editor, retryHref, columns });
+  const pages = $derived.by(() => {
+    const model = getModel();
+    if (model?.status !== "ready") return [];
+    return loaded?.model === model ? [model.projects, ...loaded.pages] : [model.projects];
+  });
+  const shown = $derived(pages.flat());
+  const more = $derived.by(() => {
+    const model = getModel();
+    if (model?.status !== "ready") return "done";
+    const own = loaded?.model === model ? loaded : undefined;
+    if (own?.loading) return "loading";
+    return own?.exhausted || shown.length >= model.total ? "done" : "idle";
+  });
+
+  const state = $derived<ProjectsControllerState>({ model: getModel(), editor, retryHref, columns, pages, more });
+
+  async function loadMore() {
+    const model = getModel();
+    if (model?.status !== "ready" || more !== "idle") return;
+    const own = loaded?.model === model ? loaded : { model, pages: [], loading: false, exhausted: false };
+    const before = shown;
+    loaded = { ...own, loading: true };
+
+    const rows = await fetchPage(before.length).catch(() => null);
+    if (!rows || getModel() !== model) return;
+
+    const fresh = unseenRows(before, rows);
+    loaded = {
+      model,
+      pages: fresh.length > 0 ? [...own.pages, fresh] : own.pages,
+      loading: false,
+      exhausted: rows.length === 0,
+    };
+  }
 
   function update(change: Partial<ProjectEditor>) {
     if (editor) editor = { ...editor, ...change };
@@ -177,6 +234,8 @@ export function createProjectsController({
     close();
     opening += 1;
     languageSelect.select(defaultLanguage);
+    genreChips = createGenreChips();
+    tagInput = createTagInputController();
     editor = {
       savedID: null,
       logo: { status: "empty" },
@@ -208,7 +267,8 @@ export function createProjectsController({
     const source = await pictures.open(file);
     try {
       const encoded = await pictures.encodeWhole(source, logoLimits);
-      return new File([encoded], "logo", { type: encoded.type });
+      // The field shows the writer's own name for the file.
+      return new File([encoded], file.name, { type: encoded.type });
     } finally {
       pictures.release(source);
     }
@@ -244,6 +304,13 @@ export function createProjectsController({
       toggle: () => (editor ? close() : open()),
     },
     languageSelect,
+    get genreChips() {
+      return genreChips;
+    },
+    get tagInput() {
+      return tagInput;
+    },
+    loadMore,
     setColumns(next) {
       columns = next;
       onColumnsChange?.(next);
@@ -275,4 +342,8 @@ export function createProjectsController({
       update({ saving: false, failure: result, savedID, logoRefusal });
     },
   };
+}
+
+function createGenreChips(): ChipGroupController {
+  return createValueController<readonly string[]>({ initialValue: [] });
 }

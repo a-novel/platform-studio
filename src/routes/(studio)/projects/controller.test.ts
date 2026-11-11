@@ -1,10 +1,11 @@
 import {
   type PicturePreviews,
   type ProjectsControllerOptions,
+  type ProjectsModel,
   type SaveResult,
   createProjectsController,
 } from "./controller.svelte";
-import { harbor, now, projects } from "./projects.fixture";
+import { harbor, longest, now, projects } from "./projects.fixture";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -53,11 +54,12 @@ function projectsController(options: Partial<ProjectsControllerOptions> = {}) {
     projectID: harbor.id,
   }));
   const controller = createProjectsController({
-    getModel: () => ({ status: "ready", now, projects }),
+    getModel: () => ({ status: "ready", now, projects, total: projects.length }),
     defaultLanguage: Language.Fr,
     retryHref: "/projects",
     initialColumns: 1,
     submit,
+    fetchPage: vi.fn(async () => []),
     pictures,
     previews,
     ...options,
@@ -68,6 +70,47 @@ function projectsController(options: Partial<ProjectsControllerOptions> = {}) {
 const file = new File(["image"], "photo.png", { type: "image/png" });
 
 describe("createProjectsController", () => {
+  it("loads the page after the projects shown, as its own, until it holds them all", async () => {
+    const fetchPage = vi.fn(async () => [longest]);
+    const model: ProjectsModel = { status: "ready", now, projects, total: projects.length + 1 };
+    const { controller } = projectsController({ getModel: () => model, fetchPage });
+    expect(controller.state.more).toBe("idle");
+
+    const loading = controller.loadMore();
+    expect(controller.state.more).toBe("loading");
+    void controller.loadMore();
+    await loading;
+
+    expect(fetchPage).toHaveBeenCalledExactlyOnceWith(projects.length);
+    expect(controller.state.pages).toEqual([projects, [longest]]);
+    expect(controller.state.more).toBe("done");
+  });
+
+  it("leaves out a project shown already, and stops at an empty page", async () => {
+    const fetchPage = vi.fn(async (offset: number) => (offset === projects.length ? [harbor, longest] : []));
+    const model: ProjectsModel = { status: "ready", now, projects, total: 99 };
+    const { controller } = projectsController({ getModel: () => model, fetchPage });
+
+    await controller.loadMore();
+    expect(controller.state.pages).toEqual([projects, [longest]]);
+
+    await controller.loadMore();
+    expect(controller.state.more).toBe("done");
+  });
+
+  it("opens each new project with no genre and no tag", () => {
+    const { controller } = projectsController();
+
+    controller.create();
+    controller.genreChips.setValue(["fantasy"]);
+    controller.tagInput.add("maps");
+    controller.editorDialog.close();
+    controller.create();
+
+    expect(controller.genreChips.state.value).toEqual([]);
+    expect(controller.tagInput.state.tags).toEqual([]);
+  });
+
   it("opens a new project in the visitor's language, without a logo", () => {
     const { controller } = projectsController();
 
