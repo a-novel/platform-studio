@@ -8,7 +8,6 @@ const locales = [
   {
     locale: "en-US",
     routes: [
-      ["/", "Home"],
       ["/auth/sign-in/failed?returnTo=%2Fprivacy", "We couldn’t log you in"],
       ["/privacy", "Privacy"],
       ["/page-that-does-not-exist", "Page not found"],
@@ -17,7 +16,6 @@ const locales = [
   {
     locale: "fr-FR",
     routes: [
-      ["/", "Accueil"],
       ["/auth/sign-in/failed?returnTo=%2Fprivacy", "Nous n’avons pas pu vous connecter"],
       ["/privacy", "Confidentialité"],
       ["/page-that-does-not-exist", "Page introuvable"],
@@ -26,7 +24,7 @@ const locales = [
 ] as const;
 
 /** Fixed checkpoint names, so a copy change shows as a reviewable diff. */
-const checkpoints: Partial<Record<string, string>> = { "/": "home" };
+const checkpoints: Partial<Record<string, string>> = { "/privacy": "privacy" };
 
 /** Opens a route and checks its tab title. A capturing run also records the route's checkpoint. */
 async function expectTitle(page: Page, info: TestInfo, route: string, title: string, capture: boolean) {

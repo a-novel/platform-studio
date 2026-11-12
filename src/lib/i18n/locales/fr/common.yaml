@@ -20,23 +20,139 @@ access:
 pageTitles:
   brand: Agora Studio
   privacy: Confidentialité
+  projects: Projets
 privacy:
   description: Choisissez ce que nous collectons sur cet appareil, dans toutes les applications Agora.
   noTelemetry: Nous ne collectons ni métriques ni journaux sur cet appareil.
   title: Confidentialité
+projects:
+  columns:
+    label: Colonnes
+    one: Une colonne
+    three: Trois colonnes
+    two: Deux colonnes
+  count_one: "{{loaded}} / {{count}} projet"
+  count_many: ""
+  count_other: "{{loaded}} / {{count}} projets"
+  dialog:
+    cancel: Annuler
+    create: Créer le projet
+    createTitle: Nouveau projet
+    feedback:
+      notFound: Ce projet n’existe plus. Fermez cette fenêtre pour voir vos projets.
+      projectsFull: Vous avez déjà 100 projets, le maximum pour un compte.
+      serviceUnavailable: Nous n’avons pas pu enregistrer votre projet. Veuillez réessayer dans quelques minutes.
+      tooManyAttempts: Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.
+    genres: Genres
+    genresHint: Jusqu’à 10.
+    genresTooMany: Un projet porte au plus 10 genres.
+    language: Langue
+    languageHint: "Votre langue principale, utilisée par le moteur en coulisses (remarque: elle est distincte de la langue de l’application dans les paramètres de votre compte et ne change pas l’interface)."
+    languageRequired: Choisissez la langue dans laquelle vous écrivez.
+    logo:
+      hint: Affiché à la place du titre du projet.
+      label: Logo
+    premise: Prémisse
+    premiseHint: "Ce que raconte votre histoire, en quelques phrases: qui elle suit, ce que ses personnages veulent et ce qui se dresse sur leur chemin."
+    premiseTooLong: Une prémisse contient au plus 20 000 caractères.
+    refusals:
+      format: Agora n’a pas pu lire cette image. Essayez une autre image.
+      tooLarge: Cette image est trop lourde. Choisissez une image plus simple.
+      unreadable: Ce fichier ne peut pas être ouvert comme une image. Choisissez-en un autre.
+    saving: Enregistrement…
+    tags: Étiquettes
+    tagsHint: Étiquettes séparées par des espaces. Jusqu’à 10, de 24 caractères chacune.
+    tagsTooLong: Une étiquette contient au plus 24 caractères.
+    tagsTooMany: Un projet porte au plus 10 étiquettes.
+    title: Titre
+    titleRequired: Donnez un titre au projet.
+    titleTooLong: Un titre contient au plus 80 caractères.
+  empty:
+    action: Commencer à créer
+    description: Façonnez votre histoire, pas à pas. Les idées trop vastes pour tenir dans votre tête trouvent ici leur place, et votre plus folle ambition devient un manuscrit.
+    title: Un foyer pour vos histoires…
+  genres:
+    absurdist: Absurde
+    actionAdventure: Action et aventure
+    alternateHistory: Uchronie
+    audioDrama: Fiction audio
+    biographical: Biographique
+    childrens: Jeunesse
+    comedy: Comédie
+    comics: Bande dessinée
+    comingOfAge: Roman d’apprentissage
+    contemporary: Contemporain
+    crime: Policier
+    drama: Drame
+    dystopia: Dystopie
+    epic: Épopée
+    erotica: Érotique
+    espionage: Espionnage
+    essay: Essai
+    experimental: Expérimental
+    fable: Fable
+    fairyTale: Conte
+    familySaga: Saga familiale
+    fanFiction: Fanfiction
+    fantasy: Fantasy
+    gothic: Gothique
+    historical: Historique
+    horror: Horreur
+    interactiveFiction: Fiction interactive
+    lgbtq: LGBTQ+
+    literary: Littérature générale
+    magicalRealism: Réalisme magique
+    memoir: Mémoires
+    musical: Comédie musicale
+    mystery: Mystère
+    mythology: Mythologie
+    noir: Roman noir
+    philosophical: Philosophique
+    poetry: Poésie
+    political: Politique
+    postApocalyptic: Post-apocalyptique
+    psychological: Psychologique
+    rolePlayingGame: Jeu de rôle
+    romance: Romance
+    satire: Satire
+    scienceFiction: Science-fiction
+    screenplay: Scénario
+    shortStory: Nouvelle
+    sliceOfLife: Tranche de vie
+    spiritual: Spirituel
+    sports: Sport
+    superhero: Super-héros
+    supernatural: Fantastique
+    theatre: Théâtre
+    thriller: Thriller
+    tragedy: Tragédie
+    travel: Récit de voyage
+    utopia: Utopie
+    war: Guerre
+    western: Western
+    youngAdult: Jeune adulte
+  loadingMore: Chargement des projets suivants
+  new: Nouveau projet
+  row:
+    created: Créé {{when}}
+    edited: Modifié {{when}}
+  title: Projets
+  unavailable:
+    description: Nous n’avons pas pu charger vos projets. Veuillez recharger cette page dans quelques minutes.
+    rateLimited: Trop de requêtes. Veuillez patienter quelques minutes, puis recharger cette page.
+    title: Vos projets sont indisponibles
 shell:
   brand: Studio
   closeNavigation: Fermer la navigation
   collapseNavigation: Réduire la navigation
   expandNavigation: Développer la navigation
-  home: Accueil
-  homeTitle: Accueil
   logout: Me déconnecter
   manageAccount: Gérer mon compte
   manageAccountFor: Gérer mon compte ({{name}})
   navigation: Navigation de Studio
   openNavigation: Ouvrir la navigation
   privacy: Confidentialité
+  projects: Projets
   register: M’inscrire
   signIn: Me connecter
   skipToContent: Aller au contenu

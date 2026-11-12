@@ -1,4 +1,14 @@
-import { accountOrigin, compose, expect, test } from "./fixtures";
+import {
+  type Account,
+  accountOrigin,
+  compose,
+  expect,
+  home,
+  logInOnAccountPlatform,
+  signIn,
+  submitLogin,
+  test,
+} from "./fixtures";
 import { callerFetch, studioCaller } from "./service-token";
 
 import { screenshot } from "@a-novel-kit/nodelib-test/playwright";
@@ -9,28 +19,9 @@ import type { BrowserContext, Page } from "playwright/test";
 const studioOrigin = "http://127.0.0.1:4173";
 const studioApi = new AuthenticationApi("http://127.0.0.1:14100", callerFetch(studioCaller));
 
-interface Account {
-  email: string;
-  password: string;
-}
-
 /** Opens the menu that holds the account controls on a phone. The rail shows them on a desktop. */
 async function openAccountControls(page: Page, isMobile: boolean) {
   if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
-}
-
-/** Fills and submits the account platform's login dialog. */
-async function submitLogin(page: Page, account: Account) {
-  const dialog = page.getByRole("dialog", { name: "Log in" });
-  await dialog.getByLabel(/^Email address/).fill(account.email);
-  await dialog.getByLabel(/^Password/).fill(account.password);
-  await dialog.getByRole("button", { name: "Log in", exact: true }).click();
-}
-
-/** Logs in on the account platform, where a sign-in from Studio lands a visitor signed out there. */
-async function logInOnAccountPlatform(page: Page, account: Account) {
-  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/account\?auth=login&returnTo=%2Fauthorize%3F/);
-  await submitLogin(page, account);
 }
 
 /** Opens a session on the account platform itself, before the visitor reaches Studio. */
@@ -38,15 +29,6 @@ async function openAccountSession(page: Page, account: Account) {
   await page.goto(`${accountOrigin}/account?auth=login`);
   await submitLogin(page, account);
   await expect(page.getByRole("button", { name: "Log out", exact: true }).last()).toBeAttached();
-}
-
-/** Signs in from the Studio page at `path`, through the account platform's login. */
-async function signIn(page: Page, account: Account, isMobile: boolean, path = "/") {
-  await page.goto(path);
-  await openAccountControls(page, isMobile);
-  await page.getByRole("link", { name: "Log in", exact: true }).click();
-  await logInOnAccountPlatform(page, account);
-  await expect(page).toHaveURL(path);
 }
 
 /** The account link, named after the email of the fixtures' accounts, which tells the visitor is signed in. */
@@ -83,13 +65,13 @@ test("signs in from signed out through the account platform and returns to the p
   isMobile,
 }, info) => {
   const callback = page.waitForRequest((request) => request.url().startsWith(`${studioOrigin}/auth/callback?`));
-  await signIn(page, account, isMobile);
+  await signIn(page, account);
 
   // The callback strips the code from the address bar and from any referrer.
   const response = await (await callback).response();
   expect(response?.status()).toBe(303);
   expect(response?.headers()).toMatchObject({
-    location: "/",
+    location: home,
     // The callback sets the session, so the request hook keeps it out of every cache.
     "cache-control": "private, no-store",
     "referrer-policy": "no-referrer",
@@ -111,7 +93,7 @@ test("signs in from signed out through the account platform and returns to the p
   expect(cookies.filter((cookie) => cookie.expires !== -1)).toEqual([checked]);
 
   // The session survives a new page load, which the checkpoint captures on the home page.
-  await page.goto("/");
+  await page.goto(home);
   await expect(await accountLink(page, isMobile)).toHaveAttribute("href", `${accountOrigin}/account`);
   await screenshot(page, info, "authenticated-shell");
 });
@@ -128,15 +110,13 @@ test("signs in without a form while the account platform's session is open", asy
   // comes back signed in.
   await openAccountControls(page, isMobile);
   await page.getByRole("navigation", { name: "Agora apps" }).getByRole("link", { name: "Studio", exact: true }).click();
-  await expect(page).toHaveURL(`${studioOrigin}/`);
+  await expect(page).toHaveURL(`${studioOrigin}${home}`);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 
-  // Studio's own "Log in" comes back the same way once its cookies are gone.
+  // Studio signs in the same way once its cookies are gone, with no form while the account's session is open.
   await context.clearCookies({ name: /^__Host-studio_/ });
-  await page.goto("/");
-  await openAccountControls(page, isMobile);
-  await page.getByRole("link", { name: "Log in", exact: true }).click();
-  await expect(page).toHaveURL("/");
+  await page.goto(home);
+  await expect(page).toHaveURL(home);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 });
 
@@ -146,13 +126,15 @@ test("logging out of Studio ends the session on the account platform too", async
   account,
   isMobile,
 }) => {
-  await signIn(page, account, isMobile);
+  await signIn(page, account);
   const tokens = Object.fromEntries((await studioCookies(context)).map((cookie) => [cookie.name, cookie.value]));
 
   await openAccountControls(page, isMobile);
   await page.getByRole("button", { name: "Log out", exact: true }).click();
-  await expect(page).toHaveURL("/");
-  expect(await studioCookies(context)).toEqual([]);
+  // Studio's home sends a visitor without an account straight to the login, so only that sign-in's cookie remains.
+  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/account\?auth=login&returnTo=%2Fauthorize%3F/);
+  await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
+  expect((await studioCookies(context)).map((cookie) => cookie.name)).toEqual(["__Host-studio_sign_in"]);
 
   // Authentication ended the whole session, so Studio's refresh token no longer renews it.
   await expect(refreshTokenGrant(studioApi, tokens["__Host-studio_refresh_token"] ?? "")).rejects.toMatchObject({
@@ -165,9 +147,7 @@ test("logging out of Studio ends the session on the account platform too", async
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/account\?auth=login&returnTo=%2Faccount$/);
 
   // A new sign-in from Studio asks for the password again.
-  await page.goto("/");
-  await openAccountControls(page, isMobile);
-  await page.getByRole("link", { name: "Log in", exact: true }).click();
+  await page.goto(home);
   await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
 });
 
@@ -177,21 +157,20 @@ test("logging out of the account platform ends Studio's session at its next chec
   account,
   isMobile,
 }) => {
-  await signIn(page, account, isMobile);
+  await signIn(page, account);
 
   await page.goto(`${accountOrigin}/account`);
   await page.getByRole("button", { name: "Log out", exact: true }).last().click();
   await expect(page).toHaveURL(`${accountOrigin}/account?auth=login&returnTo=%2Faccount`);
 
   // Within five minutes of its last check, Studio trusts the token's signature alone.
-  await page.goto("/");
+  await page.goto(home);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 
   await endSessionCheckWindow(context);
-  await page.goto("/");
-  await openAccountControls(page, isMobile);
-  await expect(page.getByRole("link", { name: "Log in", exact: true })).toBeVisible();
-  expect(await studioCookies(context)).toEqual([]);
+  await page.goto(home);
+  await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
+  expect((await studioCookies(context)).map((cookie) => cookie.name)).toEqual(["__Host-studio_sign_in"]);
 });
 
 test("a failed exchange returns to the signed-out page, whose retry signs in", async ({
@@ -219,12 +198,13 @@ test("a failed exchange returns to the signed-out page, whose retry signs in", a
 
   // The account platform's session is still open, so the retry comes back signed in without a form.
   await page.getByRole("link", { name: "Try again", exact: true }).click();
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL(home);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 });
 
 test("Register opens the account platform's invitation request", async ({ page, isMobile }) => {
-  await page.goto("/");
+  // The privacy page stays open to a visitor without an account, whom Studio's home sends to the login.
+  await page.goto("/privacy");
   await openAccountControls(page, isMobile);
   await page.getByRole("link", { name: "Register", exact: true }).click();
 
@@ -233,7 +213,8 @@ test("Register opens the account platform's invitation request", async ({ page, 
 });
 
 test("navigation controls keep the rail from the first paint, and the drawer focus", async ({ page, isMobile }) => {
-  await page.goto("/");
+  // The privacy page stays open to a visitor without an account, whom Studio's home locks out.
+  await page.goto("/privacy");
   if (isMobile) {
     await page.getByRole("link", { name: "Open navigation", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
@@ -246,7 +227,7 @@ test("navigation controls keep the rail from the first paint, and the drawer foc
   await expect(page.getByRole("button", { name: "Expand navigation", exact: true })).toBeVisible();
 
   // The server renders the rail the visitor left, so the page never shows it expanded first.
-  const html = await (await page.request.get("/")).text();
+  const html = await (await page.request.get("/privacy")).text();
   expect(html).toContain('data-rail="collapsed"');
   await page.reload();
   await expect(page.getByRole("button", { name: "Expand navigation", exact: true })).toBeVisible();
@@ -260,7 +241,7 @@ test("an authentication outage preserves the session and recovers after reload",
   account,
   isMobile,
 }, info) => {
-  await signIn(page, account, isMobile);
+  await signIn(page, account);
 
   await endSessionCheckWindow(context);
   const cookies = await context.cookies();
@@ -277,7 +258,7 @@ test("an authentication outage preserves the session and recovers after reload",
     await expect.poll(authenticationResponds, { timeout: 30_000 }).toBe(true);
   }
 
-  await page.goto("/");
+  await page.goto(home);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 });
 

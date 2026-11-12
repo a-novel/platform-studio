@@ -20,6 +20,8 @@ const env = vi.hoisted(() => ({
   DOWNTIME_URL: undefined,
   HEALTHCHECK_TIMEOUT_MS: undefined,
   JSON_KEYS_SERVICE_URL: "https://json-keys.test",
+  NARRATIVE_ENGINE_SERVICE_TOKEN_PATH: undefined,
+  NARRATIVE_ENGINE_SERVICE_URL: "https://narrative-engine.test",
   PROFILE_SERVICE_TOKEN_PATH: undefined as string | undefined,
   PROFILE_SERVICE_URL: "https://profile.test",
   SERVICE_TOKEN_PATH: undefined,
@@ -100,14 +102,14 @@ afterEach(() => {
 
 describe("Studio session at the request boundary", () => {
   it("renders the rail the visitor left on any Agora app", async () => {
-    const { event } = request("/", { "navigation-rail": "collapsed" });
+    const { event } = request("/projects", { "navigation-rail": "collapsed" });
     await expect(loadStudioShell(event)).resolves.toMatchObject({ rail: "collapsed" });
   });
 
-  it("serves an anonymous home without calling authentication", async () => {
-    const { event } = request("/");
+  it("serves the anonymous projects page without calling authentication", async () => {
+    const { event } = request("/projects");
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
       session: { status: "anonymous" },
@@ -159,7 +161,7 @@ describe("Studio session at the request boundary", () => {
       ...identity,
     });
     fetchService.mockImplementation(async () => Response.json([key]));
-    const { event } = request("/", {
+    const { event } = request("/projects", {
       "__Host-studio_access_token": accessToken,
       "__Host-studio_identity_handle": "maya.chen",
       "__Host-studio_session_checked": "1",
@@ -173,7 +175,7 @@ describe("Studio session at the request boundary", () => {
   });
 
   it("checks the session once for the loads of one request", async () => {
-    const { event } = request("/", tokenCookies);
+    const { event } = request("/projects", tokenCookies);
     fetchService.mockImplementation(async () => Response.json(identity));
 
     await Promise.all([loadStudioShell(event), loadStudioShell(event)]);
@@ -190,14 +192,14 @@ describe("Studio session at the request boundary", () => {
       await rm(directory, { recursive: true });
     });
     await writeFile(env.PROFILE_SERVICE_TOKEN_PATH, "profile-service-token");
-    const { event } = request("/", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
+    const { event } = request("/projects", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
     fetchService.mockImplementation(async () => Response.json(identity));
     fetchProfile.mockImplementation(async () =>
       Response.json({ ...profile, pictureVersion: "2026-11-04T08:15:30.123456Z" })
     );
 
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
       session: {
@@ -219,11 +221,11 @@ describe("Studio session at the request boundary", () => {
   });
 
   it("names the account by its email with initials before the profile's first write", async () => {
-    const { event } = request("/", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
+    const { event } = request("/projects", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
     fetchService.mockImplementation(async () => Response.json(identity));
 
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
       session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
@@ -237,12 +239,12 @@ describe("Studio session at the request boundary", () => {
   ];
 
   it.each(profileFailures)("holds the account's place %s", async (_, answer) => {
-    const { event } = request("/", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
+    const { event } = request("/projects", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
     fetchService.mockImplementation(async () => Response.json(identity));
     fetchProfile.mockImplementation(answer);
 
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
       session: { status: "loading" },
@@ -251,12 +253,12 @@ describe("Studio session at the request boundary", () => {
   });
 
   it("names an account whose email Studio has not kept by its username", async () => {
-    const { event } = request("/", tokenCookies);
+    const { event } = request("/projects", tokenCookies);
     fetchService.mockImplementation(async () => Response.json(identity));
     fetchProfile.mockImplementation(async () => Response.json(profile));
 
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
       session: { status: "authenticated", displayName: "Maya" },
@@ -265,7 +267,7 @@ describe("Studio session at the request boundary", () => {
   });
 
   it("keeps anonymous service claims out of authenticated UI", async () => {
-    const { event } = request("/", tokenCookies);
+    const { event } = request("/projects", tokenCookies);
     fetchService.mockResolvedValueOnce(Response.json({ roles: [Role.Anon] }));
     await expect(loadStudioShell(event)).resolves.toMatchObject({
       session: { status: "anonymous" },
@@ -275,9 +277,9 @@ describe("Studio session at the request boundary", () => {
 
   it("holds an account's place when runtime configuration is missing", async () => {
     env.AUTHENTICATION_SERVICE_URL = "";
-    const { event } = request("/", tokenCookies);
+    const { event } = request("/projects", tokenCookies);
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       accountHref: null,
       invitationHref: null,
@@ -288,12 +290,12 @@ describe("Studio session at the request boundary", () => {
   });
 
   it("preserves a recoverable session when refresh fails during an outage", async () => {
-    const { event, values, cookies } = request("/", tokenCookies);
+    const { event, values, cookies } = request("/projects", tokenCookies);
     fetchService
       .mockResolvedValueOnce(new Response("expired", { status: 401 }))
       .mockResolvedValueOnce(new Response("private service detail", { status: 503 }));
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
       session: { status: "loading" },
@@ -575,13 +577,13 @@ describe("planned downtime at the request boundary", () => {
 
   it("holds an account's place without calling authentication once a downtime has started", async () => {
     published.downtime = started();
-    const { event } = request("/", {
+    const { event } = request("/projects", {
       "__Host-studio_access_token": "access",
       "__Host-studio_refresh_token": "refresh",
     });
 
     await expect(loadStudioShell(event)).resolves.toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
       session: { status: "loading" },
@@ -618,7 +620,9 @@ describe("planned downtime at the request boundary", () => {
     for (const downtime of harmless) {
       published.downtime = downtime;
 
-      await expect(loadStudioShell(request("/").event)).resolves.toMatchObject({ session: { status: "anonymous" } });
+      await expect(loadStudioShell(request("/projects").event)).resolves.toMatchObject({
+        session: { status: "anonymous" },
+      });
     }
   });
 
@@ -633,7 +637,7 @@ describe("planned downtime at the request boundary", () => {
 
     await expect(
       loadStudioShell(
-        request("/", { "__Host-studio_access_token": "access", "__Host-studio_refresh_token": "refresh" }).event
+        request("/projects", { "__Host-studio_access_token": "access", "__Host-studio_refresh_token": "refresh" }).event
       )
     ).resolves.toMatchObject({ session: { status: "loading" }, authorization: "unavailable" });
   });

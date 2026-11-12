@@ -26,7 +26,7 @@
   let currentHref = $state(page.url.href);
   const controller = createStudioShellController({
     getData: () => data,
-    homeHref: resolve(""),
+    homeHref: resolve("projects"),
     // Only a Studio that collects browser telemetry asks for consent, so only it offers to change the answer.
     privacyHref: hasTelemetryPreference() ? resolve("privacy") : null,
     logoutAction: resolve("auth/logout"),

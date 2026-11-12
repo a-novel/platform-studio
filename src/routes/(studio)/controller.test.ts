@@ -19,7 +19,12 @@ const links = {
 
 function shell(options: Partial<StudioShellControllerOptions> = {}) {
   return createStudioShellController({
-    getData: () => ({ activeNavigation: "home", rail: "expanded", session: { status: "anonymous" }, ...accountLinks }),
+    getData: () => ({
+      activeNavigation: "projects",
+      rail: "expanded",
+      session: { status: "anonymous" },
+      ...accountLinks,
+    }),
     ...links,
     allowNativeLogout: false,
     ...options,
@@ -31,7 +36,7 @@ describe("createStudioShellController", () => {
     const onRailChange = vi.fn();
     const onDrawerChange = vi.fn();
     let data: StudioShellData = {
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "expanded",
       session: { status: "anonymous" },
       ...accountLinks,
@@ -73,7 +78,7 @@ describe("createStudioShellController", () => {
 
   it("derives the menu from the URL and the rest of the shell from the load data", () => {
     let data: StudioShellData = {
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "collapsed",
       session: { status: "anonymous" },
       ...accountLinks,
@@ -82,7 +87,7 @@ describe("createStudioShellController", () => {
     const controller = shell({ getData: () => data, getUrl: () => url });
 
     expect(controller.state.model).toEqual({
-      activeNavigation: "home",
+      activeNavigation: "projects",
       rail: "collapsed",
       drawerOpen: true,
       session: { status: "anonymous" },
@@ -111,7 +116,7 @@ describe("createStudioShellController", () => {
   it.each(["authenticated", "loading"] as const)("allows native logout without replacing the %s session", (status) => {
     const controller = shell({
       getData: () => ({
-        activeNavigation: "home",
+        activeNavigation: "projects",
         rail: "expanded",
         session: { status },
         ...accountLinks,

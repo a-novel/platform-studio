@@ -22,7 +22,7 @@ export type ShellSession =
 
 /** Serializable state consumed by the pure Studio shell. */
 export interface StudioShellViewModel {
-  activeNavigation: "home" | "privacy" | null;
+  activeNavigation: "projects" | "privacy" | null;
   rail: "expanded" | "collapsed";
   drawerOpen: boolean;
   session: ShellSession;

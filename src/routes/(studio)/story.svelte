@@ -20,9 +20,10 @@
 </script>
 
 <script lang="ts">
-  import HomeScreen from "./(home)/screen.svelte";
   import type { StudioShellController } from "./controller.svelte";
   import Screen from "./screen.svelte";
+
+  import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
 
   let {
     model,
@@ -32,6 +33,7 @@
     started = true,
     children,
   }: StudioShellStoryProps = $props();
+  const { t } = getI18nContext();
 
   const controller: StudioShellController = {
     get state() {
@@ -66,12 +68,23 @@
 
 <div class="story-frame">
   <Screen {controller}>
-    <HomeScreen />
+    <!-- A page's heading, as every Studio page has one inside the shell. -->
+    <h1 class="page-heading">{t("shell.projects")}</h1>
     {@render children?.()}
   </Screen>
 </div>
 
 <style>
+  .page-heading {
+    position: absolute;
+    clip-path: inset(50%);
+    margin: 0;
+    inline-size: var(--border-width-thin);
+    block-size: var(--border-width-thin);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
   .story-frame {
     inline-size: 100%;
     min-block-size: 100dvb;

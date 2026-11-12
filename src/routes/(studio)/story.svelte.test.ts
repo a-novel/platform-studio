@@ -11,7 +11,7 @@ import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
 
 const shell: StudioShellViewModel = {
-  activeNavigation: "home",
+  activeNavigation: "projects",
   drawerOpen: true,
   rail: "expanded",
   session: { status: "authenticated" },

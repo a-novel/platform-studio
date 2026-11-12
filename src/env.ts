@@ -27,6 +27,14 @@ export const variables = defineEnvVars({
     schema: (value) => value,
     description: "File of the projected service token Studio sends to the profile service, on Kubernetes.",
   },
+  NARRATIVE_ENGINE_SERVICE_URL: {
+    schema: (value) => value,
+    description: "Base HTTP or HTTPS URL of the narrative engine, which stores each writer's projects.",
+  },
+  NARRATIVE_ENGINE_SERVICE_TOKEN_PATH: {
+    schema: (value) => value,
+    description: "File of the projected service token Studio sends to the narrative engine, on Kubernetes.",
+  },
   HEALTHCHECK_TIMEOUT_MS: {
     schema: (value) => value,
     description: "Timeout of each downstream readiness probe, from 100 to 10,000 ms.",
