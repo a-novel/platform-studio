@@ -157,7 +157,8 @@ dialog creates a project.
 {/if}
 
 <style>
-  /* The page fills the workspace below the shell's sticky bar, so a state without projects sits at its center. */
+  /* The page fills the workspace below the shell's sticky bar, so a state without projects sits at its center. The
+     header brings its own space above it, so the title starts as high as it does over a list of projects. */
   .projects-screen {
     display: grid;
     grid-template-rows: auto 1fr;
@@ -165,7 +166,7 @@ dialog creates a project.
     box-sizing: border-box;
     container: projects / inline-size;
     padding-inline: var(--layout-gutter);
-    padding-block: var(--space-6) var(--space-12);
+    padding-block: 0 var(--space-12);
     min-block-size: calc(100dvb - var(--shell-sticky-top, 0px));
   }
 
