@@ -52,7 +52,7 @@ that removes it.
         {disabled}
         controller={files}
         onchange={choose}
-        onclear={chosen ? onremove : undefined}
+        onClear={chosen ? onremove : undefined}
       />
     </div>
   {/snippet}

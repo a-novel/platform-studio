@@ -160,7 +160,7 @@ export function fixedProjectsController(
     genreChips: { state: { value: dialog.genres ?? [] }, setValue: (value) => spy("genreChips.setValue", value) },
     tagInput: {
       state: { tags: dialog.tags ?? [] },
-      add: (text) => spy("tagInput.add", text),
+      add: (text) => (spy("tagInput.add", text), true),
       remove: (index) => spy("tagInput.remove", index),
     },
     loadMore: async () => spy("loadMore"),

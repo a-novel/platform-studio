@@ -1,6 +1,6 @@
 import type { ProjectIssue } from "./controller.svelte";
 
-import { kebabTag } from "@a-novel-kit/uikit";
+import { kebabTag, splitTags } from "@a-novel-kit/uikit";
 import {
   type Language,
   LanguageSchema,
@@ -37,16 +37,16 @@ function readGenres(form: FormData): string[] {
   return form.getAll("genres").filter((genre) => typeof genre === "string");
 }
 
-/** Reads the tags, written in one field and separated by commas. */
 /**
- * Reads the tags the field sent, then the text still typed in it, which a form without scripting sends whole: a
- * space or a comma ends a tag, and each is written in lower-kebab-case, as the field writes them.
+ * Reads the tags the field sent, then the text still typed in it, which a form without scripting sends whole. It
+ * splits where the field ends a tag and writes each in lower-kebab-case, as the field does, so the server keeps the
+ * very tags the field shows.
  */
 function readTags(form: FormData): string[] {
   const values = form.getAll("tags").filter((value) => typeof value === "string");
-  const tags = values.flatMap((value) => value.split(/[\s,]+/u)).map(kebabTag);
+  const entries = values.flatMap((value) => splitTags(value));
 
-  return [...new Set(tags.filter(Boolean))];
+  return [...new Set(entries.map(kebabTag).filter(Boolean))];
 }
 
 /** Reads the project dialog's form. Each field follows the narrative engine's own rule. */

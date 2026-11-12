@@ -22,7 +22,7 @@ Creates a project: its title, language, premise, genres and tags, and its logo.
     TagInput,
     Textarea,
   } from "@a-novel-kit/uikit";
-  import { Language, PROJECT_TAG_CHARS_MAX } from "@a-novel/service-narrative-engine-rest";
+  import { Language } from "@a-novel/service-narrative-engine-rest";
 
   let {
     controller,
@@ -48,8 +48,8 @@ Creates a project: its title, language, premise, genres and tags, and its logo.
   const feedback = $derived(editor.failure?.status === "failed" ? editor.failure.feedback : null);
 
   const languages: SelectOption<Language>[] = [
-    { value: Language.En, label: localeNames.en },
-    { value: Language.Fr, label: localeNames.fr },
+    { value: Language.En, label: localeNames.en, lang: Language.En },
+    { value: Language.Fr, label: localeNames.fr, lang: Language.Fr },
   ];
 
   function issue(field: "title" | "premise" | "language" | "genres" | "tags") {
@@ -148,7 +148,7 @@ Creates a project: its title, language, premise, genres and tags, and its logo.
 
     <Field label={t("projects.dialog.tags")} hint={t("projects.dialog.tagsHint")} error={issue("tags")}>
       {#snippet children(control)}
-        <TagInput {...control} name="tags" maxlength={PROJECT_TAG_CHARS_MAX} controller={controller.tagInput} />
+        <TagInput {...control} name="tags" controller={controller.tagInput} />
       {/snippet}
     </Field>
 

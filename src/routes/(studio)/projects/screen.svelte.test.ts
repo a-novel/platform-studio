@@ -105,14 +105,16 @@ describe("projects screen", () => {
 
   it("saves the dialog's fields through the controller", async () => {
     const spy = vi.fn();
-    const controller = fixedProjectsController({ model: ready, editor: newProjectEditor() }, spy);
+    const genres = ["fantasy", "horror"];
+    const controller = fixedProjectsController({ model: ready, editor: newProjectEditor() }, spy, { genres });
     render(ProjectsScreen, { controller }, withLocale());
 
     const dialog = page.getByRole("dialog", { name: "New project" });
     await dialog.getByRole("textbox", { name: "Title" }).fill("Salt");
     await dialog.getByRole("textbox", { name: "Premise" }).fill("A lighthouse keeper's last winter.");
-    await dialog.getByRole("checkbox", { name: "Fantasy" }).click();
-    await dialog.getByRole("checkbox", { name: "Horror" }).click();
+    // The chips show the controller's choice, so a click asks it to add the genre rather than checking the box.
+    await dialog.getByRole("checkbox", { name: "Mystery" }).click();
+    expect(spy).toHaveBeenCalledWith("genreChips.setValue", [...genres, "mystery"]);
     await dialog.getByRole("button", { name: "Create project" }).click();
 
     const form = spy.mock.calls.find(([request]) => request === "save")?.[1] as FormData | undefined;
@@ -134,7 +136,7 @@ describe("projects screen", () => {
     await userEvent.upload(page.getByLabelText("Logo"), file);
     expect(spy).toHaveBeenCalledWith("chooseLogo", file);
 
-    await page.getByRole("button", { name: "Remove the file" }).click();
+    await page.getByRole("button", { name: "Remove lantern.png" }).click();
     expect(spy).toHaveBeenCalledWith("removeLogo");
   });
 
