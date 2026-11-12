@@ -22,6 +22,22 @@ import "@a-novel-kit/uikit-tokens/tokens.css";
 const ready = { status: "ready", now, projects, total: projects.length } as const;
 
 describe("projects screen", () => {
+  it("starts the title as high without projects as over a list of them", async () => {
+    // The title's distance from the top of the screen, in one state of the page.
+    async function titleOffset(model: ProjectsModel) {
+      const view = await render(ProjectsScreen, { controller: fixedProjectsController({ model }) }, withLocale());
+      await expect.element(page.getByRole("heading", { name: "Projects", level: 1 })).toBeVisible();
+      const offset =
+        page.getByRole("heading", { level: 1 }).element().getBoundingClientRect().top -
+        view.container.getBoundingClientRect().top;
+      view.unmount();
+      return offset;
+    }
+
+    const empty: ProjectsModel = { status: "ready", now, projects: [], total: 0 };
+    expect(await titleOffset(empty)).toBeCloseTo(await titleOffset(ready), 0);
+  });
+
   it("lists each project as a row with its language, genres and tags, which offers no edit", async () => {
     render(ProjectsScreen, { controller: fixedProjectsController({ model: ready }) }, withLocale());
 
