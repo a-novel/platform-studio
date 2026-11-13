@@ -10,9 +10,9 @@ import {
   type TagInputController,
   type WholePictureFiles,
   browserPictureFiles,
+  createChipGroupController,
   createSelectController,
   createTagInputController,
-  createValueController,
 } from "@a-novel-kit/uikit";
 import { type Language, PROJECT_LOGO_RULES } from "@a-novel/service-narrative-engine-rest";
 
@@ -345,5 +345,5 @@ export function createProjectsController({
 }
 
 function createGenreChips(): ChipGroupController {
-  return createValueController<readonly string[]>({ initialValue: [] });
+  return createChipGroupController();
 }

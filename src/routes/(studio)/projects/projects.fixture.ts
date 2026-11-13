@@ -157,7 +157,14 @@ export function fixedProjectsController(
       toggle: () => spy("editorDialog.toggle"),
     },
     languageSelect,
-    genreChips: { state: { value: dialog.genres ?? [] }, setValue: (value) => spy("genreChips.setValue", value) },
+    genreChips: {
+      state: { value: dialog.genres ?? [], query: "", open: false },
+      setValue: (value) => spy("genreChips.setValue", value),
+      setQuery: (query) => spy("genreChips.setQuery", query),
+      open: () => spy("genreChips.open"),
+      close: () => spy("genreChips.close"),
+      toggle: () => spy("genreChips.toggle"),
+    },
     tagInput: {
       state: { tags: dialog.tags ?? [] },
       add: (text) => (spy("tagInput.add", text), true),
