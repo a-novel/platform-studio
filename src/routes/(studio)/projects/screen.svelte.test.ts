@@ -1,6 +1,6 @@
 import { withLocale } from "#lib/i18n/provider.fixture.js";
 
-import type { ProjectsModel } from "./controller.svelte";
+import { type ProjectsModel, createProjectsController } from "./controller.svelte";
 import {
   chosenLogo,
   fixedProjectsController,
@@ -18,6 +18,7 @@ import { page, userEvent } from "vitest/browser";
 
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
+import { Language } from "@a-novel/service-narrative-engine-rest";
 
 const ready = { status: "ready", now, projects, total: projects.length } as const;
 
@@ -185,5 +186,28 @@ describe("projects screen", () => {
     await expect
       .element(page.getByRole("dialog").getByText("You already have 100 projects, the most an account can hold."))
       .toBeVisible();
+  });
+
+  it("closes the dialog on cancel, though the click still reaches the dialog once its project is gone", async () => {
+    // The real controller drops the project the moment it closes, which a fixed one never does.
+    const controller = createProjectsController({
+      getModel: () => ready,
+      defaultLanguage: Language.En,
+      retryHref: "/projects",
+      initialColumns: 1,
+      submit: vi.fn(),
+      fetchPage: vi.fn(async () => []),
+    });
+    const errors: unknown[] = [];
+    const collect = (event: ErrorEvent) => errors.push(event.error);
+    window.addEventListener("error", collect);
+    onTestFinished(() => window.removeEventListener("error", collect));
+    render(ProjectsScreen, { controller }, withLocale());
+
+    controller.create();
+    await page.getByRole("dialog", { name: "New project" }).getByRole("button", { name: "Cancel" }).click();
+
+    await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+    expect(errors).toEqual([]);
   });
 });
