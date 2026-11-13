@@ -130,7 +130,12 @@ export function newProjectEditor(change: Partial<ProjectEditor> = {}): ProjectEd
 export function fixedProjectsController(
   state: Partial<ProjectsControllerState>,
   spy: (request: string, ...args: unknown[]) => void = () => {},
-  dialog: { genres?: readonly string[]; genreQuery?: string; tags?: readonly string[]; languageOpen?: boolean } = {}
+  dialog: {
+    genres?: readonly string[];
+    genreQuery?: string;
+    tags?: readonly string[];
+    languageOpen?: boolean;
+  } = {}
 ): ProjectsController {
   const languageSelect: SelectController<Language> = {
     state: { open: dialog.languageOpen ?? false, value: Language.En },

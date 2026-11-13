@@ -57,6 +57,9 @@ describe("projects screen", () => {
   });
 
   it("names a genre in the reader's language, while the project keeps its identifier", async () => {
+    // A phone opens the genres on their own screen, so the chips sit in the dialog on a wider one.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
     const rows = await render(
       ProjectsScreen,
       { controller: fixedProjectsController({ model: ready }) },
@@ -136,6 +139,9 @@ describe("projects screen", () => {
   });
 
   it("saves the dialog's fields through the controller", async () => {
+    // A phone opens the genres on their own screen, so the chips sit in the dialog on a wider one.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
     const spy = vi.fn();
     const genres = ["fantasy", "horror"];
     const controller = fixedProjectsController({ model: ready, editor: newProjectEditor() }, spy, { genres });
