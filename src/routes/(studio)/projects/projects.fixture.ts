@@ -130,7 +130,12 @@ export function newProjectEditor(change: Partial<ProjectEditor> = {}): ProjectEd
 export function fixedProjectsController(
   state: Partial<ProjectsControllerState>,
   spy: (request: string, ...args: unknown[]) => void = () => {},
-  dialog: { genres?: readonly string[]; tags?: readonly string[]; languageOpen?: boolean } = {}
+  dialog: {
+    genres?: readonly string[];
+    genreQuery?: string;
+    tags?: readonly string[];
+    languageOpen?: boolean;
+  } = {}
 ): ProjectsController {
   const languageSelect: SelectController<Language> = {
     state: { open: dialog.languageOpen ?? false, value: Language.En },
@@ -158,7 +163,7 @@ export function fixedProjectsController(
     },
     languageSelect,
     genreChips: {
-      state: { value: dialog.genres ?? [], query: "", open: false },
+      state: { value: dialog.genres ?? [], query: dialog.genreQuery ?? "", open: false },
       setValue: (value) => spy("genreChips.setValue", value),
       setQuery: (query) => spy("genreChips.setQuery", query),
       open: () => spy("genreChips.open"),

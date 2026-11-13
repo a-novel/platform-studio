@@ -6,6 +6,7 @@ Creates a project: its title, language, premise, genres and tags, and its logo.
   import { localeNames } from "#lib/i18n/config.js";
 
   import type { LogoRefusal, ProjectEditor, ProjectsController, SaveFeedback } from "./controller.svelte";
+  import { type GenreFamily, genreChoices } from "./genres";
   import LogoField from "./logo-field.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
@@ -27,23 +28,19 @@ Creates a project: its title, language, premise, genres and tags, and its logo.
   let {
     controller,
     editor,
-    genres,
+    families,
   }: {
     controller: ProjectsController;
     editor: ProjectEditor;
-    /** The names of the genres to offer, by the value a project stores. */
-    genres: Record<string, string>;
+    /** The genres to offer, by family. */
+    families: readonly GenreFamily[];
   } = $props();
   const i18n = getI18nContext();
   const { t } = i18n;
   const formId = $props.id();
 
   const busy = $derived(editor.saving || editor.readingLogo);
-  const genreChoices = $derived(
-    Object.entries(genres)
-      .map(([value, label]) => ({ value, label }))
-      .toSorted((a, b) => a.label.localeCompare(b.label, i18n.language))
-  );
+  const genres = $derived(genreChoices(families, i18n.language));
   const issues = $derived(editor.failure?.status === "invalid" ? editor.failure.issues : []);
   const feedback = $derived(editor.failure?.status === "failed" ? editor.failure.feedback : null);
 
@@ -141,8 +138,9 @@ Creates a project: its title, language, premise, genres and tags, and its logo.
       hint={t("projects.dialog.genresHint")}
       error={issue("genres")}
       name="genres"
+      searchLabel={t("projects.dialog.genresSearch")}
       tone="accent"
-      options={genreChoices}
+      options={genres}
       controller={controller.genreChips}
     />
 

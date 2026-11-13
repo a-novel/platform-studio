@@ -140,6 +140,18 @@
 />
 
 <Story
+  name="New project, searching genres"
+  exportName="NewProjectGenreSearch"
+  args={{
+    controller: fixedProjectsController({ model: ready, editor: newProjectEditor() }, undefined, {
+      ...filledDialog,
+      genreQuery: "punk",
+    }),
+  }}
+  globals={reviewStoryGlobals.desktop}
+/>
+
+<Story
   name="New project, mobile"
   exportName="NewProjectMobile"
   args={{

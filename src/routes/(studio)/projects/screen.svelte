@@ -6,7 +6,7 @@ dialog creates a project.
 -->
 <script lang="ts">
   import type { ProjectsController } from "./controller.svelte";
-  import { genreNames } from "./genres";
+  import { genreFamilies, genreNames } from "./genres";
   import ProjectDialog from "./project-dialog.svelte";
   import ProjectRow from "./project-row.svelte";
 
@@ -29,7 +29,8 @@ dialog creates a project.
 
   let { controller }: { controller: ProjectsController } = $props();
   const { t } = getI18nContext();
-  const genres = $derived(genreNames(t));
+  const families = $derived(genreFamilies(t));
+  const genres = $derived(genreNames(families));
   const model = $derived(controller.state.model);
   const listing = $derived(model?.status === "ready" && model.projects.length > 0 ? model : null);
   const shown = $derived(controller.state.pages.reduce((sum, page) => sum + page.length, 0));
@@ -103,7 +104,7 @@ dialog creates a project.
           <ul class="rows">
             {#each page as project (project.id)}
               <li>
-                <Card surface="ghost">
+                <Card surface="ghost" class="project-card">
                   <ProjectRow {project} now={listing.now} {genres} />
                 </Card>
               </li>
@@ -119,7 +120,11 @@ dialog creates a project.
 
       <div class="phone-bar">
         <StickyBar edge="end" bleed>
-          <div class="phone-action">{@render newProject(t("projects.new"))}</div>
+          <div class="phone-actions">
+            <IconButton label={t("projects.new")} onclick={controller.create}>
+              <Plus size="var(--icon-size-sm)" />
+            </IconButton>
+          </div>
         </StickyBar>
       </div>
     {:else}
@@ -153,7 +158,7 @@ dialog creates a project.
 {/if}
 
 {#if controller.state.editor}
-  <ProjectDialog {controller} editor={controller.state.editor} {genres} />
+  <ProjectDialog {controller} editor={controller.state.editor} {families} />
 {/if}
 
 <style>
@@ -233,6 +238,11 @@ dialog creates a project.
     padding-block-end: var(--space-4);
   }
 
+  /* A card will open its project, so it already shows the pointer a link takes. */
+  .rows :global(.project-card) {
+    cursor: pointer;
+  }
+
   .loader {
     display: grid;
     place-items: center;
@@ -243,9 +253,11 @@ dialog creates a project.
     display: none;
   }
 
-  /* The bar's button is a whole row, within the bar's own margins. */
-  .phone-action {
-    display: grid;
+  /* The bar centers its actions under the thumb, each an icon, so more fit beside them. */
+  .phone-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
     padding-block: var(--space-3);
   }
 

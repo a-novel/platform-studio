@@ -56,6 +56,25 @@ describe("projects screen", () => {
     await expect.element(row.getByRole("button")).not.toBeInTheDocument();
   });
 
+  it("names a genre in the reader's language, while the project keeps its identifier", async () => {
+    // A phone opens the genres on their own screen, so the chips sit in the dialog on a wider one.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const rows = await render(
+      ProjectsScreen,
+      { controller: fixedProjectsController({ model: ready }) },
+      withLocale("fr")
+    );
+    await expect.element(page.getByRole("article", { name: notebooks.title }).getByText("Psychologique")).toBeVisible();
+    rows.unmount();
+
+    const spy = vi.fn();
+    const controller = fixedProjectsController({ model: ready, editor: newProjectEditor() }, spy);
+    render(ProjectsScreen, { controller }, withLocale("fr"));
+    await page.getByRole("dialog").getByRole("checkbox", { name: "Mystère" }).click();
+    expect(spy).toHaveBeenCalledWith("genreChips.setValue", ["mystery"]);
+  });
+
   it("counts the projects shown out of every project, and asks for the next page once the end comes near", async () => {
     const spy = vi.fn();
     const model: ProjectsModel = { ...ready, total: 41 };
@@ -106,7 +125,7 @@ describe("projects screen", () => {
     render(ProjectsScreen, { controller: fixedProjectsController({ model: empty }, spy) }, withLocale("fr"));
 
     await expect.element(page.getByRole("heading", { name: "Un foyer pour vos histoires…" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Nouveau projet" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("button", { name: "Créer" })).not.toBeInTheDocument();
     await page.getByRole("button", { name: "Commencer à créer" }).click();
     expect(spy).toHaveBeenCalledExactlyOnceWith("create");
   });
@@ -120,6 +139,9 @@ describe("projects screen", () => {
   });
 
   it("saves the dialog's fields through the controller", async () => {
+    // A phone opens the genres on their own screen, so the chips sit in the dialog on a wider one.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
     const spy = vi.fn();
     const genres = ["fantasy", "horror"];
     const controller = fixedProjectsController({ model: ready, editor: newProjectEditor() }, spy, { genres });
