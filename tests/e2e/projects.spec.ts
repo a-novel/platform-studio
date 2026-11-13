@@ -28,9 +28,18 @@ test("the root address sends a visitor without an account straight to the login"
   await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
 });
 
+// A phone opens the genres on their own screen: its field opens it, and Done closes it.
+async function chooseGenres(page: Page, dialog: Locator, isMobile: boolean, genres: readonly string[]) {
+  if (isMobile) await dialog.getByRole("group", { name: "Genres", exact: true }).getByRole("button").click();
+  const chips = isMobile ? page.getByRole("dialog", { name: "Genres", exact: true }) : dialog;
+  for (const genre of genres) await chips.getByRole("checkbox", { name: genre, exact: true }).check({ force: true });
+  if (isMobile) await chips.getByRole("button", { name: "Done", exact: true }).click();
+}
+
 test("a writer creates projects with a logo, genres and tags, and finds the last edited first", async ({
   page,
   account,
+  isMobile,
 }, info) => {
   await signIn(page, account);
   await expect(page.getByRole("heading", { name: "A home for your stories…" })).toBeVisible();
@@ -42,8 +51,7 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   await dialog.getByRole("combobox", { name: "Language" }).click();
   await page.getByRole("option", { name: "Français", exact: true }).click();
   await dialog.getByRole("textbox", { name: "Premise" }).fill("Marie attend un homme qui ne viendra pas.");
-  await dialog.getByRole("checkbox", { name: "Drama", exact: true }).check({ force: true });
-  await dialog.getByRole("checkbox", { name: "Historical", exact: true }).check({ force: true });
+  await chooseGenres(page, dialog, isMobile, ["Drama", "Historical"]);
   // A space ends each tag, written in lower-kebab-case.
   await dialog.getByRole("textbox", { name: "Tags" }).pressSequentially("Roman-Maritime Années-50 ");
   await dialog.getByLabel("Logo", { exact: true }).setInputFiles(logo);
