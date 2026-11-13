@@ -253,10 +253,10 @@ dialog creates a project.
     display: none;
   }
 
-  /* The bar sets its actions at its end, under the thumb, each an icon, so more fit beside them. */
+  /* The bar centers its actions under the thumb, each an icon, so more fit beside them. */
   .phone-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: var(--space-2);
     padding-block: var(--space-3);
   }
