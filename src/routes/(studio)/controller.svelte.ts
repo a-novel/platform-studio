@@ -18,6 +18,8 @@ export type ShellSession =
       initials?: string;
       /** The address of the account's picture, which replaces the initials. */
       picture?: string;
+      /** The SHA-256 of the account's user ID in lowercase hex, which names its browser database without revealing the ID. */
+      accountKey: string;
     };
 
 /** Serializable state consumed by the pure Studio shell. */

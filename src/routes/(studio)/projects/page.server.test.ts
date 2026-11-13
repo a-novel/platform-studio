@@ -11,7 +11,6 @@ import {
   NarrativeEngineApi,
   type Project,
   projectCreate,
-  projectList,
   projectLogoDelete,
   projectLogoUpdate,
   projectUpdate,
@@ -28,7 +27,7 @@ type ActionEvent = Parameters<typeof actions.save>[0];
 
 const api = new NarrativeEngineApi("https://narrative-engine.test");
 const projectID = "019a5f2e-0000-7000-8000-000000000001";
-const logoVersion = "2026-11-08T10:00:00.123456Z";
+const logoChecksum = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08";
 
 const project: Project = {
   id: projectID,
@@ -40,7 +39,21 @@ const project: Project = {
   createdAt: new Date("2026-10-01T10:00:00Z"),
   updatedAt: new Date("2026-10-02T10:00:00Z"),
   editedAt: new Date("2026-11-08T10:00:00Z"),
-  logoVersion,
+  logoChecksum,
+};
+
+/** The project as the save returns it, for the browser database to take. */
+const stored = {
+  id: projectID,
+  title: project.title,
+  premise: project.premise,
+  language: project.language,
+  genres: project.genres,
+  tags: project.tags,
+  createdAt: project.createdAt,
+  updatedAt: project.updatedAt,
+  editedAt: project.editedAt,
+  logoChecksum,
 };
 
 function loadEvent(status: "anonymous" | "authenticated" | "error"): LoadEvent {
@@ -75,44 +88,16 @@ describe("projects page load", () => {
       status: 307,
       location: "/auth/sign-in?returnTo=%2Fprojects%3Fview%3Dgrid",
     });
-    expect(projectList).not.toHaveBeenCalled();
   });
 
-  it("lists nothing while the session cannot be checked", async () => {
-    await expect(load(loadEvent("error"))).resolves.toEqual({ projects: null, columns: 1 });
-    expect(projectList).not.toHaveBeenCalled();
-  });
-
-  it("lists the first page of the writer's projects with their total, and logo addresses that name their versions", async () => {
-    vi.mocked(projectList).mockResolvedValue({ projects: [project], total: 41 });
-
-    const data = await load(loadEvent("authenticated"));
-
-    expect(projectList).toHaveBeenCalledExactlyOnceWith(api, "fixture-access", { limit: 20 });
-    expect(data).toMatchObject({
-      projects: {
-        status: "ready",
-        total: 41,
-        projects: [
-          {
-            id: projectID,
-            title: project.title,
-            editedAt: project.editedAt,
-            logo: `/projects/${projectID}/logo?v=2026-11-08T10%3A00%3A00.123456Z`,
-          },
-        ],
-      },
-    });
-  });
-
-  it.each([
-    ["rate-limited", new HttpError(429, "too many requests")],
-    ["unavailable", new Error("private detail")],
-  ])("shows the page as %s when the narrative engine fails", async (status, error) => {
-    vi.mocked(projectList).mockRejectedValue(error);
-
-    await expect(load(loadEvent("authenticated"))).resolves.toEqual({ columns: 1, projects: { status } });
-  });
+  it.each(["authenticated", "error"] as const)(
+    "reads only the columns for a session %s, and leaves the projects to the browser",
+    async (status) => {
+      await expect(load(loadEvent(status))).resolves.toEqual({ columns: 1 });
+      expect(requireAuthorization).not.toHaveBeenCalled();
+      expect(getNarrativeEngine).not.toHaveBeenCalled();
+    }
+  );
 });
 
 describe("projects save action", () => {
@@ -134,12 +119,12 @@ describe("projects save action", () => {
     expect(requireAuthorization).not.toHaveBeenCalled();
   });
 
-  it("creates a project, then sets the logo the dialog chose", async () => {
-    vi.mocked(projectCreate).mockResolvedValue({ ...project, layers: [] });
+  it("creates a project, then sets the logo the dialog chose, and returns the project with its logo", async () => {
+    vi.mocked(projectCreate).mockResolvedValue({ ...project, logoChecksum: undefined, layers: [] });
     vi.mocked(projectLogoUpdate).mockResolvedValue(project);
 
     await expect(actions.save(saveEvent({ ...fields, logo }))).resolves.toEqual({
-      save: { status: "saved", projectID },
+      save: { status: "saved", project: stored },
     });
     expect(projectCreate).toHaveBeenCalledExactlyOnceWith(api, "fixture-access", {
       title: "Les Heures claires",
@@ -151,12 +136,12 @@ describe("projects save action", () => {
     expect(projectLogoUpdate).toHaveBeenCalledExactlyOnceWith(api, "fixture-access", { projectID }, expect.any(File));
   });
 
-  it("finishes a project and removes a logo it no longer holds", async () => {
+  it("returns a project as it saved, without a logo the dialog chose to remove", async () => {
     vi.mocked(projectUpdate).mockResolvedValue(project);
-    vi.mocked(projectLogoDelete).mockRejectedValue(new HttpError(404, "project not found"));
+    vi.mocked(projectLogoDelete).mockResolvedValue({ ...project, logoChecksum: undefined });
 
     await expect(actions.save(saveEvent({ ...fields, id: projectID, "logo-removed": "true" }))).resolves.toEqual({
-      save: { status: "saved", projectID },
+      save: { status: "saved", project: { ...stored, logoChecksum: undefined } },
     });
     expect(projectUpdate).toHaveBeenCalledExactlyOnceWith(api, "fixture-access", {
       id: projectID,
@@ -214,22 +199,33 @@ describe("projects save action", () => {
     ["its size", new HttpError(422, "refused", { reason: "size" }), "tooLarge"],
     ["unreadable without a reason", new HttpError(422, "refused"), "format"],
   ] as const)("names a refused logo by %s, on the project the save created", async (_, error, refusal) => {
-    vi.mocked(projectCreate).mockResolvedValue({ ...project, layers: [] });
+    vi.mocked(projectCreate).mockResolvedValue({ ...project, logoChecksum: undefined, layers: [] });
     vi.mocked(projectLogoUpdate).mockRejectedValue(error);
 
     await expect(actions.save(saveEvent({ ...fields, logo }))).resolves.toEqual({
       status: 422,
-      data: { save: { status: "logo-refused", projectID, refusal } },
+      data: { save: { status: "logo-refused", project: { ...stored, logoChecksum: undefined }, refusal } },
     });
   });
 
   it("keeps the created project when its logo meets an outage", async () => {
-    vi.mocked(projectCreate).mockResolvedValue({ ...project, layers: [] });
+    vi.mocked(projectCreate).mockResolvedValue({ ...project, logoChecksum: undefined, layers: [] });
     vi.mocked(projectLogoUpdate).mockRejectedValue(new HttpError(503, "down"));
 
     await expect(actions.save(saveEvent({ ...fields, logo }))).resolves.toEqual({
       status: 503,
-      data: { save: { status: "failed", feedback: "serviceUnavailable", projectID } },
+      data: {
+        save: { status: "failed", feedback: "serviceUnavailable", project: { ...stored, logoChecksum: undefined } },
+      },
+    });
+  });
+
+  it("lets the save stand for a project deleted before its logo could go", async () => {
+    vi.mocked(projectUpdate).mockResolvedValue(project);
+    vi.mocked(projectLogoDelete).mockRejectedValue(new HttpError(404, "project not found"));
+
+    await expect(actions.save(saveEvent({ ...fields, id: projectID, "logo-removed": "true" }))).resolves.toEqual({
+      save: { status: "saved", project: { ...stored, logoChecksum: undefined } },
     });
   });
 

@@ -1,8 +1,8 @@
 <!--
 @component
 The writer's projects, most recently edited first, as rows of one, two or three columns, with how many they hold. The
-next page loads as the writer nears the end of the list. A writer without any is invited to create the first one. The
-dialog creates a project.
+next page shows as the writer nears the end of the list. A writer without any is invited to create the first one. The
+dialog creates a project. A browser without JavaScript is told the list needs it.
 -->
 <script lang="ts">
   import type { ProjectsController } from "./controller.svelte";
@@ -32,24 +32,20 @@ dialog creates a project.
   const families = $derived(genreFamilies(t));
   const genres = $derived(genreNames(families));
   const model = $derived(controller.state.model);
-  const listing = $derived(model?.status === "ready" && model.projects.length > 0 ? model : null);
+  const listing = $derived(model.status === "ready" && model.projects.length > 0 ? model : null);
   const shown = $derived(controller.state.pages.reduce((sum, page) => sum + page.length, 0));
 
-  // The next page loads while the end of the list is half a screen away.
-  let nearEnd = $state(false);
-  $effect(() => {
-    if (nearEnd && controller.state.more === "idle") void controller.loadMore();
-  });
-
+  // The next page shows while the end of the list is half a screen away. Each page brings a new loader, which the
+  // observer reports at once, so a screen tall enough for several pages fills up.
   function watchEnd(element: HTMLElement) {
-    const observer = new IntersectionObserver((entries) => (nearEnd = entries.some((entry) => entry.isIntersecting)), {
-      rootMargin: "0px 0px 50% 0px",
-    });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) controller.loadMore();
+      },
+      { rootMargin: "0px 0px 50% 0px" }
+    );
     observer.observe(element);
-    return () => {
-      observer.disconnect();
-      nearEnd = false;
-    };
+    return () => observer.disconnect();
   }
 
   const columnOptions = $derived([
@@ -66,96 +62,107 @@ dialog creates a project.
   </Button>
 {/snippet}
 
-{#if model}
-  <div class="projects-screen" class:filled={listing !== null}>
-    {#if listing}
-      <StickyBar edge="start" bleed>
-        <PageHeader
-          title={t("projects.title")}
-          description={t("projects.count", { loaded: shown, count: listing.total })}
-        >
-          {#snippet actions()}
-            <div class="header-actions">
-              <div class="column-options">
-                <ButtonGroup label={t("projects.columns.label")}>
-                  {#each columnOptions as { columns, label, Icon } (columns)}
-                    <IconButton
-                      class="columns-{columns}"
-                      {label}
-                      variant="ghost"
-                      tone="neutral"
-                      aria-pressed={controller.state.columns === columns}
-                      onclick={() => controller.setColumns(columns)}
-                    >
-                      <Icon size="var(--icon-size-sm)" />
-                    </IconButton>
-                  {/each}
-                </ButtonGroup>
-              </div>
-              {@render newProject(t("projects.new"))}
+<div class="projects-screen" class:filled={listing !== null}>
+  {#if listing}
+    <StickyBar edge="start" bleed>
+      <PageHeader
+        title={t("projects.title")}
+        description={t("projects.count", { loaded: shown, count: listing.projects.length })}
+      >
+        {#snippet actions()}
+          <div class="header-actions">
+            <div class="column-options">
+              <ButtonGroup label={t("projects.columns.label")}>
+                {#each columnOptions as { columns, label, Icon } (columns)}
+                  <IconButton
+                    class="columns-{columns}"
+                    {label}
+                    variant="ghost"
+                    tone="neutral"
+                    aria-pressed={controller.state.columns === columns}
+                    onclick={() => controller.setColumns(columns)}
+                  >
+                    <Icon size="var(--icon-size-sm)" />
+                  </IconButton>
+                {/each}
+              </ButtonGroup>
             </div>
-          {/snippet}
-        </PageHeader>
-      </StickyBar>
+            {@render newProject(t("projects.new"))}
+          </div>
+        {/snippet}
+      </PageHeader>
+    </StickyBar>
 
-      <div class="content" data-columns={controller.state.columns}>
-        <!-- Each page lays its own columns out, so the rows a page adds never move the ones above. -->
-        {#each controller.state.pages as page, index (index)}
-          <ul class="rows">
-            {#each page as project (project.id)}
-              <li>
-                <Card surface="ghost" class="project-card">
-                  <ProjectRow {project} now={listing.now} {genres} />
-                </Card>
-              </li>
-            {/each}
-          </ul>
-        {/each}
-        {#if controller.state.more !== "done"}
+    <div class="content" data-columns={controller.state.columns}>
+      <!-- Each page lays its own columns out, so the rows a page adds never move the ones above. -->
+      {#each controller.state.pages as page, index (index)}
+        <ul class="rows">
+          {#each page as project (project.id)}
+            <li>
+              <Card surface="ghost" class="project-card">
+                <ProjectRow {project} now={listing.now} {genres} />
+              </Card>
+            </li>
+          {/each}
+        </ul>
+      {/each}
+      {#if controller.state.more}
+        {#key controller.state.pages.length}
           <div class="loader" {@attach watchEnd}>
             <Spinner label={t("projects.loadingMore")} />
           </div>
-        {/if}
-      </div>
+        {/key}
+      {/if}
+    </div>
 
-      <div class="phone-bar">
-        <StickyBar edge="end" bleed>
-          <div class="phone-actions">
-            <IconButton label={t("projects.new")} onclick={controller.create}>
-              <Plus size="var(--icon-size-sm)" />
-            </IconButton>
-          </div>
-        </StickyBar>
-      </div>
-    {:else}
-      <PageHeader title={t("projects.title")} />
+    <div class="phone-bar">
+      <StickyBar edge="end" bleed>
+        <div class="phone-actions">
+          <IconButton label={t("projects.new")} onclick={controller.create}>
+            <Plus size="var(--icon-size-sm)" />
+          </IconButton>
+        </div>
+      </StickyBar>
+    </div>
+  {:else}
+    <PageHeader title={t("projects.title")} />
 
-      <div class="state">
-        {#if model.status === "ready"}
-          <EmptyState title={t("projects.empty.title")} description={t("projects.empty.description")}>
-            {#snippet illustration()}
-              <img class="illustration" src={studioBanner} width="269" height="64" alt="" />
-            {/snippet}
-            {#snippet actions()}{@render newProject(t("projects.empty.action"))}{/snippet}
-          </EmptyState>
-        {:else}
+    <div class="state">
+      {#if model.status === "starting"}
+        <noscript>
           <StatusState
-            tone={model.status === "rate-limited" ? "warning" : "error"}
-            title={t("projects.unavailable.title")}
-            description={model.status === "rate-limited"
-              ? t("projects.unavailable.rateLimited")
-              : t("projects.unavailable.description")}
+            tone="warning"
+            title={t("projects.noScript.title")}
+            description={t("projects.noScript.description")}
             headingLevel={2}
-          >
-            {#snippet actions()}
-              <Link href={controller.state.retryHref} data-sveltekit-reload>{t("access.retry")}</Link>
-            {/snippet}
-          </StatusState>
-        {/if}
-      </div>
-    {/if}
-  </div>
-{/if}
+          />
+        </noscript>
+      {:else if model.status === "loading"}
+        <StatusState tone="loading" title={t("projects.loading")} headingLevel={2} />
+      {:else if model.status === "ready"}
+        <EmptyState title={t("projects.empty.title")} description={t("projects.empty.description")}>
+          {#snippet illustration()}
+            <img class="illustration" src={studioBanner} width="269" height="64" alt="" />
+          {/snippet}
+          {#snippet actions()}{@render newProject(t("projects.empty.action"))}{/snippet}
+        </EmptyState>
+      {:else}
+        <StatusState
+          tone={model.status === "rate-limited" ? "warning" : "error"}
+          title={t("projects.unavailable.title")}
+          description={model.status === "rate-limited"
+            ? t("projects.unavailable.rateLimited")
+            : t("projects.unavailable.description")}
+          headingLevel={2}
+        >
+          {#snippet actions()}
+            <Link href={controller.state.retryHref} data-sveltekit-reload>{t("access.retry")}</Link>
+          {/snippet}
+        </StatusState>
+      {/if}
+    </div>
+  {/if}
+</div>
 
 {#if controller.state.editor}
   <ProjectDialog {controller} editor={controller.state.editor} {families} />

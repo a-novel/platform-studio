@@ -230,8 +230,12 @@ projects:
     western: Western
     youngAdult: Jeune adulte
     zombies: Zombies
+  loading: Chargement de vos projets
   loadingMore: Chargement des projets suivants
   new: Créer
+  noScript:
+    description: Activez JavaScript dans votre navigateur, puis rechargez cette page.
+    title: Vos projets nécessitent JavaScript
   row:
     created: Créé {{when}}
     edited: Modifié {{when}}

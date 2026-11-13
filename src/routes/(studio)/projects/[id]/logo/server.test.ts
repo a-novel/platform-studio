@@ -45,7 +45,7 @@ describe("GET /projects/[id]/logo", () => {
   it("serves the writer's logo, kept for good by their browser under a versioned address", async () => {
     vi.mocked(projectLogoGet).mockResolvedValue(new Blob(["webp"], { type: "image/webp" }));
 
-    const response = await GET(event(projectID, "?v=2026-11-08T10%3A00%3A00.123456Z"));
+    const response = await GET(event(projectID, "?v=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"));
 
     expect(response.status).toBe(200);
     expect(Object.fromEntries(response.headers)).toMatchObject({

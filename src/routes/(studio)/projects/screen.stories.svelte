@@ -1,8 +1,16 @@
 <script module lang="ts">
   import { createStorybookTranslator } from "#lib/i18n/storybook.js";
 
-  import type { ProjectsModel } from "./controller.svelte";
-  import { chosenLogo, fixedProjectsController, longest, newProjectEditor, now, projects } from "./projects.fixture";
+  import { PROJECTS_PAGE, type ProjectsModel } from "./controller.svelte";
+  import {
+    chosenLogo,
+    fixedProjectsController,
+    longest,
+    manyProjects,
+    newProjectEditor,
+    now,
+    projects,
+  } from "./projects.fixture";
   import ProjectsScreen from "./screen.svelte";
 
   import { reviewStoryGlobals } from "@a-novel-kit/uikit-storybook";
@@ -11,10 +19,11 @@
   import type { StoryContext } from "@storybook/sveltekit";
   import { expect, fn, userEvent, within } from "storybook/test";
 
-  const ready: ProjectsModel = { status: "ready", now, projects, total: projects.length };
-  const stress: ProjectsModel = { status: "ready", now, projects: [longest, ...projects], total: 5 };
-  const empty: ProjectsModel = { status: "ready", now, projects: [], total: 0 };
-  const firstPage: ProjectsModel = { status: "ready", now, projects, total: 41 };
+  const ready: ProjectsModel = { status: "ready", now, projects };
+  const stress: ProjectsModel = { status: "ready", now, projects: [longest, ...projects] };
+  const empty: ProjectsModel = { status: "ready", now, projects: [] };
+  const many = manyProjects(41);
+  const firstPage: ProjectsModel = { status: "ready", now, projects: many };
   const filledDialog = { genres: ["mystery", "historical", "drama"], tags: ["roman-maritime", "années-50"] };
   const createRequests = fn();
 
@@ -111,6 +120,21 @@
   globals={reviewStoryGlobals.mobile}
 />
 
+<Story
+  name="Starting"
+  args={{ controller: fixedProjectsController({ model: { status: "starting" } }) }}
+  parameters={{
+    docs: {
+      description: {
+        story:
+          "The page before it runs in the browser. Only a browser without JavaScript shows its notice, which says the list needs it.",
+      },
+    },
+  }}
+/>
+
+<Story name="Loading" args={{ controller: fixedProjectsController({ model: { status: "loading" } }) }} />
+
 <Story name="Unavailable" args={{ controller: fixedProjectsController({ model: { status: "unavailable" } }) }} />
 
 <Story
@@ -176,9 +200,16 @@
 />
 
 <Story
-  name="Loading the next page"
-  exportName="LoadingMore"
-  args={{ controller: fixedProjectsController({ model: firstPage, columns: 2, more: "loading" }) }}
+  name="More projects below"
+  exportName="MoreBelow"
+  args={{
+    controller: fixedProjectsController({
+      model: firstPage,
+      columns: 2,
+      pages: [many.slice(0, PROJECTS_PAGE)],
+      more: true,
+    }),
+  }}
   globals={reviewStoryGlobals.desktop}
 />
 

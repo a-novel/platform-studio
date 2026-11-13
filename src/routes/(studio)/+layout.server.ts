@@ -9,6 +9,8 @@ import { accountDisplayFromHandle } from "./account-display";
 import type { ShellSession, StudioShellViewModel } from "./controller.svelte";
 import { shellSessionData } from "./dependencies";
 
+import { createHash } from "node:crypto";
+
 import { NAVIGATION_RAIL_COOKIE, parseNavigationRail } from "@a-novel-kit/nodelib-browser/preferences";
 import { isDowntimeStarted } from "@a-novel-kit/nodelib-server";
 import type { AuthorizationStatus } from "@a-novel-kit/uikit/authorization";
@@ -57,7 +59,10 @@ function readAccountLinks(): { accountHref: string | null; invitationHref: strin
   }
 }
 
-/** Resolves the session the shell shows, exposing only a display identity to the browser. */
+/**
+ * Resolves the session the shell shows, exposing only a display identity to the browser, and a key that names the
+ * account's browser database.
+ */
 async function readShellSession(event: AuthenticationEvent): Promise<ShellSession> {
   // A started downtime stops Authentication, so the shell doesn't ask it for the session.
   const resolved = isDowntimeStarted(await readStudioDowntime()) ? null : await currentSession(event);
@@ -76,7 +81,8 @@ async function readShellSession(event: AuthenticationEvent): Promise<ShellSessio
   const display = resolved.identityHandle
     ? accountDisplayFromHandle(resolved.identityHandle, username)
     : { displayName: username };
-  return { status: "authenticated", ...display, picture };
+  const accountKey = createHash("sha256").update(resolved.claims.userID).digest("hex");
+  return { status: "authenticated", ...display, picture, accountKey };
 }
 
 /**

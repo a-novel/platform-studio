@@ -1,12 +1,18 @@
-import type { ProjectRow } from "./controller.svelte";
+import type { StoredProject } from "#lib/client/projects/database.js";
+import type { ProjectsSyncState } from "#lib/client/projects/sync.svelte.js";
 
-import type { Project } from "@a-novel/service-narrative-engine-rest";
+import type { ProjectRow, ProjectsModel } from "./controller.svelte";
 
-/** How many projects a page of the list holds: the page loads the first, and scrolling loads the next ones. */
-export const PROJECTS_PAGE = 20;
+/** Turns the projects the browser database holds into the page's model, most recently edited first. */
+export function projectsModel(state: ProjectsSyncState): ProjectsModel {
+  if (state.status !== "ready") return state;
 
-/** Turns a project into its row, whose logo loads from Studio under an address that names its version. */
-export function projectRow(project: Project): ProjectRow {
+  const projects = state.projects.map(projectRow).toSorted((a, b) => b.editedAt.getTime() - a.editedAt.getTime());
+  return { status: "ready", now: new Date(state.readAt), projects };
+}
+
+/** Turns a project into its row, whose logo loads from Studio under an address that names its checksum. */
+export function projectRow(project: StoredProject): ProjectRow {
   return {
     id: project.id,
     title: project.title,
@@ -16,16 +22,10 @@ export function projectRow(project: Project): ProjectRow {
     tags: project.tags,
     createdAt: project.createdAt,
     editedAt: project.editedAt,
-    logo: project.logoVersion ? logoHref(project.id, project.logoVersion) : undefined,
+    logo: project.logoChecksum ? logoHref(project.id, project.logoChecksum) : undefined,
   };
 }
 
-function logoHref(projectID: string, version: string): string {
-  return `/projects/${projectID}/logo?${new URLSearchParams({ v: version })}`;
-}
-
-/** The rows of a later page not shown yet: a project edited since an earlier page moved up the list, and shows there. */
-export function unseenRows(shown: readonly ProjectRow[], page: readonly ProjectRow[]): ProjectRow[] {
-  const known = new Set(shown.map((row) => row.id));
-  return page.filter((row) => !known.has(row.id));
+function logoHref(projectID: string, checksum: string): string {
+  return `/projects/${projectID}/logo?${new URLSearchParams({ v: checksum })}`;
 }
