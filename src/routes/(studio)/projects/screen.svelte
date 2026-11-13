@@ -6,7 +6,7 @@ dialog creates a project.
 -->
 <script lang="ts">
   import type { ProjectsController } from "./controller.svelte";
-  import { genreNames } from "./genres";
+  import { genreFamilies, genreNames } from "./genres";
   import ProjectDialog from "./project-dialog.svelte";
   import ProjectRow from "./project-row.svelte";
 
@@ -29,7 +29,8 @@ dialog creates a project.
 
   let { controller }: { controller: ProjectsController } = $props();
   const { t } = getI18nContext();
-  const genres = $derived(genreNames(t));
+  const families = $derived(genreFamilies(t));
+  const genres = $derived(genreNames(families));
   const model = $derived(controller.state.model);
   const listing = $derived(model?.status === "ready" && model.projects.length > 0 ? model : null);
   const shown = $derived(controller.state.pages.reduce((sum, page) => sum + page.length, 0));
@@ -103,7 +104,7 @@ dialog creates a project.
           <ul class="rows">
             {#each page as project (project.id)}
               <li>
-                <Card surface="ghost">
+                <Card surface="ghost" class="project-card">
                   <ProjectRow {project} now={listing.now} {genres} />
                 </Card>
               </li>
@@ -153,7 +154,7 @@ dialog creates a project.
 {/if}
 
 {#if controller.state.editor}
-  <ProjectDialog {controller} editor={controller.state.editor} {genres} />
+  <ProjectDialog {controller} editor={controller.state.editor} {families} />
 {/if}
 
 <style>
@@ -231,6 +232,11 @@ dialog creates a project.
   .rows > li {
     break-inside: avoid;
     padding-block-end: var(--space-4);
+  }
+
+  /* A card will open its project, so it already shows the pointer a link takes. */
+  .rows :global(.project-card) {
+    cursor: pointer;
   }
 
   .loader {

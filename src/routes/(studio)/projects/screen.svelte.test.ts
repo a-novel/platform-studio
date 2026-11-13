@@ -56,6 +56,22 @@ describe("projects screen", () => {
     await expect.element(row.getByRole("button")).not.toBeInTheDocument();
   });
 
+  it("names a genre in the reader's language, while the project keeps its identifier", async () => {
+    const rows = await render(
+      ProjectsScreen,
+      { controller: fixedProjectsController({ model: ready }) },
+      withLocale("fr")
+    );
+    await expect.element(page.getByRole("article", { name: notebooks.title }).getByText("Psychologique")).toBeVisible();
+    rows.unmount();
+
+    const spy = vi.fn();
+    const controller = fixedProjectsController({ model: ready, editor: newProjectEditor() }, spy);
+    render(ProjectsScreen, { controller }, withLocale("fr"));
+    await page.getByRole("dialog").getByRole("checkbox", { name: "Mystère" }).click();
+    expect(spy).toHaveBeenCalledWith("genreChips.setValue", ["mystery"]);
+  });
+
   it("counts the projects shown out of every project, and asks for the next page once the end comes near", async () => {
     const spy = vi.fn();
     const model: ProjectsModel = { ...ready, total: 41 };
