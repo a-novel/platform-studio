@@ -99,7 +99,7 @@ Creates a project: its title, language, premise, genres and tags, and its logo.
   <LanguageName locale={option.value} name={option.label} />
 {/snippet}
 
-<Dialog controller={controller.editorDialog} title={t("projects.dialog.createTitle")} closeOnBackdrop={!busy}>
+<Dialog controller={controller.editorDialog} title={t("projects.dialog.createTitle")}>
   <form
     id="{formId}-form"
     class="project-form"
