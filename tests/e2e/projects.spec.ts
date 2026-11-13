@@ -60,7 +60,7 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   for (const image of await harbor.locator("img").all()) await expect.poll(() => loaded(image)).toBe(true);
 
   // A second project, without pictures, goes first.
-  await page.getByRole("button", { name: "New project", exact: true }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   dialog = page.getByRole("dialog", { name: "New project" });
   await dialog.getByRole("textbox", { name: "Title" }).fill("Salt");
   await dialog.getByRole("button", { name: "Create project", exact: true }).click();

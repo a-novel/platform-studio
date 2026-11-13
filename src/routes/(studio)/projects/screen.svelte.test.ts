@@ -125,7 +125,7 @@ describe("projects screen", () => {
     render(ProjectsScreen, { controller: fixedProjectsController({ model: empty }, spy) }, withLocale("fr"));
 
     await expect.element(page.getByRole("heading", { name: "Un foyer pour vos histoires…" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Nouveau projet" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("button", { name: "Créer" })).not.toBeInTheDocument();
     await page.getByRole("button", { name: "Commencer à créer" }).click();
     expect(spy).toHaveBeenCalledExactlyOnceWith("create");
   });

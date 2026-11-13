@@ -58,7 +58,7 @@ export default interface Resources {
         },
         "genres": "Genres",
         "genresHint": "Up to 10.",
-        "genresSearch": "Search genres",
+        "genresSearch": "Search",
         "genresTooMany": "A project holds 10 genres at most.",
         "language": "Language",
         "languageHint": "Your main language, used by the engine under the hood (note: this is separate from the application language in your account settings and does not affect the UI).",
@@ -250,7 +250,7 @@ export default interface Resources {
         "zombies": "Zombies"
       },
       "loadingMore": "Loading more projects",
-      "new": "New project",
+      "new": "Create",
       "row": {
         "created": "Created {{when}}",
         "edited": "Edited {{when}}"

@@ -45,7 +45,7 @@ projects:
       tooManyAttempts: Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.
     genres: Genres
     genresHint: Jusqu’à 10.
-    genresSearch: Rechercher un genre
+    genresSearch: Rechercher
     genresTooMany: Un projet porte au plus 10 genres.
     language: Langue
     languageHint: "Votre langue principale, utilisée par le moteur en coulisses (remarque: elle est distincte de la langue de l’application dans les paramètres de votre compte et ne change pas l’interface)."
@@ -231,7 +231,7 @@ projects:
     youngAdult: Jeune adulte
     zombies: Zombies
   loadingMore: Chargement des projets suivants
-  new: Nouveau projet
+  new: Créer
   row:
     created: Créé {{when}}
     edited: Modifié {{when}}

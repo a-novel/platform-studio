@@ -120,7 +120,11 @@ dialog creates a project.
 
       <div class="phone-bar">
         <StickyBar edge="end" bleed>
-          <div class="phone-action">{@render newProject(t("projects.new"))}</div>
+          <div class="phone-actions">
+            <IconButton label={t("projects.new")} onclick={controller.create}>
+              <Plus size="var(--icon-size-sm)" />
+            </IconButton>
+          </div>
         </StickyBar>
       </div>
     {:else}
@@ -249,9 +253,11 @@ dialog creates a project.
     display: none;
   }
 
-  /* The bar's button is a whole row, within the bar's own margins. */
-  .phone-action {
-    display: grid;
+  /* The bar sets its actions at its end, under the thumb, each an icon, so more fit beside them. */
+  .phone-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
     padding-block: var(--space-3);
   }
 
