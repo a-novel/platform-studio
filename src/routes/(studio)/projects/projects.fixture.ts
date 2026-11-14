@@ -31,7 +31,7 @@ export const wordmarkLogo = svg(
   `<text x="0" y="96" font-family="Georgia, serif" font-size="96" fill="#f4e6c2">Salt &amp; Ash</text>`
 );
 
-/** When the stories' server read the projects. */
+/** When the stories' browser read the projects. */
 export const now = new Date("2026-11-08T12:00:00Z");
 
 const hour = 3_600_000;
@@ -86,6 +86,15 @@ export const notebooks: ProjectRow = {
 
 /** The writer's projects, most recently edited first. */
 export const projects: ProjectRow[] = [harbor, cartographer, salt, notebooks];
+
+/** As many projects as `count`, each a copy of the harbor under its own ID, edited a minute apart. */
+export function manyProjects(count: number): ProjectRow[] {
+  return Array.from({ length: count }, (_, index) => ({
+    ...harbor,
+    id: harbor.id.slice(0, -3) + String(index).padStart(3, "0"),
+    editedAt: new Date(harbor.editedAt.getTime() - index * 60_000),
+  }));
+}
 
 /** The most a project can hold: the longest title, a premise past six lines, and every tag at its longest. */
 export const longest: ProjectRow = {
@@ -147,12 +156,12 @@ export function fixedProjectsController(
 
   return {
     state: {
-      model: null,
+      model: { status: "starting" },
       editor: null,
       retryHref: "/projects",
       columns: 1,
-      pages: state.model?.status === "ready" ? [state.model.projects] : [],
-      more: "done",
+      pages: state.model?.status === "ready" && state.model.projects.length > 0 ? [state.model.projects] : [],
+      more: false,
       ...state,
     },
     editorDialog: {
@@ -175,7 +184,7 @@ export function fixedProjectsController(
       add: (text) => (spy("tagInput.add", text), true),
       remove: (index) => spy("tagInput.remove", index),
     },
-    loadMore: async () => spy("loadMore"),
+    loadMore: () => spy("loadMore"),
     setColumns: (columns) => spy("setColumns", columns),
     create: () => spy("create"),
     chooseLogo: async (file) => spy("chooseLogo", file),

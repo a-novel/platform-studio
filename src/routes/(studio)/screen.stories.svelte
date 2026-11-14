@@ -20,21 +20,28 @@
   };
   const authenticated: StudioShellViewModel = {
     ...anonymous,
-    session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
+    session: { status: "authenticated", accountKey: "fixture-account-key", displayName: "Maya Chen", initials: "MC" },
   };
   const withPicture: StudioShellViewModel = {
     ...anonymous,
     // A profile with a username and a picture: the username names the account, the handle keeps the initials.
-    session: { status: "authenticated", displayName: "Moonlit Maya 🌊", initials: "MC", picture: portraitPicture },
+    session: {
+      status: "authenticated",
+      accountKey: "fixture-account-key",
+      displayName: "Moonlit Maya 🌊",
+      initials: "MC",
+      picture: portraitPicture,
+    },
   };
   const unnamedAccount: StudioShellViewModel = {
     ...anonymous,
-    session: { status: "authenticated" },
+    session: { status: "authenticated", accountKey: "fixture-account-key" },
   };
   const longAccountName: StudioShellViewModel = {
     ...anonymous,
     session: {
       status: "authenticated",
+      accountKey: "fixture-account-key",
       displayName: "Alexandrine de la Bibliothèque des Mondes Imaginaires",
       initials: "AB",
     },

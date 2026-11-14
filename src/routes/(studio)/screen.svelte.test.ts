@@ -134,7 +134,9 @@ describe("studio shell screen", () => {
   });
 
   it("leaves Privacy to the account once the visitor is logged in", async () => {
-    const authenticated = model({ session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" } });
+    const authenticated = model({
+      session: { status: "authenticated", accountKey: "fixture-account-key", displayName: "Maya Chen", initials: "MC" },
+    });
     render(StudioShellStory, { model: authenticated, collectsTelemetry: true }, withLocale());
 
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
@@ -142,7 +144,9 @@ describe("studio shell screen", () => {
   });
 
   it("names the account and opens its page on the account platform in the same tab", async () => {
-    const shell = controller({ session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" } });
+    const shell = controller({
+      session: { status: "authenticated", accountKey: "fixture-account-key", displayName: "Maya Chen", initials: "MC" },
+    });
     render(Screen, { controller: shell }, withLocale());
 
     const accountLink = page.getByRole("link", { name: "Maya Chen" });
@@ -162,7 +166,12 @@ describe("studio shell screen", () => {
   });
 
   it("names the account in the collapsed rail without visible text", async () => {
-    const session = { status: "authenticated", displayName: "Maya Chen", initials: "MC" } as const;
+    const session = {
+      status: "authenticated",
+      accountKey: "fixture-account-key",
+      displayName: "Maya Chen",
+      initials: "MC",
+    } as const;
     render(Screen, { controller: controller({ rail: "collapsed", session }) }, withLocale("fr"));
 
     const accountLink = page.getByRole("link", {
@@ -174,6 +183,7 @@ describe("studio shell screen", () => {
   it("shows the account's picture in place of its initials", async () => {
     const session = {
       status: "authenticated",
+      accountKey: "fixture-account-key",
       displayName: "Maya Chen",
       initials: "MC",
       picture: portraitPicture,
@@ -189,7 +199,11 @@ describe("studio shell screen", () => {
   });
 
   it("names no one before the account's email is known", async () => {
-    render(Screen, { controller: controller({ session: { status: "authenticated" } }) }, withLocale("fr"));
+    render(
+      Screen,
+      { controller: controller({ session: { status: "authenticated", accountKey: "fixture-account-key" } }) },
+      withLocale("fr")
+    );
 
     const accountLink = page.getByRole("link", { name: "Gérer mon compte" });
     await expect.element(accountLink.getByText("Gérer mon compte", { exact: true })).toBeVisible();
@@ -201,7 +215,10 @@ describe("studio shell screen", () => {
     render(
       Screen,
       {
-        controller: controller({ drawerOpen: true, session: { status: "authenticated", displayName, initials: "AB" } }),
+        controller: controller({
+          drawerOpen: true,
+          session: { status: "authenticated", accountKey: "fixture-account-key", displayName, initials: "AB" },
+        }),
       },
       withLocale()
     );
@@ -224,7 +241,10 @@ describe("studio shell screen", () => {
           {
             controller: controller({
               drawerOpen: width < 768,
-              session: status === "authenticated" ? { status, displayName: "Maya Chen", initials: "MC" } : { status },
+              session:
+                status === "authenticated"
+                  ? { status, accountKey: "fixture-account-key", displayName: "Maya Chen", initials: "MC" }
+                  : { status },
             }),
           },
           withLocale()
@@ -315,7 +335,10 @@ describe("studio shell screen", () => {
 
   it.each(drawerLabels)("aligns the mobile drawer labels of an %s visitor", async (status, labels) => {
     await page.viewport(390, 844);
-    const session = status === "authenticated" ? { status, displayName: "Maya Chen", initials: "MC" } : { status };
+    const session =
+      status === "authenticated"
+        ? { status, accountKey: "fixture-account-key", displayName: "Maya Chen", initials: "MC" }
+        : { status };
     render(Screen, { controller: controller({ drawerOpen: true, session }) }, withLocale());
 
     const navigation = page.getByRole("dialog", { name: "Studio" });

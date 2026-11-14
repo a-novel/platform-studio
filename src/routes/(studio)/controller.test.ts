@@ -96,13 +96,18 @@ describe("createStudioShellController", () => {
     data = {
       activeNavigation: null,
       rail: "collapsed",
-      session: { status: "authenticated" },
+      session: { status: "authenticated", accountKey: "fixture-account-key" },
       accountHref: null,
       invitationHref: null,
     };
     url = new URL("https://studio.example.test/privacy");
     expect(controller.state).toEqual({
-      model: { activeNavigation: null, rail: "collapsed", drawerOpen: false, session: { status: "authenticated" } },
+      model: {
+        activeNavigation: null,
+        rail: "collapsed",
+        drawerOpen: false,
+        session: { status: "authenticated", accountKey: "fixture-account-key" },
+      },
       ...links,
       accountHref: null,
       invitationHref: null,
@@ -118,7 +123,7 @@ describe("createStudioShellController", () => {
       getData: () => ({
         activeNavigation: "projects",
         rail: "expanded",
-        session: { status },
+        session: status === "authenticated" ? { status, accountKey: "fixture-account-key" } : { status },
         ...accountLinks,
       }),
       allowNativeLogout: true,

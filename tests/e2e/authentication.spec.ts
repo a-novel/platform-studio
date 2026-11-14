@@ -50,6 +50,19 @@ async function endSessionCheckWindow(context: BrowserContext) {
   await context.clearCookies({ name: "__Host-studio_session_checked" });
 }
 
+/**
+ * Waits for the sweeps a first visit to the projects runs. Each goes through Studio's server, whose session check
+ * can mark the session checked again, so a journey that ends the check window waits for them first.
+ */
+function firstSweeps(page: Page): Promise<unknown> {
+  const parts = ["fields", "edits", "logos"];
+  return Promise.all(
+    parts.map((part) =>
+      page.waitForResponse((response) => new URL(response.url()).pathname === `/projects/sync/${part}`)
+    )
+  );
+}
+
 async function authenticationResponds(): Promise<boolean> {
   try {
     return (await fetch("http://127.0.0.1:14100/v2/ping")).ok;
@@ -241,7 +254,9 @@ test("an authentication outage preserves the session and recovers after reload",
   account,
   isMobile,
 }, info) => {
+  const swept = firstSweeps(page);
   await signIn(page, account);
+  await swept;
 
   await endSessionCheckWindow(context);
   const cookies = await context.cookies();

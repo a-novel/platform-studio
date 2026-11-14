@@ -48,6 +48,8 @@ function sentRequest() {
 }
 
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
+// The SHA-256 of the user ID, which names the account's browser database in place of the ID.
+const accountKey = createHash("sha256").update(userId).digest("hex");
 
 /** Signs an access token as JSON keys does for Authentication, with the given key. */
 async function signAccessToken(privateKey: CryptoKey, claims: object): Promise<string> {
@@ -119,14 +121,16 @@ describe("Studio session at the request boundary", () => {
     expect(fetchProfile).not.toHaveBeenCalled();
   });
 
-  it("exposes only a verified display identity to the browser", async () => {
+  it("exposes only a verified display identity to the browser, with a key that hides the user ID", async () => {
     const { event } = request("/account", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
     fetchService.mockResolvedValueOnce(Response.json(identity));
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    const data = await loadStudioShell(event);
+    expect(JSON.stringify(data)).not.toContain(userId);
+    expect(data).toEqual({
       activeNavigation: null,
       rail: "expanded",
       ...accountLinks,
-      session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
+      session: { status: "authenticated", displayName: "Maya Chen", initials: "MC", accountKey },
       authorization: "allowed",
     });
     expect(fetchService).toHaveBeenCalledOnce();
@@ -204,6 +208,7 @@ describe("Studio session at the request boundary", () => {
       ...accountLinks,
       session: {
         status: "authenticated",
+        accountKey,
         displayName: "Maya",
         initials: "MC",
         picture: `https://account.test/profile/picture/${profile.id}?v=2026-11-04T08%3A15%3A30.123456Z`,
@@ -228,7 +233,7 @@ describe("Studio session at the request boundary", () => {
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
-      session: { status: "authenticated", displayName: "Maya Chen", initials: "MC" },
+      session: { status: "authenticated", displayName: "Maya Chen", initials: "MC", accountKey },
       authorization: "allowed",
     });
   });
@@ -261,7 +266,7 @@ describe("Studio session at the request boundary", () => {
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
-      session: { status: "authenticated", displayName: "Maya" },
+      session: { status: "authenticated", displayName: "Maya", accountKey },
       authorization: "allowed",
     });
   });

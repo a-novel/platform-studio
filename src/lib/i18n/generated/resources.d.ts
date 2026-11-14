@@ -249,8 +249,13 @@ export default interface Resources {
         "youngAdult": "Young adult",
         "zombies": "Zombies"
       },
+      "loading": "Loading your projects",
       "loadingMore": "Loading more projects",
       "new": "Create",
+      "noScript": {
+        "description": "Turn on JavaScript in your browser, then reload this page.",
+        "title": "Your projects need JavaScript"
+      },
       "row": {
         "created": "Created {{when}}",
         "edited": "Edited {{when}}"

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { relayApi } from "#lib/client/projects/api.js";
+  import { createProjectsSync, setProjectsSync } from "#lib/client/projects/sync.svelte.js";
   import { retryWhile } from "#lib/client/retry.svelte.js";
   import { getStudioDowntime } from "#lib/ui/downtime.svelte.js";
   import { hasTelemetryPreference } from "#lib/ui/telemetry-preference.js";
@@ -36,6 +38,15 @@
     // Every Agora app under the shared domain opens with the rail the visitor left.
     onRailChange: (rail) => saveNavigationRail(rail, { domain: PUBLIC_PLATFORM_DOMAIN }),
   });
+
+  // The account's projects sync for the whole app, so a soft navigation keeps their schedule.
+  setProjectsSync(
+    createProjectsSync(
+      () => data.session,
+      relayApi,
+      () => invalidate(shellSessionData)
+    )
+  );
 
   retryWhile(
     () => data.session.status === "loading",

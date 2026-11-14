@@ -75,4 +75,48 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   await expect(dialog).toBeHidden();
   await expectRows(page, ["Salt", "Les Heures claires"]);
   await screenshot(page, info, "projects");
+
+  // The browser keeps the projects, and the next load shows them as the narrative engine holds them.
+  await page.reload();
+  await expectRows(page, ["Salt", "Les Heures claires"]);
+});
+
+test("a project saved in one tab shows at once in the others, and in another browser once it signs in", async ({
+  page,
+  account,
+  browser,
+}, info) => {
+  await signIn(page, account);
+  const welcome = "A home for your stories…";
+  await expect(page.getByRole("heading", { name: welcome })).toBeVisible();
+  const tab = await page.context().newPage();
+  await tab.goto(home);
+  await expect(tab.getByRole("heading", { name: welcome })).toBeVisible();
+
+  await page.getByRole("button", { name: "Start crafting now", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "New project" });
+  await dialog.getByRole("textbox", { name: "Title" }).fill("Salt");
+  await dialog.getByLabel("Logo", { exact: true }).setInputFiles(logo);
+  await dialog.getByRole("button", { name: "Create project", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expectRows(tab, ["Salt"]);
+
+  // Another browser holds nothing yet: its first sweeps bring the project, then its logo.
+  const { baseURL, extraHTTPHeaders } = info.project.use;
+  const elsewhere = await browser.newContext({ baseURL, extraHTTPHeaders });
+  const other = await elsewhere.newPage();
+  await signIn(other, account);
+  await expectRows(other, ["Salt"]);
+  await expect.poll(() => loaded(other.getByRole("article", { name: "Salt" }).locator("img"))).toBe(true);
+  await elsewhere.close();
+});
+
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("the projects page says the list needs JavaScript", async ({ page, account }) => {
+    await signIn(page, account);
+
+    await expect(page.getByRole("heading", { name: "Your projects need JavaScript", level: 2 })).toBeVisible();
+  });
 });

@@ -11,7 +11,10 @@ function event(parent: Partial<ParentData>): PrivacyEvent {
 
 describe("public privacy page", () => {
   it("sends a logged-in visitor to the account's privacy tab", async () => {
-    const parent = { session: { status: "authenticated" }, accountHref: "https://account.test/account" } as const;
+    const parent = {
+      session: { status: "authenticated", accountKey: "fixture-account-key" },
+      accountHref: "https://account.test/account",
+    } as const;
 
     await expect(loadPrivacy(event(parent))).rejects.toMatchObject({
       status: 307,
@@ -25,7 +28,10 @@ describe("public privacy page", () => {
       "a visitor whose session cannot be checked",
       { session: { status: "loading" }, accountHref: "https://account.test/account" },
     ],
-    ["a server without the account platform's address", { session: { status: "authenticated" }, accountHref: null }],
+    [
+      "a server without the account platform's address",
+      { session: { status: "authenticated", accountKey: "fixture-account-key" }, accountHref: null },
+    ],
   ] as const)("shows the public page to %s", async (_, parent) => {
     await expect(loadPrivacy(event(parent))).resolves.toBeUndefined();
   });

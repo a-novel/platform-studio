@@ -1,6 +1,7 @@
+import type { StoredProject } from "#lib/client/projects/database.js";
+
 import type { ProjectColumns } from "./columns";
 import { LOGO_REMOVED_FIELD } from "./project-form";
-import { unseenRows } from "./rows";
 
 import {
   type ChipGroupController,
@@ -33,17 +34,23 @@ export interface ProjectRow {
   logo?: string;
 }
 
-/** The writer's projects as the page loaded them, or why it could not. */
+/** How many projects the list shows at first, and adds each time the writer nears its end. */
+export const PROJECTS_PAGE = 20;
+
+/** The writer's projects as the browser database holds them, or where reading them stands. */
 export type ProjectsModel =
+  /** The page before it runs in the browser, which tells a browser without JavaScript that the list needs it. */
+  | { status: "starting" }
+  /** The browser is opening its database, or reading the projects for the first time. */
+  | { status: "loading" }
   | {
       status: "ready";
-      /** When the server read the projects, which their ages count from. */
+      /** When the browser read the projects, which their ages count from. */
       now: Date;
-      /** The first page, most recently edited first. */
+      /** Every project of the writer, most recently edited first. */
       projects: ProjectRow[];
-      /** How many projects the writer holds in all. */
-      total: number;
     }
+  /** The browser could not read the projects for the first time. */
   | { status: "unavailable" }
   | { status: "rate-limited" };
 
@@ -62,13 +69,15 @@ export type SaveFeedback = "projectsFull" | "notFound" | "tooManyAttempts" | "se
 /** The rule a logo broke: the browser could not read it, or the narrative engine refused it. */
 export type LogoRefusal = "unreadable" | "format" | "dimensions" | "tooLarge";
 
-/** What the save action answered. */
+/**
+ * What the save action answered. A result names the project it saved, which the browser database takes at once and
+ * the next save updates, even when its logo then failed.
+ */
 export type SaveResult =
-  | { status: "saved"; projectID: string }
+  | { status: "saved"; project: StoredProject }
   | { status: "invalid"; issues: ProjectIssue[] }
-  /** A project the save created before it failed is named, so the next save finishes it. */
-  | { status: "failed"; feedback: SaveFeedback; projectID?: string }
-  | { status: "logo-refused"; projectID: string; refusal: LogoRefusal };
+  | { status: "failed"; feedback: SaveFeedback; project?: StoredProject }
+  | { status: "logo-refused"; project: StoredProject; refusal: LogoRefusal };
 
 /** The project's logo, as the dialog changes it. */
 export type LogoDraft =
@@ -98,17 +107,17 @@ export interface ProjectEditor {
 
 /** State rendered by the projects screen. */
 export interface ProjectsControllerState {
-  model: ProjectsModel | null;
+  model: ProjectsModel;
   /** The open dialog, or null while it is closed. */
   editor: ProjectEditor | null;
   /** Loads the page again, after an outage. */
   retryHref: string;
   /** The columns the writer chose, which a page too narrow for them reduces. */
   columns: ProjectColumns;
-  /** The pages of projects shown, the model's own first, each laid out on its own; empty until it is ready. */
+  /** The pages of projects shown, each laid out on its own; empty until the model is ready. */
   pages: ProjectRow[][];
-  /** Whether more projects remain to load, and whether the next page is loading. */
-  more: "idle" | "loading" | "done";
+  /** Whether projects remain past the pages shown. */
+  more: boolean;
 }
 
 /** Pure state and transitions consumed by the projects screen. */
@@ -122,8 +131,8 @@ export interface ProjectsController {
   readonly genreChips: ChipGroupController;
   /** Collects the project's tags in the dialog. */
   readonly tagInput: TagInputController;
-  /** Loads the next page of projects, unless one is loading or none remains. */
-  loadMore(): Promise<void>;
+  /** Shows the next page of projects, when one remains. */
+  loadMore(): void;
   /** Lays the projects out in this many columns. */
   setColumns(columns: ProjectColumns): void;
   /** Opens the dialog on a new project. */
@@ -138,8 +147,8 @@ export interface ProjectsController {
 
 /** Configuration for the default projects controller. */
 export interface ProjectsControllerOptions {
-  /** The page's load data, which each save reloads. */
-  getModel: () => ProjectsModel | null;
+  /** The projects the browser database holds, which each sweep and save writes. */
+  getModel: () => ProjectsModel;
   /** The language a new project starts in: the visitor's own. */
   defaultLanguage: Language;
   retryHref: string;
@@ -147,10 +156,8 @@ export interface ProjectsControllerOptions {
   initialColumns: ProjectColumns;
   /** Keeps the columns the writer chooses for the next visit. */
   onColumnsChange?: (columns: ProjectColumns) => void;
-  /** Submits the save action, and reloads the page's data once a project saved. */
+  /** Submits the save action, and writes the project it saved to the browser database. */
   submit: (form: FormData) => Promise<SaveResult>;
-  /** Fetches the projects after the first `offset`, trying again until it can. Rejects once the page is gone. */
-  fetchPage: (offset: number) => Promise<ProjectRow[]>;
   /** Decodes and encodes pictures; the browser's canvas by default. */
   pictures?: WholePictureFiles;
   /** Shows a chosen logo before it saves; the browser's object URLs by default. */
@@ -176,7 +183,6 @@ export function createProjectsController({
   initialColumns,
   onColumnsChange,
   submit,
-  fetchPage,
   pictures = browserPictureFiles,
   previews = browserPreviews,
 }: ProjectsControllerOptions): ProjectsController {
@@ -188,43 +194,21 @@ export function createProjectsController({
   const languageSelect = createSelectController<Language>({ initialValue: defaultLanguage });
   let genreChips = $state(createGenreChips());
   let tagInput = $state(createTagInputController());
-  // The pages loaded after the model's own, for the model they follow: a reload starts the list over.
-  let loaded = $state.raw<{ model: ProjectsModel; pages: ProjectRow[][]; loading: boolean; exhausted: boolean }>();
+  // How many pages the list shows. The projects change under it, as sweeps and saves write them.
+  let pageCount = $state(1);
 
-  const pages = $derived.by(() => {
+  const rows = $derived.by(() => {
     const model = getModel();
-    if (model?.status !== "ready") return [];
-    return loaded?.model === model ? [model.projects, ...loaded.pages] : [model.projects];
+    return model.status === "ready" ? model.projects : [];
   });
-  const shown = $derived(pages.flat());
-  const more = $derived.by(() => {
-    const model = getModel();
-    if (model?.status !== "ready") return "done";
-    const own = loaded?.model === model ? loaded : undefined;
-    if (own?.loading) return "loading";
-    return own?.exhausted || shown.length >= model.total ? "done" : "idle";
-  });
+  const pages = $derived(
+    Array.from({ length: Math.min(pageCount, Math.ceil(rows.length / PROJECTS_PAGE)) }, (_, index) =>
+      rows.slice(index * PROJECTS_PAGE, (index + 1) * PROJECTS_PAGE)
+    )
+  );
+  const more = $derived(rows.length > pageCount * PROJECTS_PAGE);
 
   const state = $derived<ProjectsControllerState>({ model: getModel(), editor, retryHref, columns, pages, more });
-
-  async function loadMore() {
-    const model = getModel();
-    if (model?.status !== "ready" || more !== "idle") return;
-    const own = loaded?.model === model ? loaded : { model, pages: [], loading: false, exhausted: false };
-    const before = shown;
-    loaded = { ...own, loading: true };
-
-    const rows = await fetchPage(before.length).catch(() => null);
-    if (!rows || getModel() !== model) return;
-
-    const fresh = unseenRows(before, rows);
-    loaded = {
-      model,
-      pages: fresh.length > 0 ? [...own.pages, fresh] : own.pages,
-      loading: false,
-      exhausted: rows.length === 0,
-    };
-  }
 
   function update(change: Partial<ProjectEditor>) {
     if (editor) editor = { ...editor, ...change };
@@ -310,7 +294,9 @@ export function createProjectsController({
     get tagInput() {
       return tagInput;
     },
-    loadMore,
+    loadMore() {
+      if (more) pageCount += 1;
+    },
     setColumns(next) {
       columns = next;
       onColumnsChange?.(next);
@@ -337,7 +323,7 @@ export function createProjectsController({
       if (opened !== opening) return;
       if (result.status === "saved") return close();
 
-      const savedID = "projectID" in result && result.projectID ? result.projectID : (editor?.savedID ?? null);
+      const savedID = "project" in result && result.project ? result.project.id : (editor?.savedID ?? null);
       const logoRefusal = result.status === "logo-refused" ? result.refusal : (editor?.logoRefusal ?? null);
       update({ saving: false, failure: result, savedID, logoRefusal });
     },

@@ -14,7 +14,7 @@ const shell: StudioShellViewModel = {
   activeNavigation: "projects",
   drawerOpen: true,
   rail: "expanded",
-  session: { status: "authenticated" },
+  session: { status: "authenticated", accountKey: "fixture-account-key" },
 };
 
 describe("fixed visual review controllers", () => {

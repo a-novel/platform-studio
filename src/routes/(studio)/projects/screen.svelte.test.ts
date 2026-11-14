@@ -1,10 +1,11 @@
 import { withLocale } from "#lib/i18n/provider.fixture.js";
 
-import { type ProjectsModel, createProjectsController } from "./controller.svelte";
+import { PROJECTS_PAGE, type ProjectsModel, createProjectsController } from "./controller.svelte";
 import {
   chosenLogo,
   fixedProjectsController,
   harbor,
+  manyProjects,
   newProjectEditor,
   notebooks,
   now,
@@ -20,7 +21,7 @@ import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
 import { Language } from "@a-novel/service-narrative-engine-rest";
 
-const ready = { status: "ready", now, projects, total: projects.length } as const;
+const ready = { status: "ready", now, projects } as const;
 
 describe("projects screen", () => {
   it("starts the title as high without projects as over a list of them", async () => {
@@ -35,7 +36,7 @@ describe("projects screen", () => {
       return offset;
     }
 
-    const empty: ProjectsModel = { status: "ready", now, projects: [], total: 0 };
+    const empty: ProjectsModel = { status: "ready", now, projects: [] };
     expect(await titleOffset(empty)).toBeCloseTo(await titleOffset(ready), 0);
   });
 
@@ -78,14 +79,41 @@ describe("projects screen", () => {
 
   it("counts the projects shown out of every project, and asks for the next page once the end comes near", async () => {
     const spy = vi.fn();
-    const model: ProjectsModel = { ...ready, total: 41 };
-    render(ProjectsScreen, { controller: fixedProjectsController({ model, more: "idle" }, spy) }, withLocale());
+    const controller = fixedProjectsController({ model: ready, pages: [projects.slice(0, 2)], more: true }, spy);
+    render(ProjectsScreen, { controller }, withLocale());
 
-    await expect.element(page.getByText(`${ready.projects.length} / 41 projects`)).toBeVisible();
+    await expect.element(page.getByText(`2 / ${projects.length} projects`)).toBeVisible();
     const loader = page.getByText("Loading more projects");
     await expect.element(loader).toBeInTheDocument();
     loader.element().scrollIntoView();
     await expect.poll(() => spy.mock.calls).toContainEqual(["loadMore"]);
+  });
+
+  it("shows page after page as the writer scrolls, until every project shows", async () => {
+    const rows = manyProjects(2 * PROJECTS_PAGE + 3);
+    const controller = createProjectsController({
+      getModel: () => ({ status: "ready", now, projects: rows }),
+      defaultLanguage: Language.En,
+      retryHref: "/projects",
+      initialColumns: 1,
+      submit: vi.fn(),
+    });
+    render(ProjectsScreen, { controller }, withLocale());
+
+    const cards = page.getByRole("article");
+    await expect.poll(() => cards.elements().length).toBe(PROJECTS_PAGE);
+    for (const shown of [2 * PROJECTS_PAGE, rows.length]) {
+      page.getByText("Loading more projects").element().scrollIntoView();
+      await expect.poll(() => cards.elements().length).toBe(shown);
+    }
+    await expect.element(page.getByText("Loading more projects")).not.toBeInTheDocument();
+  });
+
+  it("says the projects are loading while the browser reads them for the first time", async () => {
+    render(ProjectsScreen, { controller: fixedProjectsController({ model: { status: "loading" } }) }, withLocale("fr"));
+
+    await expect.element(page.getByRole("heading", { name: "Chargement de vos projets", level: 2 })).toBeVisible();
+    await expect.element(page.getByRole("button", { name: "Commencer à créer" })).not.toBeInTheDocument();
   });
 
   it("keeps each card at the long readable measure, centered, on a wide screen", async () => {
@@ -122,7 +150,7 @@ describe("projects screen", () => {
 
   it("invites a writer without projects to create the first one", async () => {
     const spy = vi.fn();
-    const empty: ProjectsModel = { status: "ready", now, projects: [], total: 0 };
+    const empty: ProjectsModel = { status: "ready", now, projects: [] };
     render(ProjectsScreen, { controller: fixedProjectsController({ model: empty }, spy) }, withLocale("fr"));
 
     await expect.element(page.getByRole("heading", { name: "Un foyer pour vos histoires…" })).toBeVisible();
@@ -196,7 +224,6 @@ describe("projects screen", () => {
       retryHref: "/projects",
       initialColumns: 1,
       submit: vi.fn(),
-      fetchPage: vi.fn(async () => []),
     });
     const errors: unknown[] = [];
     const collect = (event: ErrorEvent) => errors.push(event.error);

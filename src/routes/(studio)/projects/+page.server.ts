@@ -1,12 +1,12 @@
 import { signInHref } from "#lib/application/auth/navigation.js";
+import type { StoredProject } from "#lib/client/projects/database.js";
 import { requireAuthorization } from "#lib/server/auth/authorization.js";
 import { getNarrativeEngine } from "#lib/server/narrative-engine/context.js";
 
 import type { Actions, PageServerLoad } from "./$types";
 import { PROJECT_COLUMNS_COOKIE, parseProjectColumns } from "./columns";
-import type { LogoRefusal, ProjectsModel, SaveFeedback, SaveResult } from "./controller.svelte";
+import type { LogoRefusal, SaveFeedback, SaveResult } from "./controller.svelte";
 import { readProjectForm } from "./project-form";
-import { PROJECTS_PAGE, projectRow } from "./rows";
 
 import { isHttpStatusError, isHttpError as isServiceError } from "@a-novel-kit/nodelib-browser/http";
 import {
@@ -14,7 +14,6 @@ import {
   PictureRefusal,
   type Project,
   projectCreate,
-  projectList,
   projectLogoDelete,
   projectLogoUpdate,
   projectUpdate,
@@ -23,34 +22,20 @@ import {
 import { fail, isHttpError, isRedirect, redirect } from "@sveltejs/kit";
 
 /**
- * Lists the first page of the writer's projects, most recently edited first, with how many they hold in all. A
- * visitor without an account goes straight to the sign-in, and comes back here once signed in.
+ * Reads the columns the writer chose. The browser lists the projects from its own database. A visitor without an
+ * account goes straight to the sign-in, and comes back here once signed in.
  */
 export const load: PageServerLoad = async (event) => {
   const { session } = await event.parent();
   if (session.status === "anonymous") redirect(307, signInHref(event.url.pathname + event.url.search));
-  // An outage leaves the page to the layout's authorization, which says the session cannot be checked.
-  const columns = parseProjectColumns(event.cookies.get(PROJECT_COLUMNS_COOKIE));
-  if (session.status !== "authenticated") return { projects: null, columns };
 
-  const { session: account } = await requireAuthorization(event);
-  try {
-    const page = await projectList(getNarrativeEngine(event), account.accessToken, { limit: PROJECTS_PAGE });
-    const projects = page.projects.map(projectRow);
-    return {
-      columns,
-      projects: { status: "ready", now: new Date(), projects, total: page.total } satisfies ProjectsModel,
-    };
-  } catch (error) {
-    const status = isHttpStatusError(error, 429) ? "rate-limited" : "unavailable";
-    return { columns, projects: { status } satisfies ProjectsModel };
-  }
+  return { columns: parseProjectColumns(event.cookies.get(PROJECT_COLUMNS_COOKIE)) };
 };
 
 export const actions = {
   /**
-   * Creates the project, or updates the one the form names, then sets or removes its logo. A
-   * refused logo leaves the saved fields in place, so the next save finishes the project.
+   * Creates the project, or updates the one the form names, then sets or removes its logo, and returns the project
+   * as it saved. A refused logo leaves the saved fields in place, so the next save finishes the project.
    */
   save: async (event) => {
     const input = readProjectForm(await event.request.formData());
@@ -72,10 +57,10 @@ export const actions = {
         throw error;
       }
 
-      const refused = await saveLogo(api, session.accessToken, project.id, logo);
-      if (refused) return fail(refused.status, { save: refused.result });
+      const logoSaved = await saveLogo(api, session.accessToken, project, logo);
+      if ("result" in logoSaved) return fail(logoSaved.status, { save: logoSaved.result });
 
-      return { save: { status: "saved", projectID: project.id } satisfies SaveResult };
+      return { save: { status: "saved", project: storedProject(logoSaved) } satisfies SaveResult };
     } catch (error) {
       if (isRedirect(error) || isHttpError(error)) throw error;
 
@@ -89,31 +74,41 @@ function failed(feedback: SaveFeedback) {
   return { save: { status: "failed", feedback } satisfies SaveResult };
 }
 
-/** Sets or removes the logo of the project a save just wrote, and says why it could not. */
+/** Sets or removes the logo of the project a save just wrote, and returns the project with its logo, or why it could not. */
 async function saveLogo(
   api: NarrativeEngineApi,
   accessToken: string,
-  projectID: string,
+  project: Project,
   logo: File | "remove" | undefined
-): Promise<{ status: number; result: SaveResult } | undefined> {
-  const request = { projectID };
+): Promise<Project | { status: number; result: SaveResult }> {
+  const request = { projectID: project.id };
   try {
-    if (logo === "remove") await projectLogoDelete(api, accessToken, request).catch(ignoreMissing);
-    else if (logo) await projectLogoUpdate(api, accessToken, request, logo);
+    if (logo === "remove") return await projectLogoDelete(api, accessToken, request).catch(keepMissing(project));
+    if (logo) return await projectLogoUpdate(api, accessToken, request, logo);
+    return project;
   } catch (error) {
+    const saved = storedProject(project);
     if (isHttpStatusError(error, 400, 413, 422)) {
-      return { status: 422, result: { status: "logo-refused", projectID, refusal: refusal(error) } };
+      return { status: 422, result: { status: "logo-refused", project: saved, refusal: refusal(error) } };
     }
 
     const { status, feedback } = serviceFeedback(error);
-    return { status, result: { status: "failed", feedback, projectID } };
+    return { status, result: { status: "failed", feedback, project: saved } };
   }
-
-  return undefined;
 }
 
-function ignoreMissing(error: unknown): void {
-  if (!isHttpStatusError(error, 404)) throw error;
+/** Lets the save stand for a project deleted since it saved, without a logo: the next fields sweep drops it. */
+function keepMissing(project: Project) {
+  return (error: unknown): Project => {
+    if (!isHttpStatusError(error, 404)) throw error;
+    return { ...project, logoChecksum: undefined };
+  };
+}
+
+/** Turns a saved project into the record the browser database takes, without its layers or logo version. */
+function storedProject(project: Project): StoredProject {
+  const { id, title, premise, language, tags, genres, createdAt, updatedAt, editedAt, logoChecksum } = project;
+  return { id, title, premise, language, tags, genres, createdAt, updatedAt, editedAt, logoChecksum };
 }
 
 /** Reads the rule a refused logo broke from the service's problem tags. The router answers 413 for a body past its own limit. */
