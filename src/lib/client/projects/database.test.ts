@@ -66,6 +66,20 @@ describe("applyChange", () => {
     expect(applyChange([held], change)).toEqual({ put: [], remove: [] });
   });
 
+  it("keeps a later editedAt than newer fields bring, which the edits sweep wrote meanwhile", () => {
+    const fields = {
+      ...held,
+      title: "Salt",
+      updatedAt: new Date(held.updatedAt.getTime() + 1),
+      editedAt: new Date(held.editedAt.getTime() - 1),
+      logoChecksum: undefined,
+    };
+
+    expect(applyChange([held], { fields: [fields] }).put).toEqual([
+      { ...fields, editedAt: held.editedAt, logoChecksum: held.logoChecksum },
+    ]);
+  });
+
   it("drops the projects removed, and ignores an ID it does not hold", () => {
     expect(applyChange([held, other], { edits: { [held.id]: new Date() }, removed: [held.id, "gone"] })).toEqual({
       put: [],

@@ -1,3 +1,5 @@
+import { telemetry } from "#lib/client/telemetry.js";
+
 import { type StoredProject, projectsDatabaseName } from "./database";
 import type { SweepApi } from "./scheduler";
 import { type ProjectsSync, type ProjectsVisitor, createProjectsSync } from "./sync.svelte";
@@ -121,6 +123,25 @@ describe("createProjectsSync", () => {
 
     visitor = { status: "anonymous" };
     await expect.poll(databaseNames).toEqual([]);
+  });
+
+  it("stops following a browser database another tab deletes, and keeps showing what it held", async () => {
+    const account = newAccount();
+    const { sync } = openTab(() => account, harborApi());
+    await expect.poll(() => sync.state.status).toBe("ready");
+    vi.mocked(telemetry.captureError).mockClear();
+
+    // The deletion waits for every connection, so it completes only once this tab let go of its own.
+    await new Promise((resolve, reject) => {
+      const deletion = indexedDB.deleteDatabase(projectsDatabaseName(account.accountKey));
+      deletion.onsuccess = resolve;
+      deletion.onerror = () => reject(deletion.error);
+    });
+    await sync.save(salt);
+
+    expect(sync.state).toMatchObject({ status: "ready", projects: [harbor] });
+    expect(await databaseNames()).toEqual([]);
+    expect(telemetry.captureError).not.toHaveBeenCalled();
   });
 
   it.each([

@@ -87,12 +87,18 @@ export function createProjectsSync(getVisitor: () => ProjectsVisitor, api: Sweep
     };
   });
 
-  /** Shows the browser database `name` and keeps it in step, until `signal` aborts. */
-  async function follow(name: string, signal: AbortSignal) {
+  /**
+   * Shows the browser database `name` and keeps it in step, until `following` aborts or another tab deletes the
+   * database. A deleted database stops the sweeps and the saves, and the page keeps what it showed until its next
+   * load.
+   */
+  async function follow(name: string, following: AbortSignal) {
     state = { status: "loading" };
+    const deleted = new AbortController();
+    const signal = AbortSignal.any([following, deleted.signal]);
     let database: ProjectsDatabase;
     try {
-      database = await openProjectsDatabase(name);
+      database = await openProjectsDatabase(name, () => deleted.abort());
     } catch (error) {
       report(error);
       if (!signal.aborted) state = { status: "unavailable" };
@@ -122,7 +128,8 @@ export function createProjectsSync(getVisitor: () => ProjectsVisitor, api: Sweep
       visible: () => document.visibilityState === "visible",
       onWrite: written,
       onFailure(part, error) {
-        if (!isHttpError(error)) report(error);
+        // A browser offline, or just woken before its network, fails each sweep with no fault to report.
+        if (!isHttpError(error) && navigator.onLine) report(error);
         if (part === "fields" && state.status !== "ready") {
           state = { status: isHttpStatusError(error, 429) ? "rate-limited" : "unavailable" };
         }
@@ -146,6 +153,7 @@ export function createProjectsSync(getVisitor: () => ProjectsVisitor, api: Sweep
       sweeps.stop();
       channel.close();
       database.close();
+      writeSaved = undefined;
     });
 
     // A visit after the first shows what the database holds while the sweeps run.

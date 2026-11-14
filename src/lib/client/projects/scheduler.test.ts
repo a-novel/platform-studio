@@ -105,7 +105,7 @@ afterEach(() => {
 });
 
 describe("startSweeps", () => {
-  it("brings the fields first on a hard load, then the edits and the logos, each in its own lock", async () => {
+  it("brings the fields first on a hard load, then the logos of the projects they brought, then the edits", async () => {
     const { database, api, locks, onWrite } = sweeps();
     await settle();
 
@@ -114,8 +114,27 @@ describe("startSweeps", () => {
     expect(api.fieldsDrift).toHaveBeenCalledExactlyOnceWith({});
     expect(api.logosDrift).toHaveBeenCalledExactlyOnceWith({});
     expect(api.fieldsDrift.mock.invocationCallOrder[0]).toBeLessThan(api.editsList.mock.invocationCallOrder[0]!);
-    expect(locks).toEqual([`${name}:fields`, `${name}:edits`, `${name}:logo`]);
+    // The hard load's own logo sweep finds it ran within its period, and skips.
+    expect(locks).toEqual([`${name}:fields`, `${name}:logo`, `${name}:edits`, `${name}:logo`]);
     expect(onWrite).toHaveBeenCalledTimes(3);
+  });
+
+  it("brings the logo of a project created elsewhere at once, without waiting for the logo period", async () => {
+    const { database, api } = sweeps();
+    await settle();
+
+    account = [...account, project(3, checksum)];
+    api.editsList.mockImplementation(async () => ({
+      edits: Object.fromEntries(account.map((stored) => [stored.id, stored.editedAt])),
+    }));
+    const elsewhere = fakeApi(account);
+    api.fieldsDrift.mockImplementation(elsewhere.fieldsDrift);
+    api.logosDrift.mockImplementation(elsewhere.logosDrift);
+    vi.advanceTimersByTime(minute);
+    await settle();
+
+    expect(api.logosDrift).toHaveBeenCalledTimes(2);
+    expect(database.projects.find(({ id }) => id === account[2]!.id)?.logoChecksum).toBe(checksum);
   });
 
   it("runs the fields and edits sweeps whatever their last run, and the logo sweep once it falls due", async () => {

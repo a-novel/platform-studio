@@ -46,16 +46,16 @@ export interface Sweeps {
 /** What one sweep found: the change that brings the browser database in step. */
 interface Drift {
   change: ProjectsChange;
-  /** Set when the account holds projects the browser database lacks, or lacks projects it holds. */
-  projectsDrifted?: boolean;
+  /** The part that must sweep at once, because this one found projects the other part has not seen. */
+  next?: SweepPart;
 }
 
 /** How one run of a sweep ended. */
 interface Outcome {
   /** When the part's last sweep ran, this one or another tab's; absent after a failure. */
   last?: number;
-  /** Set when the fields sweep must run at once. */
-  projectsDrifted?: boolean;
+  /** The part that must sweep at once. */
+  next?: SweepPart;
 }
 
 /** Asks the narrative engine what drifted in each part. */
@@ -63,12 +63,14 @@ const sweepParts: Record<SweepPart, (held: ProjectsSnapshot, api: SweepApi) => P
   fields: async ({ projects }, api) => {
     const held = Object.fromEntries(projects.map(({ id, updatedAt }) => [id, updatedAt.toISOString()]));
     const answer = await api.fieldsDrift(held);
-    return { change: { fields: answer.projects, removed: answer.removed } };
+    // A project new to the browser has no logo held yet, so its logo comes at once rather than in up to 15 minutes.
+    const added = answer.projects.some(({ id }) => !Object.hasOwn(held, id));
+    return { change: { fields: answer.projects, removed: answer.removed }, next: added ? "logo" : undefined };
   },
   edits: async ({ projects }, api) => {
     const { edits } = await api.editsList();
     const same = projects.length === Object.keys(edits).length && projects.every(({ id }) => Object.hasOwn(edits, id));
-    return { change: { edits }, projectsDrifted: !same };
+    return { change: { edits }, next: same ? undefined : "fields" };
   },
   logo: async ({ projects }, api) => {
     const held = projects.flatMap(({ id, logoChecksum }) => (logoChecksum ? [[id, logoChecksum]] : []));
@@ -81,7 +83,8 @@ const sweepParts: Record<SweepPart, (held: ProjectsSnapshot, api: SweepApi) => P
 /**
  * Starts the sweeps of the browser database `name`, as a hard load does. The fields sweep runs at once, then the
  * edits sweep, whatever their last run, and the logo sweep when its last run is older than its period. Each part
- * then runs once per period while the tab shows, in one tab at a time.
+ * then runs once per period while the tab shows, in one tab at a time. Edits that show projects added or removed
+ * run the fields sweep at once, and fields that bring a project the browser lacked run the logo sweep at once.
  */
 export function startSweeps(name: string, environment: SweepEnvironment): Sweeps {
   const timers = new Map<SweepPart, ReturnType<typeof setTimeout>>();
@@ -95,10 +98,10 @@ export function startSweeps(name: string, environment: SweepEnvironment): Sweeps
     if (!force && last !== undefined && Date.now() - last < SWEEP_PERIODS[part]) return { last };
 
     const at = Date.now();
-    const { change, projectsDrifted } = await sweepParts[part](held, environment.api);
+    const { change, next } = await sweepParts[part](held, environment.api);
     await environment.database.write({ ...change, sweep: { part, at } });
     environment.onWrite();
-    return { last: at, projectsDrifted };
+    return { last: at, next };
   }
 
   async function run(part: SweepPart, force: boolean): Promise<void> {
@@ -117,7 +120,7 @@ export function startSweeps(name: string, environment: SweepEnvironment): Sweeps
       part,
       setTimeout(() => due(part), next - Date.now())
     );
-    if (outcome.projectsDrifted) await run("fields", true);
+    if (outcome.next) await run(outcome.next, true);
   }
 
   function due(part: SweepPart) {
