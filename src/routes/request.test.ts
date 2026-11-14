@@ -49,7 +49,7 @@ function sentRequest() {
 
 const userId = "140f24ee-1531-4a9d-ace8-20b38e1b21bc";
 // The SHA-256 of the user ID, which names the account's browser database in place of the ID.
-const accountKey = "03ff69fa92022962874a6083b0f267189a4f05999ec0b66cd7875e8d2fb234d7";
+const accountKey = createHash("sha256").update(userId).digest("hex");
 
 /** Signs an access token as JSON keys does for Authentication, with the given key. */
 async function signAccessToken(privateKey: CryptoKey, claims: object): Promise<string> {
