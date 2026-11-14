@@ -1,9 +1,10 @@
 import type { ProjectsChange, ProjectsDatabase, ProjectsSnapshot, SweepPart } from "./database";
 
-import type {
-  ProjectEditsListResponse,
-  ProjectFieldsDriftResponse,
-  ProjectLogosDriftResponse,
+import {
+  PROJECTS_MAX,
+  type ProjectEditsListResponse,
+  type ProjectFieldsDriftResponse,
+  type ProjectLogosDriftResponse,
 } from "@a-novel/service-narrative-engine-rest";
 
 /** How long each part waits after its last sweep before the next, in milliseconds. */
@@ -61,11 +62,17 @@ interface Outcome {
 /** Asks the narrative engine what drifted in each part. */
 const sweepParts: Record<SweepPart, (held: ProjectsSnapshot, api: SweepApi) => Promise<Drift>> = {
   fields: async ({ projects }, api) => {
-    const held = Object.fromEntries(projects.map(({ id, updatedAt }) => [id, updatedAt.toISOString()]));
+    const ids = new Set(projects.map(({ id }) => id));
+    // Past the account's cap, the browser holds a project deleted elsewhere, and the service refuses so long a map.
+    // An empty one brings every project, and the held projects it lacks are gone.
+    const full = projects.length > PROJECTS_MAX;
+    const held = full ? {} : Object.fromEntries(projects.map(({ id, updatedAt }) => [id, updatedAt.toISOString()]));
     const answer = await api.fieldsDrift(held);
+    const current = new Set(answer.projects.map(({ id }) => id));
+    const removed = full ? [...ids].filter((id) => !current.has(id)) : answer.removed;
     // A project new to the browser has no logo held yet, so its logo comes at once rather than in up to 15 minutes.
-    const added = answer.projects.some(({ id }) => !Object.hasOwn(held, id));
-    return { change: { fields: answer.projects, removed: answer.removed }, next: added ? "logo" : undefined };
+    const added = [...current].some((id) => !ids.has(id));
+    return { change: { fields: answer.projects, removed }, next: added ? "logo" : undefined };
   },
   edits: async ({ projects }, api) => {
     const { edits } = await api.editsList();

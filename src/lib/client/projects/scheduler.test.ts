@@ -3,7 +3,7 @@ import { SWEEP_PERIODS, type SweepApi, startSweeps } from "./scheduler";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Language } from "@a-novel/service-narrative-engine-rest";
+import { Language, PROJECTS_MAX } from "@a-novel/service-narrative-engine-rest";
 
 const minute = 60_000;
 const name = "projects-fixture-account-key";
@@ -182,6 +182,17 @@ describe("startSweeps", () => {
 
     expect(api.fieldsDrift).toHaveBeenCalledTimes(2);
     expect(database.projects.map(({ id }) => id)).toEqual([account[0]!.id, account[1]!.id]);
+  });
+
+  it("sends nothing past the account's cap, and drops every project held that the full answer lacks", async () => {
+    // A writer at the cap deleted a project elsewhere, then created one here: the browser holds one too many.
+    const stale = { ...project(1), id: "019a5f2e-0000-7000-8000-0000000000ff" };
+    account = Array.from({ length: PROJECTS_MAX }, (_, index) => ({ ...project(1), id: `held-${index}` }));
+    const { database, api } = sweeps(memoryDatabase({ projects: [...account, stale] }));
+    await settle();
+
+    expect(api.fieldsDrift).toHaveBeenCalledExactlyOnceWith({});
+    expect(database.projects.map(({ id }) => id)).toEqual(account.map(({ id }) => id));
   });
 
   it("holds the sweeps while the tab is hidden, and runs those overdue once it shows", async () => {

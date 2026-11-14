@@ -51,11 +51,20 @@ function newAccount(): ProjectsVisitor & { status: "authenticated" } {
 /** Follows the visitor as a tab of Studio would, until `close` or the end of the test. */
 function openTab(getVisitor: () => ProjectsVisitor, api: SweepApi) {
   let sync: ProjectsSync | undefined;
+  const refreshVisitor = vi.fn(async () => undefined);
   const close = $effect.root(() => {
-    sync = createProjectsSync(getVisitor, api);
+    sync = createProjectsSync(getVisitor, api, refreshVisitor);
   });
   onTestFinished(close);
-  return { sync: sync!, close };
+  return { sync: sync!, close, refreshVisitor };
+}
+
+/** Completes an IndexedDB request. */
+function completed(request: IDBRequest): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
 }
 
 async function databaseNames(): Promise<string[]> {
@@ -125,22 +134,37 @@ describe("createProjectsSync", () => {
     await expect.poll(databaseNames).toEqual([]);
   });
 
-  it("stops following a browser database another tab deletes, and keeps showing what it held", async () => {
+  it("follows the account's database again once another tab deletes it, and shows a save made since", async () => {
     const account = newAccount();
-    const { sync } = openTab(() => account, harborApi());
+    const api = harborApi();
+    const { sync, refreshVisitor } = openTab(() => account, api);
+    await expect.poll(() => sync.state.status).toBe("ready");
+
+    // A sign-out in another tab deletes every projects database; this tab reads the session again before it follows.
+    await completed(indexedDB.deleteDatabase(projectsDatabaseName(account.accountKey)));
+    await expect.poll(() => api.fieldsDrift.mock.calls.length).toBe(2);
+    expect(refreshVisitor).toHaveBeenCalledOnce();
+    await expect.poll(() => sync.state.status).toBe("ready");
+
+    await sync.save(salt);
+    await expect
+      .poll(() => sync.state.status === "ready" && sync.state.projects.map(({ id }) => id).sort())
+      .toEqual([harbor.id, salt.id].sort());
+  });
+
+  it("keeps showing what it held when a newer Studio upgrades the database, without following it again", async () => {
+    const account = newAccount();
+    const { sync, refreshVisitor } = openTab(() => account, harborApi());
     await expect.poll(() => sync.state.status).toBe("ready");
     vi.mocked(telemetry.captureError).mockClear();
 
-    // The deletion waits for every connection, so it completes only once this tab let go of its own.
-    await new Promise((resolve, reject) => {
-      const deletion = indexedDB.deleteDatabase(projectsDatabaseName(account.accountKey));
-      deletion.onsuccess = resolve;
-      deletion.onerror = () => reject(deletion.error);
-    });
+    // Following again would hit the newer version and delete it, which the newer tab would delete in turn.
+    const upgraded = (await completed(indexedDB.open(projectsDatabaseName(account.accountKey), 2))) as IDBDatabase;
+    upgraded.close();
     await sync.save(salt);
 
+    expect(refreshVisitor).not.toHaveBeenCalled();
     expect(sync.state).toMatchObject({ status: "ready", projects: [harbor] });
-    expect(await databaseNames()).toEqual([]);
     expect(telemetry.captureError).not.toHaveBeenCalled();
   });
 

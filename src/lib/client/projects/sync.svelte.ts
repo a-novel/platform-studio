@@ -55,11 +55,18 @@ export const [getProjectsSync, setProjectsSync] = createContext<ProjectsSync>();
 
 /**
  * Follows the visitor's account: it drops every other account's browser database, then sweeps the account's own.
- * A visitor signed out drops them all, and a session that cannot be checked leaves them as they are. Call it
- * during component initialization; the sweeps stop with the component.
+ * A visitor signed out drops them all, and a session that cannot be checked leaves them as they are. When another
+ * tab deletes the database followed, `refreshVisitor` reads the session again, and the sync follows the account it
+ * names anew. Call it during component initialization; the sweeps stop with the component.
  */
-export function createProjectsSync(getVisitor: () => ProjectsVisitor, api: SweepApi): ProjectsSync {
+export function createProjectsSync(
+  getVisitor: () => ProjectsVisitor,
+  api: SweepApi,
+  refreshVisitor: () => Promise<unknown>
+): ProjectsSync {
   let state = $state.raw<ProjectsSyncState>({ status: "starting" });
+  // Counts the restarts after another tab deleted the database followed: each follows the account again.
+  let restarts = $state(0);
   // Writes a saved project to the database followed, while one is.
   let writeSaved: ((project: StoredProject) => Promise<void>) | undefined;
 
@@ -72,6 +79,7 @@ export function createProjectsSync(getVisitor: () => ProjectsVisitor, api: Sweep
   });
 
   $effect(() => {
+    void restarts;
     if (accountKey === undefined) return;
 
     const name = accountKey === null ? undefined : projectsDatabaseName(accountKey);
@@ -88,9 +96,11 @@ export function createProjectsSync(getVisitor: () => ProjectsVisitor, api: Sweep
   });
 
   /**
-   * Shows the browser database `name` and keeps it in step, until `following` aborts or another tab deletes the
-   * database. A deleted database stops the sweeps and the saves, and the page keeps what it showed until its next
-   * load.
+   * Shows the browser database `name` and keeps it in step, until `following` aborts or another tab deletes or
+   * upgrades the database. Either stops the sweeps and the saves. After a deletion the session is read again first,
+   * since the other tab may have signed another account in, and the sync then follows the account it names. A newer
+   * Studio's upgrade leaves this tab showing what it held until its next load: following again would delete the
+   * newer database, which the newer tab would delete in turn.
    */
   async function follow(name: string, following: AbortSignal) {
     state = { status: "loading" };
@@ -98,7 +108,10 @@ export function createProjectsSync(getVisitor: () => ProjectsVisitor, api: Sweep
     const signal = AbortSignal.any([following, deleted.signal]);
     let database: ProjectsDatabase;
     try {
-      database = await openProjectsDatabase(name, () => deleted.abort());
+      database = await openProjectsDatabase(name, (deletedElsewhere) => {
+        deleted.abort();
+        if (deletedElsewhere) refreshVisitor().then(() => restarts++, report);
+      });
     } catch (error) {
       report(error);
       if (!signal.aborted) state = { status: "unavailable" };

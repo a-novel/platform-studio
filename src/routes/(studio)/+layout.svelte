@@ -40,7 +40,13 @@
   });
 
   // The account's projects sync for the whole app, so a soft navigation keeps their schedule.
-  setProjectsSync(createProjectsSync(() => data.session, relayApi));
+  setProjectsSync(
+    createProjectsSync(
+      () => data.session,
+      relayApi,
+      () => invalidate(shellSessionData)
+    )
+  );
 
   retryWhile(
     () => data.session.status === "loading",

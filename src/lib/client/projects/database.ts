@@ -90,18 +90,21 @@ export function applyChange(
 /**
  * Opens the browser database the name gives, creating it on the first visit. A database a newer Studio upgraded
  * holds only a copy of the projects, so an older Studio deletes it and starts over. Another tab that deletes or
- * upgrades the database closes this connection, and `onClose` hears it.
+ * upgrades the database closes this connection, and `onClose` hears which of the two it did.
  */
-export async function openProjectsDatabase(name: string, onClose: () => void): Promise<ProjectsDatabase> {
+export async function openProjectsDatabase(
+  name: string,
+  onClose: (deleted: boolean) => void
+): Promise<ProjectsDatabase> {
   const database = await open(name).catch(async (error: unknown) => {
     if (!(error instanceof DOMException && error.name === "VersionError")) throw error;
     await request(indexedDB.deleteDatabase(name));
     return open(name);
   });
   // A deletion or an upgrade from another tab waits until every tab closes the database.
-  database.onversionchange = () => {
+  database.onversionchange = (event) => {
     database.close();
-    onClose();
+    onClose(event.newVersion === null);
   };
 
   return {

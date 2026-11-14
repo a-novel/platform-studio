@@ -5,6 +5,8 @@ import { getNarrativeEngine } from "#lib/server/narrative-engine/context.js";
 
 import { GET } from "./+server";
 
+import { createHash } from "node:crypto";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HttpError } from "@a-novel-kit/nodelib-browser/http";
@@ -42,10 +44,10 @@ beforeEach(() => {
 });
 
 describe("GET /projects/[id]/logo", () => {
-  it("serves the writer's logo, kept for good by their browser under a versioned address", async () => {
+  it("serves the writer's logo, kept for good by their browser under the address of its checksum", async () => {
     vi.mocked(projectLogoGet).mockResolvedValue(new Blob(["webp"], { type: "image/webp" }));
 
-    const response = await GET(event(projectID, "?v=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"));
+    const response = await GET(event(projectID, `?v=${createHash("sha256").update("webp").digest("hex")}`));
 
     expect(response.status).toBe(200);
     expect(Object.fromEntries(response.headers)).toMatchObject({
@@ -56,6 +58,16 @@ describe("GET /projects/[id]/logo", () => {
     expect(projectLogoGet).toHaveBeenCalledExactlyOnceWith(api, "fixture-access", {
       projectID,
     });
+  });
+
+  it("keeps nothing under a checksum the logo served no longer has", async () => {
+    vi.mocked(projectLogoGet).mockResolvedValue(new Blob(["webp"], { type: "image/webp" }));
+
+    const response = await GET(event(projectID, `?v=${createHash("sha256").update("jpeg").digest("hex")}`));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("private, no-cache");
+    expect(await response.text()).toBe("webp");
   });
 
   it("revalidates a logo read without a version", async () => {
