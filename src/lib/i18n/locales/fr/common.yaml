@@ -31,9 +31,9 @@ projects:
     one: Une colonne
     three: Trois colonnes
     two: Deux colonnes
-  count_one: "{{loaded}} / {{count}} projet"
+  count_one: "{{count}} projet"
   count_many: ""
-  count_other: "{{loaded}} / {{count}} projets"
+  count_other: "{{count}} projets"
   dialog:
     cancel: Annuler
     create: Créer le projet
@@ -236,9 +236,31 @@ projects:
   noScript:
     description: Activez JavaScript dans votre navigateur, puis rechargez cette page.
     title: Vos projets nécessitent JavaScript
+  results_one: "{{count}} résultat"
+  results_many: ""
+  results_other: "{{count}} résultats"
   row:
     created: Créé {{when}}
     edited: Modifié {{when}}
+  search:
+    clear: Effacer la recherche
+    label: Rechercher un projet
+    noMatch: Aucun projet ne correspond à votre recherche
+    placeholder: Rechercher
+  sort:
+    ascending: Ordre croissant
+    by: Trier par
+    createdAt: Date de création
+    descending: Ordre décroissant
+    editedAt: Dernière modification
+    summary:
+      createdAtNewestFirst: "Tri: Date de création, plus récents d’abord"
+      createdAtOldestFirst: "Tri: Date de création, plus anciens d’abord"
+      editedAtNewestFirst: "Tri: Dernière modification, plus récents d’abord"
+      editedAtOldestFirst: "Tri: Dernière modification, plus anciens d’abord"
+      titleAToZ: "Tri: Titre, de A à Z"
+      titleZToA: "Tri: Titre, de Z à A"
+    title: Titre
   title: Projets
   unavailable:
     description: Nous n’avons pas pu charger vos projets. Veuillez recharger cette page dans quelques minutes.

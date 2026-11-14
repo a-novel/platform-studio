@@ -1,7 +1,13 @@
 import { withLocale } from "#lib/i18n/provider.fixture.js";
 
-import { PROJECTS_PAGE, type ProjectsModel, createProjectsController } from "./controller.svelte";
 import {
+  PROJECTS_PAGE,
+  type ProjectsControllerOptions,
+  type ProjectsModel,
+  createProjectsController,
+} from "./controller.svelte";
+import {
+  cartographer,
   chosenLogo,
   fixedProjectsController,
   harbor,
@@ -10,8 +16,13 @@ import {
   notebooks,
   now,
   projects,
+  salt,
 } from "./projects.fixture";
 import ProjectsScreen from "./screen.svelte";
+import { readProjectsQuery } from "./search";
+import { DEFAULT_PROJECT_SORT } from "./sort";
+
+import { flushSync } from "svelte";
 
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
@@ -22,6 +33,30 @@ import "@a-novel-kit/uikit-tokens/tokens.css";
 import { Language } from "@a-novel/service-narrative-engine-rest";
 
 const ready = { status: "ready", now, projects } as const;
+
+/** The default controller over the fixture's projects, in English, with no query in the address. */
+function projectsController(options: Partial<ProjectsControllerOptions> = {}) {
+  return createProjectsController({
+    getModel: () => ready,
+    defaultLanguage: Language.En,
+    language: "en",
+    genres: {},
+    retryHref: "/projects",
+    initialColumns: 1,
+    getQuery: () => "",
+    initialSort: DEFAULT_PROJECT_SORT,
+    submit: vi.fn(),
+    ...options,
+  });
+}
+
+/** The names of the rows shown, in order: a row showing its logo has no title text to read. */
+function rowNames(): (string | null)[] {
+  return page
+    .getByRole("article")
+    .elements()
+    .map((row) => row.querySelector("img")?.alt ?? row.querySelector("h2")?.textContent ?? null);
+}
 
 describe("projects screen", () => {
   it("starts the title as high without projects as over a list of them", async () => {
@@ -77,12 +112,12 @@ describe("projects screen", () => {
     expect(spy).toHaveBeenCalledWith("genreChips.setValue", ["mystery"]);
   });
 
-  it("counts the projects shown out of every project, and asks for the next page once the end comes near", async () => {
+  it("counts every project of the list, not only the page shown, and asks for the next page once the end comes near", async () => {
     const spy = vi.fn();
     const controller = fixedProjectsController({ model: ready, pages: [projects.slice(0, 2)], more: true }, spy);
     render(ProjectsScreen, { controller }, withLocale());
 
-    await expect.element(page.getByText(`2 / ${projects.length} projects`)).toBeVisible();
+    await expect.element(page.getByText(`${projects.length} projects`)).toBeVisible();
     const loader = page.getByText("Loading more projects");
     await expect.element(loader).toBeInTheDocument();
     loader.element().scrollIntoView();
@@ -91,13 +126,7 @@ describe("projects screen", () => {
 
   it("shows page after page as the writer scrolls, until every project shows", async () => {
     const rows = manyProjects(2 * PROJECTS_PAGE + 3);
-    const controller = createProjectsController({
-      getModel: () => ({ status: "ready", now, projects: rows }),
-      defaultLanguage: Language.En,
-      retryHref: "/projects",
-      initialColumns: 1,
-      submit: vi.fn(),
-    });
+    const controller = projectsController({ getModel: () => ({ status: "ready", now, projects: rows }) });
     render(ProjectsScreen, { controller }, withLocale());
 
     const cards = page.getByRole("article");
@@ -108,6 +137,124 @@ describe("projects screen", () => {
     }
     await expect.element(page.getByText("Loading more projects")).not.toBeInTheDocument();
   });
+
+  it("searches as the writer types, counts the results, and flips the order from the header's popover", async () => {
+    // A wide screen, where every project fits on the first page and the header holds the search and the sort.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const onSearch = vi.fn();
+    const onSortChange = vi.fn();
+    render(ProjectsScreen, { controller: projectsController({ onSearch, onSortChange }) }, withLocale());
+
+    await page.getByRole("searchbox", { name: "Search projects" }).fill("car");
+    await expect.poll(rowNames).toEqual([cartographer.title, notebooks.title]);
+    await expect.element(page.getByText("2 results")).toBeVisible();
+    expect(onSearch).toHaveBeenLastCalledWith("car");
+
+    await page.getByRole("searchbox", { name: "Search projects" }).fill("");
+    await expect.element(page.getByText(`${projects.length} projects`)).toBeVisible();
+    const trigger = page.getByRole("button", { name: "Sort: Last edited, newest first" });
+    await expect.element(trigger).toHaveTextContent("Last edited");
+    await trigger.click();
+    await page.getByRole("button", { name: "Descending order" }).click();
+    await expect.poll(rowNames).toEqual([notebooks.title, salt.title, cartographer.title, harbor.title]);
+    expect(onSortChange).toHaveBeenLastCalledWith({ field: "editedAt", order: "ascending" });
+    await expect.element(page.getByRole("button", { name: "Sort: Last edited, oldest first" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Ascending order" }).click();
+    await expect.poll(rowNames).toEqual(projects.map(({ title }) => title));
+    await userEvent.keyboard("{Escape}");
+    await expect.element(page.getByRole("button", { name: "Descending order" })).not.toBeInTheDocument();
+  });
+
+  // The field's list floats over the popover that holds it: the popover stays while the list is open and after a choice.
+  it.each([
+    [414, 896],
+    [1280, 800],
+  ])("keeps the popover open around its field's list and after a choice at %ipx", async (width, height) => {
+    await page.viewport(width, height);
+    onTestFinished(() => page.viewport(414, 896));
+    render(ProjectsScreen, { controller: projectsController() }, withLocale());
+
+    await page.getByRole("button", { name: "Sort: Last edited, newest first" }).click();
+    await page.getByRole("combobox", { name: "Sort by" }).click();
+    await expect.element(page.getByRole("option", { name: "Title" })).toBeVisible();
+    await expect.element(page.getByRole("button", { name: "Descending order" })).toBeVisible();
+
+    await page.getByRole("option", { name: "Title" }).click();
+    await expect.element(page.getByRole("option", { name: "Title" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("combobox", { name: "Sort by" })).toHaveTextContent("Title");
+    // A new field starts in its natural order, A to Z for the title.
+    await expect.element(page.getByRole("button", { name: "Ascending order" })).toBeVisible();
+    await expect.poll(rowNames).toEqual([notebooks.title, harbor.title, salt.title, cartographer.title]);
+  });
+
+  it("names the whole sort and its order in the reader's language, and asks the controller for each choice", async () => {
+    const spy = vi.fn();
+    const sort = { field: "createdAt", order: "ascending" } as const;
+    const controls = { sortOpen: "phone", sortFieldOpen: true } as const;
+    render(
+      ProjectsScreen,
+      { controller: fixedProjectsController({ model: ready, sort }, spy, controls) },
+      withLocale("fr")
+    );
+
+    await expect
+      .element(page.getByRole("button", { name: "Tri: Date de création, plus anciens d’abord" }))
+      .toBeVisible();
+    await expect.element(page.getByRole("combobox", { name: "Trier par" })).toHaveTextContent("Date de création");
+
+    await page.getByRole("option", { name: "Titre" }).click();
+    await page.getByRole("button", { name: "Ordre croissant" }).click();
+    expect(spy).toHaveBeenCalledWith("sortMenus.phone.field.select", "title");
+    expect(spy).toHaveBeenCalledWith("flipOrder");
+  });
+
+  it("follows the query a navigation brings, and keeps the writer's own through a load that keeps the address", async () => {
+    let url = $state(new URL("https://studio.test/projects?q=salt"));
+    render(
+      ProjectsScreen,
+      { controller: projectsController({ getQuery: () => readProjectsQuery(url.searchParams) }) },
+      withLocale()
+    );
+    const search = page.getByRole("searchbox", { name: "Search projects" });
+    await expect.element(search).toHaveValue("salt");
+    await expect.poll(rowNames).toEqual([salt.title]);
+
+    await search.fill("heures");
+    url = new URL("https://studio.test/projects?q=salt");
+    flushSync();
+    expect(rowNames()).toEqual([harbor.title]);
+
+    url = new URL("https://studio.test/projects?q=carnets");
+    await expect.element(search).toHaveValue("carnets");
+    await expect.poll(rowNames).toEqual([notebooks.title]);
+  });
+
+  // A phone holds the search in its bottom bar, and a wider screen in the header.
+  it.each([
+    [414, 896],
+    [1280, 800],
+  ])(
+    "says no project matches the search, and clears it back into the field that shows at %ipx",
+    async (width, height) => {
+      await page.viewport(width, height);
+      onTestFinished(() => page.viewport(414, 896));
+      const spy = vi.fn();
+      const controller = fixedProjectsController({ model: ready, query: "dragon", matched: 0, pages: [] }, spy);
+      render(ProjectsScreen, { controller }, withLocale());
+
+      await expect
+        .element(page.getByRole("heading", { name: "No project matches your search", level: 2 }))
+        .toBeVisible();
+      await expect.element(page.getByText("0 results")).toBeVisible();
+      await expect.element(page.getByRole("article")).not.toBeInTheDocument();
+
+      await page.getByRole("button", { name: "Clear the search" }).click();
+      expect(spy).toHaveBeenCalledExactlyOnceWith("search", "");
+      await expect.element(page.getByRole("searchbox", { name: "Search projects" })).toHaveFocus();
+    }
+  );
 
   it("says the projects are loading while the browser reads them for the first time", async () => {
     render(ProjectsScreen, { controller: fixedProjectsController({ model: { status: "loading" } }) }, withLocale("fr"));
@@ -155,6 +302,7 @@ describe("projects screen", () => {
 
     await expect.element(page.getByRole("heading", { name: "Un foyer pour vos histoires…" })).toBeVisible();
     await expect.element(page.getByRole("button", { name: "Créer" })).not.toBeInTheDocument();
+    await expect.element(page.getByRole("search")).not.toBeInTheDocument();
     await page.getByRole("button", { name: "Commencer à créer" }).click();
     expect(spy).toHaveBeenCalledExactlyOnceWith("create");
   });
@@ -218,13 +366,7 @@ describe("projects screen", () => {
 
   it("closes the dialog on cancel, though the click still reaches the dialog once its project is gone", async () => {
     // The real controller drops the project the moment it closes, which a fixed one never does.
-    const controller = createProjectsController({
-      getModel: () => ready,
-      defaultLanguage: Language.En,
-      retryHref: "/projects",
-      initialColumns: 1,
-      submit: vi.fn(),
-    });
+    const controller = projectsController();
     const errors: unknown[] = [];
     const collect = (event: ErrorEvent) => errors.push(event.error);
     window.addEventListener("error", collect);

@@ -44,8 +44,8 @@ export default interface Resources {
         "three": "Three columns",
         "two": "Two columns"
       },
-      "count_one": "{{loaded}} / {{count}} project",
-      "count_other": "{{loaded}} / {{count}} projects",
+      "count_one": "{{count}} project",
+      "count_other": "{{count}} projects",
       "dialog": {
         "cancel": "Cancel",
         "create": "Create project",
@@ -256,9 +256,33 @@ export default interface Resources {
         "description": "Turn on JavaScript in your browser, then reload this page.",
         "title": "Your projects need JavaScript"
       },
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
       "row": {
         "created": "Created {{when}}",
         "edited": "Edited {{when}}"
+      },
+      "search": {
+        "clear": "Clear the search",
+        "label": "Search projects",
+        "noMatch": "No project matches your search",
+        "placeholder": "Search"
+      },
+      "sort": {
+        "ascending": "Ascending order",
+        "by": "Sort by",
+        "createdAt": "Created",
+        "descending": "Descending order",
+        "editedAt": "Last edited",
+        "summary": {
+          "createdAtNewestFirst": "Sort: Created, newest first",
+          "createdAtOldestFirst": "Sort: Created, oldest first",
+          "editedAtNewestFirst": "Sort: Last edited, newest first",
+          "editedAtOldestFirst": "Sort: Last edited, oldest first",
+          "titleAToZ": "Sort: Title, A to Z",
+          "titleZToA": "Sort: Title, Z to A"
+        },
+        "title": "Title"
       },
       "title": "Projects",
       "unavailable": {

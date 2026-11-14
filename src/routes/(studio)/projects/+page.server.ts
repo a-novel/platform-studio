@@ -7,6 +7,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { PROJECT_COLUMNS_COOKIE, parseProjectColumns } from "./columns";
 import type { LogoRefusal, SaveFeedback, SaveResult } from "./controller.svelte";
 import { readProjectForm } from "./project-form";
+import { PROJECT_SORT_COOKIE, parseProjectSort } from "./sort";
 
 import { isHttpStatusError, isHttpError as isServiceError } from "@a-novel-kit/nodelib-browser/http";
 import {
@@ -22,14 +23,17 @@ import {
 import { fail, isHttpError, isRedirect, redirect } from "@sveltejs/kit";
 
 /**
- * Reads the columns the writer chose. The browser lists the projects from its own database. A visitor without an
- * account goes straight to the sign-in, and comes back here once signed in.
+ * Reads the columns and the sort the writer chose. The browser lists the projects from its own database. A visitor
+ * without an account goes straight to the sign-in, and comes back here once signed in.
  */
 export const load: PageServerLoad = async (event) => {
   const { session } = await event.parent();
   if (session.status === "anonymous") redirect(307, signInHref(event.url.pathname + event.url.search));
 
-  return { columns: parseProjectColumns(event.cookies.get(PROJECT_COLUMNS_COOKIE)) };
+  return {
+    columns: parseProjectColumns(event.cookies.get(PROJECT_COLUMNS_COOKIE)),
+    sort: parseProjectSort(event.cookies.get(PROJECT_SORT_COOKIE)),
+  };
 };
 
 export const actions = {

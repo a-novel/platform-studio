@@ -56,10 +56,10 @@ const stored = {
   logoChecksum,
 };
 
-function loadEvent(status: "anonymous" | "authenticated" | "error"): LoadEvent {
+function loadEvent(status: "anonymous" | "authenticated" | "error", cookies: Record<string, string> = {}): LoadEvent {
   return {
     parent: async () => ({ session: { status } }),
-    cookies: { get: () => undefined },
+    cookies: { get: (name: string) => cookies[name] },
     url: new URL("https://studio.test/projects?view=grid"),
   } as unknown as LoadEvent;
 }
@@ -91,13 +91,25 @@ describe("projects page load", () => {
   });
 
   it.each(["authenticated", "error"] as const)(
-    "reads only the columns for a session %s, and leaves the projects to the browser",
+    "reads only the columns and the sort for a session %s, and leaves the projects to the browser",
     async (status) => {
-      await expect(load(loadEvent(status))).resolves.toEqual({ columns: 1 });
+      await expect(load(loadEvent(status))).resolves.toEqual({
+        columns: 1,
+        sort: { field: "editedAt", order: "descending" },
+      });
       expect(requireAuthorization).not.toHaveBeenCalled();
       expect(getNarrativeEngine).not.toHaveBeenCalled();
     }
   );
+
+  it("renders the columns and the sort the writer chose from the start", async () => {
+    const cookies = { "project-columns": "2", "project-sort": "title-descending" };
+
+    await expect(load(loadEvent("authenticated", cookies))).resolves.toEqual({
+      columns: 2,
+      sort: { field: "title", order: "descending" },
+    });
+  });
 });
 
 describe("projects save action", () => {

@@ -79,6 +79,23 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   // The browser keeps the projects, and the next load shows them as the narrative engine holds them.
   await page.reload();
   await expectRows(page, ["Salt", "Les Heures claires"]);
+
+  // A search keeps the projects holding every word, in the address, and a sort reorders them.
+  const search = page.getByRole("searchbox", { name: "Search projects", exact: true });
+  await search.fill("historical drama");
+  await expectRows(page, ["Les Heures claires"]);
+  await expect.poll(() => new URL(page.url()).searchParams.get("q")).toBe("historical drama");
+  await search.fill("");
+  await page.getByRole("button", { name: "Sort: Last edited, newest first", exact: true }).click();
+  await page.getByRole("combobox", { name: "Sort by", exact: true }).click();
+  await page.getByRole("option", { name: "Title", exact: true }).click();
+  await expectRows(page, ["Les Heures claires", "Salt"]);
+  await page.keyboard.press("Escape");
+
+  // A load keeps the sort, and starts with the address's search.
+  await page.goto(`${home}?q=salt`);
+  await expect(search).toHaveValue("salt");
+  await expectRows(page, ["Salt"]);
 });
 
 test("a project saved in one tab shows at once in the others, and in another browser once it signs in", async ({
