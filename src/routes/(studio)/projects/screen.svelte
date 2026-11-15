@@ -1,14 +1,17 @@
 <!--
 @component
-The writer's projects, most recently edited first, as rows of one, two or three columns, with how many they hold. The
-next page shows as the writer nears the end of the list. A writer without any is invited to create the first one. The
-dialog creates a project. A browser without JavaScript is told the list needs it.
+The writer's projects, as rows of one, two or three columns, with how many they hold. A search keeps those that match,
+and a sort orders them, in the header on a wide screen and in the bar under the thumb on a phone. The next page shows
+as the writer nears the end of the list. A writer without any is invited to create the first one. The dialog creates a
+project. A browser without JavaScript is told the list needs it.
 -->
 <script lang="ts">
-  import type { ProjectsController } from "./controller.svelte";
+  import type { ProjectsController, SortMenu } from "./controller.svelte";
   import { genreFamilies, genreNames } from "./genres";
   import ProjectDialog from "./project-dialog.svelte";
   import ProjectRow from "./project-row.svelte";
+
+  import type { Snippet } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
   import studioBanner from "@a-novel-kit/ui-images/files/banner/160h/studio-banner.png";
@@ -17,15 +20,20 @@ dialog creates a project. A browser without JavaScript is told the list needs it
     ButtonGroup,
     Card,
     EmptyState,
+    Field,
     IconButton,
+    Input,
     Link,
     PageHeader,
+    Popover,
+    type PopoverTriggerAttributes,
+    Select,
     Spinner,
     StatusState,
     StickyBar,
   } from "@a-novel-kit/uikit";
 
-  import { Columns2, Columns3, Plus, Rows3 } from "@lucide/svelte";
+  import { ArrowDown, ArrowUp, Columns2, Columns3, Plus, Rows3, Search } from "@lucide/svelte";
 
   let { controller }: { controller: ProjectsController } = $props();
   const { t } = getI18nContext();
@@ -33,7 +41,10 @@ dialog creates a project. A browser without JavaScript is told the list needs it
   const genres = $derived(genreNames(families));
   const model = $derived(controller.state.model);
   const listing = $derived(model.status === "ready" && model.projects.length > 0 ? model : null);
-  const shown = $derived(controller.state.pages.reduce((sum, page) => sum + page.length, 0));
+  const searching = $derived(controller.state.query.trim() !== "");
+  // The header and the phone's bar each hold a search, and only one of them shows.
+  const searchID = $props.id();
+  const searchIDs = { header: searchID + "-header", phone: searchID + "-phone" };
 
   // The next page shows while the end of the list is half a screen away. Each page brings a new loader, which the
   // observer reports at once, so a screen tall enough for several pages fills up.
@@ -53,6 +64,40 @@ dialog creates a project. A browser without JavaScript is told the list needs it
     { columns: 2, label: t("projects.columns.two"), Icon: Columns2 },
     { columns: 3, label: t("projects.columns.three"), Icon: Columns3 },
   ] as const);
+
+  const fieldOptions = $derived([
+    { value: "editedAt", label: t("projects.sort.editedAt") },
+    { value: "createdAt", label: t("projects.sort.createdAt") },
+    { value: "title", label: t("projects.sort.title") },
+  ] as const);
+
+  // An arrow draws the order, down for descending, on the triggers and on the order button they open.
+  const ascending = $derived(controller.state.sort.order === "ascending");
+  const OrderIcon = $derived(ascending ? ArrowUp : ArrowDown);
+  const fieldName = $derived(fieldOptions.find(({ value }) => value === controller.state.sort.field)?.label);
+
+  // The triggers name the whole sort.
+  const summary = $derived.by(() => {
+    switch (controller.state.sort.field) {
+      case "title":
+        return ascending ? t("projects.sort.summary.titleAToZ") : t("projects.sort.summary.titleZToA");
+      case "createdAt":
+        return ascending
+          ? t("projects.sort.summary.createdAtOldestFirst")
+          : t("projects.sort.summary.createdAtNewestFirst");
+      case "editedAt":
+        return ascending
+          ? t("projects.sort.summary.editedAtOldestFirst")
+          : t("projects.sort.summary.editedAtNewestFirst");
+    }
+  });
+
+  /** Empties the search, and puts the writer back in the field that shows. */
+  function clearSearch() {
+    controller.search("");
+    const fields = Object.values(searchIDs).map((id) => document.getElementById(id));
+    fields.find((field) => field?.checkVisibility())?.focus();
+  }
 </script>
 
 {#snippet newProject(label: string)}
@@ -62,15 +107,69 @@ dialog creates a project. A browser without JavaScript is told the list needs it
   </Button>
 {/snippet}
 
+{#snippet searchField(id: string)}
+  <Input
+    {id}
+    class="search-field"
+    type="search"
+    aria-label={t("projects.search.label")}
+    placeholder={t("projects.search.placeholder")}
+    value={controller.state.query}
+    oninput={(event) => controller.search(event.currentTarget.value)}
+  >
+    {#snippet startAdornment()}<Search size="var(--icon-size-sm)" />{/snippet}
+  </Input>
+{/snippet}
+
+<!-- Both choices apply at once, and the popover stays open so the writer can set both. -->
+{#snippet sortPopover(menu: SortMenu, position: "top" | "bottom", trigger: Snippet<[PopoverTriggerAttributes]>)}
+  <Popover controller={menu.popover} {position} {trigger}>
+    <Field label={t("projects.sort.by")}>
+      {#snippet children(attributes)}
+        <div class="sort-choices">
+          <Select {...attributes} options={fieldOptions} controller={menu.field} />
+          <IconButton
+            label={ascending ? t("projects.sort.ascending") : t("projects.sort.descending")}
+            variant="ghost"
+            tone="neutral"
+            onclick={controller.flipOrder}
+          >
+            <OrderIcon size="var(--icon-size-sm)" />
+          </IconButton>
+        </div>
+      {/snippet}
+    </Field>
+  </Popover>
+{/snippet}
+
+{#snippet headerSortTrigger(attributes: PopoverTriggerAttributes)}
+  <Button variant="ghost" tone="neutral" aria-label={summary} {...attributes}>
+    <OrderIcon size="var(--icon-size-sm)" />
+    {fieldName}
+  </Button>
+{/snippet}
+
+{#snippet phoneSortTrigger(attributes: PopoverTriggerAttributes)}
+  <IconButton label={summary} variant="ghost" tone="neutral" {...attributes}>
+    <OrderIcon size="var(--icon-size-sm)" />
+  </IconButton>
+{/snippet}
+
 <div class="projects-screen" class:filled={listing !== null}>
   {#if listing}
     <StickyBar edge="start" bleed>
       <PageHeader
         title={t("projects.title")}
-        description={t("projects.count", { loaded: shown, count: listing.projects.length })}
+        description={searching
+          ? t("projects.results", { count: controller.state.matched })
+          : t("projects.count", { count: controller.state.matched })}
       >
         {#snippet actions()}
           <div class="header-actions">
+            <search class="search">
+              {@render sortPopover(controller.sortMenus.header, "bottom", headerSortTrigger)}
+              {@render searchField(searchIDs.header)}
+            </search>
             <div class="column-options">
               <ButtonGroup label={t("projects.columns.label")}>
                 {#each columnOptions as { columns, label, Icon } (columns)}
@@ -93,31 +192,45 @@ dialog creates a project. A browser without JavaScript is told the list needs it
       </PageHeader>
     </StickyBar>
 
-    <div class="content" data-columns={controller.state.columns}>
-      <!-- Each page lays its own columns out, so the rows a page adds never move the ones above. -->
-      {#each controller.state.pages as page, index (index)}
-        <ul class="rows">
-          {#each page as project (project.id)}
-            <li>
-              <Card surface="ghost" class="project-card">
-                <ProjectRow {project} now={listing.now} {genres} />
-              </Card>
-            </li>
-          {/each}
-        </ul>
-      {/each}
-      {#if controller.state.more}
-        {#key controller.state.pages.length}
-          <div class="loader" {@attach watchEnd}>
-            <Spinner label={t("projects.loadingMore")} />
-          </div>
-        {/key}
-      {/if}
-    </div>
+    {#if controller.state.matched === 0}
+      <div class="state">
+        <StatusState tone="info" title={t("projects.search.noMatch")} headingLevel={2}>
+          {#snippet actions()}
+            <Button variant="text" onclick={clearSearch}>{t("projects.search.clear")}</Button>
+          {/snippet}
+        </StatusState>
+      </div>
+    {:else}
+      <div class="content" data-columns={controller.state.columns}>
+        <!-- Each page lays its own columns out, so the rows a page adds never move the ones above. -->
+        {#each controller.state.pages as page, index (index)}
+          <ul class="rows">
+            {#each page as project (project.id)}
+              <li>
+                <Card surface="ghost" class="project-card">
+                  <ProjectRow {project} now={listing.now} {genres} />
+                </Card>
+              </li>
+            {/each}
+          </ul>
+        {/each}
+        {#if controller.state.more}
+          {#key controller.state.pages.length}
+            <div class="loader" {@attach watchEnd}>
+              <Spinner label={t("projects.loadingMore")} />
+            </div>
+          {/key}
+        {/if}
+      </div>
+    {/if}
 
     <div class="phone-bar">
       <StickyBar edge="end" bleed>
         <div class="phone-actions">
+          <search class="search">
+            {@render sortPopover(controller.sortMenus.phone, "top", phoneSortTrigger)}
+            {@render searchField(searchIDs.phone)}
+          </search>
           <IconButton label={t("projects.new")} onclick={controller.create}>
             <Plus size="var(--icon-size-sm)" />
           </IconButton>
@@ -170,8 +283,10 @@ dialog creates a project. A browser without JavaScript is told the list needs it
 
 <style>
   /* The page fills the workspace below the shell's sticky bar, so a state without projects sits at its center. The
-     header brings its own space above it, so the title starts as high as it does over a list of projects. */
+     header brings its own space above it, so the title starts as high as it does over a list of projects. A card
+     holds its premise at the long readable measure, plus its padding, and the list's columns measure from it. */
   .projects-screen {
+    --card-max: calc(var(--layout-readable-measure-long) + 2 * var(--space-4));
     display: grid;
     grid-template-rows: auto 1fr;
     gap: var(--space-6);
@@ -192,7 +307,6 @@ dialog creates a project. A browser without JavaScript is told the list needs it
      stops the columns there, centered, instead of stretching each card across it. */
   .content {
     --columns: 1;
-    --card-max: calc(var(--layout-readable-measure-long) + 2 * var(--space-4));
     justify-self: center;
     box-sizing: border-box;
     padding-block: var(--space-4) var(--space-12);
@@ -213,11 +327,38 @@ dialog creates a project. A browser without JavaScript is told the list needs it
     block-size: auto;
   }
 
+  /* The header's actions take the room the title leaves, and the search grows into it. */
   .header-actions {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: center;
     gap: var(--space-4);
+  }
+
+  /* The sort and its search stay together, at the end of the room they leave. */
+  .search {
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-2);
+    min-inline-size: 0;
+  }
+
+  /* The header's search starts compact, so the actions fit beside the title, then grows into the free room up to a
+     form's width. */
+  .header-actions :global(.search-field) {
+    flex: 1 1 var(--layout-sidebar-min);
+    min-inline-size: var(--layout-sidebar-min);
+    max-inline-size: var(--layout-container-sm);
+  }
+
+  .sort-choices {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .column-options {
@@ -260,12 +401,16 @@ dialog creates a project. A browser without JavaScript is told the list needs it
     display: none;
   }
 
-  /* The bar centers its actions under the thumb, each an icon, so more fit beside them. */
+  /* Under the thumb, the search takes the room the sort and the creation leave, each an icon. */
   .phone-actions {
     display: flex;
-    justify-content: center;
+    align-items: center;
     gap: var(--space-2);
     padding-block: var(--space-3);
+  }
+
+  .phone-actions :global(.search-field) {
+    flex: 1;
   }
 
   /* Columns stay at least 22rem wide, so a page too narrow for the choice does not offer it. */

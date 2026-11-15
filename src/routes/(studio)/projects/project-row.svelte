@@ -119,10 +119,11 @@ discreetly when it was edited and created, and in what language.
     line-clamp: 6;
   }
 
+  /* Badges sit apart as compact inline items, the same step that sets the genres' row from the tags' row. */
   .labels {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-1);
+    gap: var(--space-2);
     padding: 0;
     list-style: none;
   }

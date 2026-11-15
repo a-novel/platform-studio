@@ -4,9 +4,12 @@ import type {
   ProjectRow,
   ProjectsController,
   ProjectsControllerState,
+  SortMenu,
+  SortMenuPlace,
 } from "./controller.svelte";
+import { DEFAULT_PROJECT_SORT } from "./sort";
 
-import type { SelectController } from "@a-novel-kit/uikit";
+import type { OpenController, SelectController } from "@a-novel-kit/uikit";
 import { Language } from "@a-novel/service-narrative-engine-rest";
 
 /** Inlines an SVG as an image address, so stories and tests stay offline. */
@@ -61,7 +64,7 @@ export const cartographer: ProjectRow = {
   editedAt: new Date(now.getTime() - 3 * hour),
 };
 
-const salt: ProjectRow = {
+export const salt: ProjectRow = {
   id: "019a5f2e-0000-7000-8000-000000000003",
   title: "Salt",
   premise: "",
@@ -135,24 +138,45 @@ export function newProjectEditor(change: Partial<ProjectEditor> = {}): ProjectEd
   };
 }
 
-/** A projects controller that renders one fixed state and reports every request to `spy`. */
+/**
+ * A projects controller that renders one fixed state and reports every request to `spy`. Without a query, every
+ * project of the model matches, in the model's order.
+ */
 export function fixedProjectsController(
   state: Partial<ProjectsControllerState>,
   spy: (request: string, ...args: unknown[]) => void = () => {},
-  dialog: {
+  controls: {
     genres?: readonly string[];
     genreQuery?: string;
     tags?: readonly string[];
     languageOpen?: boolean;
+    /** The bar whose sort popover shows open. */
+    sortOpen?: SortMenuPlace;
+    /** Whether that popover shows its field's list open. */
+    sortFieldOpen?: boolean;
   } = {}
 ): ProjectsController {
   const languageSelect: SelectController<Language> = {
-    state: { open: dialog.languageOpen ?? false, value: Language.En },
+    state: { open: controls.languageOpen ?? false, value: Language.En },
     open: () => spy("languageSelect.open"),
     close: () => spy("languageSelect.close"),
     toggle: () => spy("languageSelect.toggle"),
     select: (value) => spy("languageSelect.select", value),
   };
+  const sortField = state.sort?.field ?? DEFAULT_PROJECT_SORT.field;
+  const sortMenu = (place: SortMenuPlace): SortMenu => {
+    const open = controls.sortOpen === place;
+    const listOpen = open && (controls.sortFieldOpen ?? false);
+    return {
+      popover: fixedOpenController(`sortMenus.${place}.popover`, open, spy),
+      field: {
+        ...fixedOpenController(`sortMenus.${place}.field`, listOpen, spy),
+        state: { open: listOpen, value: sortField },
+        select: (value) => spy(`sortMenus.${place}.field.select`, value),
+      },
+    };
+  };
+  const projects = state.model?.status === "ready" ? state.model.projects : [];
 
   return {
     state: {
@@ -160,7 +184,10 @@ export function fixedProjectsController(
       editor: null,
       retryHref: "/projects",
       columns: 1,
-      pages: state.model?.status === "ready" && state.model.projects.length > 0 ? [state.model.projects] : [],
+      query: "",
+      sort: DEFAULT_PROJECT_SORT,
+      matched: projects.length,
+      pages: projects.length > 0 ? [projects] : [],
       more: false,
       ...state,
     },
@@ -172,7 +199,7 @@ export function fixedProjectsController(
     },
     languageSelect,
     genreChips: {
-      state: { value: dialog.genres ?? [], query: dialog.genreQuery ?? "", open: false },
+      state: { value: controls.genres ?? [], query: controls.genreQuery ?? "", open: false },
       setValue: (value) => spy("genreChips.setValue", value),
       setQuery: (query) => spy("genreChips.setQuery", query),
       open: () => spy("genreChips.open"),
@@ -180,15 +207,28 @@ export function fixedProjectsController(
       toggle: () => spy("genreChips.toggle"),
     },
     tagInput: {
-      state: { tags: dialog.tags ?? [] },
+      state: { tags: controls.tags ?? [] },
       add: (text) => (spy("tagInput.add", text), true),
       remove: (index) => spy("tagInput.remove", index),
     },
+    sortMenus: { header: sortMenu("header"), phone: sortMenu("phone") },
     loadMore: () => spy("loadMore"),
     setColumns: (columns) => spy("setColumns", columns),
+    search: (query) => spy("search", query),
+    flipOrder: () => spy("flipOrder"),
     create: () => spy("create"),
     chooseLogo: async (file) => spy("chooseLogo", file),
     removeLogo: () => spy("removeLogo"),
     save: async (form) => spy("save", form),
+  };
+}
+
+/** An open controller that stays as `open` and reports each request to `spy` under `name`. */
+function fixedOpenController(name: string, open: boolean, spy: (request: string) => void): OpenController {
+  return {
+    state: { open },
+    open: () => spy(`${name}.open`),
+    close: () => spy(`${name}.close`),
+    toggle: () => spy(`${name}.toggle`),
   };
 }

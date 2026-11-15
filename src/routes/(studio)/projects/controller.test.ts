@@ -8,7 +8,8 @@ import {
   type SaveResult,
   createProjectsController,
 } from "./controller.svelte";
-import { harbor, manyProjects, now, projects } from "./projects.fixture";
+import { cartographer, harbor, manyProjects, notebooks, now, projects, salt } from "./projects.fixture";
+import { DEFAULT_PROJECT_SORT } from "./sort";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -63,8 +64,12 @@ function projectsController(options: Partial<ProjectsControllerOptions> = {}) {
   const controller = createProjectsController({
     getModel: () => ({ status: "ready", now, projects }),
     defaultLanguage: Language.Fr,
+    language: "en",
+    genres: { mystery: "Mystery", psychological: "Psychological" },
     retryHref: "/projects",
     initialColumns: 1,
+    getQuery: () => "",
+    initialSort: DEFAULT_PROJECT_SORT,
     submit,
     pictures,
     previews,
@@ -106,6 +111,71 @@ describe("createProjectsController", () => {
     model = { status: "ready", now, projects: rows };
 
     expect(controller.state.pages).toEqual([rows.slice(0, PROJECTS_PAGE), rows.slice(PROJECTS_PAGE)]);
+  });
+
+  it("shows the projects that match the query, from the address until the writer searches", () => {
+    const onSearch = vi.fn();
+    const { controller } = projectsController({ getQuery: () => "car", onSearch });
+    expect(controller.state).toMatchObject({ query: "car", matched: 2, pages: [[cartographer, notebooks]] });
+
+    controller.search("mystery");
+    expect(controller.state).toMatchObject({ query: "mystery", matched: 1, pages: [[cartographer]] });
+    expect(onSearch).toHaveBeenCalledExactlyOnceWith("mystery");
+
+    controller.search("dragon");
+    expect(controller.state).toMatchObject({ matched: 0, pages: [], more: false });
+  });
+
+  it("starts again from the first page on a new query or sort", () => {
+    const rows = manyProjects(2 * PROJECTS_PAGE);
+    const { controller } = projectsController({ getModel: () => ({ status: "ready", now, projects: rows }) });
+
+    for (const change of [() => controller.search("heures"), () => controller.flipOrder()]) {
+      controller.loadMore();
+      expect(controller.state.pages).toHaveLength(2);
+      change();
+      expect(controller.state.pages).toHaveLength(1);
+    }
+  });
+
+  it("sorts by another field in its natural order, flips it, and keeps each sort the writer chooses", () => {
+    const onSortChange = vi.fn();
+    const { controller } = projectsController({ onSortChange });
+    const titles = () => controller.state.pages.flat().map(({ title }) => title);
+    expect(controller.state.pages).toEqual([projects]);
+
+    controller.sortMenus.header.field.select("title");
+    expect(controller.state.sort).toEqual({ field: "title", order: "ascending" });
+    expect(controller.sortMenus.phone.field.state.value).toBe("title");
+    expect(titles()).toEqual([notebooks.title, harbor.title, salt.title, cartographer.title]);
+
+    controller.flipOrder();
+    expect(titles()).toEqual([cartographer.title, salt.title, harbor.title, notebooks.title]);
+
+    // Choosing the current field again keeps its order.
+    controller.sortMenus.header.field.select("title");
+    controller.sortMenus.header.field.select("createdAt");
+    expect(controller.state.pages).toEqual([[cartographer, harbor, notebooks, salt]]);
+
+    expect(onSortChange.mock.calls).toEqual([
+      [{ field: "title", order: "ascending" }],
+      [{ field: "title", order: "descending" }],
+      [{ field: "createdAt", order: "descending" }],
+    ]);
+  });
+
+  it("opens each bar's sort and its field's list on their own", () => {
+    const { controller } = projectsController();
+    const { header, phone } = controller.sortMenus;
+
+    header.popover.open();
+    header.field.open();
+    expect(header.field.state).toEqual({ open: true, value: "editedAt" });
+    expect(phone.popover.state.open).toBe(false);
+    expect(phone.field.state.open).toBe(false);
+
+    header.field.select(undefined);
+    expect(controller.state.sort).toEqual(DEFAULT_PROJECT_SORT);
   });
 
   it("opens each new project with no genre and no tag", () => {

@@ -2,6 +2,8 @@ import type { StoredProject } from "#lib/client/projects/database.js";
 
 import type { ProjectColumns } from "./columns";
 import { LOGO_REMOVED_FIELD } from "./project-form";
+import { searchProjects, searchableProjects } from "./search";
+import { NATURAL_ORDER, type ProjectSort, type ProjectSortField, sortProjects } from "./sort";
 
 import {
   type ChipGroupController,
@@ -12,6 +14,7 @@ import {
   type WholePictureFiles,
   browserPictureFiles,
   createChipGroupController,
+  createOpenController,
   createSelectController,
   createTagInputController,
 } from "@a-novel-kit/uikit";
@@ -47,7 +50,7 @@ export type ProjectsModel =
       status: "ready";
       /** When the browser read the projects, which their ages count from. */
       now: Date;
-      /** Every project of the writer, most recently edited first. */
+      /** Every project of the writer, which the controller searches and sorts. */
       projects: ProjectRow[];
     }
   /** The browser could not read the projects for the first time. */
@@ -105,6 +108,17 @@ export interface ProjectEditor {
   failure: Exclude<SaveResult, { status: "saved" }> | null;
 }
 
+/** The sort's popover in one of the screen's bars. */
+export interface SortMenu {
+  /** Opens and closes the popover. */
+  readonly popover: OpenController;
+  /** Picks the field in the popover, in its natural order. */
+  readonly field: SelectController<ProjectSortField>;
+}
+
+/** The bars that hold a sort: the page's header on a wide screen, the bottom bar on a phone. */
+export type SortMenuPlace = "header" | "phone";
+
 /** State rendered by the projects screen. */
 export interface ProjectsControllerState {
   model: ProjectsModel;
@@ -114,7 +128,12 @@ export interface ProjectsControllerState {
   retryHref: string;
   /** The columns the writer chose, which a page too narrow for them reduces. */
   columns: ProjectColumns;
-  /** The pages of projects shown, each laid out on its own; empty until the model is ready. */
+  /** What the writer searches for, as they typed it. */
+  query: string;
+  sort: ProjectSort;
+  /** How many projects match the query: all of them while it holds no word. */
+  matched: number;
+  /** The pages of the projects that match, sorted, each laid out on its own; empty until the model is ready. */
   pages: ProjectRow[][];
   /** Whether projects remain past the pages shown. */
   more: boolean;
@@ -131,10 +150,16 @@ export interface ProjectsController {
   readonly genreChips: ChipGroupController;
   /** Collects the project's tags in the dialog. */
   readonly tagInput: TagInputController;
+  /** The sort's popover in each bar, of which only one shows. */
+  readonly sortMenus: Readonly<Record<SortMenuPlace, SortMenu>>;
   /** Shows the next page of projects, when one remains. */
   loadMore(): void;
   /** Lays the projects out in this many columns. */
   setColumns(columns: ProjectColumns): void;
+  /** Shows the projects that match the query, from the first page. */
+  search(query: string): void;
+  /** Reverses the order of the sort, from the first page. */
+  flipOrder(): void;
   /** Opens the dialog on a new project. */
   create(): void;
   /** Reads a chosen file as the project's logo, or marks it unreadable. */
@@ -151,11 +176,23 @@ export interface ProjectsControllerOptions {
   getModel: () => ProjectsModel;
   /** The language a new project starts in: the visitor's own. */
   defaultLanguage: Language;
+  /** The interface's language, in which the titles sort. */
+  language: string;
+  /** The genres' names in the interface's language, by the value a project stores, as a search reads them. */
+  genres: Readonly<Record<string, string>>;
   retryHref: string;
   /** The columns the writer last chose. */
   initialColumns: ProjectColumns;
   /** Keeps the columns the writer chooses for the next visit. */
   onColumnsChange?: (columns: ProjectColumns) => void;
+  /** The query the address holds. */
+  getQuery: () => string;
+  /** Shows the query the writer types in the address. */
+  onSearch?: (query: string) => void;
+  /** The sort the writer last chose. */
+  initialSort: ProjectSort;
+  /** Keeps the sort the writer chooses for the next visit. */
+  onSortChange?: (sort: ProjectSort) => void;
   /** Submits the save action, and writes the project it saved to the browser database. */
   submit: (form: FormData) => Promise<SaveResult>;
   /** Decodes and encodes pictures; the browser's canvas by default. */
@@ -179,9 +216,15 @@ const browserPreviews: PicturePreviews = {
 export function createProjectsController({
   getModel,
   defaultLanguage,
+  language,
+  genres,
   retryHref,
   initialColumns,
   onColumnsChange,
+  getQuery,
+  onSearch,
+  initialSort,
+  onSortChange,
   submit,
   pictures = browserPictureFiles,
   previews = browserPreviews,
@@ -196,11 +239,18 @@ export function createProjectsController({
   let tagInput = $state(createTagInputController());
   // How many pages the list shows. The projects change under it, as sweeps and saves write them.
   let pageCount = $state(1);
+  // The address's query, which the writer's typing replaces until a navigation brings another. A load that keeps the
+  // address gives the same text again, so it keeps what they typed.
+  const addressQuery = $derived(getQuery());
+  let query = $derived(addressQuery);
+  let sort = $state.raw(initialSort);
+  const collator = new Intl.Collator(language, { sensitivity: "base", numeric: true });
 
-  const rows = $derived.by(() => {
+  const searchable = $derived.by(() => {
     const model = getModel();
-    return model.status === "ready" ? model.projects : [];
+    return searchableProjects(model.status === "ready" ? model.projects : [], genres);
   });
+  const rows = $derived(sortProjects(searchProjects(searchable, query), sort, collator));
   const pages = $derived(
     Array.from({ length: Math.min(pageCount, Math.ceil(rows.length / PROJECTS_PAGE)) }, (_, index) =>
       rows.slice(index * PROJECTS_PAGE, (index + 1) * PROJECTS_PAGE)
@@ -208,7 +258,48 @@ export function createProjectsController({
   );
   const more = $derived(rows.length > pageCount * PROJECTS_PAGE);
 
-  const state = $derived<ProjectsControllerState>({ model: getModel(), editor, retryHref, columns, pages, more });
+  const state = $derived<ProjectsControllerState>({
+    model: getModel(),
+    editor,
+    retryHref,
+    columns,
+    query,
+    sort,
+    matched: rows.length,
+    pages,
+    more,
+  });
+
+  function setSort(next: ProjectSort) {
+    sort = next;
+    pageCount = 1;
+    onSortChange?.(next);
+  }
+
+  function sortBy(field: ProjectSortField) {
+    if (field !== sort.field) setSort({ field, order: NATURAL_ORDER[field] });
+  }
+
+  function sortMenu(): SortMenu {
+    const fieldList = createOpenController();
+    const fieldState = $derived({ open: fieldList.state.open, value: sort.field });
+    return {
+      popover: createOpenController(),
+      field: {
+        get state() {
+          return fieldState;
+        },
+        open: fieldList.open,
+        close: fieldList.close,
+        toggle: fieldList.toggle,
+        select: (field) => {
+          if (field) sortBy(field);
+        },
+      },
+    };
+  }
+
+  const sortMenus = { header: sortMenu(), phone: sortMenu() };
 
   function update(change: Partial<ProjectEditor>) {
     if (editor) editor = { ...editor, ...change };
@@ -294,12 +385,21 @@ export function createProjectsController({
     get tagInput() {
       return tagInput;
     },
+    sortMenus,
     loadMore() {
       if (more) pageCount += 1;
     },
     setColumns(next) {
       columns = next;
       onColumnsChange?.(next);
+    },
+    search(next) {
+      query = next;
+      pageCount = 1;
+      onSearch?.(next);
+    },
+    flipOrder() {
+      setSort({ ...sort, order: sort.order === "ascending" ? "descending" : "ascending" });
     },
     create: open,
     chooseLogo,

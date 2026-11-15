@@ -1,15 +1,19 @@
 <script module lang="ts">
   import { createStorybookTranslator } from "#lib/i18n/storybook.js";
 
-  import { PROJECTS_PAGE, type ProjectsModel } from "./controller.svelte";
+  import { PROJECTS_PAGE, type ProjectsControllerState, type ProjectsModel } from "./controller.svelte";
   import {
+    cartographer,
     chosenLogo,
     fixedProjectsController,
+    harbor,
     longest,
     manyProjects,
     newProjectEditor,
+    notebooks,
     now,
     projects,
+    salt,
   } from "./projects.fixture";
   import ProjectsScreen from "./screen.svelte";
 
@@ -25,6 +29,13 @@
   const many = manyProjects(41);
   const firstPage: ProjectsModel = { status: "ready", now, projects: many };
   const filledDialog = { genres: ["mystery", "historical", "drama"], tags: ["roman-maritime", "années-50"] };
+  const searchResults = { model: ready, query: "car", matched: 2, pages: [[cartographer, notebooks]] };
+  const noSearchResult = { model: ready, query: "dragon", matched: 0, pages: [] };
+  const byTitle: Partial<ProjectsControllerState> = {
+    model: ready,
+    sort: { field: "title", order: "ascending" },
+    pages: [[notebooks, harbor, salt, cartographer]],
+  };
   const createRequests = fn();
 
   const { Story } = defineMeta({
@@ -35,7 +46,7 @@
       docs: {
         description: {
           component:
-            "The writer's projects, most recently edited first. A writer without any is invited to create the first one; the dialog creates a project, with its logo.",
+            "The writer's projects, the last edited first unless the writer sorts them otherwise, and a search that keeps those that match. A writer without any is invited to create the first one; the dialog creates a project, with its logo.",
         },
       },
     },
@@ -103,6 +114,73 @@
   exportName="ProjectsFrench"
   args={{ controller: fixedProjectsController({ model: ready }) }}
   globals={{ ...reviewStoryGlobals.desktop, locale: "fr" }}
+/>
+
+<Story
+  name="Search results"
+  exportName="SearchResults"
+  args={{ controller: fixedProjectsController(searchResults) }}
+  globals={reviewStoryGlobals.desktop}
+/>
+
+<Story
+  name="Search results, mobile"
+  exportName="SearchResultsMobile"
+  args={{ controller: fixedProjectsController(searchResults) }}
+  globals={reviewStoryGlobals.mobile}
+/>
+
+<Story
+  name="No search result"
+  exportName="NoSearchResult"
+  args={{ controller: fixedProjectsController(noSearchResult) }}
+  globals={reviewStoryGlobals.desktop}
+/>
+
+<Story
+  name="No search result, mobile"
+  exportName="NoSearchResultMobile"
+  args={{ controller: fixedProjectsController(noSearchResult) }}
+  globals={reviewStoryGlobals.mobile}
+/>
+
+<Story
+  name="Sorted by title"
+  exportName="SortedByTitle"
+  args={{ controller: fixedProjectsController(byTitle) }}
+  globals={reviewStoryGlobals.desktop}
+/>
+
+<Story
+  name="Choosing the sort"
+  exportName="ChoosingTheSort"
+  args={{ controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "header" }) }}
+  globals={reviewStoryGlobals.desktop}
+/>
+
+<Story
+  name="Choosing the sort, mobile"
+  exportName="ChoosingTheSortMobile"
+  args={{ controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "phone" }) }}
+  globals={reviewStoryGlobals.mobile}
+/>
+
+<Story
+  name="Choosing the sort's field"
+  exportName="ChoosingTheSortField"
+  args={{
+    controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "header", sortFieldOpen: true }),
+  }}
+  globals={reviewStoryGlobals.desktop}
+/>
+
+<Story
+  name="Choosing the sort's field, mobile"
+  exportName="ChoosingTheSortFieldMobile"
+  args={{
+    controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "phone", sortFieldOpen: true }),
+  }}
+  globals={reviewStoryGlobals.mobile}
 />
 
 <Story

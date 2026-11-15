@@ -3,12 +3,10 @@ import type { ProjectsSyncState } from "#lib/client/projects/sync.svelte.js";
 
 import type { ProjectRow, ProjectsModel } from "./controller.svelte";
 
-/** Turns the projects the browser database holds into the page's model, most recently edited first. */
+/** Turns the projects the browser database holds into the page's model. */
 export function projectsModel(state: ProjectsSyncState): ProjectsModel {
   if (state.status !== "ready") return state;
-
-  const projects = state.projects.map(projectRow).toSorted((a, b) => b.editedAt.getTime() - a.editedAt.getTime());
-  return { status: "ready", now: new Date(state.readAt), projects };
+  return { status: "ready", now: new Date(state.readAt), projects: state.projects.map(projectRow) };
 }
 
 /** Turns a project into its row, whose logo loads from Studio under an address that names its checksum. */
