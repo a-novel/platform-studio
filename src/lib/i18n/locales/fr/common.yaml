@@ -243,7 +243,6 @@ projects:
     created: Créé {{when}}
     edited: Modifié {{when}}
   search:
-    clear: Effacer la recherche
     label: Rechercher un projet
     noMatch: Aucun projet ne correspond à votre recherche
     placeholder: Rechercher
@@ -253,13 +252,6 @@ projects:
     createdAt: Date de création
     descending: Ordre décroissant
     editedAt: Dernière modification
-    summary:
-      createdAtNewestFirst: "Tri: Date de création, plus récents d’abord"
-      createdAtOldestFirst: "Tri: Date de création, plus anciens d’abord"
-      editedAtNewestFirst: "Tri: Dernière modification, plus récents d’abord"
-      editedAtOldestFirst: "Tri: Dernière modification, plus anciens d’abord"
-      titleAToZ: "Tri: Titre, de A à Z"
-      titleZToA: "Tri: Titre, de Z à A"
     title: Titre
   title: Projets
   unavailable:

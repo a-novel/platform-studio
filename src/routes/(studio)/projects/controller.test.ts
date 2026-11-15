@@ -144,17 +144,17 @@ describe("createProjectsController", () => {
     const titles = () => controller.state.pages.flat().map(({ title }) => title);
     expect(controller.state.pages).toEqual([projects]);
 
-    controller.sortMenus.header.field.select("title");
+    controller.sortField.select("title");
     expect(controller.state.sort).toEqual({ field: "title", order: "ascending" });
-    expect(controller.sortMenus.phone.field.state.value).toBe("title");
+    expect(controller.sortField.state.value).toBe("title");
     expect(titles()).toEqual([notebooks.title, harbor.title, salt.title, cartographer.title]);
 
     controller.flipOrder();
     expect(titles()).toEqual([cartographer.title, salt.title, harbor.title, notebooks.title]);
 
     // Choosing the current field again keeps its order.
-    controller.sortMenus.header.field.select("title");
-    controller.sortMenus.header.field.select("createdAt");
+    controller.sortField.select("title");
+    controller.sortField.select("createdAt");
     expect(controller.state.pages).toEqual([[cartographer, harbor, notebooks, salt]]);
 
     expect(onSortChange.mock.calls).toEqual([
@@ -164,17 +164,13 @@ describe("createProjectsController", () => {
     ]);
   });
 
-  it("opens each bar's sort and its field's list on their own", () => {
+  it("opens the sort field's list without changing the sort, and keeps the sort on an empty choice", () => {
     const { controller } = projectsController();
-    const { header, phone } = controller.sortMenus;
 
-    header.popover.open();
-    header.field.open();
-    expect(header.field.state).toEqual({ open: true, value: "editedAt" });
-    expect(phone.popover.state.open).toBe(false);
-    expect(phone.field.state.open).toBe(false);
+    controller.sortField.open();
+    expect(controller.sortField.state).toEqual({ open: true, value: "editedAt" });
 
-    header.field.select(undefined);
+    controller.sortField.select(undefined);
     expect(controller.state.sort).toEqual(DEFAULT_PROJECT_SORT);
   });
 

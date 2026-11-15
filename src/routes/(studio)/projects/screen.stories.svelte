@@ -154,32 +154,14 @@
 <Story
   name="Choosing the sort"
   exportName="ChoosingTheSort"
-  args={{ controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "header" }) }}
+  args={{ controller: fixedProjectsController({ model: ready }, undefined, { sortFieldOpen: true }) }}
   globals={reviewStoryGlobals.desktop}
 />
 
 <Story
   name="Choosing the sort, mobile"
   exportName="ChoosingTheSortMobile"
-  args={{ controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "phone" }) }}
-  globals={reviewStoryGlobals.mobile}
-/>
-
-<Story
-  name="Choosing the sort's field"
-  exportName="ChoosingTheSortField"
-  args={{
-    controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "header", sortFieldOpen: true }),
-  }}
-  globals={reviewStoryGlobals.desktop}
-/>
-
-<Story
-  name="Choosing the sort's field, mobile"
-  exportName="ChoosingTheSortFieldMobile"
-  args={{
-    controller: fixedProjectsController({ model: ready }, undefined, { sortOpen: "phone", sortFieldOpen: true }),
-  }}
+  args={{ controller: fixedProjectsController({ model: ready }, undefined, { sortFieldOpen: true }) }}
   globals={reviewStoryGlobals.mobile}
 />
 

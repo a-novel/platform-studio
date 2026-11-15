@@ -138,7 +138,7 @@ describe("projects screen", () => {
     await expect.element(page.getByText("Loading more projects")).not.toBeInTheDocument();
   });
 
-  it("searches as the writer types, counts the results, and flips the order from the header's popover", async () => {
+  it("searches as the writer types, counts the results, and flips the order from the header", async () => {
     // A wide screen, where every project fits on the first page and the header holds the search and the sort.
     await page.viewport(1280, 800);
     onTestFinished(() => page.viewport(414, 896));
@@ -153,34 +153,25 @@ describe("projects screen", () => {
 
     await page.getByRole("searchbox", { name: "Search projects" }).fill("");
     await expect.element(page.getByText(`${projects.length} projects`)).toBeVisible();
-    const trigger = page.getByRole("button", { name: "Sort: Last edited, newest first" });
-    await expect.element(trigger).toHaveTextContent("Last edited");
-    await trigger.click();
+    await expect.element(page.getByRole("combobox", { name: "Sort by" })).toHaveTextContent("Last edited");
     await page.getByRole("button", { name: "Descending order" }).click();
     await expect.poll(rowNames).toEqual([notebooks.title, salt.title, cartographer.title, harbor.title]);
     expect(onSortChange).toHaveBeenLastCalledWith({ field: "editedAt", order: "ascending" });
-    await expect.element(page.getByRole("button", { name: "Sort: Last edited, oldest first" })).toBeVisible();
 
     await page.getByRole("button", { name: "Ascending order" }).click();
     await expect.poll(rowNames).toEqual(projects.map(({ title }) => title));
-    await userEvent.keyboard("{Escape}");
-    await expect.element(page.getByRole("button", { name: "Descending order" })).not.toBeInTheDocument();
   });
 
-  // The field's list floats over the popover that holds it: the popover stays while the list is open and after a choice.
+  // A phone keeps the sort in the header, beside the title, as a wider screen does.
   it.each([
     [414, 896],
     [1280, 800],
-  ])("keeps the popover open around its field's list and after a choice at %ipx", async (width, height) => {
+  ])("sorts by another field from the header at %ipx", async (width, height) => {
     await page.viewport(width, height);
     onTestFinished(() => page.viewport(414, 896));
     render(ProjectsScreen, { controller: projectsController() }, withLocale());
 
-    await page.getByRole("button", { name: "Sort: Last edited, newest first" }).click();
     await page.getByRole("combobox", { name: "Sort by" }).click();
-    await expect.element(page.getByRole("option", { name: "Title" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Descending order" })).toBeVisible();
-
     await page.getByRole("option", { name: "Title" }).click();
     await expect.element(page.getByRole("option", { name: "Title" })).not.toBeInTheDocument();
     await expect.element(page.getByRole("combobox", { name: "Sort by" })).toHaveTextContent("Title");
@@ -189,24 +180,20 @@ describe("projects screen", () => {
     await expect.poll(rowNames).toEqual([notebooks.title, harbor.title, salt.title, cartographer.title]);
   });
 
-  it("names the whole sort and its order in the reader's language, and asks the controller for each choice", async () => {
+  it("names the sort's field and order in the reader's language, and asks the controller for each choice", async () => {
     const spy = vi.fn();
     const sort = { field: "createdAt", order: "ascending" } as const;
-    const controls = { sortOpen: "phone", sortFieldOpen: true } as const;
     render(
       ProjectsScreen,
-      { controller: fixedProjectsController({ model: ready, sort }, spy, controls) },
+      { controller: fixedProjectsController({ model: ready, sort }, spy, { sortFieldOpen: true }) },
       withLocale("fr")
     );
 
-    await expect
-      .element(page.getByRole("button", { name: "Tri: Date de création, plus anciens d’abord" }))
-      .toBeVisible();
     await expect.element(page.getByRole("combobox", { name: "Trier par" })).toHaveTextContent("Date de création");
 
     await page.getByRole("option", { name: "Titre" }).click();
     await page.getByRole("button", { name: "Ordre croissant" }).click();
-    expect(spy).toHaveBeenCalledWith("sortMenus.phone.field.select", "title");
+    expect(spy).toHaveBeenCalledWith("sortField.select", "title");
     expect(spy).toHaveBeenCalledWith("flipOrder");
   });
 
@@ -231,30 +218,14 @@ describe("projects screen", () => {
     await expect.poll(rowNames).toEqual([notebooks.title]);
   });
 
-  // A phone holds the search in its bottom bar, and a wider screen in the header.
-  it.each([
-    [414, 896],
-    [1280, 800],
-  ])(
-    "says no project matches the search, and clears it back into the field that shows at %ipx",
-    async (width, height) => {
-      await page.viewport(width, height);
-      onTestFinished(() => page.viewport(414, 896));
-      const spy = vi.fn();
-      const controller = fixedProjectsController({ model: ready, query: "dragon", matched: 0, pages: [] }, spy);
-      render(ProjectsScreen, { controller }, withLocale());
+  it("says no project matches the search", async () => {
+    const controller = fixedProjectsController({ model: ready, query: "dragon", matched: 0, pages: [] });
+    render(ProjectsScreen, { controller }, withLocale());
 
-      await expect
-        .element(page.getByRole("heading", { name: "No project matches your search", level: 2 }))
-        .toBeVisible();
-      await expect.element(page.getByText("0 results")).toBeVisible();
-      await expect.element(page.getByRole("article")).not.toBeInTheDocument();
-
-      await page.getByRole("button", { name: "Clear the search" }).click();
-      expect(spy).toHaveBeenCalledExactlyOnceWith("search", "");
-      await expect.element(page.getByRole("searchbox", { name: "Search projects" })).toHaveFocus();
-    }
-  );
+    await expect.element(page.getByRole("heading", { name: "No project matches your search", level: 2 })).toBeVisible();
+    await expect.element(page.getByText("0 results")).toBeVisible();
+    await expect.element(page.getByRole("article")).not.toBeInTheDocument();
+  });
 
   it("says the projects are loading while the browser reads them for the first time", async () => {
     render(ProjectsScreen, { controller: fixedProjectsController({ model: { status: "loading" } }) }, withLocale("fr"));

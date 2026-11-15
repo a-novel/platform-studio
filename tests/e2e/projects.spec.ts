@@ -93,11 +93,9 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
       .toBe("historical drama");
   }
   await search.fill("");
-  await page.getByRole("button", { name: "Sort: Last edited, newest first", exact: true }).click();
   await page.getByRole("combobox", { name: "Sort by", exact: true }).click();
   await page.getByRole("option", { name: "Title", exact: true }).click();
   await expectRows(page, ["Les Heures claires", "Salt"]);
-  await page.keyboard.press("Escape");
 
   // A load keeps the sort.
   await page.reload();

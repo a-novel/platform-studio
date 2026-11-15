@@ -263,7 +263,6 @@ export default interface Resources {
         "edited": "Edited {{when}}"
       },
       "search": {
-        "clear": "Clear the search",
         "label": "Search projects",
         "noMatch": "No project matches your search",
         "placeholder": "Search"
@@ -274,14 +273,6 @@ export default interface Resources {
         "createdAt": "Created",
         "descending": "Descending order",
         "editedAt": "Last edited",
-        "summary": {
-          "createdAtNewestFirst": "Sort: Created, newest first",
-          "createdAtOldestFirst": "Sort: Created, oldest first",
-          "editedAtNewestFirst": "Sort: Last edited, newest first",
-          "editedAtOldestFirst": "Sort: Last edited, oldest first",
-          "titleAToZ": "Sort: Title, A to Z",
-          "titleZToA": "Sort: Title, Z to A"
-        },
         "title": "Title"
       },
       "title": "Projects",
