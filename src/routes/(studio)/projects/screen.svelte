@@ -92,48 +92,50 @@ creates a project. A browser without JavaScript is told the list needs it.
 <div class="projects-screen" class:filled={listing !== null}>
   {#if listing}
     <StickyBar edge="start" bleed>
-      <PageHeader
-        title={t("projects.title")}
-        description={searching
-          ? t("projects.results", { count: controller.state.matched })
-          : t("projects.count", { count: controller.state.matched })}
-      >
-        {#snippet actions()}
-          <div class="header-actions">
-            <div class="sort">
-              <div class="sort-field">
-                <Select aria-label={t("projects.sort.by")} options={fieldOptions} controller={controller.sortField} />
-              </div>
-              <IconButton
-                label={ascending ? t("projects.sort.ascending") : t("projects.sort.descending")}
-                variant="outline"
-                tone="neutral"
-                onclick={controller.flipOrder}
-              >
-                <OrderIcon size="var(--icon-size-sm)" />
-              </IconButton>
+      <div class="header">
+        <PageHeader
+          class="heading"
+          title={t("projects.title")}
+          description={searching
+            ? t("projects.results", { count: controller.state.matched })
+            : t("projects.count", { count: controller.state.matched })}
+        />
+        <div class="finder">
+          <div class="sort">
+            <div class="sort-field">
+              <Select aria-label={t("projects.sort.by")} options={fieldOptions} controller={controller.sortField} />
             </div>
-            {@render searchField()}
-            <div class="column-options">
-              <ButtonGroup label={t("projects.columns.label")}>
-                {#each columnOptions as { columns, label, Icon } (columns)}
-                  <IconButton
-                    class="columns-{columns}"
-                    {label}
-                    variant="ghost"
-                    tone="neutral"
-                    aria-pressed={controller.state.columns === columns}
-                    onclick={() => controller.setColumns(columns)}
-                  >
-                    <Icon size="var(--icon-size-sm)" />
-                  </IconButton>
-                {/each}
-              </ButtonGroup>
-            </div>
-            {@render newProject(t("projects.new"))}
+            <IconButton
+              label={ascending ? t("projects.sort.ascending") : t("projects.sort.descending")}
+              variant="outline"
+              tone="neutral"
+              onclick={controller.flipOrder}
+            >
+              <OrderIcon size="var(--icon-size-sm)" />
+            </IconButton>
           </div>
-        {/snippet}
-      </PageHeader>
+          {@render searchField()}
+        </div>
+        <div class="tools">
+          <div class="column-options">
+            <ButtonGroup label={t("projects.columns.label")}>
+              {#each columnOptions as { columns, label, Icon } (columns)}
+                <IconButton
+                  class="columns-{columns}"
+                  {label}
+                  variant="ghost"
+                  tone="neutral"
+                  aria-pressed={controller.state.columns === columns}
+                  onclick={() => controller.setColumns(columns)}
+                >
+                  <Icon size="var(--icon-size-sm)" />
+                </IconButton>
+              {/each}
+            </ButtonGroup>
+          </div>
+          {@render newProject(t("projects.new"))}
+        </div>
+      </div>
     </StickyBar>
 
     {#if controller.state.matched === 0}
@@ -264,14 +266,33 @@ creates a project. A browser without JavaScript is told the list needs it.
     block-size: auto;
   }
 
-  /* The header's actions take the room the title leaves, and the search grows into it. */
-  .header-actions {
+  /* The title, the finder and the tools share a row that wraps, the controls level with the count under the title.
+     The header spaces the title as it spaces the rest. */
+  .header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-6);
+    padding-block: var(--space-4);
+  }
+
+  .header :global(.heading) {
+    padding-block: 0;
+  }
+
+  /* The finder takes the room the title leaves, and its search grows into it. */
+  .finder {
     display: flex;
     flex: 1 1 auto;
-    flex-wrap: wrap;
     justify-content: flex-end;
+    gap: var(--space-4);
+  }
+
+  .tools {
+    display: flex;
     align-items: center;
     gap: var(--space-4);
+    margin-inline-start: auto;
   }
 
   .sort {
@@ -285,9 +306,9 @@ creates a project. A browser without JavaScript is told the list needs it.
     inline-size: calc(var(--layout-sidebar-min) * var(--ratio-density));
   }
 
-  /* The header's search starts compact, so the actions fit beside the title, then grows into the free room up to a
+  /* The header's search starts compact, so the finder fits beside the title, then grows into the free room up to a
      form's width. */
-  .header-actions .search {
+  .finder .search {
     flex: 1 1 var(--layout-sidebar-min);
     min-inline-size: var(--layout-sidebar-min);
     max-inline-size: var(--layout-container-sm);
@@ -357,6 +378,20 @@ creates a project. A browser without JavaScript is told the list needs it.
     }
   }
 
+  /* Once the row holds them all, the finder takes a card's width, centered, so it lines up with a single column of
+     cards and sits centered over several. Short of the room to center it, it narrows between the title and the
+     tools. */
+  @container (min-width: 52rem) {
+    .header {
+      display: grid;
+      grid-template-columns: minmax(max-content, 1fr) minmax(0, var(--card-max)) minmax(max-content, 1fr);
+    }
+
+    .finder .search {
+      max-inline-size: none;
+    }
+  }
+
   @container (min-width: 66rem) {
     .column-options :global(.columns-3) {
       display: inline-flex;
@@ -370,7 +405,8 @@ creates a project. A browser without JavaScript is told the list needs it.
   /* On a phone the header keeps the sort, the search and the creation wait under the thumb, and the page ends on its
      bar. */
   @container (max-width: 34rem) {
-    .header-actions > :global(:not(.sort)) {
+    .finder .search,
+    .tools {
       display: none;
     }
 
