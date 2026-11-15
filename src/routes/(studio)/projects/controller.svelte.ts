@@ -108,17 +108,6 @@ export interface ProjectEditor {
   failure: Exclude<SaveResult, { status: "saved" }> | null;
 }
 
-/** The sort's popover in one of the screen's bars. */
-export interface SortMenu {
-  /** Opens and closes the popover. */
-  readonly popover: OpenController;
-  /** Picks the field in the popover, in its natural order. */
-  readonly field: SelectController<ProjectSortField>;
-}
-
-/** The bars that hold a sort: the page's header on a wide screen, the bottom bar on a phone. */
-export type SortMenuPlace = "header" | "phone";
-
 /** State rendered by the projects screen. */
 export interface ProjectsControllerState {
   model: ProjectsModel;
@@ -150,8 +139,8 @@ export interface ProjectsController {
   readonly genreChips: ChipGroupController;
   /** Collects the project's tags in the dialog. */
   readonly tagInput: TagInputController;
-  /** The sort's popover in each bar, of which only one shows. */
-  readonly sortMenus: Readonly<Record<SortMenuPlace, SortMenu>>;
+  /** Picks the field the projects sort by, in its natural order. */
+  readonly sortField: SelectController<ProjectSortField>;
   /** Shows the next page of projects, when one remains. */
   loadMore(): void;
   /** Lays the projects out in this many columns. */
@@ -276,30 +265,19 @@ export function createProjectsController({
     onSortChange?.(next);
   }
 
-  function sortBy(field: ProjectSortField) {
-    if (field !== sort.field) setSort({ field, order: NATURAL_ORDER[field] });
-  }
-
-  function sortMenu(): SortMenu {
-    const fieldList = createOpenController();
-    const fieldState = $derived({ open: fieldList.state.open, value: sort.field });
-    return {
-      popover: createOpenController(),
-      field: {
-        get state() {
-          return fieldState;
-        },
-        open: fieldList.open,
-        close: fieldList.close,
-        toggle: fieldList.toggle,
-        select: (field) => {
-          if (field) sortBy(field);
-        },
-      },
-    };
-  }
-
-  const sortMenus = { header: sortMenu(), phone: sortMenu() };
+  const sortFieldList = createOpenController();
+  const sortFieldState = $derived({ open: sortFieldList.state.open, value: sort.field });
+  const sortField: SelectController<ProjectSortField> = {
+    get state() {
+      return sortFieldState;
+    },
+    open: sortFieldList.open,
+    close: sortFieldList.close,
+    toggle: sortFieldList.toggle,
+    select: (field) => {
+      if (field && field !== sort.field) setSort({ field, order: NATURAL_ORDER[field] });
+    },
+  };
 
   function update(change: Partial<ProjectEditor>) {
     if (editor) editor = { ...editor, ...change };
@@ -385,7 +363,7 @@ export function createProjectsController({
     get tagInput() {
       return tagInput;
     },
-    sortMenus,
+    sortField,
     loadMore() {
       if (more) pageCount += 1;
     },

@@ -4,12 +4,10 @@ import type {
   ProjectRow,
   ProjectsController,
   ProjectsControllerState,
-  SortMenu,
-  SortMenuPlace,
 } from "./controller.svelte";
-import { DEFAULT_PROJECT_SORT } from "./sort";
+import { DEFAULT_PROJECT_SORT, type ProjectSortField } from "./sort";
 
-import type { OpenController, SelectController } from "@a-novel-kit/uikit";
+import type { SelectController } from "@a-novel-kit/uikit";
 import { Language } from "@a-novel/service-narrative-engine-rest";
 
 /** Inlines an SVG as an image address, so stories and tests stay offline. */
@@ -150,9 +148,6 @@ export function fixedProjectsController(
     genreQuery?: string;
     tags?: readonly string[];
     languageOpen?: boolean;
-    /** The bar whose sort popover shows open. */
-    sortOpen?: SortMenuPlace;
-    /** Whether that popover shows its field's list open. */
     sortFieldOpen?: boolean;
   } = {}
 ): ProjectsController {
@@ -163,18 +158,12 @@ export function fixedProjectsController(
     toggle: () => spy("languageSelect.toggle"),
     select: (value) => spy("languageSelect.select", value),
   };
-  const sortField = state.sort?.field ?? DEFAULT_PROJECT_SORT.field;
-  const sortMenu = (place: SortMenuPlace): SortMenu => {
-    const open = controls.sortOpen === place;
-    const listOpen = open && (controls.sortFieldOpen ?? false);
-    return {
-      popover: fixedOpenController(`sortMenus.${place}.popover`, open, spy),
-      field: {
-        ...fixedOpenController(`sortMenus.${place}.field`, listOpen, spy),
-        state: { open: listOpen, value: sortField },
-        select: (value) => spy(`sortMenus.${place}.field.select`, value),
-      },
-    };
+  const sortField: SelectController<ProjectSortField> = {
+    state: { open: controls.sortFieldOpen ?? false, value: state.sort?.field ?? DEFAULT_PROJECT_SORT.field },
+    open: () => spy("sortField.open"),
+    close: () => spy("sortField.close"),
+    toggle: () => spy("sortField.toggle"),
+    select: (value) => spy("sortField.select", value),
   };
   const projects = state.model?.status === "ready" ? state.model.projects : [];
 
@@ -211,7 +200,7 @@ export function fixedProjectsController(
       add: (text) => (spy("tagInput.add", text), true),
       remove: (index) => spy("tagInput.remove", index),
     },
-    sortMenus: { header: sortMenu("header"), phone: sortMenu("phone") },
+    sortField,
     loadMore: () => spy("loadMore"),
     setColumns: (columns) => spy("setColumns", columns),
     search: (query) => spy("search", query),
@@ -220,15 +209,5 @@ export function fixedProjectsController(
     chooseLogo: async (file) => spy("chooseLogo", file),
     removeLogo: () => spy("removeLogo"),
     save: async (form) => spy("save", form),
-  };
-}
-
-/** An open controller that stays as `open` and reports each request to `spy` under `name`. */
-function fixedOpenController(name: string, open: boolean, spy: (request: string) => void): OpenController {
-  return {
-    state: { open },
-    open: () => spy(`${name}.open`),
-    close: () => spy(`${name}.close`),
-    toggle: () => spy(`${name}.toggle`),
   };
 }
