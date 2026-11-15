@@ -53,9 +53,9 @@
     () => invalidate(shellSessionData)
   );
 
-  afterNavigate(async ({ complete, shallow }) => {
-    if (shallow) return;
-
+  // Shallow navigations too: a page's own shallow writes, such as the projects' search, change the address the
+  // shell's links build on.
+  afterNavigate(async ({ complete }) => {
     // History updates require the router to finish initial hydration.
     await complete;
     synchronizeUrl();

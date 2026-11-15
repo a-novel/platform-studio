@@ -85,6 +85,13 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   await search.fill("historical drama");
   await expectRows(page, ["Les Heures claires"]);
   await expect.poll(() => new URL(page.url()).searchParams.get("q")).toBe("historical drama");
+  if (isMobile) {
+    // The shell's links build on the address, so the menu keeps the search.
+    const menu = page.getByRole("link", { name: "Open navigation", exact: true });
+    await expect
+      .poll(async () => new URL((await menu.getAttribute("href")) ?? "", page.url()).searchParams.get("q"))
+      .toBe("historical drama");
+  }
   await search.fill("");
   await page.getByRole("button", { name: "Sort: Last edited, newest first", exact: true }).click();
   await page.getByRole("combobox", { name: "Sort by", exact: true }).click();
@@ -92,7 +99,11 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
   await expectRows(page, ["Les Heures claires", "Salt"]);
   await page.keyboard.press("Escape");
 
-  // A load keeps the sort, and starts with the address's search.
+  // A load keeps the sort.
+  await page.reload();
+  await expectRows(page, ["Les Heures claires", "Salt"]);
+
+  // A load starts with the address's search.
   await page.goto(`${home}?q=salt`);
   await expect(search).toHaveValue("salt");
   await expectRows(page, ["Salt"]);

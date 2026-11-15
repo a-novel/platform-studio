@@ -32,6 +32,13 @@ describe("searchProjects", () => {
     expect(search("Éteignent")).toEqual([harbor]);
   });
 
+  it("reads a ligature as the two letters it joins, in both the query and the project", () => {
+    const row: ProjectRow = { ...salt, title: "Œuvre au noir", premise: "Un cœur ex æquo." };
+    for (const query of ["oeuvre", "Œuvre", "COEUR", "ex aequo", "æquo"]) {
+      expect(search(query, english, [row])).toEqual([row]);
+    }
+  });
+
   it("reads each genre by its name in the interface's language, and an unknown one by its value", () => {
     expect(search("mystère", french)).toEqual([cartographer]);
     expect(search("mystère", english)).toEqual([]);

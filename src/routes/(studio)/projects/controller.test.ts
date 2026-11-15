@@ -153,8 +153,8 @@ describe("createProjectsController", () => {
     expect(titles()).toEqual([cartographer.title, salt.title, harbor.title, notebooks.title]);
 
     // Choosing the current field again keeps its order.
-    controller.sortBy("title");
-    controller.sortBy("createdAt");
+    controller.sortMenus.header.field.select("title");
+    controller.sortMenus.header.field.select("createdAt");
     expect(controller.state.pages).toEqual([[cartographer, harbor, notebooks, salt]]);
 
     expect(onSortChange.mock.calls).toEqual([

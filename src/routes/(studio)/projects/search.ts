@@ -10,9 +10,12 @@ export interface SearchableProject {
 /** Names the address's parameter that holds the query. */
 const queryParameter = "q";
 
-/** Folds case and accents away, as uikit's ChipGroup does, so a search for "epopee" finds "Épopée". */
+/**
+ * Folds case and accents away, as uikit's ChipGroup does, so a search for "epopee" finds "Épopée". Unicode decomposes
+ * no ligature, so `œ` and `æ` become the two letters a keyboard without them types.
+ */
 function fold(text: string): string {
-  return text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase();
+  return text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase().replace(/œ/g, "oe").replace(/æ/g, "ae");
 }
 
 /**

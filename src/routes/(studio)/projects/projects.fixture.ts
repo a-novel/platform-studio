@@ -215,7 +215,6 @@ export function fixedProjectsController(
     loadMore: () => spy("loadMore"),
     setColumns: (columns) => spy("setColumns", columns),
     search: (query) => spy("search", query),
-    sortBy: (field) => spy("sortBy", field),
     flipOrder: () => spy("flipOrder"),
     create: () => spy("create"),
     chooseLogo: async (file) => spy("chooseLogo", file),

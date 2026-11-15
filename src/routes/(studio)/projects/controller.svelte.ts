@@ -112,7 +112,7 @@ export interface ProjectEditor {
 export interface SortMenu {
   /** Opens and closes the popover. */
   readonly popover: OpenController;
-  /** Picks the field in the popover, through `sortBy`. */
+  /** Picks the field in the popover, in its natural order. */
   readonly field: SelectController<ProjectSortField>;
 }
 
@@ -158,8 +158,6 @@ export interface ProjectsController {
   setColumns(columns: ProjectColumns): void;
   /** Shows the projects that match the query, from the first page. */
   search(query: string): void;
-  /** Sorts the projects by another field, in its natural order, from the first page. */
-  sortBy(field: ProjectSortField): void;
   /** Reverses the order of the sort, from the first page. */
   flipOrder(): void;
   /** Opens the dialog on a new project. */
@@ -400,7 +398,6 @@ export function createProjectsController({
       pageCount = 1;
       onSearch?.(next);
     },
-    sortBy,
     flipOrder() {
       setSort({ ...sort, order: sort.order === "ascending" ? "descending" : "ascending" });
     },
