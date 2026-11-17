@@ -23,17 +23,17 @@ const runtimeEnvironmentSchema = {
   profileServiceUrl: environmentHttpUrl("PROFILE_SERVICE_URL"),
 } as const;
 
-/** RuntimeConfig contains Studio's private server settings. */
+/** RuntimeConfig contains the platform's private server settings. */
 export type RuntimeConfig = EnvironmentOutput<typeof runtimeEnvironmentSchema> & {
-  /** The file of the projected service token Studio sends to Authentication. Unset outside Kubernetes. */
+  /** The file of the projected service token the platform sends to Authentication. Unset outside Kubernetes. */
   serviceTokenPath?: string;
-  /** The file of the projected service token Studio sends to the profile service. Unset outside Kubernetes. */
+  /** The file of the projected service token the platform sends to the profile service. Unset outside Kubernetes. */
   profileServiceTokenPath?: string;
-  /** The file of the projected service token Studio sends to the narrative engine. Unset outside Kubernetes. */
+  /** The file of the projected service token the platform sends to the narrative engine. Unset outside Kubernetes. */
   narrativeEngineServiceTokenPath?: string;
 };
 
-/** Parses Studio's environment variables without retaining invalid values. */
+/** Parses the platform's environment variables without retaining invalid values. */
 export function parseRuntimeConfig(environment: EnvironmentSource): RuntimeConfig {
   return {
     ...parseEnvironment(

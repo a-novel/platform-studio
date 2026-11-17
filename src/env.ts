@@ -17,7 +17,7 @@ export const variables = defineEnvVars({
   },
   SERVICE_TOKEN_PATH: {
     schema: (value) => value,
-    description: "File of the projected service token Studio sends to Authentication, on Kubernetes.",
+    description: "File of the projected service token the platform sends to Authentication, on Kubernetes.",
   },
   PROFILE_SERVICE_URL: {
     schema: (value) => value,
@@ -25,7 +25,7 @@ export const variables = defineEnvVars({
   },
   PROFILE_SERVICE_TOKEN_PATH: {
     schema: (value) => value,
-    description: "File of the projected service token Studio sends to the profile service, on Kubernetes.",
+    description: "File of the projected service token the platform sends to the profile service, on Kubernetes.",
   },
   NARRATIVE_ENGINE_SERVICE_URL: {
     schema: (value) => value,
@@ -33,7 +33,7 @@ export const variables = defineEnvVars({
   },
   NARRATIVE_ENGINE_SERVICE_TOKEN_PATH: {
     schema: (value) => value,
-    description: "File of the projected service token Studio sends to the narrative engine, on Kubernetes.",
+    description: "File of the projected service token the platform sends to the narrative engine, on Kubernetes.",
   },
   HEALTHCHECK_TIMEOUT_MS: {
     schema: (value) => value,

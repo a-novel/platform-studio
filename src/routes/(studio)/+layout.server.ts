@@ -1,12 +1,12 @@
 import { type AuthenticationEvent, getAuthenticationContext } from "#lib/server/auth/context.js";
 import { type ResolvedSession, hasAccountSession } from "#lib/server/auth/session.js";
-import { readStudioDowntime } from "#lib/server/downtime.js";
+import { readPlatformDowntime } from "#lib/server/downtime.js";
 import { type ProfileSummary, getProfileContext, summarizeProfile } from "#lib/server/profile/context.js";
 import { getRuntimeConfig } from "#lib/server/runtime-config.server.js";
 
 import type { LayoutServerLoad } from "./$types";
 import { accountDisplayFromHandle } from "./account-display";
-import type { ShellSession, StudioShellViewModel } from "./controller.svelte";
+import type { ShellSession, ShellViewModel } from "./controller.svelte";
 import { shellSessionData } from "./dependencies";
 
 import { createHash } from "node:crypto";
@@ -22,8 +22,8 @@ const shellAuthorization = {
   authenticated: "allowed",
 } as const satisfies Record<ShellSession["status"], AuthorizationStatus>;
 
-/** The rail destination each Studio page belongs to. */
-const navigation: Record<string, StudioShellViewModel["activeNavigation"]> = {
+/** The rail destination each page belongs to. */
+const navigation: Record<string, ShellViewModel["activeNavigation"]> = {
   "/projects": "projects",
   "/privacy": "privacy",
 };
@@ -65,7 +65,7 @@ function readAccountLinks(): { accountHref: string | null; invitationHref: strin
  */
 async function readShellSession(event: AuthenticationEvent): Promise<ShellSession> {
   // A started downtime stops Authentication, so the shell doesn't ask it for the session.
-  const resolved = isDowntimeStarted(await readStudioDowntime()) ? null : await currentSession(event);
+  const resolved = isDowntimeStarted(await readPlatformDowntime()) ? null : await currentSession(event);
 
   // While Authentication can't answer, only the cookies tell an account from a visitor.
   if (!resolved || resolved.status === "downtime" || resolved.status === "unavailable") {

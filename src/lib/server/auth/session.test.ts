@@ -225,7 +225,7 @@ describe("AuthenticationSession", () => {
   });
 
   it.each(["invalid_client", "invalid_request", "unsupported_grant_type"])(
-    "keeps the cookies when the token endpoint refuses Studio with %s",
+    "keeps the cookies when the token endpoint refuses the platform with %s",
     async (error) => {
       cookies.values.set("__Host-studio_access_token", "expired-access");
       cookies.values.set("__Host-studio_refresh_token", "refresh");

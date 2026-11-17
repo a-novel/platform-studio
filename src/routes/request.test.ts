@@ -1,4 +1,4 @@
-import { load as loadStudioShell } from "./(studio)/+layout.server";
+import { load as loadShell } from "./(studio)/+layout.server";
 import { POST as logoutAuthentication } from "./auth/logout/+server";
 import { completeSignIn, startSignIn } from "./auth/sign-in.server";
 
@@ -41,7 +41,7 @@ const fetchService = vi.fn<typeof fetch>();
 // The profile service answers apart, so each test counts the calls to Authentication alone.
 const fetchProfile = vi.fn<typeof fetch>();
 
-/** The last authentication call as the service receives it, after Studio's fetch wrapper. */
+/** The last authentication call as the service receives it, after the platform's fetch wrapper. */
 function sentRequest() {
   const [url, init] = fetchService.mock.lastCall ?? [];
   return { url, method: init?.method, headers: Object.fromEntries(new Headers(init?.headers)), body: init?.body };
@@ -102,15 +102,15 @@ afterEach(() => {
   published.downtime = null;
 });
 
-describe("Studio session at the request boundary", () => {
+describe("session at the request boundary", () => {
   it("renders the rail the visitor left on any Agora app", async () => {
     const { event } = request("/projects", { "navigation-rail": "collapsed" });
-    await expect(loadStudioShell(event)).resolves.toMatchObject({ rail: "collapsed" });
+    await expect(loadShell(event)).resolves.toMatchObject({ rail: "collapsed" });
   });
 
   it("serves the anonymous projects page without calling authentication", async () => {
     const { event } = request("/projects");
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
@@ -124,7 +124,7 @@ describe("Studio session at the request boundary", () => {
   it("exposes only a verified display identity to the browser, with a key that hides the user ID", async () => {
     const { event } = request("/account", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
     fetchService.mockResolvedValueOnce(Response.json(identity));
-    const data = await loadStudioShell(event);
+    const data = await loadShell(event);
     expect(JSON.stringify(data)).not.toContain(userId);
     expect(data).toEqual({
       activeNavigation: null,
@@ -171,7 +171,7 @@ describe("Studio session at the request boundary", () => {
       "__Host-studio_session_checked": "1",
     });
 
-    await expect(loadStudioShell(event)).resolves.toMatchObject({
+    await expect(loadShell(event)).resolves.toMatchObject({
       session: { status: "authenticated", displayName: "Maya Chen" },
       authorization: "allowed",
     });
@@ -182,13 +182,13 @@ describe("Studio session at the request boundary", () => {
     const { event } = request("/projects", tokenCookies);
     fetchService.mockImplementation(async () => Response.json(identity));
 
-    await Promise.all([loadStudioShell(event), loadStudioShell(event)]);
+    await Promise.all([loadShell(event), loadShell(event)]);
 
     expect(fetchService.mock.calls.map(([url]) => url)).toEqual(["https://authentication.test/v2/session"]);
     expect(fetchProfile).toHaveBeenCalledOnce();
   });
 
-  it("reads the profile as Studio, with the visitor's token, and shows its username and its picture on the account platform", async () => {
+  it("reads the profile as the platform, with the visitor's token, and shows its username and its picture on the account platform", async () => {
     const directory = await mkdtemp(join(tmpdir(), "profile-token-"));
     env.PROFILE_SERVICE_TOKEN_PATH = join(directory, "token");
     onTestFinished(async () => {
@@ -202,7 +202,7 @@ describe("Studio session at the request boundary", () => {
       Response.json({ ...profile, pictureVersion: "2026-11-04T08:15:30.123456Z" })
     );
 
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
@@ -229,7 +229,7 @@ describe("Studio session at the request boundary", () => {
     const { event } = request("/projects", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
     fetchService.mockImplementation(async () => Response.json(identity));
 
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
@@ -248,7 +248,7 @@ describe("Studio session at the request boundary", () => {
     fetchService.mockImplementation(async () => Response.json(identity));
     fetchProfile.mockImplementation(answer);
 
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
@@ -257,12 +257,12 @@ describe("Studio session at the request boundary", () => {
     });
   });
 
-  it("names an account whose email Studio has not kept by its username", async () => {
+  it("names an account whose email the platform has not kept by its username", async () => {
     const { event } = request("/projects", tokenCookies);
     fetchService.mockImplementation(async () => Response.json(identity));
     fetchProfile.mockImplementation(async () => Response.json(profile));
 
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
@@ -274,7 +274,7 @@ describe("Studio session at the request boundary", () => {
   it("keeps anonymous service claims out of authenticated UI", async () => {
     const { event } = request("/projects", tokenCookies);
     fetchService.mockResolvedValueOnce(Response.json({ roles: [Role.Anon] }));
-    await expect(loadStudioShell(event)).resolves.toMatchObject({
+    await expect(loadShell(event)).resolves.toMatchObject({
       session: { status: "anonymous" },
       authorization: "anonymous",
     });
@@ -283,7 +283,7 @@ describe("Studio session at the request boundary", () => {
   it("holds an account's place when runtime configuration is missing", async () => {
     env.AUTHENTICATION_SERVICE_URL = "";
     const { event } = request("/projects", tokenCookies);
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       accountHref: null,
@@ -299,7 +299,7 @@ describe("Studio session at the request boundary", () => {
     fetchService
       .mockResolvedValueOnce(new Response("expired", { status: 401 }))
       .mockResolvedValueOnce(new Response("private service detail", { status: 503 }));
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
@@ -373,7 +373,7 @@ async function startedSignIn(path = "/auth/sign-in?returnTo=%2Fprivacy%3Fpanel%3
   };
 }
 
-/** The callback request that brings an authorization response back to Studio. */
+/** The callback request that brings an authorization response back to the platform. */
 function callback(response: Record<string, string | string[]>, signIn?: string) {
   const parameters = new URLSearchParams();
   for (const [name, values] of Object.entries(response)) {
@@ -472,7 +472,7 @@ describe("sign-in through the account platform at the request boundary", () => {
     expect(cookies.delete).toHaveBeenCalledWith("__Host-studio_sign_in", { path: "/" });
   });
 
-  it("completes the sign-in without a name when Authentication keeps the account from Studio", async () => {
+  it("completes the sign-in without a name when Authentication keeps the account from the platform", async () => {
     const { cookie, pending } = await startedSignIn();
     const { event, values } = callback({ code: "c", state: pending.state, iss: "https://account.test" }, cookie);
     fetchService
@@ -587,7 +587,7 @@ describe("planned downtime at the request boundary", () => {
       "__Host-studio_refresh_token": "refresh",
     });
 
-    await expect(loadStudioShell(event)).resolves.toEqual({
+    await expect(loadShell(event)).resolves.toEqual({
       activeNavigation: "projects",
       rail: "expanded",
       ...accountLinks,
@@ -601,7 +601,7 @@ describe("planned downtime at the request boundary", () => {
     published.downtime = started();
     const { event } = request("/", { "__Host-studio_access_token": "anonymous-access" });
 
-    await expect(loadStudioShell(event)).resolves.toMatchObject({
+    await expect(loadShell(event)).resolves.toMatchObject({
       session: { status: "anonymous" },
       authorization: "anonymous",
     });
@@ -617,15 +617,15 @@ describe("planned downtime at the request boundary", () => {
     expect(fetchService).not.toHaveBeenCalled();
   });
 
-  it("locks nothing before the start, or for a service Studio doesn't use", async () => {
-    const harmless = [
+  it("locks nothing before the start, or for a service the platform doesn't use", async () => {
+    const inactive = [
       { ...started(), start: new Date(Date.now() + 60_000) },
       { ...started(), components: ["service-genai.database"] },
     ];
-    for (const downtime of harmless) {
+    for (const downtime of inactive) {
       published.downtime = downtime;
 
-      await expect(loadStudioShell(request("/projects").event)).resolves.toMatchObject({
+      await expect(loadShell(request("/projects").event)).resolves.toMatchObject({
         session: { status: "anonymous" },
       });
     }
@@ -641,7 +641,7 @@ describe("planned downtime at the request boundary", () => {
     );
 
     await expect(
-      loadStudioShell(
+      loadShell(
         request("/projects", { "__Host-studio_access_token": "access", "__Host-studio_refresh_token": "refresh" }).event
       )
     ).resolves.toMatchObject({ session: { status: "loading" }, authorization: "unavailable" });

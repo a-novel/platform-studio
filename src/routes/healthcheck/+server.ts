@@ -7,7 +7,7 @@ import { aggregateHealth } from "@a-novel-kit/nodelib-server";
 
 import { json } from "@sveltejs/kit";
 
-/** Probes Studio's service registry and preserves each service-owned dependency map. */
+/** Probes the platform's service registry and preserves each service-owned dependency map. */
 export const GET: RequestHandler = async ({ fetch }) => {
   const health = await aggregateHealth({
     // The profile service only decorates the rail, which falls back to initials without it, so its
@@ -38,7 +38,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
         };
       },
     },
-    // Probes prove Studio's identity to Authentication and the narrative engine like any call, but are
+    // Probes prove the platform's identity to Authentication and the narrative engine like any call, but are
     // made for no visitor. JSON keys' API is public, so its probe carries no token.
     fetch: async (input, init) => {
       const config = getRuntimeConfig();

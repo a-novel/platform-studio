@@ -9,22 +9,22 @@ import {
   submitLogin,
   test,
 } from "./fixtures";
-import { callerFetch, studioCaller } from "./service-token";
+import { callerFetch, platformCaller } from "./service-token";
 
 import { screenshot } from "@a-novel-kit/nodelib-test/playwright";
 import { AuthenticationApi, refreshTokenGrant } from "@a-novel/service-authentication-rest";
 
 import type { BrowserContext, Page } from "playwright/test";
 
-const studioOrigin = "http://127.0.0.1:4173";
-const studioApi = new AuthenticationApi("http://127.0.0.1:14100", callerFetch(studioCaller));
+const platformOrigin = "http://127.0.0.1:4173";
+const platformApi = new AuthenticationApi("http://127.0.0.1:14100", callerFetch(platformCaller));
 
 /** Opens the menu that holds the account controls on a phone. The rail shows them on a desktop. */
 async function openAccountControls(page: Page, isMobile: boolean) {
   if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
 }
 
-/** Opens a session on the account platform itself, before the visitor reaches Studio. */
+/** Opens a session on the account platform itself, before the visitor reaches the platform. */
 async function openAccountSession(page: Page, account: Account) {
   await page.goto(`${accountOrigin}/account?auth=login`);
   await submitLogin(page, account);
@@ -37,14 +37,14 @@ async function accountLink(page: Page, isMobile: boolean) {
   return page.getByRole("link", { name: "Studio Tester", exact: true });
 }
 
-/** Studio's cookies, the pending sign-in's included. The account platform's share the host. */
-async function studioCookies(context: BrowserContext) {
+/** The platform's cookies, the pending sign-in's included. The account platform's share the host. */
+async function tokenCookies(context: BrowserContext) {
   return (await context.cookies()).filter((cookie) => cookie.name.startsWith("__Host-studio_"));
 }
 
 /**
- * Ends the five minutes in which Studio trusts the access token without asking Authentication, so the
- * next request checks the session.
+ * Ends the five minutes in which the platform trusts the access token without asking Authentication,
+ * so the next request checks the session.
  */
 async function endSessionCheckWindow(context: BrowserContext) {
   await context.clearCookies({ name: "__Host-studio_session_checked" });
@@ -77,7 +77,7 @@ test("signs in from signed out through the account platform and returns to the p
   account,
   isMobile,
 }, info) => {
-  const callback = page.waitForRequest((request) => request.url().startsWith(`${studioOrigin}/auth/callback?`));
+  const callback = page.waitForRequest((request) => request.url().startsWith(`${platformOrigin}/auth/callback?`));
   await signIn(page, account);
 
   // The callback strips the code from the address bar and from any referrer.
@@ -90,7 +90,7 @@ test("signs in from signed out through the account platform and returns to the p
     "referrer-policy": "no-referrer",
   });
 
-  const cookies = await studioCookies(context);
+  const cookies = await tokenCookies(context);
   expect(cookies.map((cookie) => cookie.name).sort()).toEqual([
     "__Host-studio_access_token",
     "__Host-studio_identity_handle",
@@ -123,7 +123,7 @@ test("signs in without a form while the account platform's session is open", asy
   // comes back signed in.
   await openAccountControls(page, isMobile);
   await page.getByRole("navigation", { name: "Agora apps" }).getByRole("link", { name: "Studio", exact: true }).click();
-  await expect(page).toHaveURL(`${studioOrigin}${home}`);
+  await expect(page).toHaveURL(`${platformOrigin}${home}`);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 
   // Studio signs in the same way once its cookies are gone, with no form while the account's session is open.
@@ -133,24 +133,24 @@ test("signs in without a form while the account platform's session is open", asy
   await expect(await accountLink(page, isMobile)).toBeVisible();
 });
 
-test("logging out of Studio ends the session on the account platform too", async ({
+test("logging out of the platform ends the session on the account platform too", async ({
   page,
   context,
   account,
   isMobile,
 }) => {
   await signIn(page, account);
-  const tokens = Object.fromEntries((await studioCookies(context)).map((cookie) => [cookie.name, cookie.value]));
+  const tokens = Object.fromEntries((await tokenCookies(context)).map((cookie) => [cookie.name, cookie.value]));
 
   await openAccountControls(page, isMobile);
   await page.getByRole("button", { name: "Log out", exact: true }).click();
   // Studio's home sends a visitor without an account straight to the login, so only that sign-in's cookie remains.
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/account\?auth=login&returnTo=%2Fauthorize%3F/);
   await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
-  expect((await studioCookies(context)).map((cookie) => cookie.name)).toEqual(["__Host-studio_sign_in"]);
+  expect((await tokenCookies(context)).map((cookie) => cookie.name)).toEqual(["__Host-studio_sign_in"]);
 
-  // Authentication ended the whole session, so Studio's refresh token no longer renews it.
-  await expect(refreshTokenGrant(studioApi, tokens["__Host-studio_refresh_token"] ?? "")).rejects.toMatchObject({
+  // Authentication ended the whole session, so the platform's refresh token no longer renews it.
+  await expect(refreshTokenGrant(platformApi, tokens["__Host-studio_refresh_token"] ?? "")).rejects.toMatchObject({
     response: { error: "invalid_grant" },
   });
 
@@ -159,12 +159,12 @@ test("logging out of Studio ends the session on the account platform too", async
   await page.goto(`${accountOrigin}/account`);
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/account\?auth=login&returnTo=%2Faccount$/);
 
-  // A new sign-in from Studio asks for the password again.
+  // A new sign-in from the platform asks for the password again.
   await page.goto(home);
   await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
 });
 
-test("logging out of the account platform ends Studio's session at its next check", async ({
+test("logging out of the account platform ends the platform's session at its next check", async ({
   page,
   context,
   account,
@@ -176,14 +176,14 @@ test("logging out of the account platform ends Studio's session at its next chec
   await page.getByRole("button", { name: "Log out", exact: true }).last().click();
   await expect(page).toHaveURL(`${accountOrigin}/account?auth=login&returnTo=%2Faccount`);
 
-  // Within five minutes of its last check, Studio trusts the token's signature alone.
+  // Within five minutes of its last check, the platform trusts the token's signature alone.
   await page.goto(home);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 
   await endSessionCheckWindow(context);
   await page.goto(home);
   await expect(page.getByRole("dialog", { name: "Log in" })).toBeVisible();
-  expect((await studioCookies(context)).map((cookie) => cookie.name)).toEqual(["__Host-studio_sign_in"]);
+  expect((await tokenCookies(context)).map((cookie) => cookie.name)).toEqual(["__Host-studio_sign_in"]);
 });
 
 test("a failed exchange returns to the signed-out page, whose retry signs in", async ({
@@ -194,7 +194,7 @@ test("a failed exchange returns to the signed-out page, whose retry signs in", a
 }, info) => {
   await openAccountSession(page, account);
 
-  // The browser's own requests follow the sign-in to the code, which reaches Studio altered, so
+  // The browser's own requests follow the sign-in to the code, which reaches the platform altered, so
   // Authentication refuses the exchange.
   const authorization = await page.request.get("/auth/sign-in?returnTo=%2F", { maxRedirects: 0 });
   const response = await page.request.get(authorization.headers().location ?? "", { maxRedirects: 0 });
@@ -206,7 +206,7 @@ test("a failed exchange returns to the signed-out page, whose retry signs in", a
   await expect(page).toHaveURL("/auth/sign-in/failed?returnTo=%2F");
   await expect(page).toHaveTitle("We couldn’t log you in | Agora Studio");
   await expect(page.getByRole("heading", { name: "We couldn’t log you in", level: 1 })).toBeVisible();
-  expect(await studioCookies(context)).toEqual([]);
+  expect(await tokenCookies(context)).toEqual([]);
   await screenshot(page, info, "sign-in-failed");
 
   // The account platform's session is still open, so the retry comes back signed in without a form.

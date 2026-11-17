@@ -1,8 +1,4 @@
-import {
-  type StudioShellControllerOptions,
-  type StudioShellData,
-  createStudioShellController,
-} from "./controller.svelte";
+import { type ShellControllerOptions, type ShellData, createShellController } from "./controller.svelte";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -17,8 +13,8 @@ const links = {
   logoutAction: "/logout",
 };
 
-function shell(options: Partial<StudioShellControllerOptions> = {}) {
-  return createStudioShellController({
+function shell(options: Partial<ShellControllerOptions> = {}) {
+  return createShellController({
     getData: () => ({
       activeNavigation: "projects",
       rail: "expanded",
@@ -31,11 +27,11 @@ function shell(options: Partial<StudioShellControllerOptions> = {}) {
   });
 }
 
-describe("createStudioShellController", () => {
+describe("createShellController", () => {
   it("accepts semantic shell transitions", () => {
     const onRailChange = vi.fn();
     const onDrawerChange = vi.fn();
-    let data: StudioShellData = {
+    let data: ShellData = {
       activeNavigation: "projects",
       rail: "expanded",
       session: { status: "anonymous" },
@@ -77,7 +73,7 @@ describe("createStudioShellController", () => {
   });
 
   it("derives the menu from the URL and the rest of the shell from the load data", () => {
-    let data: StudioShellData = {
+    let data: ShellData = {
       activeNavigation: "projects",
       rail: "collapsed",
       session: { status: "anonymous" },
@@ -111,7 +107,7 @@ describe("createStudioShellController", () => {
       ...links,
       accountHref: null,
       invitationHref: null,
-      studioDowntime: undefined,
+      platformDowntime: undefined,
     });
 
     expect(controller.logout()).toBe(false);

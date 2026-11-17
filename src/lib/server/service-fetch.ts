@@ -10,7 +10,7 @@ export interface ServiceFetchOptions {
 
 /**
  * Wraps fetch for calls to a platform service. The service rate-limits by the visitor named in
- * `X-Client-IP`, which it trusts because it admits only Studio's identity.
+ * `X-Client-IP`, which it trusts because it admits only the platform's identity.
  */
 export function serviceFetch(options: ServiceFetchOptions, base: typeof fetch = fetch): typeof fetch {
   return async (input, init) => await base(input, { ...init, headers: await serviceHeaders(options, init?.headers) });

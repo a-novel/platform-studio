@@ -11,7 +11,7 @@ import type { ZodType } from "zod";
 export type NarrativeEngineEvent = Pick<RequestEvent, "getClientAddress">;
 
 /**
- * Sends the narrative engine client's calls as Studio's calls to a service, with the narrative engine
+ * Sends the narrative engine client's calls as the platform's calls to a service, with the narrative engine
  * token and the visitor's address. The client builds its requests on the global fetch, so this adds the
  * headers.
  */

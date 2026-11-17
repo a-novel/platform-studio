@@ -1,7 +1,7 @@
 <script lang="ts">
   import { errorPageTitle } from "#lib/i18n/page-titles.js";
   import PageTitle from "#lib/ui/PageTitle.svelte";
-  import { getStudioDowntime } from "#lib/ui/downtime.svelte.js";
+  import { getPlatformDowntime } from "#lib/ui/downtime.svelte.js";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
 
@@ -10,10 +10,10 @@
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
 
   const { t } = getI18nContext();
-  const studioDowntime = getStudioDowntime();
+  const platformDowntime = getPlatformDowntime();
   const downtime = $derived(
-    page.error?.downtime && studioDowntime.downtime
-      ? { end: studioDowntime.downtime.end, timeZone: studioDowntime.timeZone }
+    page.error?.downtime && platformDowntime.downtime
+      ? { end: platformDowntime.downtime.end, timeZone: platformDowntime.timeZone }
       : undefined
   );
   const currentPath = $derived(page.url.pathname + page.url.search);

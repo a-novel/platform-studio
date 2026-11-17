@@ -23,7 +23,7 @@ describe("serviceFetch", () => {
     expect(headersOf(base).has("X-Service-Authorization")).toBe(false);
   });
 
-  it("sends the current projected service token", async () => {
+  it("sends the current projected service token on every call", async () => {
     const directory = await mkdtemp(join(tmpdir(), "service-token-"));
     onTestFinished(async () => await rm(directory, { recursive: true }));
     const tokenPath = join(directory, "token");

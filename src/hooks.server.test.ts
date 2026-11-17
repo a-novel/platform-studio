@@ -23,7 +23,7 @@ function event(path: string, language?: string, chosen?: string): RequestEvent {
   } as unknown as RequestEvent;
 }
 
-describe("Studio request hook", () => {
+describe("request hook", () => {
   it("keeps translations and document language isolated across concurrent requests", async () => {
     const french = event("/", "fr-CA,fr;q=0.9,en;q=0.8");
     const english = event("/", "de");

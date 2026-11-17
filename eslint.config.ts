@@ -14,8 +14,8 @@ export default defineConfig(
   }),
   {
     rules: {
-      // The shared preset allows {@html} for kit packages, which render only their own content.
-      // Studio renders what its users write, so markup injection stays an error here.
+      // The shared preset allows {@html} for kit packages, which render only their own content. A
+      // platform renders what its users write, so markup injection stays an error here.
       "svelte/no-at-html-tags": "error",
       // Vite inlines every import.meta.env value it reads into the browser bundle. Configuration
       // comes from src/env.ts instead, where a variable stays server-only unless declared public.

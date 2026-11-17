@@ -1,7 +1,7 @@
-import StudioI18nProvider from "./StudioI18nProvider.svelte";
+import I18nProvider from "./I18nProvider.svelte";
 import type { Locale } from "./config";
 
-/** Renders a component test inside the Studio translations of one locale. */
+/** Renders a component test inside the platform translations of one locale. */
 export function withLocale(locale: Locale = "en") {
-  return { wrapper: StudioI18nProvider, wrapperProps: { locale } };
+  return { wrapper: I18nProvider, wrapperProps: { locale } };
 }

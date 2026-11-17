@@ -11,9 +11,9 @@ import { OAuthError } from "@a-novel/service-authentication-rest";
 import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 
-/** Studio's client ID in Authentication's client registry. */
+/** The platform's client ID in Authentication's client registry. */
 const clientId = "studio";
-/** The path of Studio's redirect URI, which the client registry holds on Studio's origin. */
+/** The path of the platform's redirect URI, which the client registry holds on the platform's origin. */
 const callbackPath = "/auth/callback";
 
 /**
@@ -28,9 +28,9 @@ const PendingSignInSchema = z.object({ state: z.string(), verifier: z.string(), 
 const temporaryErrors = new Set(["temporarily_unavailable", "server_error"]);
 
 /**
- * Starts a sign-in at the account platform's authorization endpoint (RFC 6749 §4.1.1). Studio draws a
- * `state` and a PKCE verifier (RFC 7636 §4.1), keeps them with the page to return to in an HttpOnly
- * cookie, and sends the S256 challenge of the verifier.
+ * Starts a sign-in at the account platform's authorization endpoint (RFC 6749 §4.1.1). The platform
+ * draws a `state` and a PKCE verifier (RFC 7636 §4.1), keeps them with the page to return to in an
+ * HttpOnly cookie, and sends the S256 challenge of the verifier.
  */
 export async function startSignIn(event: AuthenticationEvent): Promise<never> {
   await refuseDuringDowntime();
@@ -62,10 +62,10 @@ export async function startSignIn(event: AuthenticationEvent): Promise<never> {
 }
 
 /**
- * Completes a sign-in at Studio's redirect URI (RFC 6749 §4.1.2). The response counts only with the
- * started sign-in's `state` and the account platform's origin as `iss` (RFC 9207 §2.4). Studio then
- * exchanges the code with its PKCE verifier, keeps the tokens, and returns the visitor to their page.
- * Any other outcome lands on the failed sign-in page, which offers a retry.
+ * Completes a sign-in at the platform's redirect URI (RFC 6749 §4.1.2). The response counts only with
+ * the started sign-in's `state` and the account platform's origin as `iss` (RFC 9207 §2.4). The
+ * platform then exchanges the code with its PKCE verifier, keeps the tokens, and returns the visitor
+ * to their page. Any other outcome lands on the failed sign-in page, which offers a retry.
  */
 export async function completeSignIn(event: AuthenticationEvent): Promise<Response> {
   const pending = PendingSignInSchema.safeParse(parseJson(event.cookies.get(pendingCookie))).data;
@@ -103,7 +103,7 @@ async function exchangeCode(
   }
 }
 
-/** Studio's redirect URI, on the origin of the request the visitor sent. */
+/** The platform's redirect URI, on the origin of the request the visitor sent. */
 function callbackUri(url: URL): string {
   return new URL(callbackPath, url.origin).href;
 }

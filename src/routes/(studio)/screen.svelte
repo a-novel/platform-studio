@@ -1,11 +1,11 @@
 <script module lang="ts">
-  import type { StudioShellController } from "./controller.svelte";
+  import type { ShellController } from "./controller.svelte";
 
   import type { Snippet } from "svelte";
 
-  /** Props for the pure Studio shell. */
-  export interface StudioShellProps {
-    controller: StudioShellController;
+  /** Props for the pure platform shell. */
+  export interface ShellProps {
+    controller: ShellController;
     children?: Snippet;
   }
 </script>
@@ -41,7 +41,7 @@
     X,
   } from "@lucide/svelte";
 
-  let { controller, children }: StudioShellProps = $props();
+  let { controller, children }: ShellProps = $props();
 
   const model = $derived(controller.state.model);
   const homeHref = $derived(controller.state.homeHref);
@@ -49,7 +49,7 @@
   const invitationHref = $derived(controller.state.invitationHref);
   const logoutAction = $derived(controller.state.logoutAction);
   const privacyHref = $derived(controller.state.privacyHref);
-  const studioDowntime = $derived(controller.state.studioDowntime);
+  const platformDowntime = $derived(controller.state.platformDowntime);
 
   /** The height of the maintenance banner that sticks above the content, which a page's sticky part sits under. */
   let bannerBlockSize = $state(0);
@@ -296,13 +296,13 @@
         </IconButton>
       </header>
 
-      {#if studioDowntime?.downtime}
+      {#if platformDowntime?.downtime}
         <div class="downtime" bind:offsetHeight={bannerBlockSize}>
           <DowntimeBanner
-            start={studioDowntime.downtime.start}
-            end={studioDowntime.downtime.end}
-            started={studioDowntime.started}
-            timeZone={studioDowntime.timeZone}
+            start={platformDowntime.downtime.start}
+            end={platformDowntime.downtime.end}
+            started={platformDowntime.started}
+            timeZone={platformDowntime.timeZone}
           />
         </div>
       {/if}
@@ -337,22 +337,22 @@
 
 <style>
   .shell-viewport {
-    container: studio-shell / inline-size;
+    container: app-shell / inline-size;
     min-block-size: 100dvb;
     color: var(--color-text-primary);
   }
 
   .shell {
-    --studio-rail-width: var(--layout-sidebar);
+    --shell-rail-width: var(--layout-sidebar);
 
     display: grid;
-    grid-template-columns: var(--studio-rail-width) minmax(0, 1fr);
+    grid-template-columns: var(--shell-rail-width) minmax(0, 1fr);
     transition: grid-template-columns var(--duration-normal) var(--easing-standard);
     min-block-size: 100dvb;
   }
 
   .shell[data-rail="collapsed"] {
-    --studio-rail-width: calc(var(--control-height-sm) + var(--space-4));
+    --shell-rail-width: calc(var(--control-height-sm) + var(--space-4));
   }
 
   .rail {
@@ -365,7 +365,7 @@
     box-sizing: border-box;
     inset-block-start: 0;
     padding: var(--space-2);
-    inline-size: var(--studio-rail-width);
+    inline-size: var(--shell-rail-width);
     block-size: 100dvb;
     overflow: hidden;
   }
@@ -540,7 +540,7 @@
     min-inline-size: 0;
   }
 
-  @container studio-shell (max-width: 47.999rem) {
+  @container app-shell (max-width: 47.999rem) {
     .shell {
       grid-template-columns: minmax(0, 1fr);
     }

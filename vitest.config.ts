@@ -9,7 +9,7 @@ export default mergeConfig(
     vitePlugins: () => [
       Yaml(),
       {
-        name: "studio-validation-dependencies",
+        name: "validation-dependencies",
         config: () => ({ optimizeDeps: { include: ["@a-novel/service-authentication-rest", "zod"] } }),
       },
     ],

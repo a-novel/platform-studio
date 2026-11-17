@@ -14,21 +14,24 @@ const links = { homeHref: "/", retryHref: "/account?panel=email" };
 const children = createRawSnippet(() => ({ render: () => "<p>Private content</p>" }));
 const unavailable = createRawSnippet(() => ({ render: () => "<p>Blank public form</p>" }));
 
+/** The heading each unresolved or refused decision shows. */
+const statusTitles: [AuthorizationStatus, string][] = [
+  ["pending", "Checking access"],
+  ["forbidden", "Access denied"],
+  ["unavailable", "Access temporarily unavailable"],
+];
+
 describe("protected page presentation", () => {
-  it.each<AuthorizationStatus>(["pending", "forbidden", "unavailable"])(
-    "withholds private content for %s",
-    async (status) => {
-      render(AccessBoundary, { ...links, controller: { state: { status } }, children }, withLocale());
-      await expect.element(page.getByText("Private content")).not.toBeInTheDocument();
-      // A protected page's load sends a visitor without an account to the sign-in, so the boundary waits.
-      await expect.element(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
-      if (status === "unavailable")
-        await expect
-          .element(page.getByRole("link", { name: "Reload page" }))
-          .toHaveAttribute("data-sveltekit-reload", "true");
-    }
-  );
+  it.each(statusTitles)("withholds private content for %s and shows %s", async (status, title) => {
+    render(AccessBoundary, { ...links, controller: { state: { status } }, children }, withLocale());
+    await expect.element(page.getByText("Private content")).not.toBeInTheDocument();
+    await expect.element(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
+    await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+    if (status === "unavailable")
+      await expect
+        .element(page.getByRole("link", { name: "Reload page" }))
+        .toHaveAttribute("data-sveltekit-reload", "true");
+  });
 
   it("shows nothing to a visitor without an account, whom the load sends to the sign-in", async () => {
     render(AccessBoundary, { ...links, controller: { state: { status: "anonymous" } }, children }, withLocale());

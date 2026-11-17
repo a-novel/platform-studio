@@ -108,7 +108,7 @@ describe("GET /healthcheck", () => {
     });
   });
 
-  it("keeps a reachable service up while a reported dependency makes Studio unavailable", async () => {
+  it("keeps a reachable service up while a reported dependency makes the platform unavailable", async () => {
     const dependencies = {
       ...authenticationDependencies,
       "client:postgres": { detail: "connection refused", status: "down" as const },

@@ -5,8 +5,8 @@ import { SvelteKitPlaywright } from "@a-novel-kit/nodelib-config/playwright";
 
 import { defineConfig } from "playwright/test";
 
-/** Configures the Studio server that reads one downtime state. */
-function studioServer(state: string, port: number) {
+/** Configures the platform server that reads one downtime state. */
+function platformServer(state: string, port: number) {
   return SvelteKitPlaywright({
     port,
     serverEnvironment: {
@@ -25,7 +25,7 @@ function studioServer(state: string, port: number) {
   });
 }
 
-const configs = Object.entries(downtimes).map(([state, { port }]) => studioServer(state, port));
+const configs = Object.entries(downtimes).map(([state, { port }]) => platformServer(state, port));
 
 export default defineConfig({
   ...configs[0],

@@ -1,7 +1,7 @@
 <script module lang="ts">
   import { createStorybookTranslator } from "#lib/i18n/storybook.js";
 
-  import type { StudioShellViewModel } from "./controller.svelte";
+  import type { ShellViewModel } from "./controller.svelte";
   import { portraitPicture } from "./picture.fixture";
   import StoryHarness from "./story.svelte";
 
@@ -12,17 +12,17 @@
   import type { StoryContext } from "@storybook/sveltekit";
   import { expect, userEvent, within } from "storybook/test";
 
-  const anonymous: StudioShellViewModel = {
+  const anonymous: ShellViewModel = {
     activeNavigation: "projects",
     drawerOpen: false,
     rail: "expanded",
     session: { status: "anonymous" },
   };
-  const authenticated: StudioShellViewModel = {
+  const authenticated: ShellViewModel = {
     ...anonymous,
     session: { status: "authenticated", accountKey: "fixture-account-key", displayName: "Maya Chen", initials: "MC" },
   };
-  const withPicture: StudioShellViewModel = {
+  const withPicture: ShellViewModel = {
     ...anonymous,
     // A profile with a username and a picture: the username names the account, the handle keeps the initials.
     session: {
@@ -33,11 +33,11 @@
       picture: portraitPicture,
     },
   };
-  const unnamedAccount: StudioShellViewModel = {
+  const unnamedAccount: ShellViewModel = {
     ...anonymous,
     session: { status: "authenticated", accountKey: "fixture-account-key" },
   };
-  const longAccountName: StudioShellViewModel = {
+  const longAccountName: ShellViewModel = {
     ...anonymous,
     session: {
       status: "authenticated",
@@ -46,14 +46,14 @@
       initials: "AB",
     },
   };
-  const loadingAccount: StudioShellViewModel = {
+  const loadingAccount: ShellViewModel = {
     ...anonymous,
     session: { status: "loading" },
   };
   // Fixed times keep every rendering identical.
   const downtime = { start: new Date("2026-10-12T06:00:00Z"), end: new Date("2026-10-12T08:30:00Z") };
 
-  function withOpenMobileNavigation(model: StudioShellViewModel): StudioShellViewModel {
+  function withOpenMobileNavigation(model: ShellViewModel): ShellViewModel {
     return { ...model, drawerOpen: true };
   }
 
