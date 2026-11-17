@@ -1,9 +1,9 @@
 <script lang="ts">
   import { createTelemetryPreference } from "#lib/client/telemetry-preference.svelte.js";
   import { telemetry } from "#lib/client/telemetry.js";
-  import StudioI18nProvider from "#lib/i18n/StudioI18nProvider.svelte";
+  import I18nProvider from "#lib/i18n/I18nProvider.svelte";
   import TelemetryConsent from "#lib/ui/TelemetryConsent.svelte";
-  import { createStudioDowntime, setStudioDowntime } from "#lib/ui/downtime.svelte.js";
+  import { createPlatformDowntime, setPlatformDowntime } from "#lib/ui/downtime.svelte.js";
   import "#lib/ui/lamp.css";
   import { setTelemetryPreference } from "#lib/ui/telemetry-preference.js";
   import { afterNavigate, invalidateAll } from "$app/navigation";
@@ -28,7 +28,7 @@
   // shares the downtime.
   // A page left open as a downtime starts loads again, so it shows what a new visit would and offers no action
   // the downtime stops.
-  setStudioDowntime(createStudioDowntime(() => data, invalidateAll));
+  setPlatformDowntime(createPlatformDowntime(() => data, invalidateAll));
 
   const preference = createTelemetryPreference(telemetry, () => data.telemetryChoice);
   if (telemetry.enabled) setTelemetryPreference(preference);
@@ -58,11 +58,11 @@
   <link rel="apple-touch-icon" href={touchIcon} />
 </svelte:head>
 
-<StudioI18nProvider locale={data.locale}>
+<I18nProvider locale={data.locale}>
   <!-- First in the reading order, so keyboard and screen reader users meet the request first. -->
   <TelemetryConsent controller={consent} />
   {@render children()}
-</StudioI18nProvider>
+</I18nProvider>
 
 <style>
   /* The root keeps the canvas color contrast checks read, and the lamp hangs on a layer fixed behind

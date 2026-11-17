@@ -1,4 +1,4 @@
-import StudioI18nProvider from "../src/lib/i18n/StudioI18nProvider.svelte";
+import I18nProvider from "../src/lib/i18n/I18nProvider.svelte";
 import { defaultLocale, localeNames, supportedLocales } from "../src/lib/i18n/config";
 import { storybookLocale } from "../src/lib/i18n/storybook";
 import "../src/lib/ui/lamp.css";
@@ -21,7 +21,7 @@ const preview: Preview = {
   },
   decorators: [
     (_, context) => ({
-      Component: StudioI18nProvider,
+      Component: I18nProvider,
       props: { locale: storybookLocale(context.globals) },
     }),
   ],

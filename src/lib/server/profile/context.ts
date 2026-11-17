@@ -20,7 +20,7 @@ export interface ProfileContext {
 /** ProfileEvent is the part of a request the profile context reads. */
 export type ProfileEvent = Pick<RequestEvent, "cookies" | "getClientAddress">;
 
-/** A user's public profile, as Studio shows it. Each part is absent until its owner sets it. */
+/** A user's public profile, as the platform shows it. Each part is absent until its owner sets it. */
 export interface ProfileSummary {
   username?: string;
   /** The picture's address on the account platform, which names its version. */
@@ -31,8 +31,8 @@ export interface ProfileSummary {
 const requestContexts = new WeakMap<ProfileEvent["cookies"], ProfileContext>();
 
 /**
- * Sends the profile client's calls as Studio's calls to a service, with the profile token and the
- * visitor's address. The client builds its requests on the global fetch, so this adds the headers.
+ * Sends the profile client's calls as the platform's calls to a service, with the profile token and
+ * the visitor's address. The client builds its requests on the global fetch, so this adds the headers.
  */
 class ServiceProfileApi extends ProfileApi {
   constructor(
@@ -87,8 +87,8 @@ async function readSelf(api: ProfileApi, accessToken: string): Promise<Profile |
 }
 
 /**
- * Turns a profile into what Studio shows. The account platform serves the picture at an address that
- * names its version, so the browser keeps each version for good.
+ * Turns a profile into what the platform shows. The account platform serves the picture at an
+ * address that names its version, so the browser keeps each version for good.
  */
 export function summarizeProfile(profile: Profile | null, accountUrl: string): ProfileSummary {
   if (!profile) return {};

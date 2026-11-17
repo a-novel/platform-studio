@@ -1,6 +1,6 @@
 import { withLocale } from "#lib/i18n/provider.fixture.js";
 
-import type { StudioShellViewModel } from "./controller.svelte";
+import type { ShellViewModel } from "./controller.svelte";
 import ShellStory from "./story.svelte";
 
 import { describe, expect, it } from "vitest";
@@ -10,7 +10,7 @@ import { page, userEvent } from "vitest/browser";
 import "@a-novel-kit/uikit-fonts/fonts.css";
 import "@a-novel-kit/uikit-tokens/tokens.css";
 
-const shell: StudioShellViewModel = {
+const shell: ShellViewModel = {
   activeNavigation: "projects",
   drawerOpen: true,
   rail: "expanded",

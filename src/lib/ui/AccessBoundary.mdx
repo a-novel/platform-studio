@@ -11,7 +11,7 @@ authentication outcomes. Each preview holds one decision fixed.
 
 ## Setup once
 
-The Studio layout creates one authorization controller from server-returned page data and installs
+The application layout creates one authorization controller from server-returned page data and installs
 one `AuthorizationProvider`. Only server modules use the authentication SDK. UIKit receives a
 decision, never credentials or an API client.
 
@@ -59,7 +59,7 @@ Neither creates another application provider:
 </script>
 
 <AuthorizationBoundary>
-  <!-- Account-only content; not instantiated while access is unresolved or denied. -->
+  <!-- Account-only content. It is not instantiated while access is unresolved or denied. -->
 </AuthorizationBoundary>
 ```
 

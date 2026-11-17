@@ -2,27 +2,27 @@ import { safeReturnTo, signInHref } from "./navigation";
 
 import { describe, expect, it } from "vitest";
 
-describe("authentication navigation", () => {
-  const returnDestinations = [
-    ["/account?panel=password#change", "/account?panel=password#change"],
-    ["/account?query=two%20words", "/account?query=two+words"],
-    ["/account?returnTo=%2Faccount&panel=email", "/account?panel=email"],
-    ["/account?/password&panel=email", "/account?panel=email"],
-    ["/?returnTo=%2F", "/"],
-    ["/auth/sign-in?returnTo=%2Fprivacy", "/"],
-    ["/auth/callback?code=private", "/"],
-    ["https://attacker.invalid/account", "/"],
-    ["//attacker.invalid/account", "/"],
-    ["/%2fattacker.invalid", "/"],
-    ["/%2e%2e//attacker.invalid", "/"],
-    ["/%5cattacker.invalid", "/"],
-    ["/%0d%0aLocation:evil", "/"],
-    ["/%zz", "/"],
-    ["javascript:alert(1)", "/"],
-    [null, "/"],
-  ];
+const returnTargets = [
+  ["/account?panel=password#change", "/account?panel=password#change"],
+  ["/account?query=two%20words", "/account?query=two+words"],
+  ["/account?returnTo=%2Faccount&panel=email", "/account?panel=email"],
+  ["/account?/password&panel=email", "/account?panel=email"],
+  ["/?returnTo=%2F", "/"],
+  ["/auth/sign-in?returnTo=%2Fprivacy", "/"],
+  ["/auth/callback?code=private", "/"],
+  ["https://attacker.invalid/account", "/"],
+  ["//attacker.invalid/account", "/"],
+  ["/%2fattacker.invalid", "/"],
+  ["/%2e%2e//attacker.invalid", "/"],
+  ["/%5cattacker.invalid", "/"],
+  ["/%0d%0aLocation:evil", "/"],
+  ["/%zz", "/"],
+  ["javascript:alert(1)", "/"],
+  [null, "/"],
+];
 
-  it.each(returnDestinations)("sanitizes %s", (value, expected) => {
+describe("authentication navigation", () => {
+  it.each(returnTargets)("sanitizes %s", (value, expected) => {
     expect(safeReturnTo(value)).toBe(expected);
   });
 

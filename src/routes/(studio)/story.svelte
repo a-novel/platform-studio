@@ -1,12 +1,12 @@
 <script module lang="ts">
-  import type { StudioShellViewModel } from "./controller.svelte";
+  import type { ShellViewModel } from "./controller.svelte";
 
   import type { Snippet } from "svelte";
 
   /** Fixed-state Storybook harness around the pure shell. */
-  export interface StudioShellStoryProps {
-    model: StudioShellViewModel;
-    /** Whether Studio collects browser telemetry, which adds the Privacy destination. */
+  export interface ShellStoryProps {
+    model: ShellViewModel;
+    /** Whether the platform collects browser telemetry, which adds the Privacy destination. */
     collectsTelemetry?: boolean;
     /** Whether the server could read where the account platform lives, which its links need. */
     accountLinks?: boolean;
@@ -20,22 +20,15 @@
 </script>
 
 <script lang="ts">
-  import type { StudioShellController } from "./controller.svelte";
+  import type { ShellController } from "./controller.svelte";
   import Screen from "./screen.svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
 
-  let {
-    model,
-    collectsTelemetry,
-    accountLinks = true,
-    downtime,
-    started = true,
-    children,
-  }: StudioShellStoryProps = $props();
+  let { model, collectsTelemetry, accountLinks = true, downtime, started = true, children }: ShellStoryProps = $props();
   const { t } = getI18nContext();
 
-  const controller: StudioShellController = {
+  const controller: ShellController = {
     get state() {
       return {
         model,
@@ -44,7 +37,7 @@
         invitationHref: accountLinks ? "#invitation" : null,
         privacyHref: collectsTelemetry ? "#privacy" : null,
         logoutAction: "#logout",
-        studioDowntime: downtime && {
+        platformDowntime: downtime && {
           downtime: { components: ["service-authentication.database"], ...downtime },
           started,
           timeZone: "UTC",

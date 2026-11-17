@@ -16,7 +16,7 @@ import {
 import { type Page, test as base, expect } from "playwright/test";
 import { z } from "zod";
 
-/** The account platform, where Studio signs people in. */
+/** The account platform, where the platform signs people in. */
 export const accountOrigin = "http://127.0.0.1:14102";
 
 // Only the account platform may create accounts, and only from an invitation.
@@ -92,7 +92,7 @@ export async function submitLogin(page: Page, account: Account) {
   await dialog.getByRole("button", { name: "Log in", exact: true }).click();
 }
 
-/** Logs in on the account platform, where a sign-in from Studio lands a visitor signed out there. */
+/** Logs in on the account platform, where a sign-in from the platform lands a visitor signed out there. */
 export async function logInOnAccountPlatform(page: Page, account: Account) {
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:14102\/account\?auth=login&returnTo=%2Fauthorize%3F/);
   await submitLogin(page, account);

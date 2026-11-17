@@ -27,8 +27,8 @@ const sessionCheckedCookie = "__Host-studio_session_checked";
 const rejectedSessionStatuses = [401, 403] as const;
 
 /**
- * How long Studio trusts a signed access token without asking Authentication whether its session
- * ended. A sign-out elsewhere reaches Studio within this time.
+ * How long the platform trusts a signed access token without asking Authentication whether its
+ * session ended. A sign-out elsewhere reaches the platform within this time.
  */
 const sessionCheckSeconds = 300;
 
@@ -78,8 +78,8 @@ export class AuthenticationDowntimeError extends Error {
 }
 
 /**
- * AuthenticationSession keeps the token pair Studio obtained from the account platform's session in
- * HttpOnly cookies, and refreshes it on demand.
+ * AuthenticationSession keeps the token pair the platform obtained from the account platform's
+ * session in HttpOnly cookies, and refreshes it on demand.
  */
 export class AuthenticationSession {
   /** The session check that the loads and actions of the request share. A cookie change discards it. */
@@ -268,7 +268,7 @@ export class AuthenticationSession {
 /**
  * Tells whether Authentication refused the session itself. A refresh of a session that ended or was
  * signed out answers `invalid_grant`, and a refused access token 401 or 403. Any other refusal of the
- * token endpoint is a fault on Studio's side, which signing the visitor out cannot repair.
+ * token endpoint is a fault on the platform's side, which signing the visitor out cannot repair.
  */
 function isSessionRejection(error: unknown): boolean {
   if (error instanceof OAuthError) return error.response.error === "invalid_grant";

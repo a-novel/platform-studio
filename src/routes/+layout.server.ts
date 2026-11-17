@@ -1,4 +1,4 @@
-import { readStudioDowntime } from "#lib/server/downtime.js";
+import { readPlatformDowntime } from "#lib/server/downtime.js";
 
 import type { LayoutServerLoad } from "./$types";
 
@@ -6,7 +6,7 @@ import { TELEMETRY_CONSENT_COOKIE, parseTelemetryChoice } from "@a-novel-kit/nod
 import { isDowntimeStarted } from "@a-novel-kit/nodelib-server";
 
 export const load: LayoutServerLoad = async ({ cookies, locals }) => {
-  const downtime = await readStudioDowntime();
+  const downtime = await readPlatformDowntime();
 
   return {
     locale: locals.locale,

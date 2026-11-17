@@ -1,4 +1,4 @@
-import { studioOrigin } from "./downtime";
+import { platformOrigin } from "./downtime";
 import { expect, test } from "./fixtures";
 
 import { screenshot } from "@a-novel-kit/nodelib-test/playwright";
@@ -10,7 +10,7 @@ function banner(page: Page, title: string) {
 }
 
 test.describe("scheduled maintenance", () => {
-  test.use({ baseURL: studioOrigin("scheduled"), timezoneId: "Europe/Paris" });
+  test.use({ baseURL: platformOrigin("scheduled"), timezoneId: "Europe/Paris" });
 
   test("announces the expected window in the visitor's time zone and keeps sign-in open", async ({
     page,
@@ -38,7 +38,7 @@ test.describe("scheduled maintenance", () => {
 });
 
 test.describe("maintenance in progress", () => {
-  test.use({ baseURL: studioOrigin("started") });
+  test.use({ baseURL: platformOrigin("started") });
 
   test("locks sign-in until operators clear it", async ({ page, isMobile }, info) => {
     await page.goto("/privacy");

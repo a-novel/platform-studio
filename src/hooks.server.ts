@@ -1,5 +1,5 @@
 import { resolveLocale, supportedLocales } from "#lib/i18n/config.js";
-import { createStudioI18n } from "#lib/i18n/instance.js";
+import { createI18n } from "#lib/i18n/instance.js";
 import { hasSession } from "#lib/server/auth/session.js";
 
 import { LANGUAGE_COOKIE, parseLanguage } from "@a-novel-kit/nodelib-browser/preferences";
@@ -17,7 +17,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   const chosen = parseLanguage(event.cookies.get(LANGUAGE_COOKIE), supportedLocales);
   const locale = resolveLocale(chosen, event.request.headers.get("accept-language"));
 
-  event.locals.i18n = createStudioI18n(locale);
+  event.locals.i18n = createI18n(locale);
   event.locals.locale = locale;
 
   const response = await resolve(event, {

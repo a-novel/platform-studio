@@ -1,14 +1,10 @@
 import { withLocale } from "#lib/i18n/provider.fixture.js";
 
-import {
-  type StudioShellControllerOptions,
-  type StudioShellViewModel,
-  createStudioShellController,
-} from "./controller.svelte";
+import { type ShellControllerOptions, type ShellViewModel, createShellController } from "./controller.svelte";
 import { withNavigationOpen } from "./navigation-state";
 import { portraitPicture } from "./picture.fixture";
 import Screen from "./screen.svelte";
-import StudioShellStory from "./story.svelte";
+import ShellStory from "./story.svelte";
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
@@ -22,7 +18,7 @@ const accountLinks = {
   invitationHref: "https://account.example.test/account?auth=register",
 };
 
-function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel {
+function model(patch: Partial<ShellViewModel> = {}): ShellViewModel {
   return {
     activeNavigation: "projects",
     drawerOpen: false,
@@ -32,10 +28,10 @@ function model(patch: Partial<StudioShellViewModel> = {}): StudioShellViewModel 
   };
 }
 
-function controller(patch: Partial<StudioShellViewModel> = {}, options: Partial<StudioShellControllerOptions> = {}) {
+function controller(patch: Partial<ShellViewModel> = {}, options: Partial<ShellControllerOptions> = {}) {
   const { drawerOpen, ...data } = model(patch);
   const url = withNavigationOpen(new URL("https://studio.example.test/"), drawerOpen);
-  const shell = createStudioShellController({
+  const shell = createShellController({
     getData: () => ({ ...data, ...accountLinks }),
     getUrl: () => url,
     homeHref: "/projects",
@@ -66,7 +62,7 @@ async function settledStyle(element: Element) {
 // Chrome 158 reports `justify-content: flex-start` as flow-start.
 const startAligned = /^(flex|flow)-start$/;
 
-describe("studio shell screen", () => {
+describe("shell screen", () => {
   beforeEach(async () => {
     await page.viewport(1280, 800);
   });
@@ -120,15 +116,11 @@ describe("studio shell screen", () => {
   });
 
   it("lists Privacy under the sign-in links only while it collects browser telemetry", async () => {
-    const view = await render(StudioShellStory, { model: model() }, withLocale());
+    const view = await render(ShellStory, { model: model() }, withLocale());
     await expect.element(page.getByRole("link", { name: "Privacy" })).not.toBeInTheDocument();
     await view.unmount();
 
-    render(
-      StudioShellStory,
-      { model: model({ activeNavigation: "privacy" }), collectsTelemetry: true },
-      withLocale("fr")
-    );
+    render(ShellStory, { model: model({ activeNavigation: "privacy" }), collectsTelemetry: true }, withLocale("fr"));
     await expect.element(page.getByRole("link", { name: "Confidentialité" })).toHaveAttribute("aria-current", "page");
     await expect.element(page.getByRole("link", { name: "Projets" })).not.toHaveAttribute("aria-current");
   });
@@ -137,7 +129,7 @@ describe("studio shell screen", () => {
     const authenticated = model({
       session: { status: "authenticated", accountKey: "fixture-account-key", displayName: "Maya Chen", initials: "MC" },
     });
-    render(StudioShellStory, { model: authenticated, collectsTelemetry: true }, withLocale());
+    render(ShellStory, { model: authenticated, collectsTelemetry: true }, withLocale());
 
     await expect.element(page.getByRole("button", { name: "Log out" })).toBeVisible();
     await expect.element(page.getByRole("link", { name: "Privacy" })).not.toBeInTheDocument();

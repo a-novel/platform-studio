@@ -4,7 +4,7 @@ const port = 4180;
 const components = ["service-authentication.database"];
 
 /**
- * The Studio servers under test, each reading its own published downtime at fixed times.
+ * The platform servers under test, each reading its own published downtime at fixed times.
  * The reader caches a value for a minute, so a server cannot switch states during a run.
  */
 export const downtimes = {
@@ -13,13 +13,13 @@ export const downtimes = {
   started: { port: 4175, downtime: { components, start: "2026-01-12T06:00:00Z", end: "2099-01-12T08:30:00Z" } },
 };
 
-/** Where the Studio server of a state reads its downtime. */
+/** Where the platform server of a state reads its downtime. */
 export function downtimeUrl(state: string) {
   return `http://127.0.0.1:${port}/${state}.json`;
 }
 
-/** The Studio server that reads a state's downtime. */
-export function studioOrigin(state: keyof typeof downtimes) {
+/** The platform server that reads a state's downtime. */
+export function platformOrigin(state: keyof typeof downtimes) {
   return `http://127.0.0.1:${downtimes[state].port}`;
 }
 

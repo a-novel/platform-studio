@@ -1,5 +1,5 @@
 import { signInHref } from "#lib/application/auth/navigation.js";
-import type { StudioDowntime } from "#lib/ui/downtime.svelte.js";
+import type { PlatformDowntime } from "#lib/ui/downtime.svelte.js";
 
 import { readNavigationOpen, withNavigationOpen } from "./navigation-state";
 
@@ -22,17 +22,17 @@ export type ShellSession =
       accountKey: string;
     };
 
-/** Serializable state consumed by the pure Studio shell. */
-export interface StudioShellViewModel {
+/** Serializable state consumed by the pure application shell. */
+export interface ShellViewModel {
   activeNavigation: "projects" | "privacy" | null;
   rail: "expanded" | "collapsed";
   drawerOpen: boolean;
   session: ShellSession;
 }
 
-/** State rendered by the Studio shell component. */
-export interface StudioShellControllerState {
-  model: StudioShellViewModel;
+/** State rendered by the application shell component. */
+export interface ShellControllerState {
+  model: ShellViewModel;
   homeHref: string;
   /** The account page on the account platform, absent while the server cannot read where it lives. */
   accountHref: string | null;
@@ -42,16 +42,16 @@ export interface StudioShellControllerState {
   privacyHref: string | null;
   logoutAction: string;
   /** The planned downtime the shell announces, absent where nothing tracks it. */
-  studioDowntime?: StudioDowntime;
+  platformDowntime?: PlatformDowntime;
 }
 
 /** The layout's load data the shell renders: the page's destination, the session, the rail and the account links. */
-export type StudioShellData = Pick<StudioShellViewModel, "activeNavigation" | "session" | "rail"> &
-  Pick<StudioShellControllerState, "accountHref" | "invitationHref">;
+export type ShellData = Pick<ShellViewModel, "activeNavigation" | "session" | "rail"> &
+  Pick<ShellControllerState, "accountHref" | "invitationHref">;
 
-/** Pure state and transitions consumed by the Studio shell component. */
-export interface StudioShellController {
-  readonly state: StudioShellControllerState;
+/** Pure state and transitions consumed by the application shell component. */
+export interface ShellController {
+  readonly state: ShellControllerState;
   readonly navigationDialog: OpenController;
   /** Native navigation destination for the mobile menu. */
   navigationHref(open: boolean): string;
@@ -66,35 +66,32 @@ export interface StudioShellController {
   logout(): boolean;
 }
 
-/** Configuration for the default Studio shell controller. */
-export interface StudioShellControllerOptions extends Omit<
-  StudioShellControllerState,
-  "model" | "accountHref" | "invitationHref"
-> {
+/** Configuration for the default shell controller. */
+export interface ShellControllerOptions extends Omit<ShellControllerState, "model" | "accountHref" | "invitationHref"> {
   /** The layout's load data, which each navigation may replace. */
-  getData: () => StudioShellData;
+  getData: () => ShellData;
   /** Allows the browser to submit the logout form after the controller accepts it. */
   allowNativeLogout?: boolean;
   /** Observes accepted navigation-rail changes. */
-  onRailChange?: (rail: StudioShellViewModel["rail"]) => void;
+  onRailChange?: (rail: ShellViewModel["rail"]) => void;
   /** Current base-resolved route, including query and fragment state. It owns the mobile menu. */
   getUrl?: () => URL;
   /** Observes accepted mobile-menu changes. */
   onDrawerChange?: (open: boolean) => void;
 }
 
-/** Creates a reactive controller for the Studio application shell. */
-export function createStudioShellController({
+/** Creates a reactive controller for the application shell. */
+export function createShellController({
   getData,
   homeHref,
   privacyHref,
   logoutAction,
-  studioDowntime,
+  platformDowntime,
   allowNativeLogout = true,
   onRailChange,
-  getUrl = () => new SvelteURL(homeHref, "https://studio.invalid"),
+  getUrl = () => new SvelteURL(homeHref, "https://placeholder.invalid"),
   onDrawerChange,
-}: StudioShellControllerOptions): StudioShellController {
+}: ShellControllerOptions): ShellController {
   // The rail the server read from the visitor's cookie, until they toggle it.
   let rail = $derived(getData().rail);
   // The URL owns the menu: a transition opens or closes it at once, and the next URL, such as Back's, decides again.
@@ -102,7 +99,7 @@ export function createStudioShellController({
   // A logout the browser does not submit signs the shell out until the next load.
   let session = $derived(getData().session);
 
-  const state = $derived.by((): StudioShellControllerState => {
+  const state = $derived.by((): ShellControllerState => {
     const { activeNavigation, accountHref, invitationHref } = getData();
     return {
       model: { activeNavigation, rail, drawerOpen, session },
@@ -111,7 +108,7 @@ export function createStudioShellController({
       invitationHref,
       privacyHref,
       logoutAction,
-      studioDowntime,
+      platformDowntime,
     };
   });
 
