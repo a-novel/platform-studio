@@ -2,7 +2,7 @@ import { resolve } from "$app/paths";
 
 import type { SweepApi } from "./scheduler";
 
-import { HTTP_HEADERS, decodeHttpResponse, handleHttpResponse } from "@a-novel-kit/nodelib-browser/http";
+import { decodeHttpResponse, handleHttpResponse } from "@a-novel-kit/nodelib-browser/http";
 import {
   ProjectEditsListResponseSchema,
   ProjectFieldsDriftResponseSchema,
@@ -24,7 +24,12 @@ export const relayApi: SweepApi = {
 /** Calls a relay, posting `body` when given, and decodes its answer. A status other than 2xx throws an `HttpError`. */
 async function relay<T>(url: string, schema: ZodType<T>, body?: object): Promise<T> {
   const init: RequestInit = body
-    ? { method: "POST", headers: HTTP_HEADERS.JSON, body: JSON.stringify(body), redirect: "manual" }
+    ? {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        redirect: "manual",
+      }
     : { redirect: "manual" };
   return fetch(url, init).then(handleHttpResponse).then(decodeHttpResponse(schema));
 }
