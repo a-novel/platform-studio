@@ -1,6 +1,6 @@
 import type { ProjectRow } from "./controller.svelte";
 
-import { PREFERENCE_LIFETIME_S } from "@a-novel-kit/nodelib-browser/preferences";
+import { savePreference } from "@a-novel-kit/nodelib-browser/preferences";
 
 /** The field of a project the list sorts by. */
 export type ProjectSortField = "editedAt" | "createdAt" | "title";
@@ -38,7 +38,7 @@ export function parseProjectSort(value: string | undefined): ProjectSort {
 
 /** Keeps the sort in a cookie for a year. */
 export function saveProjectSort({ field, order }: ProjectSort): void {
-  document.cookie = `${PROJECT_SORT_COOKIE}=${field}-${order}; Path=/; Max-Age=${PREFERENCE_LIFETIME_S}; SameSite=Lax`;
+  savePreference(PROJECT_SORT_COOKIE, `${field}-${order}`);
 }
 
 /**
