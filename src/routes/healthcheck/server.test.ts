@@ -111,4 +111,25 @@ describe("GET /healthcheck", () => {
       "http://narrative-engine:8080/v1/healthcheck": "narrative-engine-token",
     });
   });
+
+  // A probe reads the configuration inside the health boundary, so a failure answers 503 rather than throwing.
+  it("derives the unavailable services from the registry when runtime configuration fails", async () => {
+    const fetchImplementation = vi.fn<typeof globalThis.fetch>();
+    readConfig.mockImplementation(() => {
+      throw new Error("private configuration detail");
+    });
+
+    await expect(probe(fetchImplementation)).resolves.toEqual({
+      status: 503,
+      health: {
+        services: {
+          authentication: { status: "down" },
+          jsonKeys: { status: "down" },
+          narrativeEngine: { status: "down" },
+        },
+        status: "down",
+      },
+    });
+    expect(fetchImplementation).not.toHaveBeenCalled();
+  });
 });

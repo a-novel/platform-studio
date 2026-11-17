@@ -12,12 +12,11 @@ import {
 } from "./fixtures";
 import { platformCaller } from "./service-token";
 
-import { callerFetch, downtimeOrigin, screenshot } from "@a-novel-kit/nodelib-test/playwright";
+import { callerFetch, screenshot } from "@a-novel-kit/nodelib-test/playwright";
 import { AuthenticationApi, refreshTokenGrant } from "@a-novel/service-authentication-rest";
 
 import type { BrowserContext, Page } from "playwright/test";
 
-const platformOrigin = downtimeOrigin("none");
 const platformApi = new AuthenticationApi("http://127.0.0.1:14100", callerFetch(platformCaller));
 
 /** Opens the menu that holds the account controls on a phone. The rail shows them on a desktop. */
@@ -77,8 +76,9 @@ test("signs in from signed out through the account platform and returns to the p
   context,
   account,
   isMobile,
+  baseURL,
 }, info) => {
-  const callback = page.waitForRequest((request) => request.url().startsWith(`${platformOrigin}/auth/callback?`));
+  const callback = page.waitForRequest((request) => request.url().startsWith(`${baseURL}/auth/callback?`));
   await signIn(page, account);
 
   // The callback strips the code from the address bar and from any referrer.
@@ -117,6 +117,7 @@ test("signs in without a form while the account platform's session is open", asy
   context,
   account,
   isMobile,
+  baseURL,
 }) => {
   await openAccountSession(page, account);
 
@@ -124,7 +125,7 @@ test("signs in without a form while the account platform's session is open", asy
   // comes back signed in.
   await openAccountControls(page, isMobile);
   await page.getByRole("navigation", { name: "Agora apps" }).getByRole("link", { name: "Studio", exact: true }).click();
-  await expect(page).toHaveURL(`${platformOrigin}${home}`);
+  await expect(page).toHaveURL(`${baseURL}${home}`);
   await expect(await accountLink(page, isMobile)).toBeVisible();
 
   // Studio signs in the same way once its cookies are gone, with no form while the account's session is open.

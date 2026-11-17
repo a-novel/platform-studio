@@ -1,7 +1,6 @@
 <script lang="ts">
   import { relayApi } from "#lib/client/projects/api.js";
   import { createProjectsSync, setProjectsSync } from "#lib/client/projects/sync.svelte.js";
-  import { telemetry } from "#lib/client/telemetry.js";
   import { PUBLIC_PLATFORM_DOMAIN } from "$app/env/public";
   import { goto, invalidate } from "$app/navigation";
   import { resolve } from "$app/paths";
@@ -50,8 +49,7 @@
 
   retryWhile(
     () => data.session.status === "loading",
-    () => invalidate(shellSessionData),
-    { onError: (error) => telemetry.captureError(error) }
+    () => invalidate(shellSessionData)
   );
 </script>
 
