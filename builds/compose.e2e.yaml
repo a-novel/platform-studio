@@ -229,13 +229,13 @@ services:
       DOWNTIME_URL: http://service-token-issuer:8080/downtime.json
 
   postgres-genai:
-    image: ghcr.io/a-novel/service-genai/database:v0.12.0@sha256:9aafca234ebd25ca3db0f29546264d6f748e1f3b2ab500006364c6af8c6292d9
+    image: ghcr.io/a-novel/service-genai/database:v0.12.1@sha256:9aafca234ebd25ca3db0f29546264d6f748e1f3b2ab500006364c6af8c6292d9
     environment: *postgres-environment
     healthcheck: *postgres-healthcheck
 
   # The narrative engine reaches genai for its health check alone here: the journeys submit no generation.
   service-genai:
-    image: ghcr.io/a-novel/service-genai/standalone-grpc:v0.12.0@sha256:a3fa398374ad62b9396fd1461323b48c8c0744014f8b7a76e8d8a2e5a9dbee4d
+    image: ghcr.io/a-novel/service-genai/standalone-grpc:v0.12.1@sha256:cb8b0874507cebe07508df971ee63875d62d70be921a7356285fe9f61bc8ffa4
     depends_on:
       postgres-genai:
         condition: service_healthy
