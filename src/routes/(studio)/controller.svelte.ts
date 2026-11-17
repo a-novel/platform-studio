@@ -62,8 +62,6 @@ export interface ShellController {
   signInHref(): string;
   /** Switches between the expanded and collapsed navigation rail. */
   toggleRail(): void;
-  /** Requests logout and reports whether native form submission should continue. */
-  logout(): boolean;
 }
 
 /** Configuration for the default shell controller. */
@@ -140,6 +138,5 @@ export function createShellController({
       rail = rail === "expanded" ? "collapsed" : "expanded";
       onRailChange?.(rail);
     },
-    logout: () => state.model.session.status !== "anonymous",
   };
 }

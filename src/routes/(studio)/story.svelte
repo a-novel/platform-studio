@@ -55,11 +55,11 @@
     navigationHref: (open) => (open ? "#navigation" : "#home"),
     signInHref: () => "#sign-in",
     toggleRail: () => {},
-    logout: () => false,
   };
 </script>
 
-<div class="story-frame">
+<!-- A fixed scenario: the logout form never leaves the story. -->
+<div class="story-frame" onsubmit={(event) => event.preventDefault()}>
   <Screen {controller}>
     <!-- A page's heading, as every Studio page has one inside the shell. -->
     <h1 class="page-heading">{t("shell.projects")}</h1>

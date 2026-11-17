@@ -92,6 +92,17 @@ test("a writer creates projects with a logo, genres and tags, and finds the last
       .poll(async () => new URL((await menu.getAttribute("href")) ?? "", page.url()).searchParams.get("q"))
       .toBe("historical drama");
   }
+
+  // The address owns the search: leaving it clears the search, and Back brings it back. On a phone the menu
+  // closes as the visitor leaves, which rewrites that entry, so Back keeps it closed.
+  if (isMobile) await page.getByRole("link", { name: "Open navigation", exact: true }).click();
+  await page.getByRole("link", { name: "Projects", exact: true }).click();
+  await expect(search).toHaveValue("");
+  await expectRows(page, ["Salt", "Les Heures claires"]);
+  await page.goBack();
+  await expect(page.getByRole("dialog", { name: "Studio", exact: true })).toBeHidden();
+  await expect(search).toHaveValue("historical drama");
+  await expectRows(page, ["Les Heures claires"]);
   await search.fill("");
   await page.getByRole("combobox", { name: "Sort by", exact: true }).click();
   await page.getByRole("option", { name: "Title", exact: true }).click();
