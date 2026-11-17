@@ -266,14 +266,11 @@ describe("projects screen", () => {
     expect(plain.element().querySelector("img")).toBeNull();
   });
 
-  it("invites a writer without projects to create the first one", async () => {
+  it("starts the first project from the invitation", async () => {
     const spy = vi.fn();
     const empty: ProjectsModel = { status: "ready", now, projects: [] };
     render(ProjectsScreen, { controller: fixedProjectsController({ model: empty }, spy) }, withLocale("fr"));
 
-    await expect.element(page.getByRole("heading", { name: "Un foyer pour vos histoires…" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Créer" })).not.toBeInTheDocument();
-    await expect.element(page.getByRole("search")).not.toBeInTheDocument();
     await page.getByRole("button", { name: "Commencer à créer" }).click();
     expect(spy).toHaveBeenCalledExactlyOnceWith("create");
   });

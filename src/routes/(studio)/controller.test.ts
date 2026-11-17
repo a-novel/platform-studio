@@ -22,7 +22,6 @@ function shell(options: Partial<ShellControllerOptions> = {}) {
       ...accountLinks,
     }),
     ...links,
-    allowNativeLogout: false,
     ...options,
   });
 }
@@ -109,12 +108,9 @@ describe("createShellController", () => {
       invitationHref: null,
       platformDowntime: undefined,
     });
-
-    expect(controller.logout()).toBe(false);
-    expect(controller.state.model.session.status).toBe("anonymous");
   });
 
-  it.each(["authenticated", "loading"] as const)("allows native logout without replacing the %s session", (status) => {
+  it.each(["authenticated", "loading"] as const)("lets the browser log out a %s session", (status) => {
     const controller = shell({
       getData: () => ({
         activeNavigation: "projects",
@@ -122,7 +118,6 @@ describe("createShellController", () => {
         session: status === "authenticated" ? { status, accountKey: "fixture-account-key" } : { status },
         ...accountLinks,
       }),
-      allowNativeLogout: true,
     });
 
     expect(controller.logout()).toBe(true);

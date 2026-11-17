@@ -1,3 +1,4 @@
+import { sessionCookies } from "../../src/lib/server/auth/session";
 import {
   type Account,
   accountOrigin,
@@ -47,7 +48,7 @@ async function tokenCookies(context: BrowserContext) {
  * so the next request checks the session.
  */
 async function endSessionCheckWindow(context: BrowserContext) {
-  await context.clearCookies({ name: "__Host-studio_session_checked" });
+  await context.clearCookies({ name: sessionCookies.sessionChecked });
 }
 
 /**
@@ -92,16 +93,16 @@ test("signs in from signed out through the account platform and returns to the p
 
   const cookies = await tokenCookies(context);
   expect(cookies.map((cookie) => cookie.name).sort()).toEqual([
-    "__Host-studio_access_token",
-    "__Host-studio_identity_handle",
-    "__Host-studio_refresh_token",
-    "__Host-studio_session_checked",
+    sessionCookies.accessToken,
+    sessionCookies.identityHandle,
+    sessionCookies.refreshToken,
+    sessionCookies.sessionChecked,
   ]);
   expect(
     cookies.every((cookie) => cookie.httpOnly && cookie.secure && cookie.path === "/" && cookie.sameSite === "Lax")
   ).toBe(true);
   // The tokens end with the browser, and Authentication's check of the session after five minutes.
-  const checked = cookies.find((cookie) => cookie.name === "__Host-studio_session_checked");
+  const checked = cookies.find((cookie) => cookie.name === sessionCookies.sessionChecked);
   expect(checked?.expires).toBeLessThanOrEqual(Date.now() / 1000 + 300);
   expect(cookies.filter((cookie) => cookie.expires !== -1)).toEqual([checked]);
 
@@ -150,7 +151,7 @@ test("logging out of the platform ends the session on the account platform too",
   expect((await tokenCookies(context)).map((cookie) => cookie.name)).toEqual(["__Host-studio_sign_in"]);
 
   // Authentication ended the whole session, so the platform's refresh token no longer renews it.
-  await expect(refreshTokenGrant(platformApi, tokens["__Host-studio_refresh_token"] ?? "")).rejects.toMatchObject({
+  await expect(refreshTokenGrant(platformApi, tokens[sessionCookies.refreshToken] ?? "")).rejects.toMatchObject({
     response: { error: "invalid_grant" },
   });
 

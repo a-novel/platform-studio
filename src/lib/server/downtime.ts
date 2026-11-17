@@ -1,10 +1,18 @@
-import { platformDowntime } from "#lib/application/downtime/downtime.js";
-
 import { getRuntimeConfig } from "./runtime-config.server";
 
 import { type Downtime, createDowntimeReader, isDowntimeStarted } from "@a-novel-kit/nodelib-server";
 
 import { error } from "@sveltejs/kit";
+
+/**
+ * Components whose planned downtime stops platform features: Authentication, JSON Keys, which signs its tokens,
+ * and the narrative engine, which keeps the projects.
+ */
+const platformComponents = new Set([
+  "service-authentication.database",
+  "service-json-keys.database",
+  "service-narrative-engine.database",
+]);
 
 // The document is public and the same for everyone, so one cached reader serves the process.
 let read: (() => Promise<Downtime | null>) | undefined;
@@ -17,7 +25,8 @@ export async function readPlatformDowntime(): Promise<Downtime | null> {
     return null;
   }
 
-  return platformDowntime(await read());
+  const downtime = await read();
+  return downtime?.components.some((component) => platformComponents.has(component)) ? downtime : null;
 }
 
 /** Fails with the 503 the error pages render as maintenance. */
