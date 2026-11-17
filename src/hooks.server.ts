@@ -25,9 +25,10 @@ export const handle: Handle = async ({ event, resolve }) => {
   // carry `frame-ancestors 'none'` in the CSP that nodelib's SvelteKit preset sends; this header also covers
   // the responses without one.
   response.headers.set("x-frame-options", "DENY");
-  // A response rendered with a session is the visitor's alone, so no cache may keep it (RFC 9111 §5.2.2.5).
-  // A response that already keeps itself private, such as a project's picture, keeps its own policy.
-  if (hasSession(event.cookies) && !response.headers.get("cache-control")?.startsWith("private")) {
+  // A response rendered with a session is the visitor's alone, so no cache may keep it (RFC 9111 §5.2.2.5),
+  // unless its route chose a policy of its own, as an image whose address names its version may. A response
+  // that sets cookies is never kept.
+  if (hasSession(event.cookies) && (response.headers.has("set-cookie") || !response.headers.has("cache-control"))) {
     response.headers.set("cache-control", "private, no-store");
   }
 
