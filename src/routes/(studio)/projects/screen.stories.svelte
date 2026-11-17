@@ -21,7 +21,7 @@
 
   import { defineMeta } from "@storybook/addon-svelte-csf";
   import type { StoryContext } from "@storybook/sveltekit";
-  import { expect, fn, userEvent, within } from "storybook/test";
+  import { expect, within } from "storybook/test";
 
   const ready: ProjectsModel = { status: "ready", now, projects };
   const stress: ProjectsModel = { status: "ready", now, projects: [longest, ...projects] };
@@ -36,7 +36,6 @@
     sort: { field: "title", order: "ascending" },
     pages: [[notebooks, harbor, salt, cartographer]],
   };
-  const createRequests = fn();
 
   const { Story } = defineMeta({
     title: "Projects/Screen",
@@ -52,11 +51,14 @@
     },
   });
 
-  async function verifyCreate({ canvasElement, globals }: Pick<StoryContext, "canvasElement" | "globals">) {
+  /** Checks that a writer without projects finds only the invitation to create the first one. */
+  async function verifyFirstProject({ canvasElement, globals }: Pick<StoryContext, "canvasElement" | "globals">) {
     const canvas = within(canvasElement);
     const t = createStorybookTranslator(globals);
-    await userEvent.click(canvas.getByRole("button", { name: t("projects.empty.action") }));
-    await expect(createRequests).toHaveBeenCalledWith("create");
+    await expect(canvas.getByRole("heading", { name: t("projects.empty.title") })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: t("projects.empty.action") })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: t("projects.new") })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("search")).not.toBeInTheDocument();
   }
 </script>
 
@@ -168,9 +170,9 @@
 <Story
   name="First project, desktop"
   exportName="EmptyDesktop"
-  args={{ controller: fixedProjectsController({ model: empty }, createRequests) }}
+  args={{ controller: fixedProjectsController({ model: empty }) }}
   globals={reviewStoryGlobals.desktop}
-  play={verifyCreate}
+  play={verifyFirstProject}
 />
 
 <Story

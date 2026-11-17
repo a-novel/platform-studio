@@ -224,7 +224,7 @@ export function createProjectsController({
   let opening = 0;
   let choice = 0;
   const languageSelect = createSelectController<Language>({ initialValue: defaultLanguage });
-  let genreChips = $state(createGenreChips());
+  let genreChips = $state(createChipGroupController());
   let tagInput = $state(createTagInputController());
   // How many pages the list shows. The projects change under it, as sweeps and saves write them.
   let pageCount = $state(1);
@@ -287,7 +287,7 @@ export function createProjectsController({
     close();
     opening += 1;
     languageSelect.select(defaultLanguage);
-    genreChips = createGenreChips();
+    genreChips = createChipGroupController();
     tagInput = createTagInputController();
     editor = {
       savedID: null,
@@ -406,8 +406,4 @@ export function createProjectsController({
       update({ saving: false, failure: result, savedID, logoRefusal });
     },
   };
-}
-
-function createGenreChips(): ChipGroupController {
-  return createChipGroupController();
 }

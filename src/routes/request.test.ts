@@ -1,6 +1,8 @@
+import { sessionCookies } from "#lib/server/auth/session.js";
+
 import { load as loadShell } from "./(studio)/+layout.server";
 import { POST as logoutAuthentication } from "./auth/logout/+server";
-import { completeSignIn, startSignIn } from "./auth/sign-in.server";
+import { completeSignIn, pendingCookie, startSignIn } from "./auth/sign-in.server";
 
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
@@ -61,8 +63,8 @@ async function signAccessToken(privateKey: CryptoKey, claims: object): Promise<s
 }
 const identity = { userID: userId, roles: [Role.User], clientID: "studio" };
 const tokenCookies = {
-  "__Host-studio_access_token": "private-access",
-  "__Host-studio_refresh_token": "private-refresh",
+  [sessionCookies.accessToken]: "private-access",
+  [sessionCookies.refreshToken]: "private-refresh",
 };
 const profile = { id: "019a4e2c-7d1f-7c3a-9b2e-5f1d0c8a4b21", username: "Maya" };
 const accountLinks = {
@@ -122,7 +124,7 @@ describe("session at the request boundary", () => {
   });
 
   it("exposes only a verified display identity to the browser, with a key that hides the user ID", async () => {
-    const { event } = request("/account", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
+    const { event } = request("/account", { ...tokenCookies, [sessionCookies.identityHandle]: "maya.chen" });
     fetchService.mockResolvedValueOnce(Response.json(identity));
     const data = await loadShell(event);
     expect(JSON.stringify(data)).not.toContain(userId);
@@ -166,9 +168,9 @@ describe("session at the request boundary", () => {
     });
     fetchService.mockImplementation(async () => Response.json([key]));
     const { event } = request("/projects", {
-      "__Host-studio_access_token": accessToken,
-      "__Host-studio_identity_handle": "maya.chen",
-      "__Host-studio_session_checked": "1",
+      [sessionCookies.accessToken]: accessToken,
+      [sessionCookies.identityHandle]: "maya.chen",
+      [sessionCookies.sessionChecked]: "1",
     });
 
     await expect(loadShell(event)).resolves.toMatchObject({
@@ -196,7 +198,7 @@ describe("session at the request boundary", () => {
       await rm(directory, { recursive: true });
     });
     await writeFile(env.PROFILE_SERVICE_TOKEN_PATH, "profile-service-token");
-    const { event } = request("/projects", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
+    const { event } = request("/projects", { ...tokenCookies, [sessionCookies.identityHandle]: "maya.chen" });
     fetchService.mockImplementation(async () => Response.json(identity));
     fetchProfile.mockImplementation(async () =>
       Response.json({ ...profile, pictureVersion: "2026-11-04T08:15:30.123456Z" })
@@ -226,7 +228,7 @@ describe("session at the request boundary", () => {
   });
 
   it("names the account by its email with initials before the profile's first write", async () => {
-    const { event } = request("/projects", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
+    const { event } = request("/projects", { ...tokenCookies, [sessionCookies.identityHandle]: "maya.chen" });
     fetchService.mockImplementation(async () => Response.json(identity));
 
     await expect(loadShell(event)).resolves.toEqual({
@@ -244,7 +246,7 @@ describe("session at the request boundary", () => {
   ];
 
   it.each(profileFailures)("holds the account's place %s", async (_, answer) => {
-    const { event } = request("/projects", { ...tokenCookies, "__Host-studio_identity_handle": "maya.chen" });
+    const { event } = request("/projects", { ...tokenCookies, [sessionCookies.identityHandle]: "maya.chen" });
     fetchService.mockImplementation(async () => Response.json(identity));
     fetchProfile.mockImplementation(answer);
 
@@ -343,15 +345,15 @@ describe("session at the request boundary", () => {
   it("logs out locally even while authentication is unreachable", async () => {
     const { event, values, cookies } = request("/auth/logout?returnTo=https://attacker.invalid", {
       ...tokenCookies,
-      "__Host-studio_identity_handle": "maya.chen",
+      [sessionCookies.identityHandle]: "maya.chen",
     });
     await expect(logoutAuthentication(event)).rejects.toMatchObject({ status: 303, location: "/" });
     expect(values.size).toBe(0);
     expect(cookies.delete.mock.calls).toEqual([
-      ["__Host-studio_access_token", { path: "/" }],
-      ["__Host-studio_refresh_token", { path: "/" }],
-      ["__Host-studio_identity_handle", { path: "/" }],
-      ["__Host-studio_session_checked", { path: "/" }],
+      [sessionCookies.accessToken, { path: "/" }],
+      [sessionCookies.refreshToken, { path: "/" }],
+      [sessionCookies.identityHandle, { path: "/" }],
+      [sessionCookies.sessionChecked, { path: "/" }],
     ]);
     // The unreachable session check leaves nothing to revoke.
     expect(fetchService).toHaveBeenCalledOnce();
@@ -362,7 +364,7 @@ describe("session at the request boundary", () => {
 async function startedSignIn(path = "/auth/sign-in?returnTo=%2Fprivacy%3Fpanel%3Dtelemetry") {
   const { event, cookies, values } = request(path);
   const redirect = await startSignIn(event).catch((thrown: unknown) => thrown as { status: number; location: string });
-  const cookie = values.get("__Host-studio_sign_in") ?? "";
+  const cookie = values.get(pendingCookie) ?? "";
 
   return {
     redirect,
@@ -379,7 +381,7 @@ function callback(response: Record<string, string | string[]>, signIn?: string) 
   for (const [name, values] of Object.entries(response)) {
     for (const value of [values].flat()) parameters.append(name, value);
   }
-  return request(`/auth/callback?${parameters}`, signIn === undefined ? {} : { "__Host-studio_sign_in": signIn });
+  return request(`/auth/callback?${parameters}`, signIn === undefined ? {} : { [pendingCookie]: signIn });
 }
 
 const tokenResponse = {
@@ -414,6 +416,8 @@ describe("sign-in through the account platform at the request boundary", () => {
     expect(pending.returnTo).toBe("/privacy?panel=telemetry");
     expect(pending.state).toMatch(/^[\w-]{43}$/);
     expect(pending.verifier).toMatch(/^[\w-]{43}$/);
+    // Its `__Host-` prefix keeps a sibling host from planting a sign-in.
+    expect(pendingCookie).toBe("__Host-studio_sign_in");
     expect(options).toEqual({ httpOnly: true, path: "/", sameSite: "lax", secure: true, maxAge: 600 });
     expect(fetchService).not.toHaveBeenCalled();
 
@@ -464,12 +468,12 @@ describe("sign-in through the account platform at the request boundary", () => {
       "Bearer new-access",
     ]);
     expect(Object.fromEntries(values)).toEqual({
-      "__Host-studio_access_token": "new-access",
-      "__Host-studio_refresh_token": "new-refresh",
-      "__Host-studio_identity_handle": "maya.chen",
-      "__Host-studio_session_checked": "1",
+      [sessionCookies.accessToken]: "new-access",
+      [sessionCookies.refreshToken]: "new-refresh",
+      [sessionCookies.identityHandle]: "maya.chen",
+      [sessionCookies.sessionChecked]: "1",
     });
-    expect(cookies.delete).toHaveBeenCalledWith("__Host-studio_sign_in", { path: "/" });
+    expect(cookies.delete).toHaveBeenCalledWith(pendingCookie, { path: "/" });
   });
 
   it("completes the sign-in without a name when Authentication keeps the account from the platform", async () => {
@@ -483,9 +487,9 @@ describe("sign-in through the account platform at the request boundary", () => {
 
     expect(response.headers.get("location")).toBe("/privacy?panel=telemetry");
     expect(Object.fromEntries(values)).toEqual({
-      "__Host-studio_access_token": "new-access",
-      "__Host-studio_refresh_token": "new-refresh",
-      "__Host-studio_session_checked": "1",
+      [sessionCookies.accessToken]: "new-access",
+      [sessionCookies.refreshToken]: "new-refresh",
+      [sessionCookies.sessionChecked]: "1",
     });
   });
 
@@ -508,7 +512,7 @@ describe("sign-in through the account platform at the request boundary", () => {
     expect(result.headers.get("referrer-policy")).toBe("no-referrer");
     expect(fetchService).not.toHaveBeenCalled();
     expect(values.size).toBe(0);
-    expect(cookies.delete).toHaveBeenCalledWith("__Host-studio_sign_in", { path: "/" });
+    expect(cookies.delete).toHaveBeenCalledWith(pendingCookie, { path: "/" });
   });
 
   it("returns to the home page when a planted pending sign-in names another site", async () => {
@@ -573,33 +577,37 @@ describe("sign-in through the account platform at the request boundary", () => {
 });
 
 describe("planned downtime at the request boundary", () => {
-  const started = () => ({
-    components: ["service-json-keys.database"],
+  const started = (component = "service-json-keys.database") => ({
+    components: [component],
     start: new Date(Date.now() - 60_000),
     end: new Date(Date.now() + 3_600_000),
   });
   const downtimeRefusal = { status: 503, body: { message: "Planned downtime", downtime: true } };
 
-  it("holds an account's place without calling authentication once a downtime has started", async () => {
-    published.downtime = started();
-    const { event } = request("/projects", {
-      "__Host-studio_access_token": "access",
-      "__Host-studio_refresh_token": "refresh",
-    });
+  // Each service Studio's features need: Authentication, JSON Keys, which signs its tokens, and the narrative engine.
+  it.each(["service-authentication.database", "service-json-keys.database", "service-narrative-engine.database"])(
+    "holds an account's place without calling authentication once a downtime of %s has started",
+    async (component) => {
+      published.downtime = started(component);
+      const { event } = request("/projects", {
+        [sessionCookies.accessToken]: "access",
+        [sessionCookies.refreshToken]: "refresh",
+      });
 
-    await expect(loadShell(event)).resolves.toEqual({
-      activeNavigation: "projects",
-      rail: "expanded",
-      ...accountLinks,
-      session: { status: "loading" },
-      authorization: "unavailable",
-    });
-    expect(fetchService).not.toHaveBeenCalled();
-  });
+      await expect(loadShell(event)).resolves.toEqual({
+        activeNavigation: "projects",
+        rail: "expanded",
+        ...accountLinks,
+        session: { status: "loading" },
+        authorization: "unavailable",
+      });
+      expect(fetchService).not.toHaveBeenCalled();
+    }
+  );
 
   it("keeps the sign-in links for a visitor without an account during a downtime", async () => {
     published.downtime = started();
-    const { event } = request("/", { "__Host-studio_access_token": "anonymous-access" });
+    const { event } = request("/", { [sessionCookies.accessToken]: "anonymous-access" });
 
     await expect(loadShell(event)).resolves.toMatchObject({
       session: { status: "anonymous" },
@@ -642,7 +650,7 @@ describe("planned downtime at the request boundary", () => {
 
     await expect(
       loadShell(
-        request("/projects", { "__Host-studio_access_token": "access", "__Host-studio_refresh_token": "refresh" }).event
+        request("/projects", { [sessionCookies.accessToken]: "access", [sessionCookies.refreshToken]: "refresh" }).event
       )
     ).resolves.toMatchObject({ session: { status: "loading" }, authorization: "unavailable" });
   });

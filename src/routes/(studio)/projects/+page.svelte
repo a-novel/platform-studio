@@ -25,6 +25,8 @@
   const unavailable: SaveResult = { status: "failed", feedback: "serviceUnavailable" };
   const projects = getProjectsSync();
   const model = $derived(projectsModel(projects.state));
+  // The search writes the address with shallow routing, which leaves `page.url` as the page loaded.
+  const address = $derived(new URL((page.shallow?.url ?? page.url).href));
 
   const controller = createProjectsController({
     getModel: () => model,
@@ -35,7 +37,7 @@
     retryHref: resolve("projects"),
     initialColumns: untrack(() => data.columns),
     onColumnsChange: saveProjectColumns,
-    getQuery: () => readProjectsQuery(page.url.searchParams),
+    getQuery: () => readProjectsQuery(address.searchParams),
     onSearch: showQuery,
     initialSort: untrack(() => data.sort),
     onSortChange: saveProjectSort,
@@ -45,7 +47,7 @@
   /** Shows the query in the address, without loading the page or adding a history entry. */
   function showQuery(query: string) {
     // eslint-disable-next-line svelte/no-navigation-without-resolve -- Shallow routing edits the current, resolved URL.
-    goto(withProjectsQuery(new URL(window.location.href), query), { shallow: true, replace: true, state: page.state });
+    goto(withProjectsQuery(address, query), { shallow: true, replace: true, state: page.state });
   }
 
   /** Posts the save action, and writes the project it saved to the browser database, even when its logo then failed. */
