@@ -19,8 +19,11 @@ export const GET: RequestHandler = async ({ fetch }) => {
         return {
           timeoutMs: config.healthcheckTimeoutMs,
           url: new URL("v2/healthcheck", `${config.authenticationServiceUrl}/`),
+          // The probe proves the platform's identity like any call, but is made for no visitor.
+          fetch: serviceFetch({ serviceTokenPath: config.serviceTokenPath }, fetch),
         };
       },
+      // JSON keys' API is public, so its probe carries no token.
       jsonKeys: () => {
         const config = getRuntimeConfig();
 
@@ -35,20 +38,11 @@ export const GET: RequestHandler = async ({ fetch }) => {
         return {
           timeoutMs: config.healthcheckTimeoutMs,
           url: new URL("v1/healthcheck", `${config.narrativeEngineServiceUrl}/`),
+          fetch: serviceFetch({ serviceTokenPath: config.narrativeEngineServiceTokenPath }, fetch),
         };
       },
     },
-    // Probes prove the platform's identity to Authentication and the narrative engine like any call, but are
-    // made for no visitor. JSON keys' API is public, so its probe carries no token.
-    fetch: async (input, init) => {
-      const config = getRuntimeConfig();
-      const tokens = [
-        [config.authenticationServiceUrl, config.serviceTokenPath],
-        [config.narrativeEngineServiceUrl, config.narrativeEngineServiceTokenPath],
-      ] as const;
-      const serviceTokenPath = tokens.find(([url]) => String(input).startsWith(`${url}/`))?.[1];
-      return await serviceFetch({ serviceTokenPath }, fetch)(input, init);
-    },
+    fetch,
   });
 
   return json(health, {
