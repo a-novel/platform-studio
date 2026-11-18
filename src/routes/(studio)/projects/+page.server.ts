@@ -92,7 +92,7 @@ async function saveLogo(
     return project;
   } catch (error) {
     const saved = storedProject(project);
-    if (isHttpStatusError(error, 400, 413, 422)) {
+    if (isHttpStatusError(error, 413, 422)) {
       return { status: 422, result: { status: "logo-refused", project: saved, refusal: refusal(error) } };
     }
 

@@ -1,6 +1,7 @@
 import { sessionCookies } from "#lib/server/auth/session.js";
 
 import { load as loadShell } from "./(studio)/+layout.server";
+import { GET as readLogo } from "./(studio)/projects/[id]/logo/+server";
 import { POST as logoutAuthentication } from "./auth/logout/+server";
 import { completeSignIn, pendingCookie, startSignIn } from "./auth/sign-in.server";
 
@@ -22,7 +23,7 @@ const env = vi.hoisted(() => ({
   DOWNTIME_URL: undefined,
   HEALTHCHECK_TIMEOUT_MS: undefined,
   JSON_KEYS_SERVICE_URL: "https://json-keys.test",
-  NARRATIVE_ENGINE_SERVICE_TOKEN_PATH: undefined,
+  NARRATIVE_ENGINE_SERVICE_TOKEN_PATH: undefined as string | undefined,
   NARRATIVE_ENGINE_SERVICE_URL: "https://narrative-engine.test",
   PROFILE_SERVICE_TOKEN_PATH: undefined as string | undefined,
   PROFILE_SERVICE_URL: "https://profile.test",
@@ -40,8 +41,9 @@ vi.mock("@a-novel-kit/nodelib-server", async (importOriginal) => ({
 }));
 
 const fetchService = vi.fn<typeof fetch>();
-// The profile service answers apart, so each test counts the calls to Authentication alone.
+// The profile and narrative engine services answer apart, so each test counts the calls to Authentication alone.
 const fetchProfile = vi.fn<typeof fetch>();
+const fetchNarrativeEngine = vi.fn<typeof fetch>();
 
 /** The last authentication call as the service receives it, after the platform's fetch wrapper. */
 function sentRequest() {
@@ -99,10 +101,12 @@ beforeEach(() => {
   fetchService.mockReset().mockRejectedValue(new Error("Unexpected authentication request"));
   // An account holds no profile before its first write.
   fetchProfile.mockReset().mockImplementation(async () => new Response(null, { status: 404 }));
-  vi.stubGlobal("fetch", ((input, init) =>
-    String(input).startsWith("https://profile.test/")
-      ? fetchProfile(input, init)
-      : fetchService(input, init)) satisfies typeof fetch);
+  fetchNarrativeEngine.mockReset().mockRejectedValue(new Error("Unexpected narrative engine request"));
+  vi.stubGlobal("fetch", ((input, init) => {
+    if (String(input).startsWith("https://profile.test/")) return fetchProfile(input, init);
+    if (String(input).startsWith("https://narrative-engine.test/")) return fetchNarrativeEngine(input, init);
+    return fetchService(input, init);
+  }) satisfies typeof fetch);
 });
 
 afterEach(() => {
@@ -232,6 +236,31 @@ describe("session at the request boundary", () => {
       authorization: "Bearer private-access",
       "x-client-ip": "192.0.2.1",
       "x-service-authorization": "profile-service-token",
+    });
+  });
+
+  it("reads a project's logo from the narrative engine as the platform, with the visitor's token", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "narrative-engine-token-"));
+    env.NARRATIVE_ENGINE_SERVICE_TOKEN_PATH = join(directory, "token");
+    onTestFinished(async () => {
+      env.NARRATIVE_ENGINE_SERVICE_TOKEN_PATH = undefined;
+      await rm(directory, { recursive: true });
+    });
+    await writeFile(env.NARRATIVE_ENGINE_SERVICE_TOKEN_PATH, "narrative-engine-service-token");
+    const projectID = "019a5f2e-0000-7000-8000-000000000001";
+    const { event } = request(`/projects/${projectID}/logo`, tokenCookies);
+    fetchService.mockImplementation(async () => Response.json(identity));
+    fetchNarrativeEngine.mockResolvedValue(new Response("webp", { headers: { "content-type": "image/webp" } }));
+
+    const response = await readLogo(Object.assign(event, { params: { id: projectID } }));
+
+    expect(response.status).toBe(200);
+    const [url, init] = fetchNarrativeEngine.mock.calls[0] ?? [];
+    expect(url).toBe(`https://narrative-engine.test/v1/project/logo?projectID=${projectID}`);
+    expect(Object.fromEntries(new Headers(init?.headers))).toMatchObject({
+      authorization: "Bearer private-access",
+      "x-client-ip": "192.0.2.1",
+      "x-service-authorization": "narrative-engine-service-token",
     });
   });
 
