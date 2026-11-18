@@ -104,6 +104,7 @@ creates a project. A browser without JavaScript is told the list needs it.
             : t("projects.count", { count: controller.state.matched })}
         />
         <div class="finder">
+          {@render searchField()}
           <div class="sort">
             <div class="sort-field">
               <Select aria-label={t("projects.sort.by")} options={fieldOptions} controller={controller.sortField} />
@@ -117,7 +118,6 @@ creates a project. A browser without JavaScript is told the list needs it.
               <OrderIcon size="var(--icon-size-sm)" />
             </IconButton>
           </div>
-          {@render searchField()}
         </div>
         <div class="tools">
           <div class="column-options">
