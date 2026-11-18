@@ -26,12 +26,15 @@ creates a project. A browser without JavaScript is told the list needs it.
     Spinner,
     StatusState,
     StickyBar,
+    useMessages,
   } from "@a-novel-kit/uikit";
 
   import { ArrowDown, ArrowUp, Columns2, Columns3, Plus, Rows3, Search } from "@lucide/svelte";
 
   let { controller }: { controller: ProjectsController } = $props();
   const { t } = getI18nContext();
+  // uikit ships the page states' "Reload page"; a name other than `t` keeps its key out of the app's catalog.
+  const uikitText = useMessages().t;
   const families = $derived(genreFamilies(t));
   const genres = $derived(genreNames(families));
   const model = $derived(controller.state.model);
@@ -208,7 +211,7 @@ creates a project. A browser without JavaScript is told the list needs it.
           headingLevel={2}
         >
           {#snippet actions()}
-            <Link href={controller.state.retryHref} data-sveltekit-reload>{t("access.retry")}</Link>
+            <Link href={controller.state.retryHref} data-sveltekit-reload>{uikitText("access.retry")}</Link>
           {/snippet}
         </StatusState>
       {/if}
