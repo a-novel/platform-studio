@@ -406,8 +406,8 @@ creates a project. A browser without JavaScript is told the list needs it.
   }
 
   /* On a phone the header keeps the sort, the search and the creation wait under the thumb, and the page ends on its
-     bar. */
-  @container (max-width: 34rem) {
+     bar. Actions switch by the screen's width, as uikit's ActionGroup does, whatever room the page has. */
+  @media (width < 35rem) {
     .finder .search,
     .tools {
       display: none;
