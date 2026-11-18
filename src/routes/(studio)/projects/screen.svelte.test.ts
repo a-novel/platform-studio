@@ -162,6 +162,18 @@ describe("projects screen", () => {
     await expect.poll(rowNames).toEqual(projects.map(({ title }) => title));
   });
 
+  it("leads the header with the search, then the sort's field and its order", async () => {
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    render(ProjectsScreen, { controller: projectsController() }, withLocale());
+
+    await page.getByRole("searchbox", { name: "Search projects" }).click();
+    await userEvent.tab();
+    await expect.element(page.getByRole("combobox", { name: "Sort by" })).toHaveFocus();
+    await userEvent.tab();
+    await expect.element(page.getByRole("button", { name: "Descending order" })).toHaveFocus();
+  });
+
   // A phone keeps the sort in the header, beside the title, as a wider screen does.
   it.each([
     [414, 896],
