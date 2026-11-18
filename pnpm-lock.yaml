@@ -210,8 +210,8 @@ importers:
         specifier: 2.17.0
         version: 2.17.0(@a-novel-kit/nodelib-browser@2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7))(zod@4.6.7)
       '@a-novel/service-narrative-engine-rest':
-        specifier: 1.8.0
-        version: 1.8.0(@a-novel-kit/nodelib-browser@2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7))(zod@4.6.7)
+        specifier: 1.9.0
+        version: 1.9.0(@a-novel-kit/nodelib-browser@2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7))(zod@4.6.7)
       '@a-novel/service-profile-rest':
         specifier: 1.2.0
         version: 1.2.0(@a-novel-kit/nodelib-browser@2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7))(zod@4.6.7)
@@ -507,11 +507,11 @@ packages:
       '@a-novel-kit/nodelib-browser': ^2.13.0
       zod: ^4.3.6
 
-  '@a-novel/service-narrative-engine-rest@1.8.0':
-    resolution: {integrity: sha512-EEPJpPw+OwImZBTbvgSkze/ksE7FLgDLcnXTuTWP8+nOkZ8eLaFhubDYzev7BY3npvLi6OZg1OhtziShJ+JJZg==, tarball: https://npm.pkg.github.com/download/@a-novel/service-narrative-engine-rest/1.8.0/1fa6e804135f9e5348fa4d43c05239ea8b5791cf}
+  '@a-novel/service-narrative-engine-rest@1.9.0':
+    resolution: {integrity: sha512-J5TuD/bekINT3A6ekCjmmjuhu+zy6tz9Wu+3cbhpSJj9ZFnCObgLjg4lzUF4Xy5a1q1eNs6WY45maGMswPfm3Q==, tarball: https://npm.pkg.github.com/download/@a-novel/service-narrative-engine-rest/1.9.0/c0fc2b9dfc5859b4e0396d4d58b42f24475845c1}
     engines: {node: '>=23.11.0', npm: '>=10.9.2'}
     peerDependencies:
-      '@a-novel-kit/nodelib-browser': ^1.3.18 || ^2.0.0
+      '@a-novel-kit/nodelib-browser': ^2.13.0
       zod: ^4.3.6
 
   '@a-novel/service-profile-rest@1.2.0':
@@ -3579,7 +3579,7 @@ snapshots:
       '@a-novel-kit/nodelib-browser': 2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7)
       zod: 4.6.7
 
-  '@a-novel/service-narrative-engine-rest@1.8.0(@a-novel-kit/nodelib-browser@2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7))(zod@4.6.7)':
+  '@a-novel/service-narrative-engine-rest@1.9.0(@a-novel-kit/nodelib-browser@2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7))(zod@4.6.7)':
     dependencies:
       '@a-novel-kit/nodelib-browser': 2.13.0(@grafana/faro-web-sdk@2.14.0)(@grafana/faro-web-tracing@2.14.0)(zod@4.6.7)
       zod: 4.6.7

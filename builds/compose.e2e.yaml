@@ -256,13 +256,13 @@ services:
       OPENAI_API_KEY: test-only
 
   postgres-narrative-engine:
-    image: ghcr.io/a-novel/service-narrative-engine/database:v1.8.0@sha256:0a3f5dc688cb2cd68055453c3249695cf5259574df1a499fa6ba930a0c32425f
+    image: ghcr.io/a-novel/service-narrative-engine/database:v1.9.0@sha256:8bbbca9bf3cce9b2f0b80931f018eecccd62247fdf90d426be73ba156423e5b8
     environment: *postgres-environment
     healthcheck: *postgres-healthcheck
 
   # The narrative engine, which stores the writers' projects Studio lists.
   narrative-engine:
-    image: ghcr.io/a-novel/service-narrative-engine/standalone-rest:v1.8.0@sha256:868071f0dcd2705793b6679143105abee6b8f9a32a83e1eb50efa5751b6d4e13
+    image: ghcr.io/a-novel/service-narrative-engine/standalone-rest:v1.9.0@sha256:d052241d314e0fa09e67fdb9da0928329a161ba23ef508f72c48f51ee5fd0985
     ports:
       - "127.0.0.1:14105:8080"
     depends_on:
