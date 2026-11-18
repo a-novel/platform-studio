@@ -1,6 +1,5 @@
 <script lang="ts">
   import { getProjectsSync } from "#lib/client/projects/sync.svelte.js";
-  import AccessBoundary from "#lib/ui/AccessBoundary.svelte";
   import PageTitle from "#lib/ui/PageTitle.svelte";
   import { deserialize } from "$app/forms";
   import { goto } from "$app/navigation";
@@ -18,6 +17,7 @@
   import { untrack } from "svelte";
 
   import { getI18nContext } from "@a-novel-kit/nodelib-i18n/svelte";
+  import { ProtectedPage } from "@a-novel-kit/uikit";
   import { Language } from "@a-novel/service-narrative-engine-rest";
 
   let { data } = $props();
@@ -74,6 +74,6 @@
 
 <PageTitle title={t("pageTitles.projects")} />
 
-<AccessBoundary homeHref={resolve("projects")} retryHref={resolve("projects")}>
+<ProtectedPage homeHref={resolve("projects")} retryHref={resolve("projects")}>
   <Screen {controller} />
-</AccessBoundary>
+</ProtectedPage>

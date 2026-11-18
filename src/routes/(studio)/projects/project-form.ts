@@ -1,6 +1,6 @@
 import type { ProjectIssue } from "./controller.svelte";
 
-import { kebabTag, splitTags } from "@a-novel-kit/uikit";
+import { readTags } from "@a-novel-kit/uikit";
 import {
   type Language,
   LanguageSchema,
@@ -37,18 +37,6 @@ function readGenres(form: FormData): string[] {
   return form.getAll("genres").filter((genre) => typeof genre === "string");
 }
 
-/**
- * Reads the tags the field sent, then the text still typed in it, which a form without scripting sends whole. It
- * splits where the field ends a tag and writes each in lower-kebab-case, as the field does, so the server keeps the
- * very tags the field shows.
- */
-function readTags(form: FormData): string[] {
-  const values = form.getAll("tags").filter((value) => typeof value === "string");
-  const entries = values.flatMap((value) => splitTags(value));
-
-  return [...new Set(entries.map(kebabTag).filter(Boolean))];
-}
-
 /** Reads the project dialog's form. Each field follows the narrative engine's own rule. */
 export function readProjectForm(form: FormData): ProjectFormResult {
   const id = text(form, "id");
@@ -56,7 +44,8 @@ export function readProjectForm(form: FormData): ProjectFormResult {
   const premise = text(form, "premise").trim();
   const language = LanguageSchema.safeParse(text(form, "language"));
   const genres = readGenres(form);
-  const tags = readTags(form);
+  // The field sends its tags, then the text still typed in it, which a form without scripting sends whole.
+  const tags = readTags(form.getAll("tags"));
 
   const issues: ProjectIssue[] = [];
   if (!title) issues.push({ field: "title", code: "required" });
