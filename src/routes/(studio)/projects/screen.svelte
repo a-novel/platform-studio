@@ -254,6 +254,7 @@ creates a project. A browser without JavaScript is told the list needs it.
     padding-block: var(--space-4) var(--space-12);
     inline-size: 100%;
     min-inline-size: 0;
+    /* off-scale: the columns and the gaps between them, so the width reads the gap's own step. */
     max-inline-size: calc(var(--columns) * var(--card-max) + (var(--columns) - 1) * var(--space-4));
   }
 

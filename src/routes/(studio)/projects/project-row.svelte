@@ -82,9 +82,7 @@ discreetly when it was edited and created, and in what language.
   }
 
   .title {
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-lg);
-    line-height: var(--line-height-compact);
+    font: var(--text-title-sm);
   }
 
   /* The narrative engine caps a title to fit these three lines at every width. */
@@ -102,7 +100,7 @@ discreetly when it was edited and created, and in what language.
     display: block;
     border-radius: var(--radius-md);
     max-inline-size: 100%;
-    block-size: var(--space-16);
+    block-size: var(--size-12);
     object-fit: contain;
     object-position: left;
   }
@@ -111,7 +109,7 @@ discreetly when it was edited and created, and in what language.
   .premise {
     display: -webkit-box;
     overflow: hidden;
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     white-space: pre-line;
     overflow-wrap: anywhere;
     -webkit-box-orient: vertical;
@@ -119,11 +117,11 @@ discreetly when it was edited and created, and in what language.
     line-clamp: 6;
   }
 
-  /* Badges sit apart as compact inline items, the same step that sets the genres' row from the tags' row. */
+  /* Badges sit apart as tags side by side. */
   .labels {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2);
+    gap: var(--space-1-5);
     padding: 0;
     list-style: none;
   }
@@ -136,7 +134,7 @@ discreetly when it was edited and created, and in what language.
     gap: var(--space-3);
     padding-block-start: var(--space-1);
     color: var(--color-text-muted);
-    font-size: var(--font-size-xs);
+    font: var(--text-meta);
   }
 
   .dates {
