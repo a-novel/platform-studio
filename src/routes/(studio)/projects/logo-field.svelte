@@ -69,7 +69,7 @@ that removes it.
     display: block;
     border-radius: var(--radius-md);
     max-inline-size: 100%;
-    block-size: var(--space-16);
+    block-size: var(--size-12);
     object-fit: contain;
     object-position: left;
   }
